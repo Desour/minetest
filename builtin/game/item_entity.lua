@@ -215,21 +215,23 @@ core.register_entity(":__builtin:item", {
 					not item_def.on_pickup(self, hitter, ...) then
 				return
 			end
+
 			-- Call every function registered on pickup.
-			local success
 			for i = 1, #core.registered_on_item_pickups do
-				success = core.registered_on_item_pickups[i](self, hitter, ...)
+				local success = core.registered_on_item_pickups[i](self, hitter, ...)
 				if success then
 					break
 				elseif success == false then
 					return
 				end
 			end
+
 			-- Do the default case.
 			local inv = hitter:get_inventory()
 			if not inv then
 				return
 			end
+
 			local left = inv:add_item("main", self.itemstring)
 			if left and not left:is_empty() then
 				self:set_item(left)
