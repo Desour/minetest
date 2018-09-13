@@ -720,6 +720,83 @@ function core.pointed_thing_to_face_pos(placer, pointed_thing)
 	return fine_pos
 end
 
+local function get_node_selection_boxes(pos) -- todo
+	local node = minetest.get_node(pos)
+	local def = core.registered_nodes[node.name]
+	local sb = def.selection_box
+	local param2_0_box
+	if sb.type == "fixed" then
+		if type(sb.fixed[1]) ~= "table" then
+			param2_0_box = {sb.fixed}
+		else
+			param2_0_box = sb.fixed
+		end
+	elseif sb.type == "leveled" then
+	elseif sb.type == "wallmounted" then
+	elseif sb.type == "connected" then
+	else -- regular
+		return {{-0.5, -0.5, -0.5, 0.5, 0.5, 0.5}}
+	end
+	if def.paramtype2 == "facedir" then
+	end
+	return param2_0_box
+end
+
+function core.any_pointed_thing_to_node_pos(placer, pointed_thing, boxes)
+	-- Avoid crash in some situations when player is inside a node, causing
+	-- 'above' to equal 'under'.
+	if vector.equals(pointed_thing.above, pointed_thing.under) then
+		return pointed_thing.under
+	end
+
+	local node_pos = pointed_thing.under
+	local pos_off = vector.subtract(pointed_thing.above, node_pos)
+	local look_dir, camera_pos
+	if core.is_player(placer) then
+		local eye_height = placer:get_properties().eye_height
+		local eye_offset_first = placer:get_eye_offset()
+		camera_pos = placer:get_pos()
+		camera_pos.y = camera_pos.y + eye_height + eye_offset_first.y / 10
+		look_dir = placer:get_look_dir()
+	else
+		camera_pos = placer.pos
+		look_dir = placer.dir
+	end
+
+	local offset_sign, nc
+	local oc = {}
+
+	for c, v in pairs(pos_off) do
+		if nc or v == 0 then
+			oc[#oc + 1] = c
+		else
+			offset_sign = v
+			nc = c
+		end
+	end
+
+	local xyz = vector.new(1, 2, 3)
+
+	boxes = table.copy(boxes or get_node_selection_boxes(node_pos))
+	table.sort(boxes, function(box1, box2)
+		local offset1 = math.abs(box1[xyz[nc]+offset_sign*1.5+1.5])
+		local offset2 = math.abs(box2[xyz[nc]+offset_sign*1.5+1.5])
+		return offset1 > offset2
+	end)
+
+	for i = 1, #boxes do
+		local offset = boxes[i][xyz[nc]+offset_sign*1.5+1.5]
+		local fp = vector.multiply(look_dir, (offset + node_pos[nc] - camera_pos[nc]) / look_dir[nc])
+		fp = vector.add(camera_pos, fp)
+		if fp[oc[1]] >= boxes[i][xyz[oc[1]]] + node_pos[oc[1]] and
+				fp[oc[1]] <= boxes[i][xyz[oc[1]]+3] + node_pos[oc[1]] and
+				fp[oc[2]] >= boxes[i][xyz[oc[2]]] + node_pos[oc[2]] and
+				fp[oc[2]] <= boxes[i][xyz[oc[2]]+3] + node_pos[oc[2]] then
+			return fp
+		end
+	end
+end
+
 function core.string_to_privs(str, delim)
 	assert(type(str) == "string")
 	delim = delim or ','
