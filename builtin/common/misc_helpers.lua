@@ -721,28 +721,55 @@ function core.pointed_thing_to_face_pos(placer, pointed_thing)
 end
 
 local function get_node_selection_boxes(pos) -- todo
-	local node = minetest.get_node(pos)
+	local node = core.get_node(pos)
 	local def = core.registered_nodes[node.name]
 	local sb = def.selection_box
-	local param2_0_box
+	local param2_0_boxes
 	if sb.type == "fixed" then
 		if type(sb.fixed[1]) ~= "table" then
-			param2_0_box = {sb.fixed}
+			param2_0_boxes = {sb.fixed}
 		else
-			param2_0_box = sb.fixed
+			param2_0_boxes = sb.fixed
 		end
+		param2_0_boxes = table.copy(param2_0_boxes)
 	elseif sb.type == "leveled" then
+		if type(sb.fixed[1]) ~= "table" then
+			param2_0_boxes = {sb.fixed}
+		else
+			param2_0_boxes = sb.fixed
+		end
+		param2_0_boxes = table.copy(param2_0_boxes)
+		local leveled
+		if def.paramtype2 == "leveled" then
+			leveled = node.param2
+		else
+			leveled = def.leveled
+		end
+		for i = 1, #param2_0_boxes do
+			param2_0_boxes[i][5] = leveled / 64
+		end
 	elseif sb.type == "wallmounted" then
+		local dir = minetest.wallmounted_to_dir(node.param2)
+		if dir.y == 1 then
+			param2_0_boxes = sb.wall_top and {table.copy(sb.wall_top)} or {}
+		elseif dir.y == -1 then
+			param2_0_boxes = sb.wall_bottom and {table.copy(sb.wall_bottom)} or {}
+        else
+			param2_0_boxes = sb.wall_side and {table.copy(sb.wall_side)} or {}
+        end
+		print(dump(param2_0_boxes))
 	elseif sb.type == "connected" then
 	else -- regular
 		return {{-0.5, -0.5, -0.5, 0.5, 0.5, 0.5}}
 	end
+	-- rotate
 	if def.paramtype2 == "facedir" then
+	elseif def.paramtype2 == "colorfacedir" then
 	end
-	return param2_0_box
+	return param2_0_boxes
 end
 
-function core.any_pointed_thing_to_node_pos(placer, pointed_thing, boxes)
+function core.any_pointed_thing_to_face_pos(placer, pointed_thing, boxes)
 	-- Avoid crash in some situations when player is inside a node, causing
 	-- 'above' to equal 'under'.
 	if vector.equals(pointed_thing.above, pointed_thing.under) then
@@ -777,7 +804,7 @@ function core.any_pointed_thing_to_node_pos(placer, pointed_thing, boxes)
 
 	local xyz = vector.new(1, 2, 3)
 
-	boxes = table.copy(boxes or get_node_selection_boxes(node_pos))
+	boxes = boxes and table.copy(boxes) or get_node_selection_boxes(node_pos)
 	table.sort(boxes, function(box1, box2)
 		local offset1 = math.abs(box1[xyz[nc]+offset_sign*1.5+1.5])
 		local offset2 = math.abs(box2[xyz[nc]+offset_sign*1.5+1.5])
