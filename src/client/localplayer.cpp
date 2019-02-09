@@ -262,9 +262,6 @@ void LocalPlayer::move(f32 dtime, Environment *env, f32 pos_max_d,
 				}
 			}
 		}
-
-		//~ nodemgr->get(map->getNodeNoEx());
-		//~ liquid_drift.X = 1;
 	}
 	// If not in liquid, the threshold of going in is at lower y
 	else
