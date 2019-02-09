@@ -174,7 +174,7 @@ void ClientEnvironment::step(float dtime)
 						!lplayer->swimming_pitch)
 					speed.Y -= lplayer->movement_liquid_sink * dtime_part * 2.0f;
 
-				// Liquid resistance
+				// Liquid resistance and drift
 				if (lplayer->in_liquid_stable || lplayer->in_liquid) {
 					// How much the node's viscosity blocks movement, ranges
 					// between 0 and 1. Should match the scale at which viscosity
@@ -190,6 +190,8 @@ void ClientEnvironment::step(float dtime)
 						(1 - viscosity_factor);
 					v3f d = d_wanted.normalize() * (dl * dtime_part * 100.0f);
 					speed += d;
+
+					speed += lplayer->liquid_drift;
 				}
 
 				lplayer->setSpeed(speed);

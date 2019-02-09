@@ -227,6 +227,44 @@ void LocalPlayer::move(f32 dtime, Environment *env, f32 pos_max_d,
 		} else {
 			in_liquid = false;
 		}
+
+		liquid_drift = v3f(0, 0, 0);
+		if (nodemgr->get(node).liquid_type == LIQUID_FLOWING) {
+			s8 own_liquid_level = (node.param2 & LIQUID_LEVEL_MASK);
+			content_t own_liquid_kind = node.getContent();
+
+			for (int x = -1; x <= 1; x++)
+			for (int z = -1; z <= 1; z++) {
+				if (!!x == !!z)
+					continue;
+				v3s16 p = v3s16(pp.X+x, pp.Y, pp.Z+z);
+				MapNode n = map->getNodeNoEx(p);
+				s8 liquid_level = -1;
+				content_t liquid_kind = CONTENT_IGNORE;
+
+				const ContentFeatures &cf = nodemgr->get(n);
+				LiquidType liquid_type = cf.liquid_type;
+				switch (liquid_type) {
+					case LIQUID_SOURCE:
+						liquid_level = LIQUID_LEVEL_SOURCE;
+						liquid_kind = nodemgr->getId(cf.liquid_alternative_flowing);
+						break;
+					case LIQUID_FLOWING:
+						liquid_level = (n.param2 & LIQUID_LEVEL_MASK);
+						liquid_kind = n.getContent();
+						break;
+					default:
+						break;
+				}
+				if (liquid_kind == own_liquid_kind && liquid_level > own_liquid_level) {
+					liquid_drift.X -= (float)x * liquid_level / LIQUID_LEVEL_SOURCE * 2.5;
+					liquid_drift.Z -= (float)z * liquid_level / LIQUID_LEVEL_SOURCE * 2.5;
+				}
+			}
+		}
+
+		//~ nodemgr->get(map->getNodeNoEx());
+		//~ liquid_drift.X = 1;
 	}
 	// If not in liquid, the threshold of going in is at lower y
 	else
