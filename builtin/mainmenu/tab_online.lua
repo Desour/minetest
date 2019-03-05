@@ -61,6 +61,9 @@ local function get_formspec(tabview, name, tabdata)
 		if gamedata.fav then
 			retval = retval .. "button[7.73,4.9;2.3,1;btn_delete_favorite;" ..
 				fgettext("Del. Favorite") .. "]"
+		else
+			retval = retval .. "button[7.73,4.9;2.3,1;btn_delete_favorite_online;" ..
+				fgettext("Del. Favorite_") .. "]"
 		end
 		if fav_selected.description then
 			retval = retval .. "textarea[8.1,2.3;4.23,2.9;;;" ..
@@ -200,7 +203,6 @@ local function main_button_handler(tabview, fields, name, tabdata)
 
 	if fields.key_up or fields.key_down then
 		local fav_idx = core.get_table_index("favourites")
-		local fav = serverlist[fav_idx]
 
 		if fav_idx then
 			if fields.key_up and fav_idx > 1 then
@@ -211,6 +213,8 @@ local function main_button_handler(tabview, fields, name, tabdata)
 		else
 			fav_idx = 1
 		end
+
+		local fav = serverlist[fav_idx]
 
 		if not menudata.favorites or not fav then
 			tabdata.fav_selected = 0
@@ -234,6 +238,19 @@ local function main_button_handler(tabview, fields, name, tabdata)
 		if not current_favourite then return end
 
 		core.delete_favorite(current_favourite)
+		asyncOnlineFavourites()
+		tabdata.fav_selected = nil
+
+		core.settings:set("address", "")
+		core.settings:set("remote_port", "30000")
+		return true
+	end
+
+	if fields.btn_delete_favorite_online then
+		local current_favourite = core.get_table_index("favourites")
+		if not current_favourite then return end
+
+		print(dump(core.delete_favorite(current_favourite, "online")))
 		asyncOnlineFavourites()
 		tabdata.fav_selected = nil
 
