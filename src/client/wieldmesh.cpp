@@ -432,7 +432,6 @@ void WieldMeshSceneNode::setItem(const ItemStack &item, Client *client, bool che
 			material.setFlag(video::EMF_BILINEAR_FILTER, m_bilinear_filter);
 			material.setFlag(video::EMF_TRILINEAR_FILTER, m_trilinear_filter);
 		}
-		return;
 	}
 	else if (!def.inventory_image.empty()) {
 		setExtruded(def.inventory_image, def.inventory_overlay, def.wield_scale,
@@ -440,11 +439,22 @@ void WieldMeshSceneNode::setItem(const ItemStack &item, Client *client, bool che
 		m_colors.emplace_back();
 		// overlay is white, if present
 		m_colors.emplace_back(true, video::SColor(0xFFFFFFFF));
+	}
+	else {
+		// no wield mesh found
+		changeToMesh(nullptr);
 		return;
 	}
 
-	// no wield mesh found
-	changeToMesh(nullptr);
+	// hier
+	v3f def_scale = v3f(0.5f, 1.0f, 3.0f);
+	v3f def_offset = v3f(0.0f, 0.2f, 0.01f);
+	v3f def_rot = v3f(0.0, 45.0, 170.0);
+
+	m_meshnode->setScale(def_scale * m_meshnode->getScale());
+	//~ m_meshnode->setRotation(def_rot + m_meshnode->getRotation()); // this causes different rotation on different times somehow...¿
+	m_meshnode->setRotation(def_rot);
+	m_meshnode->setPosition(def_offset + m_meshnode->getPosition());
 }
 
 void WieldMeshSceneNode::setColor(video::SColor c)
@@ -504,7 +514,7 @@ void getItemMesh(Client *client, const ItemStack &item, ItemMesh *result)
 	content_t id = ndef->getId(def.name);
 
 	FATAL_ERROR_IF(!g_extrusion_mesh_cache, "Extrusion mesh cache is not yet initialized");
-	
+
 	scene::SMesh *mesh = nullptr;
 
 	// Shading is on by default
@@ -580,7 +590,22 @@ void getItemMesh(Client *client, const ItemStack &item, ItemMesh *result)
 
 		rotateMeshXZby(mesh, -45);
 		rotateMeshYZby(mesh, -30);
+	} else {
+		result->mesh = mesh;
+		return;
 	}
+
+	//hier
+	v3f def_scale = v3f(0.5f, 1.0f, 3.0f);
+	v3f def_offset = v3f(0.0f, 0.2f, 0.01f);
+	core::vector3d<f64> def_rot = core::vector3d<f64>(0.0, 45.0, 170.0);
+
+	scaleMesh(mesh, def_scale);
+	rotateMeshXZby(mesh, def_rot.Y);
+	rotateMeshYZby(mesh, def_rot.X);
+	rotateMeshXYby(mesh, def_rot.Z);
+	translateMesh(mesh, def_offset);
+
 	result->mesh = mesh;
 }
 
