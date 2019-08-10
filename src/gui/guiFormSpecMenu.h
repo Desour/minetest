@@ -374,7 +374,7 @@ public:
 	void drawList(const ListDrawSpec &s, int layer,	bool &item_hovered);
 	void drawSelectedItem();
 	void drawMenu();
-	void updateSelectedItem();
+	void updateSelectedItem(bool select_empty_craft = false);
 	ItemStack verifySelectedItem();
 
 	void acceptInput(FormspecQuitMode quitmode);

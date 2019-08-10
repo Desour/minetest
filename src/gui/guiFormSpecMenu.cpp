@@ -3200,7 +3200,7 @@ void GUIFormSpecMenu::showTooltip(const std::wstring &text,
 	bringToFront(m_tooltip_element);
 }
 
-void GUIFormSpecMenu::updateSelectedItem()
+void GUIFormSpecMenu::updateSelectedItem(bool select_empty_craft)
 {
 	verifySelectedItem();
 
@@ -3220,7 +3220,7 @@ void GUIFormSpecMenu::updateSelectedItem()
 				continue;
 
 			const ItemStack &item = list->getItem(0);
-			if (item.empty())
+			if (item.empty() && !select_empty_craft)
 				continue;
 
 			// Grab selected item from the crafting result list
@@ -3230,6 +3230,8 @@ void GUIFormSpecMenu::updateSelectedItem()
 			m_selected_item->i = 0;
 			m_selected_amount = item.count;
 			m_selected_dragging = false;
+			if (item.empty() && select_empty_craft)
+				return;
 			break;
 		}
 	}
@@ -3883,6 +3885,11 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 			break;
 		}
 
+		if (m_selected_item)
+			errorstream << "m_selected_item listname: " << m_selected_item->listname << std::endl;
+		else
+			errorstream << "no m_selected_item" << std::endl;
+
 		// Possibly send inventory action to server
 		if (move_amount > 0) {
 			// Send IAction::Move
@@ -4013,6 +4020,49 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 				a->count = craft_amount;
 				a->craft_inv = s.inventoryloc;
 				m_invmgr->inventoryAction(a);
+
+				do { //hier
+					if (!event.MouseInput.Shift)
+						break;
+					errorstream << "bla0" << std::endl;
+					// shift pressed: move all crafted items from hand to player inv
+					updateSelectedItem(true);
+
+					if (m_selected_item)
+						errorstream << "m_selected_item after listname: " << m_selected_item->listname << std::endl;
+					else
+						errorstream << "still no m_selected_item" << std::endl;
+
+					InventoryLocation invloc_current_player;
+					//~ invloc_current_player.setCurrentPlayer();
+					for (const GUIFormSpecMenu::ListDrawSpec &s : m_inventorylists) {
+						if (s.listname != "main")
+							continue;
+						invloc_current_player = s.inventoryloc;
+					}
+					if (invloc_current_player.type == InventoryLocation::UNDEFINED)
+						break; // no main inventory list found
+
+					infostream << "Handing IAction::Move to manager" << std::endl;
+					IMoveAction *am = new IMoveAction();
+					am->count = 0; // everything
+					//~ errorstream << "bla1.1 " << (m_selected_item != nullptr) << std::endl;
+					if (m_selected_item) {
+						am->from_inv = m_selected_item->inventoryloc;
+						am->from_list = m_selected_item->listname;
+						am->from_i = m_selected_item->i;
+					} else {
+						am->from_inv = invloc_current_player;
+						am->from_list = "craftresult";
+						am->from_i = 0;
+					}
+					am->to_inv = invloc_current_player;
+					am->to_list = "main";
+					am->move_somewhere = true;
+					//~ errorstream << "bla3" << std::endl;
+					m_invmgr->inventoryAction(am);
+					errorstream << "bla4" << std::endl;
+				} while (false);
 			}
 		}
 
