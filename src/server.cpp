@@ -565,13 +565,13 @@ void Server::AsyncRunStep(bool initial_step)
 		if (!m_admin_chat->command_queue.empty()) {
 			MutexAutoLock lock(m_env_mutex);
 			while (!m_admin_chat->command_queue.empty()) {
-				ChatEvent *evt = m_admin_chat->command_queue.pop_frontNoEx();
-				handleChatInterfaceEvent(evt);
-				delete evt;
+				std::unique_ptr<ChatEvent> evt = m_admin_chat->command_queue
+						.pop_frontNoEx();
+				handleChatInterfaceEvent(evt.get());
 			}
 		}
-		m_admin_chat->outgoing_queue.push_back(
-			new ChatEventTimeInfo(m_env->getGameTime(), m_env->getTimeOfDay()));
+		m_admin_chat->outgoing_queue.push_back(std::unique_ptr<ChatEvent>(
+			new ChatEventTimeInfo(m_env->getGameTime(), m_env->getTimeOfDay())));
 	}
 
 	/*
@@ -1320,8 +1320,8 @@ void Server::handlePeerChanges()
 void Server::printToConsoleOnly(const std::string &text)
 {
 	if (m_admin_chat) {
-		m_admin_chat->outgoing_queue.push_back(
-			new ChatEventChat("", utf8_to_wide(text)));
+		m_admin_chat->outgoing_queue.push_back(std::unique_ptr<ChatEvent>(
+			new ChatEventChat("", utf8_to_wide(text))));
 	} else {
 		std::cout << text << std::endl;
 	}
@@ -2915,8 +2915,8 @@ void Server::DeleteClient(session_t peer_id, ClientDeletionReason reason)
 						<< (reason == CDR_TIMEOUT ? "times out." : "leaves game.")
 						<< " List of players: " << os.str() << std::endl;
 				if (m_admin_chat)
-					m_admin_chat->outgoing_queue.push_back(
-						new ChatEventNick(CET_NICK_REMOVE, name));
+					m_admin_chat->outgoing_queue.push_back(std::unique_ptr<ChatEvent>(
+						new ChatEventNick(CET_NICK_REMOVE, name)));
 			}
 		}
 		{
@@ -3077,7 +3077,8 @@ void Server::handleAdminChat(const ChatEventChat *evt)
 
 	// If asked to send answer to sender
 	if (!answer.empty()) {
-		m_admin_chat->outgoing_queue.push_back(new ChatEventChat("", answer));
+		m_admin_chat->outgoing_queue
+			.push_back(std::unique_ptr<ChatEvent>(new ChatEventChat("", answer)));
 	}
 }
 
@@ -3227,7 +3228,8 @@ void Server::notifyPlayer(const char *name, const std::wstring &msg)
 		return;
 
 	if (m_admin_nick == name && !m_admin_nick.empty()) {
-		m_admin_chat->outgoing_queue.push_back(new ChatEventChat("", msg));
+		m_admin_chat->outgoing_queue
+			.push_back(std::unique_ptr<ChatEvent>(new ChatEventChat("", msg)));
 	}
 
 	RemotePlayer *player = m_env->getPlayer(name);

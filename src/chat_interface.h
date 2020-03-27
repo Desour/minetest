@@ -22,6 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "util/container.h"
 #include <string>
 #include <queue>
+#include <memory>
 #include "irrlichttypes.h"
 
 enum ChatEventType {
@@ -74,6 +75,6 @@ struct ChatEventChat : public ChatEvent {
 };
 
 struct ChatInterface {
-	MutexedQueue<ChatEvent *> command_queue; // chat backend --> server
-	MutexedQueue<ChatEvent *> outgoing_queue; // server --> chat backend
+	MutexedQueue<std::unique_ptr<ChatEvent>> command_queue; // chat backend --> server
+	MutexedQueue<std::unique_ptr<ChatEvent>> outgoing_queue; // server --> chat backend
 };

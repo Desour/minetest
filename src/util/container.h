@@ -139,7 +139,7 @@ public:
 	void push_back(T t)
 	{
 		MutexAutoLock lock(m_mutex);
-		m_queue.push_back(t);
+		m_queue.push_back(std::move(t));
 		m_signal.post();
 	}
 
@@ -151,7 +151,7 @@ public:
 		if (m_signal.wait(wait_time_max_ms)) {
 			MutexAutoLock lock(m_mutex);
 
-			T t = m_queue.front();
+			T t = std::move(m_queue.front());
 			m_queue.pop_front();
 			return t;
 		}
@@ -164,7 +164,7 @@ public:
 		if (m_signal.wait(wait_time_max_ms)) {
 			MutexAutoLock lock(m_mutex);
 
-			T t = m_queue.front();
+			T t = std::move(m_queue.front());
 			m_queue.pop_front();
 			return t;
 		}
@@ -178,7 +178,7 @@ public:
 
 		MutexAutoLock lock(m_mutex);
 
-		T t = m_queue.front();
+		T t = std::move(m_queue.front());
 		m_queue.pop_front();
 		return t;
 	}
@@ -188,7 +188,7 @@ public:
 		if (m_signal.wait(wait_time_max_ms)) {
 			MutexAutoLock lock(m_mutex);
 
-			T t = m_queue.back();
+			T t = std::move(m_queue.back());
 			m_queue.pop_back();
 			return t;
 		}
@@ -204,7 +204,7 @@ public:
 		if (m_signal.wait(wait_time_max_ms)) {
 			MutexAutoLock lock(m_mutex);
 
-			T t = m_queue.back();
+			T t = std::move(m_queue.back());
 			m_queue.pop_back();
 			return t;
 		}
@@ -218,7 +218,7 @@ public:
 
 		MutexAutoLock lock(m_mutex);
 
-		T t = m_queue.back();
+		T t = std::move(m_queue.back());
 		m_queue.pop_back();
 		return t;
 	}
