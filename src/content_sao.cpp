@@ -428,6 +428,10 @@ void LuaEntitySAO::step(float dtime, bool send_recommended)
 	}
 	else
 	{
+		//~ v3f point_pos = v3f(0, 10, 0);
+		//~ v3f acc = point_pos - m_base_position;
+		//~ acc /= acc.getLengthSQ();
+		//~ acc += m_acceleration;
 		if(m_prop.physical){
 			aabb3f box = m_prop.collisionbox;
 			box.MinEdge *= BS;
@@ -436,6 +440,7 @@ void LuaEntitySAO::step(float dtime, bool send_recommended)
 			f32 pos_max_d = BS*0.25; // Distance per iteration
 			v3f p_pos = m_base_position;
 			v3f p_velocity = m_velocity;
+			//~ v3f p_acceleration = acc;
 			v3f p_acceleration = m_acceleration;
 			moveresult = collisionMoveSimple(m_env, m_env->getGameDef(),
 					pos_max_d, box, m_prop.stepheight, dtime,
@@ -450,6 +455,9 @@ void LuaEntitySAO::step(float dtime, bool send_recommended)
 			m_base_position += dtime * m_velocity + 0.5 * dtime
 					* dtime * m_acceleration;
 			m_velocity += dtime * m_acceleration;
+			//~ m_base_position += dtime * m_velocity + 0.5 * dtime
+					//~ * dtime * acc;
+			//~ m_velocity += dtime * acc;
 		}
 
 		if (m_prop.automatic_face_movement_dir &&

@@ -165,9 +165,17 @@ void ClientEnvironment::step(float dtime)
 			if (!free_move && !is_climbing) {
 				// Gravity
 				v3f speed = lplayer->getSpeed();
-				if (!lplayer->in_liquid)
-					speed.Y -= lplayer->movement_gravity *
-						lplayer->physics_override_gravity * dtime_part * 2.0f;
+				if (!lplayer->in_liquid) {
+					v3f point_pos = v3f(0, 100, 0);
+					v3f acc = point_pos - lplayer->getPosition();
+					//~ actionstream << "bla " << acc.getLengthSQ() << std::endl;
+					acc /= core::max_(acc.getLengthSQ(), 1.0f);
+					acc *= 10000.0f;
+					acc.Y -= lplayer->movement_gravity * lplayer->physics_override_gravity;
+					speed += acc * dtime_part * 2.0f;
+					//~ speed.Y -= lplayer->movement_gravity *
+						//~ lplayer->physics_override_gravity * dtime_part * 2.0f;
+				}
 
 				// Liquid floating / sinking
 				if (lplayer->in_liquid && !lplayer->swimming_vertical &&

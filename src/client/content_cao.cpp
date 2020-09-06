@@ -922,8 +922,14 @@ void GenericCAO::step(float dtime, ClientEnvironment *env)
 		rot_translator.translate(dtime);
 		v3f lastpos = pos_translator.val_current;
 
+		//~ v3f point_pos = v3f(0, 100, 0);
+		//~ v3f acc = point_pos - m_position;
+		//~ actionstream << "bla " << acc.getLengthSQ() << std::endl;
+		//~ acc /= acc.getLengthSQ();
+		//~ acc += m_acceleration;
 		if(m_prop.physical)
 		{
+			//~ actionstream << "pyhs" << std::endl;
 			aabb3f box = m_prop.collisionbox;
 			box.MinEdge *= BS;
 			box.MaxEdge *= BS;
@@ -931,6 +937,10 @@ void GenericCAO::step(float dtime, ClientEnvironment *env)
 			f32 pos_max_d = BS*0.125; // Distance per iteration
 			v3f p_pos = m_position;
 			v3f p_velocity = m_velocity;
+			//~ moveresult = collisionMoveSimple(env, env->getGameDef(),
+					//~ pos_max_d, box, m_prop.stepheight, dtime,
+					//~ &p_pos, &p_velocity, acc,
+					//~ this, m_prop.collideWithObjects);
 			moveresult = collisionMoveSimple(env,env->getGameDef(),
 					pos_max_d, box, m_prop.stepheight, dtime,
 					&p_pos, &p_velocity, m_acceleration,
@@ -944,8 +954,11 @@ void GenericCAO::step(float dtime, ClientEnvironment *env)
 			pos_translator.translate(dtime);
 			updateNodePos();
 		} else {
+			//~ actionstream << "notpyhs" << std::endl;
 			m_position += dtime * m_velocity + 0.5 * dtime * dtime * m_acceleration;
 			m_velocity += dtime * m_acceleration;
+			//~ m_position += dtime * m_velocity + 0.5 * dtime * dtime * acc;
+			//~ m_velocity += dtime * acc;
 			pos_translator.update(m_position, pos_translator.aim_is_end,
 					pos_translator.anim_time);
 			pos_translator.translate(dtime);
