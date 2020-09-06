@@ -73,7 +73,7 @@ minetest.set_local_player_physics({
 		-- Wrap
 		if current_roll < -math.pi - 0.1 then
 			current_roll = current_roll + math.pi * 2
-		elseif current_roll > -math.pi + 0.1 then
+		elseif current_roll > math.pi + 0.1 then
 			current_roll = current_roll - math.pi * 2
 		end
 
@@ -92,15 +92,15 @@ minetest.set_local_player_physics({
 		-- Wrap
 		if player_params.pitch < -math.pi - 0.1 then
 			player_params.pitch = player_params.pitch + math.pi * 2
-		elseif player_params.pitch > -math.pi + 0.1 then
-			player_params.pitch = player_params.pitch + math.pi * 2
+		elseif player_params.pitch > math.pi + 0.1 then
+			player_params.pitch = player_params.pitch - math.pi * 2
 		end
 
 		-- Wrap
 		if player_params.yaw < -math.pi - 0.1 then
 			player_params.yaw = player_params.yaw + math.pi * 2
-		elseif player_params.yaw > -math.pi + 0.1 then
-			player_params.yaw = player_params.yaw + math.pi * 2
+		elseif player_params.yaw > math.pi + 0.1 then
+			player_params.yaw = player_params.yaw - math.pi * 2
 		end
 
 		local v = vector.new(0, 0, 1)
