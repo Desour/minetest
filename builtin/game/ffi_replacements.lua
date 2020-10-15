@@ -66,24 +66,33 @@ local registry = insecure_env.debug.getregistry()
 
 local get_script_api_base
 local CUSTOM_RIDX_SCRIPTAPI = C.luaffi_CUSTOM_RIDX_SCRIPTAPI
+local sab_type = ffi.typeof("ScriptApiBase *")
 if not C.luaffi_INDIRECT_SCRIPTAPI_RIDX then
 	function get_script_api_base()
-		return ffi.cast("ScriptApiBase *", s_rawget(registry, CUSTOM_RIDX_SCRIPTAPI))
+		local ud = s_rawget(registry, CUSTOM_RIDX_SCRIPTAPI)
+		print(type(ud))
+		print(ffi.alignof(sab_type))
+		print(ffi.sizeof(sab_type))
+		print(ffi.istype(sab_type, ud))
+		return sab_type(ud)
+		--~ return sab_type(s_rawget(registry, CUSTOM_RIDX_SCRIPTAPI))
 	end
 else
 	function get_script_api_base()
-		return ffi.cast("ScriptApiBase *", C.dereference(s_rawget(registry, CUSTOM_RIDX_SCRIPTAPI)))
+		return sab_type(C.dereference(s_rawget(registry, CUSTOM_RIDX_SCRIPTAPI)))
 	end
 end
 
 local sab = get_script_api_base()
 C.luaffi_set_script_api_base(sab)
+print(type(sab))
 
 function core.get_content_id(name)
 	--~ return C.luaffi_get_content_id(get_script_api_base(), name)
 	--~ return C.luaffi_get_content_id(sab, name)
+	--~ local s = get_script_api_base()
+	--~ local result = C.luaffi_get_content_id(s, name)
 	local result = C.luaffi_get_content_id(sab, name)
-	return result
 	--~ local result = C.luaffi_get_content_id(name)
-	--~ return result
+	return result
 end
