@@ -49,8 +49,8 @@ void luaffi_print_to_errstream(const char *s);
 
 void luaffi_set_script_api_base(ScriptApiBase *sab);
 
-//int luaffi_get_content_id(ScriptApiBase *sab, const char *name_c);
-int luaffi_get_content_id(const char *name_c);
+int luaffi_get_content_id(ScriptApiBase *sab, const char *name_c);
+//int luaffi_get_content_id(const char *name_c);
 ]]
 
 local C = ffi.C
@@ -60,7 +60,7 @@ C.luaffi_test()
 C.luaffi_print_to_errstream("test2")
 
 
-local s_rawget = insecure_env.rawget -- _G.rawget could be overridden
+local s_rawget = insecure_env.rawget -- _G.rawget can be overridden
 
 local registry = insecure_env.debug.getregistry()
 
@@ -68,11 +68,11 @@ local get_script_api_base
 local CUSTOM_RIDX_SCRIPTAPI = C.luaffi_CUSTOM_RIDX_SCRIPTAPI
 if not C.luaffi_INDIRECT_SCRIPTAPI_RIDX then
 	function get_script_api_base()
-		return s_rawget(registry, CUSTOM_RIDX_SCRIPTAPI)
+		return ffi.cast("ScriptApiBase *", s_rawget(registry, CUSTOM_RIDX_SCRIPTAPI))
 	end
 else
 	function get_script_api_base()
-		return C.dereference(s_rawget(registry, CUSTOM_RIDX_SCRIPTAPI))
+		return ffi.cast("ScriptApiBase *", C.dereference(s_rawget(registry, CUSTOM_RIDX_SCRIPTAPI)))
 	end
 end
 
@@ -82,8 +82,8 @@ C.luaffi_set_script_api_base(sab)
 function core.get_content_id(name)
 	--~ return C.luaffi_get_content_id(get_script_api_base(), name)
 	--~ return C.luaffi_get_content_id(sab, name)
-	--~ local result = C.luaffi_get_content_id(sab, name)
-	--~ return result
-	local result = C.luaffi_get_content_id(name)
+	local result = C.luaffi_get_content_id(sab, name)
 	return result
+	--~ local result = C.luaffi_get_content_id(name)
+	--~ return result
 end

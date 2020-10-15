@@ -34,9 +34,9 @@ void luaffi_print_to_errstream(const char *s) {
 	errorstream << s << std::endl;
 }
 
-//~ int luaffi_get_content_id(ScriptApiBase *sab, const char *name_c) {
-int luaffi_get_content_id(const char *name_c) {
-	ScriptApiBase *sab = s_script_api_base;
+int luaffi_get_content_id(ScriptApiBase *sab, const char *name_c) {
+//~ int luaffi_get_content_id(const char *name_c) {
+	//~ ScriptApiBase *sab = s_script_api_base;
 	std::string name(name_c);
 
 	const IItemDefManager *idef = sab->getGameDef()->getItemDefManager();
