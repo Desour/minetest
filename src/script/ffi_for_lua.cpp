@@ -20,6 +20,11 @@ extern "C" {
 extern const int luaffi_CUSTOM_RIDX_SCRIPTAPI = CUSTOM_RIDX_SCRIPTAPI;
 extern const bool luaffi_INDIRECT_SCRIPTAPI_RIDX = INDIRECT_SCRIPTAPI_RIDX;
 
+static ScriptApiBase *s_script_api_base = NULL;
+void luaffi_set_script_api_base(ScriptApiBase *sab) {
+	s_script_api_base = sab;
+}
+
 void luaffi_test() {
 	//~ printf("test() called.\n");
 	errorstream << "test() called." << std::endl;
@@ -29,7 +34,9 @@ void luaffi_print_to_errstream(const char *s) {
 	errorstream << s << std::endl;
 }
 
-int luaffi_get_content_id(ScriptApiBase *sab, const char *name_c) {
+//~ int luaffi_get_content_id(ScriptApiBase *sab, const char *name_c) {
+int luaffi_get_content_id(const char *name_c) {
+	ScriptApiBase *sab = s_script_api_base;
 	std::string name(name_c);
 
 	const IItemDefManager *idef = sab->getGameDef()->getItemDefManager();
