@@ -1,4 +1,6 @@
 
+local insecure_env = ...
+
 local scriptpath = core.get_builtin_path()
 local commonpath = scriptpath .. "common" .. DIR_DELIM
 local gamepath   = scriptpath .. "game".. DIR_DELIM
@@ -17,6 +19,7 @@ if core.settings:get_bool("profiler.load") then
 	profiler = dofile(scriptpath .. "profiler" .. DIR_DELIM .. "init.lua")
 end
 
+loadfile(gamepath .. "ffi_replacements.lua")(insecure_env)
 dofile(commonpath .. "after.lua")
 dofile(gamepath .. "item_entity.lua")
 dofile(gamepath .. "deprecated.lua")

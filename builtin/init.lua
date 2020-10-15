@@ -23,6 +23,8 @@ end
 math.randomseed(os.time())
 minetest = core
 
+local insecure_env = INIT == "game" and core.request_insecure_environment()
+
 -- Load other files
 local scriptdir = core.get_builtin_path()
 local gamepath = scriptdir .. "game" .. DIR_DELIM
@@ -35,7 +37,7 @@ dofile(commonpath .. "serialize.lua")
 dofile(commonpath .. "misc_helpers.lua")
 
 if INIT == "game" then
-	dofile(gamepath .. "init.lua")
+	loadfile(gamepath .. "init.lua")(insecure_env)
 	assert(not core.get_http_api)
 elseif INIT == "mainmenu" then
 	local mm_script = core.settings:get("main_menu_script")
