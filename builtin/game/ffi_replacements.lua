@@ -115,8 +115,12 @@ end
 
 local luaffi_Node = ffi.typeof("luaffi_Node")
 
+-- avoid overhead of always creating new temporary luaffi_Nodes and garbage
+-- collection by always using this here:
+local transaction_luaffi_node1 = luaffi_Node()
+
 function core.get_node(pos)
-	local ret1 = luaffi_Node()
+	local ret1 = transaction_luaffi_node1
 	local rets = C.luaffi_get_node_raw(ret1, sab, pos.x, pos.y, pos.z)
 	return rets == 1 and
 			{name = ffi.string(ret1.name, ret1.name_l), param1 = ret1.param1, param2 = ret1.param2}
@@ -124,7 +128,7 @@ function core.get_node(pos)
 end
 
 function core.get_node_or_nil(pos)
-	local ret1 = luaffi_Node()
+	local ret1 = transaction_luaffi_node1
 	local rets = C.luaffi_get_node_or_nil_raw(ret1, sab, pos.x, pos.y, pos.z)
 	return rets == 1 and
 			{name = ffi.string(ret1.name, ret1.name_l), param1 = ret1.param1, param2 = ret1.param2}
