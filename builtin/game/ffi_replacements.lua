@@ -4,6 +4,10 @@
 
 local insecure_env = ...
 
+if not minetest.settings:get_bool("use_luajit_ffi") then
+	return
+end
+
 if not rawget(_G, "jit") then
 	-- luajit is not enabled
 	return

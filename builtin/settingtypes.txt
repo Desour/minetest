@@ -1344,6 +1344,12 @@ secure.http_mods (HTTP mods) string
 
 [*Advanced]
 
+#    Replace very common Lua-API functions with an implementation using LuaJIT's
+#    FFI library. This can result in better performance.
+#    Does not work without LuaJIT.
+#    Warning: *experimental*
+use_luajit_ffi (Use LuaJIT FFI) bool false
+
 [**Profiling]
 #    Load the game profiler to collect game profiling data.
 #    Provides a /profiler command to access the compiled profile.
