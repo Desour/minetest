@@ -61,8 +61,8 @@ typedef struct {
 	u8 param2;
 } luaffi_Node;
 
-//luaffi_OptionNode luaffi_get_node_raw(ScriptApiBase *sab, s16 x, s16 y, s16 z);
 int luaffi_get_node_raw(luaffi_Node &ret1, ScriptApiBase *sab, s16 x, s16 y, s16 z);
+int luaffi_get_node_or_nil_raw(luaffi_Node &ret1, ScriptApiBase *sab, s16 x, s16 y, s16 z);
 ]]
 
 local C = ffi.C
@@ -119,16 +119,11 @@ function core.get_node(pos)
 		or nil
 end
 
---~ function core.get_node(pos)
-	--~ local val = C.luaffi_get_node_raw(sab, pos.x, pos.y, pos.z)
-	--~ return val.is_some and
-			--~ {name = ffi.string(val.name, val.name_l), param1 = val.param1, param2 = val.param2}
-		--~ or nil
---~ end
+function core.get_node_or_nil(pos)
+	local ret1 = luaffi_Node()
+	local rets = C.luaffi_get_node_or_nil_raw(ret1, sab, pos.x, pos.y, pos.z)
+	return rets == 1 and
+			{name = ffi.string(ret1.name, ret1.name_l), param1 = ret1.param1, param2 = ret1.param2}
+		or nil
+end
 
---~ function core.get_node_or_nil(pos)
-	--~ local val = C.luaffi_get_node_or_nil_raw(sab, pos.x, pos.y, pos.z)
-	--~ return val.is_some and
-			--~ {name = ffi.string(val.name, val.name_l), param1 = val.param1, param2 = val.param2}
-		--~ or nil
---~ end

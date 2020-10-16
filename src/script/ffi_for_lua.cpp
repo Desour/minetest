@@ -22,7 +22,6 @@
 	ServerEnvironment *env = (ServerEnvironment *)sab->getEnv(); \
 	if (env == NULL)                                             \
 		return 0
-		//~ return {false}
 
 extern "C" {
 
@@ -72,24 +71,6 @@ int luaffi_get_content_id(ScriptApiBase *sab, const char *name_c)
 	return content_id;
 }
 
-//~ typedef enum {
-	//~ luaffi_ReturnStatus_fail,
-	//~ luaffi_ReturnStatus_none,
-	//~ luaffi_ReturnStatus_some,
-//~ } luaffi_ReturnStatus;
-//~ typedef enum {
-	//~ luaffi_None,
-	//~ luaffi_Some,
-//~ } luaffi_Option;
-
-//~ typedef struct {
-	//~ bool is_some;
-
-	//~ const char *name;
-	//~ u64 name_l;
-	//~ u8 param1;
-	//~ u8 param2;
-//~ } luaffi_OptionNode;
 
 typedef struct {
 	const char *name;
@@ -115,30 +96,24 @@ int luaffi_get_node_raw(luaffi_Node &ret1, ScriptApiBase *sab, s16 x, s16 y, s16
 	return 1;
 }
 
-//~ luaffi_OptionNode luaffi_get_node_raw(ScriptApiBase *sab, s16 x, s16 y, s16 z)
-//~ {
-	//~ GET_ENV_PTR;
+int luaffi_get_node_or_nil_raw(luaffi_Node &ret1, ScriptApiBase *sab, s16 x, s16 y, s16 z)
+{
+	GET_ENV_PTR;
 
-	//~ MapNode n = env->getMap().getNode(v3s16(x, y, z));
+	bool pos_ok;
+	MapNode n = env->getMap().getNode(v3s16(x, y, z), &pos_ok);
 
-	//~ // Return node
-	//~ const std::string &name = env->getGameDef()->ndef()->get(n).name;
-	//~ return {true, name.c_str(), name.length(), n.getParam1(), n.getParam2()};
-//~ }
+	if (!pos_ok)
+		return 0;
 
-//~ luaffi_OptionNode luaffi_get_node_or_nil_raw(ScriptApiBase *sab, s16 x, s16 y, s16 z)
-//~ {
-	//~ GET_ENV_PTR;
+	// Return node
+	const std::string &name = env->getGameDef()->ndef()->get(n).name;
+	ret1.name = name.c_str();
+	ret1.name_l = name.length();
+	ret1.param1 = n.getParam1();
+	ret1.param2 = n.getParam2();
 
-	//~ bool pos_ok;
-	//~ MapNode n = env->getMap().getNode(v3s16(x, y, z), &pos_ok);
-
-	//~ if (!pos_ok)
-		//~ return {false};
-
-	//~ // Return node
-	//~ const std::string &name = env->getGameDef()->ndef()->get(n).name;
-	//~ return {true, name.c_str(), name.length(), n.getParam1(), n.getParam2()};
-//~ }
+	return 1;
+}
 
 } // extern "C"
