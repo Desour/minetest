@@ -30,10 +30,6 @@ local ffi = insecure_env.require("ffi")
 --~ print(dump(ffi))
 
 ffi.cdef[[
-void *dereference(void **ptr) {
-	return *ptr;
-}
-
 typedef uint8_t  u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
@@ -95,7 +91,7 @@ if not C.luaffi_INDIRECT_SCRIPTAPI_RIDX then
 	end
 else
 	function get_script_api_base()
-		return sab_type(C.dereference(s_rawget(registry, CUSTOM_RIDX_SCRIPTAPI)))
+		return sab_type(s_rawget(registry, CUSTOM_RIDX_SCRIPTAPI)[0])
 	end
 end
 
