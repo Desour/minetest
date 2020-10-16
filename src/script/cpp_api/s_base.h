@@ -133,7 +133,9 @@ protected:
 
 	void setGameDef(IGameDef* gamedef) { m_gamedef = gamedef; }
 
+public:
 	Environment* getEnv() { return m_environment; }
+protected:
 	void setEnv(Environment* env) { m_environment = env; }
 
 #ifndef SERVER
