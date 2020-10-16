@@ -72,6 +72,15 @@ int luaffi_get_content_id(ScriptApiBase *sab, const char *name_c)
 }
 
 
+void luaffi_set_last_run_mod(ScriptApiBase *sab, const char *mod)
+{
+#ifdef SCRIPTAPI_DEBUG
+	sab->setOriginDirect(mod);
+#endif
+}
+
+
+
 typedef struct {
 	const char *name;
 	u64 name_l;

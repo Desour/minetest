@@ -54,6 +54,9 @@ int luaffi_get_content_id(ScriptApiBase *sab, const char *name_c);
 //int luaffi_get_content_id(const char *name_c);
 
 
+void luaffi_set_last_run_mod(ScriptApiBase *sab, const char *mod);
+
+
 typedef struct {
 	const char *name;
 	u64 name_l;
@@ -131,3 +134,6 @@ function core.get_node_or_nil(pos)
 		or nil
 end
 
+function core.set_last_run_mod(name)
+	C.luaffi_set_last_run_mod(sab, name)
+end
