@@ -382,7 +382,7 @@ void ScriptApiBase::removeObjectReference(ServerActiveObject *cobj)
 	//infostream<<"scriptapi_rm_object_reference: id="<<cobj->getId()<<std::endl;
 
 	// Invalidate the objref
-	cobj->setKnower(nullptr);
+	cobj->setKnowingObjectRef(nullptr);
 
 	// Get core.object_refs table
 	lua_getglobal(L, "core");

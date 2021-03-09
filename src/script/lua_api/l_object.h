@@ -44,6 +44,8 @@ public:
 	// Not callable from Lua; all references are created on the C side.
 	static void create(lua_State *L, ServerActiveObject *object);
 
+	void invalidate();
+
 	static void Register(lua_State *L);
 
 	static ObjectRef *checkobject(lua_State *L, int narg);
