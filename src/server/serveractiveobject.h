@@ -47,7 +47,6 @@ struct ItemStack;
 struct ToolCapabilities;
 struct ObjectProperties;
 struct PlayerHPChangeReason;
-class ObjectRef;
 
 class ServerActiveObject : public ActiveObject
 {
@@ -77,8 +76,8 @@ public:
 	void markForRemoval();
 	void markForDeactivation();
 
-	// Sets m_knowing_objref
-	void setKnowingObjectRef(ObjectRef *);
+	// Sets m_knower
+	void setKnower(ServerActiveObject **);
 
 	// Create a certain type of ServerActiveObject
 	static ServerActiveObject* create(ActiveObjectType type,
@@ -283,5 +282,5 @@ private:
 		There is always at maximum one ObjectRef for a ServerActiveObject.
 		It is invalidated on deltetion.
 	*/
-	ObjectRef *m_knowing_objref = nullptr;
+	ServerActiveObject **m_knower = nullptr;
 };
