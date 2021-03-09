@@ -2272,7 +2272,15 @@ int ObjectRef::l_set_minimap_modes(lua_State *L)
 
 ObjectRef::ObjectRef(ServerActiveObject *object):
 	m_object(object)
-{}
+{
+	m_object->setKnowingObjectRef(this);
+}
+
+ObjectRef::~ObjectRef()
+{
+	if (m_object)
+		m_object->setKnowingObjectRef(nullptr);
+}
 
 // Creates an ObjectRef and leaves it on top of stack
 // Not callable from Lua; all references are created on the C side.
@@ -2284,10 +2292,9 @@ void ObjectRef::create(lua_State *L, ServerActiveObject *object)
 	lua_setmetatable(L, -2);
 }
 
-void ObjectRef::set_null(lua_State *L)
+void ObjectRef::invalidate()
 {
-	ObjectRef *obj = checkobject(L, -1);
-	obj->m_object = nullptr;
+	m_object = nullptr;
 }
 
 void ObjectRef::Register(lua_State *L)

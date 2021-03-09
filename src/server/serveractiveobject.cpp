@@ -22,12 +22,25 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "inventory.h"
 #include "constants.h" // BS
 #include "log.h"
+#include "script/lua_api/l_object.h"
 
 ServerActiveObject::ServerActiveObject(ServerEnvironment *env, v3f pos):
 	ActiveObject(0),
 	m_env(env),
 	m_base_position(pos)
 {
+}
+
+ServerActiveObject::~ServerActiveObject()
+{
+	setKnowingObjectRef(nullptr);
+}
+
+void ServerActiveObject::setKnowingObjectRef(ObjectRef *ptr)
+{
+	if (m_knowing_objref)
+		m_knowing_objref->invalidate();
+	m_knowing_objref = ptr;
 }
 
 float ServerActiveObject::getMinimumSavedMovement()

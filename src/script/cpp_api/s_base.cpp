@@ -346,12 +346,13 @@ void ScriptApiBase::setOriginFromTableRaw(int index, const char *fxn)
  * and stored in core.object_refs[id].
  * Methods that require an ObjectRef to a certain object retrieve it from that
  * table instead of creating their own.(*)
- * When an active object is removed, the existing ObjectRef is invalidated
- * using ::set_null() and removed from the core.object_refs table.
+ * There is always at most one ObjectRef for a ServerActiveObject. Each new ObjectRef
+ * registers itself to its SAO which then invalidates the old one if existent.
+ * When an active object is removed, the existing ObjectRef is also invalidated
+ * and removed from the core.object_refs table.
  * (*) An exception to this are NULL ObjectRefs and anonymous ObjectRefs
  *     for objects without ID.
- *     It's unclear what the latter are needed for and their use is problematic
- *     since we lose control over the ref and the contained pointer.
+ *     It's unclear what the latter are needed for.
  */
 
 void ScriptApiBase::addObjectReference(ServerActiveObject *cobj)
@@ -380,18 +381,14 @@ void ScriptApiBase::removeObjectReference(ServerActiveObject *cobj)
 	SCRIPTAPI_PRECHECKHEADER
 	//infostream<<"scriptapi_rm_object_reference: id="<<cobj->getId()<<std::endl;
 
+	// Invalidate the objref
+	cobj->setKnowingObjectRef(nullptr);
+
 	// Get core.object_refs table
 	lua_getglobal(L, "core");
 	lua_getfield(L, -1, "object_refs");
 	luaL_checktype(L, -1, LUA_TTABLE);
 	int objectstable = lua_gettop(L);
-
-	// Get object_refs[id]
-	lua_pushnumber(L, cobj->getId()); // Push id
-	lua_gettable(L, objectstable);
-	// Set object reference to NULL
-	ObjectRef::set_null(L);
-	lua_pop(L, 1); // pop object
 
 	// Set object_refs[id] = nil
 	lua_pushnumber(L, cobj->getId()); // Push id
