@@ -40,16 +40,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 
-ObjectRef* ObjectRef::checkobject(lua_State *L, int narg)
+ObjectRef *ObjectRef::checkobject(lua_State *L, int narg)
 {
 	luaL_checktype(L, narg, LUA_TUSERDATA);
 	void *ud = luaL_checkudata(L, narg, className);
 	if (ud == nullptr)
 		luaL_typerror(L, narg, className);
-	return *(ObjectRef**)ud;  // unbox pointer
+	return (ObjectRef *)ud;
 }
 
-ServerActiveObject* ObjectRef::getobject(ObjectRef *ref)
+ServerActiveObject *ObjectRef::getobject(ObjectRef *ref)
 {
 	ServerActiveObject *sao = ref->m_object;
 	if (sao && sao->isGone())
@@ -89,8 +89,8 @@ RemotePlayer *ObjectRef::getplayer(ObjectRef *ref)
 
 // garbage collector
 int ObjectRef::gc_object(lua_State *L) {
-	ObjectRef *obj = *(ObjectRef **)(lua_touserdata(L, 1));
-	delete obj;
+	ObjectRef *obj = (ObjectRef *)(lua_touserdata(L, 1));
+	obj->~ObjectRef();
 	return 0;
 }
 
@@ -2286,8 +2286,8 @@ ObjectRef::~ObjectRef()
 // Not callable from Lua; all references are created on the C side.
 void ObjectRef::create(lua_State *L, ServerActiveObject *object)
 {
-	ObjectRef *obj = new ObjectRef(object);
-	*(void **)(lua_newuserdata(L, sizeof(void *))) = obj;
+	void *buf = lua_newuserdata(L, sizeof(ObjectRef));
+	new(buf) ObjectRef(object);
 	luaL_getmetatable(L, className);
 	lua_setmetatable(L, -2);
 }
