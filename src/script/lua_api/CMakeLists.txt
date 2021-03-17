@@ -5,6 +5,7 @@ set(common_SCRIPT_LUA_API_SRCS
 	${CMAKE_CURRENT_SOURCE_DIR}/l_craft.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/l_env.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/l_http.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/l_insec_private.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/l_inventory.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/l_item.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/l_itemstackmeta.cpp

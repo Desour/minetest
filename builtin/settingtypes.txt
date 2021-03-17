@@ -1338,6 +1338,12 @@ secure.trusted_mods (Trusted mods) string
 #    allow them to upload and download data to/from the internet.
 secure.http_mods (HTTP mods) string
 
+#    Replace very common Lua-API functions with an implementation using LuaJIT's
+#    FFI library. This can result in much better performance.
+#    Does not work without LuaJIT.
+#    Warning: *experimental*
+secure.use_luajit_ffi (Use LuaJIT FFI) bool false
+
 [*Advanced]
 
 [**Profiling]

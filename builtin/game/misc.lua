@@ -165,7 +165,7 @@ end
 
 
 function core.record_protection_violation(pos, name)
-	for _, func in pairs(core.registered_on_protection_violation) do
+	for _, func in ipairs(core.registered_on_protection_violation) do
 		func(pos, name)
 	end
 end
@@ -191,7 +191,7 @@ function core.is_area_protected(minp, maxp, player_name, interval)
 	interval = interval or 4
 	local d = {}
 
-	for _, c in pairs({"x", "y", "z"}) do
+	for _, c in ipairs({"x", "y", "z"}) do
 		if minp[c] > maxp[c] then
 			-- Repair positions: 'minp' > 'maxp'
 			local tmp = maxp[c]

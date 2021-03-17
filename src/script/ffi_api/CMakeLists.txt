@@ -1,0 +1,3 @@
+set(common_SCRIPT_FFI_API_SRCS
+	${CMAKE_CURRENT_SOURCE_DIR}/ffi_bla.cpp
+	PARENT_SCOPE)

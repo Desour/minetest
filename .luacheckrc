@@ -5,6 +5,7 @@ ignore = {
 	"131", -- Unused global variable
 	"431", -- Shadowing an upvalue
 	"432", -- Shadowing an upvalue argument
+	"542", -- Empty if branches
 }
 
 read_globals = {
@@ -54,6 +55,12 @@ files["builtin/game/voxelarea.lua"] = {
 
 files["builtin/game/init.lua"] = {
 	globals = { "profiler" },
+}
+
+files["builtin/game/ffi_replacements.lua"] = {
+	std = {
+		read_globals = {"_G"},
+	},
 }
 
 files["builtin/common/filterlist.lua"] = {

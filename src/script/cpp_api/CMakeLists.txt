@@ -1,6 +1,7 @@
 set(common_SCRIPT_CPP_API_SRCS
 	${CMAKE_CURRENT_SOURCE_DIR}/s_async.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/s_base.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/s_core.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/s_entity.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/s_env.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/s_inventory.cpp

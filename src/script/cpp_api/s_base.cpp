@@ -72,7 +72,7 @@ public:
 */
 
 ScriptApiBase::ScriptApiBase(ScriptingType type):
-		m_type(type)
+		ScriptApiCore(type)
 {
 #ifdef SCRIPTAPI_LOCK_DEBUG
 	m_lock_recursion_count = 0;
@@ -83,7 +83,7 @@ ScriptApiBase::ScriptApiBase(ScriptingType type):
 
 	lua_atpanic(m_luastack, &luaPanic);
 
-	if (m_type == ScriptingType::Client)
+	if (getType() == ScriptingType::Client)
 		clientOpenLibs(m_luastack);
 	else
 		luaL_openlibs(m_luastack);
@@ -114,7 +114,12 @@ ScriptApiBase::ScriptApiBase(ScriptingType type):
 	lua_newtable(m_luastack);
 	lua_setglobal(m_luastack, "core");
 
-	if (m_type == ScriptingType::Client)
+	if (getType() == ScriptingType::Server) {
+		lua_newtable(m_luastack);
+		lua_setglobal(m_luastack, "insec_private");
+	}
+
+	if (getType() == ScriptingType::Client)
 		lua_pushstring(m_luastack, "/");
 	else
 		lua_pushstring(m_luastack, DIR_DELIM);
@@ -202,7 +207,7 @@ void ScriptApiBase::loadModFromMemory(const std::string &mod_name)
 {
 	ModNameStorer mod_name_storer(getStack(), mod_name);
 
-	sanity_check(m_type == ScriptingType::Client);
+	sanity_check(getType() == ScriptingType::Client);
 
 	const std::string init_filename = mod_name + ":init.lua";
 	const std::string chunk_name = "@" + init_filename;
@@ -246,7 +251,7 @@ void ScriptApiBase::runCallbacksRaw(int nargs,
 #ifndef SERVER
 	// Hard fail for bad guarded callbacks
 	// Only run callbacks when the scripting enviroment is loaded
-	FATAL_ERROR_IF(m_type == ScriptingType::Client &&
+	FATAL_ERROR_IF(getType() == ScriptingType::Client &&
 			!getClient()->modsLoaded(), fxn);
 #endif
 
@@ -322,11 +327,6 @@ void ScriptApiBase::stackDump(std::ostream &o)
 		o << " ";
 	}
 	o << std::endl;
-}
-
-void ScriptApiBase::setOriginDirect(const char *origin)
-{
-	m_last_run_mod = origin ? origin : "??";
 }
 
 void ScriptApiBase::setOriginFromTableRaw(int index, const char *fxn)
@@ -441,14 +441,3 @@ void ScriptApiBase::pushPlayerHPChangeReason(lua_State *L, const PlayerHPChangeR
 		lua_setfield(L, -2, "node");
 	}
 }
-
-Server* ScriptApiBase::getServer()
-{
-	return dynamic_cast<Server *>(m_gamedef);
-}
-#ifndef SERVER
-Client* ScriptApiBase::getClient()
-{
-	return dynamic_cast<Client *>(m_gamedef);
-}
-#endif

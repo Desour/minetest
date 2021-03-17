@@ -23,7 +23,10 @@ end
 math.randomseed(os.time())
 minetest = core
 
+local _S = INIT == "game" and core.request_insecure_environment()
+
 -- Load other files
+-- Note: we know that core.get_builtin_path was not hooked because this is builtin
 local scriptdir = core.get_builtin_path()
 local gamepath = scriptdir .. "game" .. DIR_DELIM
 local clientpath = scriptdir .. "client" .. DIR_DELIM
@@ -35,7 +38,7 @@ dofile(commonpath .. "serialize.lua")
 dofile(commonpath .. "misc_helpers.lua")
 
 if INIT == "game" then
-	dofile(gamepath .. "init.lua")
+	_S.loadfile(gamepath .. "init.lua")(_S)
 	assert(not core.get_http_api)
 elseif INIT == "mainmenu" then
 	local mm_script = core.settings:get("main_menu_script")

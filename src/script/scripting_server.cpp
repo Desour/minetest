@@ -27,6 +27,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "lua_api/l_base.h"
 #include "lua_api/l_craft.h"
 #include "lua_api/l_env.h"
+#include "lua_api/l_insec_private.h"
 #include "lua_api/l_inventory.h"
 #include "lua_api/l_item.h"
 #include "lua_api/l_itemstackmeta.h"
@@ -62,11 +63,20 @@ ServerScripting::ServerScripting(Server* server):
 
 	if (g_settings->getBool("secure.enable_security")) {
 		initializeSecurity();
+
+		lua_rawgeti(L, LUA_REGISTRYINDEX, CUSTOM_RIDX_GLOBALS_BACKUP);
+		int insec_env = lua_gettop(L);
+		lua_pushstring(L, "insec_private");
+		lua_rawget(L, insec_env);
+		lua_remove(L, insec_env);
 	} else {
 		warningstream << "\\!/ Mod security should never be disabled, as it allows any mod to "
 				<< "access the host machine."
 				<< "Mods should use minetest.request_insecure_environment() instead \\!/" << std::endl;
+
+		lua_getglobal(L, "insec_private");
 	}
+	int insec_top = lua_gettop(L);
 
 	lua_getglobal(L, "core");
 	int top = lua_gettop(L);
@@ -78,8 +88,8 @@ ServerScripting::ServerScripting(Server* server):
 	lua_setfield(L, -2, "luaentities");
 
 	// Initialize our lua_api modules
-	InitializeModApi(L, top);
-	lua_pop(L, 1);
+	InitializeModApi(L, top, insec_top);
+	lua_pop(L, 2);
 
 	// Push builtin initialization type
 	lua_pushstring(L, "game");
@@ -88,7 +98,7 @@ ServerScripting::ServerScripting(Server* server):
 	infostream << "SCRIPTAPI: Initialized game modules" << std::endl;
 }
 
-void ServerScripting::InitializeModApi(lua_State *L, int top)
+void ServerScripting::InitializeModApi(lua_State *L, int top, int insec_top)
 {
 	// Register reference classes (userdata)
 	InvRef::Register(L);
@@ -124,4 +134,7 @@ void ServerScripting::InitializeModApi(lua_State *L, int top)
 	ModApiHttp::Initialize(L, top);
 	ModApiStorage::Initialize(L, top);
 	ModApiChannels::Initialize(L, top);
+
+	// Initialize private-to-insecure module
+	ModApiInsecPrivate::Initialize(L, insec_top);
 }

@@ -5116,7 +5116,7 @@ Environment access
       Difference between `"A*"` and `"A*_noprefetch"` is that
       `"A*"` will pre-calculate the cost-data, the other will calculate it
       on-the-fly
-* `minetest.spawn_tree (pos, {treedef})`
+* `minetest.spawn_tree(pos, {treedef})`
     * spawns L-system tree at given `pos` with definition in `treedef` table
 * `minetest.transforming_liquid_add(pos)`
     * add node to liquid update queue

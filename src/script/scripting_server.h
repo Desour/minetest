@@ -49,5 +49,5 @@ public:
 	// use ScriptApiBase::loadMod() to load mods
 
 private:
-	void InitializeModApi(lua_State *L, int top);
+	void InitializeModApi(lua_State *L, int top, int insec_top);
 };

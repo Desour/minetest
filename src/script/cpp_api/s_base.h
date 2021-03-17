@@ -25,6 +25,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <mutex>
 #include <unordered_map>
 #include "common/helper.h"
+#include "cpp_api/s_core.h"
 #include "util/basic_macros.h"
 
 extern "C" {
@@ -58,31 +59,13 @@ extern "C" {
 #define setOriginFromTable(index) \
 	setOriginFromTableRaw(index, __FUNCTION__)
 
-enum class ScriptingType: u8 {
-	Async,
-	Client,
-	MainMenu,
-	Server
-};
-
-class Server;
-#ifndef SERVER
-class Client;
-#endif
-class IGameDef;
-class Environment;
-class GUIEngine;
 class ServerActiveObject;
 struct PlayerHPChangeReason;
 
-class ScriptApiBase : protected LuaHelper {
+class ScriptApiBase : public ScriptApiCore, protected LuaHelper {
 public:
 	ScriptApiBase(ScriptingType type);
-	// fake constructor to allow script API classes (e.g ScriptApiEnv) to virtually inherit from this one.
-	ScriptApiBase()
-	{
-		FATAL_ERROR("ScriptApiBase created without ScriptingType!");
-	}
+	ScriptApiBase() : ScriptApiCore() {};
 	virtual ~ScriptApiBase();
 	DISABLE_CLASS_COPY(ScriptApiBase);
 
@@ -101,15 +84,6 @@ public:
 	void addObjectReference(ServerActiveObject *cobj);
 	void removeObjectReference(ServerActiveObject *cobj);
 
-	IGameDef *getGameDef() { return m_gamedef; }
-	Server* getServer();
-	ScriptingType getType() { return m_type; }
-#ifndef SERVER
-	Client* getClient();
-#endif
-
-	std::string getOrigin() { return m_last_run_mod; }
-	void setOriginDirect(const char *origin);
 	void setOriginFromTableRaw(int index, const char *fxn);
 
 	void clientOpenLibs(lua_State *L);
@@ -131,22 +105,11 @@ protected:
 	void scriptError(int result, const char *fxn);
 	void stackDump(std::ostream &o);
 
-	void setGameDef(IGameDef* gamedef) { m_gamedef = gamedef; }
-
-	Environment* getEnv() { return m_environment; }
-	void setEnv(Environment* env) { m_environment = env; }
-
-#ifndef SERVER
-	GUIEngine* getGuiEngine() { return m_guiengine; }
-	void setGuiEngine(GUIEngine* guiengine) { m_guiengine = guiengine; }
-#endif
-
 	void objectrefGetOrCreate(lua_State *L, ServerActiveObject *cobj);
 
 	void pushPlayerHPChangeReason(lua_State *L, const PlayerHPChangeReason& reason);
 
 	std::recursive_mutex m_luastackmutex;
-	std::string     m_last_run_mod;
 	bool            m_secure = false;
 #ifdef SCRIPTAPI_LOCK_DEBUG
 	int             m_lock_recursion_count{};
@@ -157,11 +120,4 @@ private:
 	static int luaPanic(lua_State *L);
 
 	lua_State      *m_luastack = nullptr;
-
-	IGameDef       *m_gamedef = nullptr;
-	Environment    *m_environment = nullptr;
-#ifndef SERVER
-	GUIEngine      *m_guiengine = nullptr;
-#endif
-	ScriptingType  m_type;
 };

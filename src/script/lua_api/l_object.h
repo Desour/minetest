@@ -47,16 +47,16 @@ public:
 
 	static ObjectRef *checkobject(lua_State *L, int narg);
 
-	static ServerActiveObject* getobject(ObjectRef *ref);
+	static ServerActiveObject *getobject(ObjectRef *ref);
+
+	static LuaEntitySAO *getluaobject(ObjectRef *ref);
+
+	static PlayerSAO *getplayersao(ObjectRef *ref);
+
+	static const char className[];
 private:
 	ServerActiveObject *m_object = nullptr;
-	static const char className[];
 	static luaL_Reg methods[];
-
-
-	static LuaEntitySAO* getluaobject(ObjectRef *ref);
-
-	static PlayerSAO* getplayersao(ObjectRef *ref);
 
 	static RemotePlayer *getplayer(ObjectRef *ref);
 

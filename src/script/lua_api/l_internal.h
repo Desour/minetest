@@ -40,6 +40,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 		luamethod_dep(class, good, bad)
 
 #define API_FCT(name) registerFunction(L, #name, l_##name, top)
+#define API_FCT_INSEC(name) registerFunction(L, #name, l_##name, insec_top)
 
 // For future use
 #define MAP_LOCK_REQUIRED ((void)0)
