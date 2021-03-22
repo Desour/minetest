@@ -399,13 +399,36 @@ GenericCAO::~GenericCAO()
 	removeFromScene(true);
 }
 
+bool GenericCAO::isSelectable() const
+{
+	return m_prop.is_visible && m_is_visible && !m_is_local_player
+			&& m_prop.pointable;
+}
+
 bool GenericCAO::getSelectionBox(aabb3f *toset) const
 {
-	if (!m_prop.is_visible || !m_is_visible || m_is_local_player
-			|| !m_prop.pointable) {
+	if (!isSelectable())
 		return false;
-	}
+
 	*toset = m_selection_box;
+	return true;
+}
+
+bool GenericCAO::getSelectionBoundingBox(aabb3f *toset) const
+{
+	if (!isSelectable())
+		return false;
+
+	*toset = m_selection_bounding_box;
+	return true;
+}
+
+bool GenericCAO::getSelectionShowBox(aabb3f *toset) const
+{
+	if (!isSelectable())
+		return false;
+
+	*toset = m_selection_show_box;
 	return true;
 }
 
@@ -576,6 +599,12 @@ void GenericCAO::removeFromScene(bool permanent)
 		m_spritenode = nullptr;
 	}
 
+	if (m_animated_selection_meshnode)	{
+		m_animated_selection_meshnode->remove();
+		m_animated_selection_meshnode->drop();
+		m_animated_selection_meshnode = nullptr;
+	}
+
 	if (m_matrixnode) {
 		m_matrixnode->remove();
 		m_matrixnode->drop();
@@ -625,9 +654,11 @@ void GenericCAO::addToScene(ITextureSource *tsrc)
 	}
 
 	auto grabMatrixNode = [this] {
-		m_matrixnode = RenderingEngine::get_scene_manager()->
-				addDummyTransformationSceneNode();
-		m_matrixnode->grab();
+		if (!m_matrixnode) {
+			m_matrixnode = RenderingEngine::get_scene_manager()->
+					addDummyTransformationSceneNode();
+			m_matrixnode->grab();
+		}
 	};
 
 	auto setSceneNodeMaterial = [this] (scene::ISceneNode *node) {
@@ -815,6 +846,39 @@ void GenericCAO::addToScene(ITextureSource *tsrc)
 
 	if (node && m_matrixnode)
 		node->setParent(m_matrixnode);
+
+	if (m_prop.selection_mesh.empty()) {
+		// "" => use visual mesh for selection, if possible
+		m_selection_use_mesh = (bool)getSelectionTriangleSelector();
+	} else if (m_prop.selection_mesh != "box") {
+		m_selection_use_mesh = true;
+		// add new selection mesh
+		grabMatrixNode();
+		scene::IAnimatedMesh *mesh = m_client->getMesh(m_prop.selection_mesh, true);
+		if (mesh) {
+			m_animated_selection_meshnode = RenderingEngine::get_scene_manager()->
+				addAnimatedMeshSceneNode(mesh, m_matrixnode);
+			m_animated_selection_meshnode->grab();
+			mesh->drop(); // The scene node took hold of it
+
+			if (!checkMeshNormals(mesh)) {
+				infostream << "GenericCAO: recalculating normals for mesh "
+					<< m_prop.selection_mesh << std::endl;
+				m_smgr->getMeshManipulator()->
+						recalculateNormals(mesh, true, false);
+			}
+
+			m_animated_selection_meshnode->animateJoints(); // Needed for some animations
+			m_animated_selection_meshnode->setScale(m_prop.visual_size);
+
+			//~ m_animated_selection_meshnode->setVisible(false); // TODO
+
+			//~ m_animated_selection_meshnode->setParent(m_matrixnode);
+		} else {
+			errorstream << "GenericCAO::addToScene(): Could not load mesh " <<
+					m_prop.selection_mesh << std::endl;
+		}
+	}
 
 	updateNametag();
 	updateMarker();
@@ -1641,6 +1705,14 @@ void GenericCAO::processMessage(const std::string &data)
 		m_selection_box.MinEdge *= BS;
 		m_selection_box.MaxEdge *= BS;
 
+		m_selection_bounding_box = m_prop.selection_bounding_box;
+		m_selection_bounding_box.MinEdge *= BS;
+		m_selection_bounding_box.MaxEdge *= BS;
+
+		m_selection_show_box = m_prop.selection_show_box;
+		m_selection_show_box.MinEdge *= BS;
+		m_selection_show_box.MaxEdge *= BS;
+
 		m_tx_size.X = 1.0f / m_prop.spritediv.X;
 		m_tx_size.Y = 1.0f / m_prop.spritediv.Y;
 
@@ -1949,6 +2021,53 @@ void GenericCAO::updateMeshCulling()
 		node->setMaterialFlag(video::EMF_FRONT_FACE_CULLING,
 			false);
 	}
+}
+
+irr_ptr<irr::scene::ITriangleSelector> GenericCAO::getSelectionTriangleSelector()
+{
+	irr::scene::IMesh *mesh;
+	irr::scene::ISceneNode *snode;
+	if (m_animated_selection_meshnode) {
+		snode = m_animated_selection_meshnode;
+		mesh = m_animated_selection_meshnode->getMesh();
+	} else if (m_animated_meshnode) {
+		snode = m_animated_meshnode;
+		mesh = m_animated_meshnode->getMesh();
+	} else if (m_meshnode) {
+		snode = m_meshnode;
+		mesh = m_meshnode->getMesh();
+	} else {
+		return irr_ptr<irr::scene::ITriangleSelector>(nullptr);
+	}
+
+	return irr_ptr<irr::scene::ITriangleSelector>(
+			m_smgr->createTriangleSelector(mesh, snode));
+}
+
+bool GenericCAO::meshLineCollision(const core::line3d<f32> &shootline_on_map,
+		v3f *collision_point, v3s16 *collision_normal)
+{
+	irr_ptr<irr::scene::ITriangleSelector> selector = getSelectionTriangleSelector();
+	if (!selector)
+		return true;
+
+	irr::scene::ISceneCollisionManager *scmgr = m_smgr->getSceneCollisionManager();
+
+	v3f camera_offset = intToFloat(m_env->getCameraOffset(), BS);
+	core::line3d<f32> shootline(shootline_on_map.start - camera_offset, shootline_on_map.end - camera_offset);
+
+	irr::core::triangle3df triangle;
+	irr::scene::ISceneNode *scene_node;
+	if (!scmgr->getCollisionPoint(shootline, selector.get(), *collision_point,
+			triangle, scene_node))
+		return false;
+
+	*collision_point += camera_offset;
+
+	v3f normal = triangle.getNormal();
+	*collision_normal = v3s16(normal.X, normal.Y, normal.Y);
+
+	return true;
 }
 
 // Prototype

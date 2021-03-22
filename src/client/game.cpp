@@ -3162,7 +3162,7 @@ PointedThing Game::updatePointedThing(
 		runData.selected_object = client->getEnv().getActiveObject(result.object_id);
 		aabb3f selection_box;
 		if (show_entity_selectionbox && runData.selected_object->doShowSelectionBox() &&
-				runData.selected_object->getSelectionBox(&selection_box)) {
+				runData.selected_object->getSelectionShowBox(&selection_box)) {
 			v3f pos = runData.selected_object->getPosition();
 			selectionboxes->push_back(aabb3f(selection_box));
 			hud->setSelectionPos(pos, camera_offset);

@@ -6890,6 +6890,27 @@ Player properties need to be saved manually.
         -- For both boxes: {xmin, ymin, zmin, xmax, ymax, zmax} in nodes from
         -- object position.
 
+        selection_mesh = "model.obj",
+        -- The mesh to use for fine selection checks (only client-side).
+        -- This mesh is rotated and animated the same way as the visual mesh.
+        -- And it is affected by visual_size.
+        -- Set to "box" to fall back to selectionbox.
+        -- Default is "". This will use the object's mesh if visual is one of
+        -- "mesh", "cube" or TODO. Otherwise it will use the selectionbox.
+        selection_textures = {},
+        -- Textures for the selection_mesh.
+        -- White pixels mean that the player can point through, black pixels mean
+        -- that he can not.
+        -- Default: Everything is black.
+        -- Note: This is currently unused. TODO
+        selection_bounding_box = {-0.5, 0.0, -0.5, 0.5, 1.0, 0.5},
+        -- Box that should always contain the selection_mesh (at any rotation or
+        -- and any animation frame).
+        -- Default: selectionbox
+        selection_show_box = {-0.5, 0.0, -0.5, 0.5, 1.0, 0.5},
+        -- Box to show when the object is selected.
+        -- Default: selectionbox
+
         pointable = true,
         -- Overrides selection box when false
 

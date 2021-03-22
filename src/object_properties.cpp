@@ -72,6 +72,9 @@ std::string ObjectProperties::dump()
 		os << ", nametag_bgcolor=null ";
 
 	os << ", selectionbox=" << PP(selectionbox.MinEdge) << "," << PP(selectionbox.MaxEdge);
+	os << ", selection_mesh=" << selection_mesh;
+	os << ", selection_bounding_box=" << PP(selection_bounding_box.MinEdge) << "," << PP(selection_bounding_box.MaxEdge);
+	os << ", selection_show_box=" << PP(selection_show_box.MinEdge) << "," << PP(selection_show_box.MaxEdge);
 	os << ", pointable=" << pointable;
 	os << ", static_save=" << static_save;
 	os << ", eye_height=" << eye_height;
@@ -137,6 +140,12 @@ void ObjectProperties::serialize(std::ostream &os) const
 	else
 		writeARGB8(os, nametag_bgcolor.value());
 
+	os << serializeString16(selection_mesh);
+	writeV3F32(os, selection_bounding_box.MinEdge);
+	writeV3F32(os, selection_bounding_box.MaxEdge);
+	writeV3F32(os, selection_show_box.MinEdge);
+	writeV3F32(os, selection_show_box.MaxEdge);
+
 	// Add stuff only at the bottom.
 	// Never remove anything, because we don't want new versions of this
 }
@@ -154,6 +163,8 @@ void ObjectProperties::deSerialize(std::istream &is)
 	collisionbox.MaxEdge = readV3F32(is);
 	selectionbox.MinEdge = readV3F32(is);
 	selectionbox.MaxEdge = readV3F32(is);
+	selection_bounding_box = selectionbox;
+	selection_show_box = selectionbox;
 	pointable = readU8(is);
 	visual = deSerializeString16(is);
 	visual_size = readV3F32(is);
@@ -204,5 +215,11 @@ void ObjectProperties::deSerialize(std::istream &is)
 			nametag_bgcolor = bgcolor;
 		else
 			nametag_bgcolor = nullopt;
+
+		selection_mesh = deSerializeString16(is);
+		selection_bounding_box.MinEdge = readV3F32(is);
+		selection_bounding_box.MaxEdge = readV3F32(is);
+		selection_show_box.MinEdge = readV3F32(is);
+		selection_show_box.MaxEdge = readV3F32(is);
 	} catch (SerializationError &e) {}
 }

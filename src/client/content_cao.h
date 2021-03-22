@@ -25,6 +25,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "object_properties.h"
 #include "itemgroup.h"
 #include "constants.h"
+#include "irr_ptr.h"
 #include <cassert>
 
 class Camera;
@@ -79,6 +80,10 @@ private:
 	scene::ISceneManager *m_smgr = nullptr;
 	Client *m_client = nullptr;
 	aabb3f m_selection_box = aabb3f(-BS/3.,-BS/3.,-BS/3., BS/3.,BS/3.,BS/3.);
+	aabb3f m_selection_bounding_box = aabb3f(-BS/3.,-BS/3.,-BS/3., BS/3.,BS/3.,BS/3.);
+	aabb3f m_selection_show_box = aabb3f(-BS/3.,-BS/3.,-BS/3., BS/3.,BS/3.,BS/3.);
+	bool m_selection_use_mesh = false;
+	scene::IAnimatedMeshSceneNode *m_animated_selection_meshnode = nullptr;
 	scene::IMeshSceneNode *m_meshnode = nullptr;
 	scene::IAnimatedMeshSceneNode *m_animated_meshnode = nullptr;
 	WieldMeshSceneNode *m_wield_meshnode = nullptr;
@@ -135,6 +140,10 @@ private:
 
 	bool visualExpiryRequired(const ObjectProperties &newprops) const;
 
+	bool isSelectable() const;
+
+	irr_ptr<irr::scene::ITriangleSelector> getSelectionTriangleSelector();
+
 public:
 	GenericCAO(Client *client, ClientEnvironment *env);
 
@@ -162,6 +171,10 @@ public:
 	bool collideWithObjects() const;
 
 	virtual bool getSelectionBox(aabb3f *toset) const;
+
+	virtual bool getSelectionBoundingBox(aabb3f *toset) const;
+
+	virtual bool getSelectionShowBox(aabb3f *toset) const;
 
 	const v3f getPosition() const;
 
@@ -285,4 +298,9 @@ public:
 	}
 
 	void updateMeshCulling();
+
+	bool meshLineCollision(const core::line3d<f32> &shootline_on_map,
+			v3f *collision_point, v3s16 *collision_normal) override;
+
+	bool doesMeshLineCollision() override { return m_selection_use_mesh; }
 };

@@ -46,6 +46,8 @@ public:
 
 	virtual bool getCollisionBox(aabb3f *toset) const { return false; }
 	virtual bool getSelectionBox(aabb3f *toset) const { return false; }
+	virtual bool getSelectionBoundingBox(aabb3f *toset) const { return getSelectionBox(toset); }
+	virtual bool getSelectionShowBox(aabb3f *toset) const { return getSelectionBox(toset); }
 	virtual bool collideWithObjects() const { return false; }
 	virtual const v3f getPosition() const { return v3f(0.0f); }
 	virtual scene::ISceneNode *getSceneNode() const
@@ -83,6 +85,14 @@ public:
 	// If returns true, punch will not be sent to the server
 	virtual bool directReportPunch(v3f dir, const ItemStack *punchitem = nullptr,
 		float time_from_last_punch = 1000000) { return false; }
+
+	/*
+		Used for more accurate ray collision checks after a boxLineCollision with
+		the selection-box.
+	*/
+	virtual bool meshLineCollision(const core::line3d<f32> &shootline_on_map,
+			v3f *collision_point, v3s16 *collision_normal) { return true; }
+	virtual bool doesMeshLineCollision() { return false; }
 
 protected:
 	// Used for creating objects based on type

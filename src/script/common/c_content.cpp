@@ -222,10 +222,30 @@ void read_object_properties(lua_State *L, int index,
 	lua_pop(L, 1);
 
 	lua_getfield(L, -1, "selectionbox");
+	bool selectionbox_defined = true;
 	if (lua_istable(L, -1))
 		prop->selectionbox = read_aabb3f(L, -1, 1.0);
 	else if (collisionbox_defined)
 		prop->selectionbox = prop->collisionbox;
+	else
+		selectionbox_defined = false;
+	lua_pop(L, 1);
+
+	prop->selection_mesh = "";
+	getstringfield(L, -1, "selection_mesh", prop->selection_mesh);
+
+	lua_getfield(L, -1, "selection_bounding_box");
+	if (lua_istable(L, -1))
+		prop->selection_bounding_box = read_aabb3f(L, -1, 1.0);
+	else if (selectionbox_defined)
+		prop->selection_bounding_box = prop->selectionbox;
+	lua_pop(L, 1);
+
+	lua_getfield(L, -1, "selection_show_box");
+	if (lua_istable(L, -1))
+		prop->selection_show_box = read_aabb3f(L, -1, 1.0);
+	else if (selectionbox_defined)
+		prop->selection_show_box = prop->selectionbox;
 	lua_pop(L, 1);
 
 	getboolfield(L, -1, "pointable", prop->pointable);
@@ -364,6 +384,12 @@ void push_object_properties(lua_State *L, ObjectProperties *prop)
 	lua_setfield(L, -2, "collisionbox");
 	push_aabb3f(L, prop->selectionbox);
 	lua_setfield(L, -2, "selectionbox");
+	lua_pushlstring(L, prop->selection_mesh.c_str(), prop->selection_mesh.size());
+	lua_setfield(L, -2, "selection_mesh");
+	push_aabb3f(L, prop->selection_bounding_box);
+	lua_setfield(L, -2, "selection_bounding_box");
+	push_aabb3f(L, prop->selection_show_box);
+	lua_setfield(L, -2, "selection_show_box");
 	lua_pushboolean(L, prop->pointable);
 	lua_setfield(L, -2, "pointable");
 	lua_pushlstring(L, prop->visual.c_str(), prop->visual.size());

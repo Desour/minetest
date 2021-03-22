@@ -35,6 +35,9 @@ struct ObjectProperties
 	// Values are BS=1
 	aabb3f collisionbox = aabb3f(-0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f);
 	aabb3f selectionbox = aabb3f(-0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f);
+	std::string selection_mesh = "";
+	aabb3f selection_bounding_box = aabb3f(-0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f);
+	aabb3f selection_show_box = aabb3f(-0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f);
 	bool pointable = true;
 	std::string visual = "sprite";
 	std::string mesh = "";

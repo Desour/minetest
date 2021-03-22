@@ -474,9 +474,17 @@ void ClientEnvironment::getSelectedActiveObjects(
 
 	for (const auto &allObject : allObjects) {
 		ClientActiveObject *obj = allObject.obj;
+
+		bool do_mesh_line_collision = obj->doesMeshLineCollision();
+
 		aabb3f selection_box;
-		if (!obj->getSelectionBox(&selection_box))
-			continue;
+		if (do_mesh_line_collision) {
+			if (!obj->getSelectionBoundingBox(&selection_box))
+				continue;
+		} else {
+			if (!obj->getSelectionBox(&selection_box))
+				continue;
+		}
 
 		const v3f &pos = obj->getPosition();
 		aabb3f offsetted_box(selection_box.MinEdge + pos,
@@ -484,10 +492,16 @@ void ClientEnvironment::getSelectedActiveObjects(
 
 		v3f current_intersection;
 		v3s16 current_normal;
-		if (boxLineCollision(offsetted_box, shootline_on_map.start, line_vector,
-				&current_intersection, &current_normal)) {
-			objects.emplace_back((s16) obj->getId(), current_intersection, current_normal,
-				(current_intersection - shootline_on_map.start).getLengthSQ());
-		}
+
+		if (!boxLineCollision(offsetted_box, shootline_on_map.start, line_vector,
+				&current_intersection, &current_normal))
+			continue;
+
+		if (do_mesh_line_collision && !obj->meshLineCollision(shootline_on_map,
+				&current_intersection, &current_normal))
+			continue;
+
+		objects.emplace_back((s16) obj->getId(), current_intersection, current_normal,
+			(current_intersection - shootline_on_map.start).getLengthSQ());
 	}
 }
