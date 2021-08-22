@@ -44,6 +44,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "gettext.h"
 #include "skyparams.h"
 
+#include "util/timetaker.h"
+
 void Client::handleCommand_Deprecated(NetworkPacket* pkt)
 {
 	infostream << "Got deprecated command "
@@ -686,7 +688,11 @@ void Client::handleCommand_AnnounceMedia(NetworkPacket* pkt)
 		// not supported by server or turned off
 	}
 
+	errorstream << "handleCommand_AnnounceMedia: start" << std::endl;
+	TimeTaker tt_annou_media_firststep("tt_annou_media_firststep");
 	m_media_downloader->step(this);
+	errorstream << "handleCommand_AnnounceMedia: it took: "
+			<< tt_annou_media_firststep.getTimerTime() << " ms" << std::endl;
 }
 
 void Client::handleCommand_Media(NetworkPacket* pkt)
