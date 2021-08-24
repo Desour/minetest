@@ -30,6 +30,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "util/sha1.h"
 #include "util/string.h"
 
+#include "util/timetaker.h"
+
 static std::string getMediaCacheDir()
 {
 	return porting::path_cache + DIR_DELIM + "media";
@@ -64,6 +66,9 @@ ClientMediaDownloader::~ClientMediaDownloader()
 
 	for (auto &remote : m_remotes)
 		delete remote;
+
+	errorstream << "ClientMediaDownloader::~ClientMediaDownloader: tmp_update_time_aggr="
+			<< tmp_update_time_aggr << " ms" << std::endl;
 }
 
 void ClientMediaDownloader::addFile(const std::string &name, const std::string &sha1)
@@ -169,6 +174,9 @@ void ClientMediaDownloader::step(Client *client)
 
 void ClientMediaDownloader::initialStep(Client *client)
 {
+	errorstream << "ClientMediaDownloader::initialStep: start" << std::endl;
+	TimeTaker tt_media_dwnldr_initialStep("tt_media_dwnldr_initialStep");
+
 	// Check media cache
 	m_uncached_count = m_files.size();
 	for (auto &file_it : m_files) {
@@ -189,6 +197,8 @@ void ClientMediaDownloader::initialStep(Client *client)
 			}
 		}
 	}
+	errorstream << "ClientMediaDownloader::initialStep: it took(1): "
+			<< tt_media_dwnldr_initialStep.getTimerTime() << " ms" << std::endl;
 
 	assert(m_uncached_received_count == 0);
 
@@ -559,8 +569,11 @@ bool ClientMediaDownloader::checkAndLoad(
 		<< std::endl;
 
 	// Update cache (unless we just loaded the file from the cache)
-	if (!is_from_cache)
+	if (!is_from_cache) {
+		TimeTaker tt("clientmedia_cache_update_tt");
 		m_media_cache.update(sha1_hex, data);
+		tmp_update_time_aggr += tt.getTimerTime();
+	}
 
 	return true;
 }

@@ -148,4 +148,5 @@ private:
 	// (use m_files.upper_bound(m_name_bound) to get an iterator)
 	std::string m_name_bound = "";
 
+	u64 tmp_update_time_aggr = 0;
 };
