@@ -1740,6 +1740,9 @@ void Client::showUpdateProgressTexture(void *args, u32 progress, u32 max_progres
 
 void Client::afterContentReceived()
 {
+	errorstream<<"Client::afterContentReceived() started"<<std::endl;
+	TimeTaker tt("tt Client::afterContentReceived()");
+
 	infostream<<"Client::afterContentReceived() started"<<std::endl;
 	assert(m_itemdef_received); // pre-condition
 	assert(m_nodedef_received); // pre-condition
@@ -1804,6 +1807,8 @@ void Client::afterContentReceived()
 	m_rendering_engine->draw_load_screen(text, guienv, m_tsrc, 0, 100);
 	infostream<<"Client::afterContentReceived() done"<<std::endl;
 	delete[] text;
+
+	errorstream << "Client::afterContentReceived() took " << tt.getTimerTime() << " ms" << std::endl;
 }
 
 float Client::getRTT()
