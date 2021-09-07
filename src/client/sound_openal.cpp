@@ -48,6 +48,8 @@ with this program; ifnot, write to the Free Software Foundation, Inc.,
 #include <unordered_map>
 #include <unordered_set>
 
+#include "util/timetaker.h"
+
 #define BUFFER_SIZE 30000
 
 std::shared_ptr<SoundManagerSingleton> g_sound_manager_singleton;
@@ -177,6 +179,9 @@ SoundBuffer *load_opened_ogg_file(OggVorbis_File *oggFile,
 
 SoundBuffer *load_ogg_from_file(const std::string &path)
 {
+	//~ errorstream << "load_ogg_from_file() started" << std::endl;
+	TimeTaker tt("tt load_ogg_from_file()");
+
 	OggVorbis_File oggFile;
 
 	// Try opening the given file.
@@ -188,7 +193,11 @@ SoundBuffer *load_ogg_from_file(const std::string &path)
 		return nullptr;
 	}
 
-	return load_opened_ogg_file(&oggFile, path);
+	auto ret = load_opened_ogg_file(&oggFile, path);
+
+	if (tt.getTimerTime() > 50)
+		errorstream << "load_ogg_from_file() took " << tt.getTimerTime() << " ms" << std::endl;
+	return ret;
 }
 
 struct BufferSource {
@@ -244,6 +253,8 @@ static ov_callbacks g_buffer_ov_callbacks = {
 
 SoundBuffer *load_ogg_from_buffer(const std::string &buf, const std::string &id_for_log)
 {
+	TimeTaker tt("tt load_ogg_from_buffer()");
+
 	OggVorbis_File oggFile;
 
 	BufferSource s;
@@ -257,7 +268,19 @@ SoundBuffer *load_ogg_from_buffer(const std::string &buf, const std::string &id_
 		return nullptr;
 	}
 
-	return load_opened_ogg_file(&oggFile, id_for_log);
+	auto ret = load_opened_ogg_file(&oggFile, id_for_log);
+
+	thread_local u64 accum_tt = 0;
+	accum_tt += tt.getTimerTime();
+	if (accum_tt > 100) {
+		thread_local u64 accum_tt_total = 0;
+		accum_tt_total += accum_tt;
+		errorstream << "load_ogg_from_buffer() accumulated another " << accum_tt << " ms; total is " << accum_tt_total << " ms" << std::endl;
+		accum_tt = 0;
+	}
+	if (tt.getTimerTime() > 50)
+		errorstream << "load_ogg_from_buffer() took " << tt.getTimerTime() << " ms" << std::endl;
+	return ret;
 }
 
 struct PlayingSound

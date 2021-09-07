@@ -1303,6 +1303,9 @@ bool Game::createSingleplayerServer(const std::string &map_dir,
 
 bool Game::createClient(const GameStartData &start_data)
 {
+	errorstream << "Game::createClient() started" << std::endl;
+	TimeTaker tt("tt Game::createClient()");
+
 	showOverlayMessage(N_("Creating client..."), 0, 10);
 
 	draw_control = new MapDrawControl();
@@ -1328,6 +1331,7 @@ bool Game::createClient(const GameStartData &start_data)
 		return false;
 	}
 
+	errorstream<<"Game::getServerContent() starts " << tt.getTimerTime() << " ms after Game::createClient()"<<std::endl;
 	if (!getServerContent(&connect_aborted)) {
 		if (error_message->empty() && !connect_aborted) {
 			// Should not happen if error messages are set properly
@@ -1341,6 +1345,7 @@ bool Game::createClient(const GameStartData &start_data)
 			&m_flags.force_fog_off, &runData.fog_range, client);
 	shader_src->addShaderConstantSetterFactory(scsf);
 
+	errorstream<<"Client::afterContentReceived() starts " << tt.getTimerTime() << " ms after Game::createClient()"<<std::endl;
 	// Update cached textures, meshes and materials
 	client->afterContentReceived();
 
@@ -1408,6 +1413,7 @@ bool Game::createClient(const GameStartData &start_data)
 	if (mapper && client->modsLoaded())
 		client->getScript()->on_minimap_ready(mapper);
 
+	errorstream << "Game::createClient() took " << tt.getTimerTime() << " ms" << std::endl;
 	return true;
 }
 
@@ -1574,6 +1580,9 @@ bool Game::connectToServer(const GameStartData &start_data,
 
 bool Game::getServerContent(bool *aborted)
 {
+	errorstream << "Game::getServerContent() started" << std::endl;
+	TimeTaker tt("tt Game::getServerContent()");
+
 	input->clear();
 
 	FpsControl fps_control;
@@ -1657,6 +1666,7 @@ bool Game::getServerContent(bool *aborted)
 		}
 	}
 
+	errorstream << "Game::getServerContent() took " << tt.getTimerTime() << " ms" << std::endl;
 	return true;
 }
 
