@@ -141,7 +141,7 @@ v3f ServerPlayingSound::getPos(ServerEnvironment *env, bool *pos_exists) const
 	if (pos_exists)
 		*pos_exists = false;
 
-	switch (type ){
+	switch (type) {
 	case SoundLocation::Local:
 		return v3f(0,0,0);
 	case SoundLocation::Position:
@@ -1870,7 +1870,7 @@ void Server::SendSetLighting(session_t peer_id, const Lighting &lighting)
 {
 	NetworkPacket pkt(TOCLIENT_SET_LIGHTING,
 			4, peer_id);
-	
+
 	pkt << lighting.shadow_intensity;
 
 	Send(&pkt);
@@ -2192,7 +2192,7 @@ s32 Server::playSound(ServerPlayingSound &params, bool ephemeral)
 	pkt << id << params.spec.name << gain
 			<< (u8) params.type << pos << params.object
 			<< params.spec.loop << params.spec.fade << params.spec.pitch
-			<< ephemeral;
+			<< ephemeral << params.spec.time_offset;
 
 	bool as_reliable = !ephemeral;
 

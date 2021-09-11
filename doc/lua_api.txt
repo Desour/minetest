@@ -904,11 +904,12 @@ Examples of sound parameter tables:
         gain = 1.0,  -- default
         loop = true,
     }
-    -- Play at a location
+    -- Play at a location, start the sound at offset 5 seconds
     {
         pos = {x = 1, y = 2, z = 3},
         gain = 1.0,  -- default
         max_hear_distance = 32,  -- default, uses an euclidean metric
+        time_offset = 5.0,
     }
     -- Play connected to an object, looped
     {
@@ -932,6 +933,17 @@ A positional sound will only be heard by players that are within
 
 `exclude_player = name` can be applied to locationless, positional and object-
 bound sounds to exclude a single player from hearing them.
+
+Semantics of `time_offset`, with the sound's length in seconds as `max_time`:
+* Nan and inf are illegal.
+* If `-max_time <= time_offset < 0.0`: The behaviour is the same as with
+  `time_offset = max_time + time_offset`.
+* If `not loop and time_offset >= max_time`: No sound is played.
+* If `not loop and time_offset < -max_time`: The behaviour is unspecified.
+  (In the future this could mean that the sound ends in `-time_offset` seconds.)
+* If `loop and math.abs(time_offset) >= max_time`: The behaviour is the same as
+  with `time_offset = time_offset % max_time`. (The `%` operator is here defined
+  as in Lua 5.1.)
 
 `SimpleSoundSpec`
 -----------------

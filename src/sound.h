@@ -30,8 +30,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 struct SimpleSoundSpec
 {
 	SimpleSoundSpec(const std::string &name = "", float gain = 1.0f,
-			bool loop = false, float fade = 0.0f, float pitch = 1.0f) :
-			name(name), gain(gain), fade(fade), pitch(pitch), loop(loop)
+			bool loop = false, float fade = 0.0f, float pitch = 1.0f,
+			float time_offset = 0.0f) :
+			name(name), gain(gain), fade(fade), pitch(pitch), time_offset(time_offset),
+			loop(loop)
 	{
 	}
 
@@ -53,11 +55,13 @@ struct SimpleSoundSpec
 		fade = readF32(is);
 	}
 
-	std::string name;
+	std::string name; // name of the sound-group
 	float gain = 1.0f;
 	float fade = 0.0f;
 	float pitch = 1.0f;
+	float time_offset = 0.0f;
 	bool loop = false;
+	bool use_local_fallback = true;
 };
 
 

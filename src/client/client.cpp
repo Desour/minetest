@@ -765,9 +765,13 @@ bool Client::loadMedia(const std::string &data, const std::string &filename,
 	};
 	name = removeStringEnd(filename, sound_ext);
 	if (!name.empty()) {
-		TRACESTREAM(<< "Client: Attempting to load sound "
-			<< "file \"" << filename << "\"" << std::endl);
-		return m_sound->loadSoundData(name, data);
+		TRACESTREAM(<< "Client: Attempting to load sound file \""
+				<< filename << "\"" << std::endl);
+		if (!m_sound->loadSoundData(filename, std::string(data)))
+			return false;
+		// "name[.num].ogg" is in group "name"
+		m_sound->addSoundToGroup(filename, name);
+		return true;
 	}
 
 	const char *model_ext[] = {

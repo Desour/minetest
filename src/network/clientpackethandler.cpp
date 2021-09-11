@@ -815,6 +815,7 @@ void Client::handleCommand_PlaySound(NetworkPacket* pkt)
 		[26 + len] f32 fade
 		[30 + len] f32 pitch
 		[34 + len] bool ephemeral
+		[35 + len] f32 time_offset
 	*/
 
 	s32 server_id;
@@ -831,6 +832,7 @@ void Client::handleCommand_PlaySound(NetworkPacket* pkt)
 		*pkt >> spec.fade;
 		*pkt >> spec.pitch;
 		*pkt >> ephemeral;
+		*pkt >> spec.time_offset;
 	} catch (PacketError &e) {};
 
 	// Start playing

@@ -115,23 +115,12 @@ private:
 	std::set<std::string> m_to_delete;
 };
 
-/** GUIEngine specific implementation of OnDemandSoundFetcher */
-class MenuMusicFetcher: public OnDemandSoundFetcher
+/** GUIEngine specific implementation of SoundLocalFallbackPathsGiver */
+class MenuMusicFetcher final : public SoundLocalFallbackPathsGiver
 {
-public:
-	/**
-	 * get sound file paths according to sound name
-	 * @param name sound name
-	 * @param dst_paths receives possible paths to sound files
-	 * @param dst_datas receives binary sound data (not used here)
-	 */
-	void fetchSounds(const std::string &name,
-			std::set<std::string> &dst_paths,
-			std::set<std::string> &dst_datas);
-
-private:
-	/** set of fetched sound names */
-	std::set<std::string> m_fetched;
+protected:
+	void addThePaths(const std::string &name,
+			std::vector<std::string> &paths) override;
 };
 
 /** implementation of main menu based uppon formspecs */

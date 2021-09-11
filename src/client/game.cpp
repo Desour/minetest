@@ -362,42 +362,6 @@ public:
 	}
 };
 
-// Locally stored sounds don't need to be preloaded because of this
-class GameOnDemandSoundFetcher: public OnDemandSoundFetcher
-{
-	std::set<std::string> m_fetched;
-private:
-	void paths_insert(std::set<std::string> &dst_paths,
-		const std::string &base,
-		const std::string &name)
-	{
-		dst_paths.insert(base + DIR_DELIM + "sounds" + DIR_DELIM + name + ".ogg");
-		dst_paths.insert(base + DIR_DELIM + "sounds" + DIR_DELIM + name + ".0.ogg");
-		dst_paths.insert(base + DIR_DELIM + "sounds" + DIR_DELIM + name + ".1.ogg");
-		dst_paths.insert(base + DIR_DELIM + "sounds" + DIR_DELIM + name + ".2.ogg");
-		dst_paths.insert(base + DIR_DELIM + "sounds" + DIR_DELIM + name + ".3.ogg");
-		dst_paths.insert(base + DIR_DELIM + "sounds" + DIR_DELIM + name + ".4.ogg");
-		dst_paths.insert(base + DIR_DELIM + "sounds" + DIR_DELIM + name + ".5.ogg");
-		dst_paths.insert(base + DIR_DELIM + "sounds" + DIR_DELIM + name + ".6.ogg");
-		dst_paths.insert(base + DIR_DELIM + "sounds" + DIR_DELIM + name + ".7.ogg");
-		dst_paths.insert(base + DIR_DELIM + "sounds" + DIR_DELIM + name + ".8.ogg");
-		dst_paths.insert(base + DIR_DELIM + "sounds" + DIR_DELIM + name + ".9.ogg");
-	}
-public:
-	void fetchSounds(const std::string &name,
-		std::set<std::string> &dst_paths,
-		std::set<std::string> &dst_datas)
-	{
-		if (m_fetched.count(name))
-			return;
-
-		m_fetched.insert(name);
-
-		paths_insert(dst_paths, porting::path_share, name);
-		paths_insert(dst_paths, porting::path_user,  name);
-	}
-};
-
 
 typedef s32 SamplerLayer_t;
 
@@ -836,7 +800,6 @@ private:
 	IWritableItemDefManager *itemdef_manager = nullptr;
 	NodeDefManager *nodedef_manager = nullptr;
 
-	GameOnDemandSoundFetcher soundfetcher; // useful when testing
 	ISoundManager *sound = nullptr;
 	bool sound_is_dummy = false;
 	SoundMaker *soundmaker = nullptr;
@@ -1251,7 +1214,8 @@ bool Game::initSound()
 #if USE_SOUND
 	if (g_settings->getBool("enable_sound") && g_sound_manager_singleton.get()) {
 		infostream << "Attempting to use OpenAL audio" << std::endl;
-		sound = createOpenALSoundManager(g_sound_manager_singleton.get(), &soundfetcher);
+		sound = createOpenALSoundManager(g_sound_manager_singleton.get(),
+				std::make_unique<SoundLocalFallbackPathsGiver>()).release();
 		if (!sound)
 			infostream << "Failed to initialize OpenAL audio" << std::endl;
 	} else

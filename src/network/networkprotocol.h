@@ -208,7 +208,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 	PROTOCOL VERSION 40:
 		TOCLIENT_MEDIA_PUSH changed, TOSERVER_HAVE_MEDIA added
 		Added new particlespawner parameters
-		[scheduled bump for 5.6.0]
+	PROTOCOL VERSION 41:
+		"time_offset" added to TOCLIENT_PLAY_SOUND
 */
 
 #define LATEST_PROTOCOL_VERSION 41
@@ -456,7 +457,10 @@ enum ToClientCommand
 		s32[3] pos_nodes*10000
 		u16 object_id
 		u8 loop (bool)
+		f32 fade
+		f32 pitch
 		u8 ephemeral (bool)
+		f32 time_offset (in seconds)
 	*/
 
 	TOCLIENT_STOP_SOUND = 0x40,
