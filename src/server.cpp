@@ -2123,7 +2123,7 @@ s32 Server::playSound(const SimpleSoundSpec &spec,
 	pkt << id << spec.name << gain
 			<< (u8) params.type << pos << params.object
 			<< params.loop << params.fade << params.pitch
-			<< ephemeral;
+			<< ephemeral << params.time_offset;
 
 	bool as_reliable = !ephemeral;
 

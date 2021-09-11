@@ -2,7 +2,8 @@ set(sound_SRCS  ${CMAKE_CURRENT_SOURCE_DIR}/sound.cpp)
 
 if(USE_SOUND)
 	set(sound_SRCS ${sound_SRCS}
-		${CMAKE_CURRENT_SOURCE_DIR}/sound_openal.cpp)
+		${CMAKE_CURRENT_SOURCE_DIR}/sound_openal.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/sound_openal_internal.cpp)
 	set(SOUND_INCLUDE_DIRS
 		${OPENAL_INCLUDE_DIR}
 		${VORBIS_INCLUDE_DIR}
@@ -60,7 +61,7 @@ set(client_SRCS
 	${CMAKE_CURRENT_SOURCE_DIR}/wieldmesh.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/shadows/dynamicshadows.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/shadows/dynamicshadowsrender.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/shadows/shadowsshadercallbacks.cpp	
-	${CMAKE_CURRENT_SOURCE_DIR}/shadows/shadowsScreenQuad.cpp	
+	${CMAKE_CURRENT_SOURCE_DIR}/shadows/shadowsshadercallbacks.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/shadows/shadowsScreenQuad.cpp
 	PARENT_SCOPE
 )

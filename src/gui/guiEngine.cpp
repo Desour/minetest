@@ -43,6 +43,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "client/tile.h"
 #endif
 
+#include <memory>
+
 
 /******************************************************************************/
 void TextDestGuiEngine::gotText(const StringMap &fields)
@@ -97,28 +99,15 @@ video::ITexture *MenuTextureSource::getTexture(const std::string &name, u32 *id)
 /******************************************************************************/
 /** MenuMusicFetcher                                                          */
 /******************************************************************************/
-void MenuMusicFetcher::fetchSounds(const std::string &name,
-			std::set<std::string> &dst_paths,
-			std::set<std::string> &dst_datas)
+void MenuMusicFetcher::addThePaths(const std::string &name,
+		std::vector<std::string> &paths)
 {
-	if(m_fetched.count(name))
-		return;
-	m_fetched.insert(name);
-	std::vector<fs::DirListNode> list;
-	// Reusable local function
-	auto add_paths = [&dst_paths](const std::string name, const std::string base = "") {
-		dst_paths.insert(base + name + ".ogg");
-		for (int i = 0; i < 10; i++)
-			dst_paths.insert(base + name + "." + itos(i) + ".ogg");
-	};
 	// Allow full paths
 	if (name.find(DIR_DELIM_CHAR) != std::string::npos) {
-		add_paths(name);
+		addAllAlternatives(name, paths);
 	} else {
-		std::string share_prefix = porting::path_share + DIR_DELIM;
-		add_paths(name, share_prefix + "sounds" + DIR_DELIM);
-		std::string user_prefix = porting::path_user + DIR_DELIM;
-		add_paths(name, user_prefix + "sounds" + DIR_DELIM);
+		addAllAlternatives(porting::path_share + DIR_DELIM + "sounds" + DIR_DELIM + name, paths);
+		addAllAlternatives(porting::path_user + DIR_DELIM + "sounds" + DIR_DELIM + name, paths);
 	}
 }
 
@@ -149,10 +138,11 @@ GUIEngine::GUIEngine(JoystickController *joystick,
 	m_texture_source = new MenuTextureSource(rendering_engine->get_video_driver());
 
 	//create soundmanager
-	MenuMusicFetcher soundfetcher;
 #if USE_SOUND
 	if (g_settings->getBool("enable_sound") && g_sound_manager_singleton.get())
-		m_sound_manager = createOpenALSoundManager(g_sound_manager_singleton.get(), &soundfetcher);
+		m_sound_manager = createOpenALSoundManager(g_sound_manager_singleton.get(),
+				std::make_unique<MenuMusicFetcher>())
+				.release();
 #endif
 	if (!m_sound_manager)
 		m_sound_manager = &dummySoundManager;

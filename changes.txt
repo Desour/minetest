@@ -1,0 +1,20 @@
+
+TODO: remove this file
+
+* internal refactors, ie. introduction of "sound groups"
+* sounds are loaded lazily (fixes #10603, improves #10316)
+* long sounds are streamed (makes #8596 possible)
+* time_offset (TODO) (#11865; will be needed at some point anyways for players entering max_hear_distance)
+* sound is no longer upside-down (test eg. with hrtf)
+
+
+TODO:
+* implement looped streamed sounds properly
+* make time_offset work
+* consider #10306 (delay)
+* remove sounds that are too far away or finished
+* add multithreading
+* consider #11617 (sound_play warnings)
+* optionally preload starts of sounds
+* fix small issues like footstep sounds playing at wrong place or missing vel
+* add api or something for setting node size in meters (for speed of sound)

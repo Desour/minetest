@@ -104,6 +104,7 @@ struct ServerSoundParams
 	float gain = 1.0f;
 	float fade = 0.0f;
 	float pitch = 1.0f;
+	float time_offset = 0.0f;
 	bool loop = false;
 	float max_hear_distance = 32 * BS;
 	v3f pos;
