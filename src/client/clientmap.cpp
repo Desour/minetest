@@ -184,6 +184,8 @@ void ClientMap::getBlocksInViewRange(v3s16 cam_pos_nodes,
 			p_nodes_max.Z / MAP_BLOCKSIZE + 1);
 }
 
+extern bool foo_cache_time;
+
 void ClientMap::updateDrawList()
 {
 	ScopeProfiler sp(g_profiler, "CM::updateDrawList()", SPT_AVG);
@@ -452,7 +454,7 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 
 		// Check and abort if the machine is swapping a lot
 		// Avoid checking too frequently because getTimerTime() is expensive
-		if (++i % 128 == 0 && draw.getTimerTime() > 2000) {
+		if ((++i % 128 == 0 || !foo_cache_time) && draw.getTimerTime() > 2000) {
 			infostream << "ClientMap::renderMap(): Rendering took >2s, " <<
 					"returning." << std::endl;
 			return;
@@ -781,9 +783,9 @@ void ClientMap::renderMapShadows(video::IVideoDriver *driver,
 	for (auto &lists : grouped_buffers.lists)
 		for (MeshBufList &list : lists)
 			buffer_count += list.bufs.size();
-	
+
 	draw_order.reserve(draw_order.size() + buffer_count);
-	
+
 	// Capture draw order for all solid meshes
 	for (auto &lists : grouped_buffers.lists) {
 		for (MeshBufList &list : lists) {
@@ -808,7 +810,7 @@ void ClientMap::renderMapShadows(video::IVideoDriver *driver,
 
 		// Check and abort if the machine is swapping a lot
 		// Avoid checking too frequently because getTimerTime() is expensive
-		if (++i % 128 == 0 && draw.getTimerTime() > 1000) {
+		if ((++i % 128 == 0 || !foo_cache_time) && draw.getTimerTime() > 1000) {
 			infostream << "ClientMap::renderMapShadows(): Rendering "
 					"took >1s, returning." << std::endl;
 			break;
@@ -928,8 +930,8 @@ void ClientMap::updateTransparentMeshBuffers()
 		MapBlock* block = it->second;
 		if (!block->mesh)
 			continue;
-		
-		if (m_needs_update_transparent_meshes || 
+
+		if (m_needs_update_transparent_meshes ||
 				block->mesh->getTransparentBuffers().size() == 0) {
 
 			v3s16 block_pos = block->getPos();

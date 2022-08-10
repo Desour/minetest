@@ -143,7 +143,7 @@ public:
 	v3s16 getCameraOffset() const { return m_camera_offset; }
 
 	void updateFrameTime();
-	irr::u64 getFrameTime() { return m_frame_time; }
+	irr::u64 getFrameTime();
 private:
 	ClientMap *m_map;
 	LocalPlayer *m_local_player = nullptr;

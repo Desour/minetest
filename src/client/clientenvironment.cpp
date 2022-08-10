@@ -515,7 +515,24 @@ void ClientEnvironment::getSelectedActiveObjects(
 	}
 }
 
+#include "util/quicktune.h"
+
+extern bool foo_cache_time;
+bool foo_cache_time = false;
+
 void ClientEnvironment::updateFrameTime()
 {
 	m_frame_time = porting::getTimeMs();
+
+	float foo_cache_time_f = 0.0f;
+	QUICKTUNE_AUTONAME(QVT_FLOAT, foo_cache_time_f, 0, 1);
+	foo_cache_time = (foo_cache_time_f > 0.02f);
+}
+
+irr::u64 ClientEnvironment::getFrameTime()
+{
+	if (foo_cache_time)
+		return m_frame_time;
+	else
+		return porting::getTimeMs();
 }
