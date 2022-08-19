@@ -1031,9 +1031,9 @@ void MapBlockBspTree::buildTree(const std::vector<MeshTriangle> *triangles)
 
 /**
  * @brief Find a candidate plane to split a set of triangles in two
- * 
+ *
  * The candidate plane is represented by one of the triangles from the set.
- * 
+ *
  * @param list Vector of indexes of the triangles in the set
  * @param triangles Vector of all triangles in the BSP tree
  * @return Address of the triangle that represents the proposed split plane
@@ -1182,7 +1182,6 @@ void PartialMeshBuffer::afterDraw() const
 */
 
 MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
-	m_minimap_mapblock(NULL),
 	m_tsrc(data->m_client->getTextureSource()),
 	m_shdrsrc(data->m_client->getShaderSource()),
 	m_animation_force_timer(0), // force initial animation
@@ -1195,7 +1194,7 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 	m_enable_vbo = g_settings->getBool("enable_vbo");
 
 	if (data->m_client->getMinimap()) {
-		m_minimap_mapblock = new MinimapMapblock;
+		m_minimap_mapblock = std::make_unique<MinimapMapblock>();
 		m_minimap_mapblock->getMinimapNodes(
 			&data->m_vmanip, data->m_blockpos * MAP_BLOCKSIZE);
 	}
@@ -1405,7 +1404,6 @@ MapBlockMesh::~MapBlockMesh()
 #endif
 		m->drop();
 	}
-	delete m_minimap_mapblock;
 }
 
 bool MapBlockMesh::animate(bool faraway, float time, int crack,

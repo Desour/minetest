@@ -45,6 +45,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <cmath>
 #include "client/shader.h"
 #include "client/minimap.h"
+#include "client/mapblock_mesh.h"
 
 class Settings;
 struct ToolCapabilities;

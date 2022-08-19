@@ -100,7 +100,7 @@ public:
 };
 
 /**
- * Implements a binary space partitioning tree 
+ * Implements a binary space partitioning tree
  * See also: https://en.wikipedia.org/wiki/Binary_space_partitioning
  */
 class MapBlockBspTree
@@ -205,9 +205,7 @@ public:
 
 	MinimapMapblock *moveMinimapMapblock()
 	{
-		MinimapMapblock *p = m_minimap_mapblock;
-		m_minimap_mapblock = NULL;
-		return p;
+		return m_minimap_mapblock.release();
 	}
 
 	bool isAnimationForced() const
@@ -238,8 +236,8 @@ private:
 		TileLayer tile;
 	};
 
-	scene::IMesh *m_mesh[MAX_TILE_LAYERS];
-	MinimapMapblock *m_minimap_mapblock;
+	std::array<scene::IMesh *, MAX_TILE_LAYERS> m_mesh;
+	std::unique_ptr<MinimapMapblock> m_minimap_mapblock;
 	ITextureSource *m_tsrc;
 	IShaderSource *m_shdrsrc;
 

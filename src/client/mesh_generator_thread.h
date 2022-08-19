@@ -23,9 +23,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <mutex>
 #include <unordered_map>
 #include <unordered_set>
-#include "mapblock_mesh.h"
 #include "threading/mutex_auto_lock.h"
 #include "util/thread.h"
+
+class MapBlockMesh;
+struct MeshMakeData;
+struct MapNode;
+class Client;
+class Map;
 
 struct CachedMapBlockData
 {
