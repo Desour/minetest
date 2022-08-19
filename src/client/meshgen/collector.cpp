@@ -22,36 +22,43 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "log.h"
 #include "client/mesh.h"
 
+static MapBlockMesh::Side check_side_hint(const TileLayer &layer, MapBlockMesh::Side side_hint)
+{
+	if (!(layer.material_flags & MATERIAL_FLAG_BACKFACE_CULLING))
+		return MapBlockMesh::SIDE_ALWAYS;
+	return side_hint;
+}
+
 void MeshCollector::append(const TileSpec &tile, const video::S3DVertex *vertices,
-		u32 numVertices, const u16 *indices, u32 numIndices, MapBlockMesh::Side side)
+		u32 numVertices, const u16 *indices, u32 numIndices, MapBlockMesh::Side side_hint)
 {
 	for (int layernum = 0; layernum < MAX_TILE_LAYERS; layernum++) {
 		const TileLayer *layer = &tile.layers[layernum];
 		if (layer->texture_id == 0)
 			continue;
-		append(*layer, vertices, numVertices, indices, numIndices, side,
+		append(*layer, vertices, numVertices, indices, numIndices, side_hint,
 				layernum, tile.world_aligned);
 	}
 }
 
 void MeshCollector::append(const TileSpec &tile, const video::S3DVertex *vertices,
 		u32 numVertices, const u16 *indices, u32 numIndices, v3f pos,
-		video::SColor color, u8 light_source, MapBlockMesh::Side side)
+		video::SColor color, u8 light_source, MapBlockMesh::Side side_hint)
 {
 	for (int layernum = 0; layernum < MAX_TILE_LAYERS; layernum++) {
 		const TileLayer *layer = &tile.layers[layernum];
 		if (layer->texture_id == 0)
 			continue;
 		append(*layer, vertices, numVertices, indices, numIndices, pos, color,
-				light_source, side, layernum, tile.world_aligned);
+				light_source, side_hint, layernum, tile.world_aligned);
 	}
 }
 
 void MeshCollector::append(const TileLayer &layer, const video::S3DVertex *vertices,
-		u32 numVertices, const u16 *indices, u32 numIndices, MapBlockMesh::Side side,
+		u32 numVertices, const u16 *indices, u32 numIndices, MapBlockMesh::Side side_hint,
 		u8 layernum, bool use_scale)
 {
-	PreMeshBuffer &pmb = findBuffer(layer, side, layernum, numVertices);
+	PreMeshBuffer &pmb = findBuffer(layer, side_hint, layernum, numVertices);
 
 	f32 scale = 1.0f;
 	if (use_scale)
@@ -68,10 +75,10 @@ void MeshCollector::append(const TileLayer &layer, const video::S3DVertex *verti
 
 void MeshCollector::append(const TileLayer &layer, const video::S3DVertex *vertices,
 		u32 numVertices, const u16 *indices, u32 numIndices, v3f pos,
-		video::SColor color, u8 light_source, MapBlockMesh::Side side, u8 layernum,
+		video::SColor color, u8 light_source, MapBlockMesh::Side side_hint, u8 layernum,
 		bool use_scale)
 {
-	PreMeshBuffer &pmb = findBuffer(layer, side, layernum, numVertices);
+	PreMeshBuffer &pmb = findBuffer(layer, side_hint, layernum, numVertices);
 
 	f32 scale = 1.0f;
 	if (use_scale)

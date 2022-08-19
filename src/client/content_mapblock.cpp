@@ -56,7 +56,7 @@ static const v3s16 light_dirs[8] = {
 };
 
 // Standard index set to make a quad on 4 vertices
-static constexpr u16 quad_indices[] = {0, 1, 2, 2, 3, 0};
+static constexpr std::array<u16, 6> quad_indices{0, 1, 2, 2, 3, 0};
 
 const std::string MapblockMeshGenerator::raillike_groupname = "connect_to_raillike";
 
@@ -137,7 +137,8 @@ void MapblockMeshGenerator::drawQuad(v3f *coords, const v3s16 &normal,
 			applyFacesShading(vertices[j].Color, normal2);
 		vertices[j].TCoords = tcoords[j];
 	}
-	collector->append(tile, vertices, 4, quad_indices, 6, MapBlockMesh::SIDE_ALWAYS);
+	collector->append(tile, vertices, 4, quad_indices.data(), quad_indices.size(),
+			MapBlockMesh::SIDE_ALWAYS);
 }
 
 // Create a cuboid.
@@ -208,7 +209,16 @@ void MapblockMeshGenerator::drawCuboid(const aabb3f &box,
 		video::S3DVertex(min.X, min.Y, min.Z, 0, 0, -1, colors[5], txc[20], txc[23]),
 	};
 
-	static const u8 light_indices[24] = {
+	constexpr std::array<MapBlockMesh::Side, 6> index_to_side_hint = {
+		MapBlockMesh::SIDE_PY, // top
+		MapBlockMesh::SIDE_MY, // bottom
+		MapBlockMesh::SIDE_PX, // right
+		MapBlockMesh::SIDE_MX, // left
+		MapBlockMesh::SIDE_PZ, // back
+		MapBlockMesh::SIDE_MZ, // front
+	};
+
+	constexpr std::array<u8, 24> light_indices = {
 		3, 7, 6, 2,
 		0, 4, 5, 1,
 		6, 7, 5, 4,
@@ -279,8 +289,8 @@ void MapblockMeshGenerator::drawCuboid(const aabb3f &box,
 		if (mask & (1 << k))
 			continue;
 		int tileindex = MYMIN(k, tilecount - 1);
-		collector->append(tiles[tileindex], vertices + 4 * k, 4, quad_indices, 6,
-				MapBlockMesh::SIDE_ALWAYS);
+		collector->append(tiles[tileindex], vertices + 4 * k, 4, quad_indices.data(),
+				quad_indices.size(), index_to_side_hint[k]);
 	}
 }
 
@@ -566,17 +576,18 @@ namespace {
 	struct LiquidFaceDesc {
 		v3s16 dir; // XZ
 		v3s16 p[2]; // XZ only; 1 means +, 0 means -
+		MapBlockMesh::Side side_hint; // same as dir, but as enum
 	};
 	struct UV {
 		int u, v;
 	};
 	static const LiquidFaceDesc liquid_base_faces[4] = {
-		{v3s16( 1, 0,  0), {v3s16(1, 0, 1), v3s16(1, 0, 0)}},
-		{v3s16(-1, 0,  0), {v3s16(0, 0, 0), v3s16(0, 0, 1)}},
-		{v3s16( 0, 0,  1), {v3s16(0, 0, 1), v3s16(1, 0, 1)}},
-		{v3s16( 0, 0, -1), {v3s16(1, 0, 0), v3s16(0, 0, 0)}},
+		{v3s16( 1, 0,  0), {v3s16(1, 0, 1), v3s16(1, 0, 0)}, MapBlockMesh::SIDE_PX},
+		{v3s16(-1, 0,  0), {v3s16(0, 0, 0), v3s16(0, 0, 1)}, MapBlockMesh::SIDE_MX},
+		{v3s16( 0, 0,  1), {v3s16(0, 0, 1), v3s16(1, 0, 1)}, MapBlockMesh::SIDE_PZ},
+		{v3s16( 0, 0, -1), {v3s16(1, 0, 0), v3s16(0, 0, 0)}, MapBlockMesh::SIDE_MZ},
 	};
-	static const UV liquid_base_vertices[4] = {
+	static constexpr UV liquid_base_vertices[4] = {
 		{0, 1},
 		{1, 1},
 		{1, 0},
@@ -627,7 +638,8 @@ void MapblockMeshGenerator::drawLiquidSides()
 			pos += origin;
 			vertices[j] = video::S3DVertex(pos.X, pos.Y, pos.Z, 0, 0, 0, color, vertex.u, v);
 		};
-		collector->append(tile_liquid, vertices, 4, quad_indices, 6, MapBlockMesh::SIDE_ALWAYS);
+		collector->append(tile_liquid, vertices, 4, quad_indices.data(),
+				quad_indices.size(), face.side_hint);
 	}
 }
 
@@ -677,7 +689,8 @@ void MapblockMeshGenerator::drawLiquidTop()
 
 	std::swap(vertices[0].TCoords, vertices[2].TCoords);
 
-	collector->append(tile_liquid_top, vertices, 4, quad_indices, 6, MapBlockMesh::SIDE_ALWAYS);
+	collector->append(tile_liquid_top, vertices, 4, quad_indices.data(),
+			quad_indices.size(), MapBlockMesh::SIDE_ALWAYS);
 }
 
 void MapblockMeshGenerator::drawLiquidBottom()
@@ -695,7 +708,8 @@ void MapblockMeshGenerator::drawLiquidBottom()
 		vertices[i].Pos += origin;
 	}
 
-	collector->append(tile_liquid_top, vertices, 4, quad_indices, 6, MapBlockMesh::SIDE_ALWAYS);
+	collector->append(tile_liquid_top, vertices, 4, quad_indices.data(), quad_indices.size(),
+			MapBlockMesh::SIDE_MY);
 }
 
 void MapblockMeshGenerator::drawLiquidNode()

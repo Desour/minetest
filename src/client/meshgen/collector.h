@@ -40,32 +40,31 @@ struct MeshCollector
 	std::array<std::array<std::vector<PreMeshBuffer>, MAX_TILE_LAYERS>,
 			MapBlockMesh::NUM_SIDES> prebuffers_per_side;
 
-	// clang-format off
+	// if side_hint is not MapBlockMesh::SIDE_ALWAYS, the material is checked for
+	// backface culling, waving, etc. (but not the normal), and then if possible
+	// cpu-backface-culled
 	void append(const TileSpec &material,
 			const video::S3DVertex *vertices, u32 numVertices,
 			const u16 *indices, u32 numIndices,
-			MapBlockMesh::Side side);
+			MapBlockMesh::Side side_hint);
 	void append(const TileSpec &material,
 			const video::S3DVertex *vertices, u32 numVertices,
 			const u16 *indices, u32 numIndices,
 			v3f pos, video::SColor color, u8 light_source,
-			MapBlockMesh::Side side);
-	// clang-format on
+			MapBlockMesh::Side side_hint);
 
 private:
-	// clang-format off
 	void append(const TileLayer &material,
 			const video::S3DVertex *vertices, u32 numVertices,
 			const u16 *indices, u32 numIndices,
-			MapBlockMesh::Side side,
+			MapBlockMesh::Side side_hint,
 			u8 layernum, bool use_scale = false);
 	void append(const TileLayer &material,
 			const video::S3DVertex *vertices, u32 numVertices,
 			const u16 *indices, u32 numIndices,
 			v3f pos, video::SColor color, u8 light_source,
-			MapBlockMesh::Side side,
+			MapBlockMesh::Side side_hint,
 			u8 layernum, bool use_scale = false);
-	// clang-format on
 
 	PreMeshBuffer &findBuffer(const TileLayer &layer, MapBlockMesh::Side side,
 			u8 layernum, u32 numVertices);
