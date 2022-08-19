@@ -19,18 +19,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "mapblock_mesh.h"
 #include "client.h"
-#include "mapblock.h"
-#include "map.h"
-#include "profiler.h"
-#include "shader.h"
-#include "mesh.h"
-#include "minimap.h"
 #include "content_mapblock.h"
+#include "irr_ptr.h"
+#include "map.h"
+#include "mapblock.h"
+#include "mesh.h"
+#include "meshgen/collector.h"
+#include "minimap.h"
+#include "profiler.h"
+#include "renderingengine.h"
+#include "shader.h"
 #include "util/directiontables.h"
-#include "client/meshgen/collector.h"
-#include "client/renderingengine.h"
-#include <array>
 #include <algorithm>
+#include <array>
 
 /*
 	MeshMakeData
@@ -1236,7 +1237,7 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 			static const u16 indices_alternate[] = {0, 1, 3, 2, 3, 1};
 			const u16 *indices_p =
 				f.vertex_0_2_connected ? indices : indices_alternate;
-			collector.append(f.tile, f.vertices, 4, indices_p, 6);
+			collector.append(f.tile, f.vertices, 4, indices_p, 6, MapBlockMesh::SIDE_ALWAYS);
 		}
 	}
 
@@ -1260,37 +1261,38 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 	const bool desync_animations = g_settings->getBool(
 		"desynchronize_mapblock_texture_animation");
 
-	for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) {
-		for(u32 i = 0; i < collector.prebuffers[layer].size(); i++)
-		{
-			PreMeshBuffer &p = collector.prebuffers[layer][i];
+	for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) { //TODO: side first
+		for (Side side : {SIDE_ALWAYS, SIDE_MX, SIDE_PX, SIDE_MY, SIDE_PY, SIDE_MZ,
+				SIDE_PZ}) {
+		for (u32 pmb_i = 0; pmb_i < collector.prebuffers_per_side[side][layer].size(); pmb_i++) {
+			PreMeshBuffer &pmb = collector.prebuffers_per_side[side][layer][pmb_i];
 
-			applyTileColor(p);
+			applyTileColor(pmb);
 
 			// Generate animation data
 			// - Cracks
-			if (p.layer.material_flags & MATERIAL_FLAG_CRACK) {
+			if (pmb.layer.material_flags & MATERIAL_FLAG_CRACK) {
 				// Find the texture name plus ^[crack:N:
 				std::ostringstream os(std::ios::binary);
-				os << m_tsrc->getTextureName(p.layer.texture_id) << "^[crack";
-				if (p.layer.material_flags & MATERIAL_FLAG_CRACK_OVERLAY)
+				os << m_tsrc->getTextureName(pmb.layer.texture_id) << "^[crack";
+				if (pmb.layer.material_flags & MATERIAL_FLAG_CRACK_OVERLAY)
 					os << "o";  // use ^[cracko
-				u8 tiles = p.layer.scale;
+				u8 tiles = pmb.layer.scale;
 				if (tiles > 1)
 					os << ":" << (u32)tiles;
-				os << ":" << (u32)p.layer.animation_frame_count << ":";
+				os << ":" << (u32)pmb.layer.animation_frame_count << ":";
 				m_crack_materials.insert(std::make_pair(
-						std::pair<u8, u32>(layer, i), os.str()));
+						std::pair<u8, u32>(layer, pmb_i), os.str()));
 				// Replace tile texture with the cracked one
-				p.layer.texture = m_tsrc->getTextureForMesh(
+				pmb.layer.texture = m_tsrc->getTextureForMesh(
 						os.str() + "0",
-						&p.layer.texture_id);
+						&pmb.layer.texture_id);
 			}
 			// - Texture animation
-			if (p.layer.material_flags & MATERIAL_FLAG_ANIMATION) {
+			if (pmb.layer.material_flags & MATERIAL_FLAG_ANIMATION) {
 				// Add to MapBlockMesh in order to animate these tiles
-				auto &info = m_animation_info[{layer, i}];
-				info.tile = p.layer;
+				auto &info = m_animation_info[{layer, pmb_i}];
+				info.tile = pmb.layer;
 				info.frame = 0;
 				if (desync_animations) {
 					// Get starting position from noise
@@ -1303,7 +1305,7 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 					info.frame_offset = 0;
 				}
 				// Replace tile texture with the first animation frame
-				p.layer.texture = (*p.layer.frames)[0].texture;
+				pmb.layer.texture = (*pmb.layer.frames)[0].texture;
 			}
 
 			if (!m_enable_shaders) {
@@ -1313,9 +1315,9 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 				get_sunlight_color(&sunlight, 0);
 
 				std::map<u32, video::SColor> colors;
-				const u32 vertex_count = p.vertices.size();
+				const u32 vertex_count = pmb.vertices.size();
 				for (u32 j = 0; j < vertex_count; j++) {
-					video::SColor *vc = &p.vertices[j].Color;
+					video::SColor *vc = &pmb.vertices[j].Color;
 					video::SColor copy = *vc;
 					if (vc->getAlpha() == 0) // No sunlight - no need to animate
 						final_color_blend(vc, copy, sunlight); // Finalize color
@@ -1327,7 +1329,7 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 					vc->setAlpha(255);
 				}
 				if (!colors.empty())
-					m_daynight_diffs[{layer, i}] = std::move(colors);
+					m_daynight_diffs[{layer, pmb_i}] = std::move(colors);
 			}
 
 			// Create material
@@ -1336,43 +1338,37 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 			material.setFlag(video::EMF_BACK_FACE_CULLING, true);
 			material.setFlag(video::EMF_BILINEAR_FILTER, false);
 			material.setFlag(video::EMF_FOG_ENABLE, true);
-			material.setTexture(0, p.layer.texture);
+			material.setTexture(0, pmb.layer.texture);
 
 			if (m_enable_shaders) {
 				material.MaterialType = m_shdrsrc->getShaderInfo(
-						p.layer.shader_id).material;
-				p.layer.applyMaterialOptionsWithShaders(material);
-				if (p.layer.normal_texture)
-					material.setTexture(1, p.layer.normal_texture);
-				material.setTexture(2, p.layer.flags_texture);
+						pmb.layer.shader_id).material;
+				pmb.layer.applyMaterialOptionsWithShaders(material);
+				if (pmb.layer.normal_texture)
+					material.setTexture(1, pmb.layer.normal_texture);
+				material.setTexture(2, pmb.layer.flags_texture);
 			} else {
-				p.layer.applyMaterialOptions(material);
+				pmb.layer.applyMaterialOptions(material);
 			}
 
-			scene::SMesh *mesh = (scene::SMesh *)m_mesh[layer];
+			scene::SMesh *mesh = static_cast<scene::SMesh *>(m_mesh[layer]);
 
-			scene::SMeshBuffer *buf = new scene::SMeshBuffer();
+			irr_ptr<scene::SMeshBuffer> buf(new scene::SMeshBuffer());
 			buf->Material = material;
-			if (p.layer.isTransparent()) {
-				buf->append(&p.vertices[0], p.vertices.size(), nullptr, 0);
+			if (pmb.layer.isTransparent()) {
+				buf->append(&pmb.vertices[0], pmb.vertices.size(), nullptr, 0);
 
-				MeshTriangle t;
-				t.buffer = buf;
-				m_transparent_triangles.reserve(p.indices.size() / 3);
-				for (u32 i = 0; i < p.indices.size(); i += 3) {
-					t.p1 = p.indices[i];
-					t.p2 = p.indices[i + 1];
-					t.p3 = p.indices[i + 2];
-					t.updateAttributes();
-					m_transparent_triangles.push_back(t);
+				m_transparent_triangles.reserve(pmb.indices.size() / 3);
+				for (u32 i = 0; i < pmb.indices.size(); i += 3) {
+					m_transparent_triangles.emplace_back(buf.get(), pmb.indices[i],
+							pmb.indices[i + 1], pmb.indices[i + 2]);
 				}
 			} else {
-				buf->append(&p.vertices[0], p.vertices.size(),
-					&p.indices[0], p.indices.size());
+				buf->append(&pmb.vertices[0], pmb.vertices.size(),
+					&pmb.indices[0], pmb.indices.size());
 			}
-			mesh->addMeshBuffer(buf);
-			buf->drop();
-		}
+			mesh->addMeshBuffer(buf.get());
+		}}
 
 		if (m_mesh[layer]) {
 			// Use VBO for mesh (this just would set this for ever buffer)
@@ -1486,6 +1482,14 @@ bool MapBlockMesh::animate(bool faraway, float time, int crack,
 		m_last_daynight_ratio = daynight_ratio;
 	}
 
+	return true;
+}
+
+bool MapBlockMesh::isEmpty() const
+{
+	for (auto &mesh_layer : m_mesh)
+		if (mesh_layer->getMeshBufferCount() != 0)
+			return false;
 	return true;
 }
 

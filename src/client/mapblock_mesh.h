@@ -80,14 +80,15 @@ public:
 	v3f centroid;
 	float areaSQ;
 
-	void updateAttributes()
+	MeshTriangle(scene::SMeshBuffer *buffer_, u16 p1_, u16 p2_, u16 p3_) :
+		buffer(buffer_), p1(p1_), p2(p2_), p3(p3_)
 	{
 		v3f v1 = buffer->getPosition(p1);
 		v3f v2 = buffer->getPosition(p2);
 		v3f v3 = buffer->getPosition(p3);
 
-		centroid = (v1 + v2 + v3) / 3;
-		areaSQ = (v2-v1).crossProduct(v3-v1).getLengthSQ() / 4;
+		centroid = (v1 + v2 + v3) / 3.0f;
+		areaSQ = (v2-v1).crossProduct(v3-v1).getLengthSQ() * 0.25f;
 	}
 
 	v3f getNormal() const {
@@ -181,6 +182,17 @@ private:
 class MapBlockMesh
 {
 public:
+	enum Side : u8 {
+		SIDE_ALWAYS, // mesh that is always drawn
+		SIDE_MX, // "minus x": only drawn if camera mapblock is in -x direction
+		SIDE_PX, // "plus x"
+		SIDE_MY,
+		SIDE_PY,
+		SIDE_MZ,
+		SIDE_PZ,
+		NUM_SIDES
+	};
+
 	// Builds the mesh given
 	MapBlockMesh(MeshMakeData *data, v3s16 camera_offset);
 	~MapBlockMesh();
@@ -193,15 +205,12 @@ public:
 	// Returns true if anything has been changed.
 	bool animate(bool faraway, float time, int crack, u32 daynight_ratio);
 
-	scene::IMesh *getMesh()
-	{
-		return m_mesh[0];
-	}
-
-	scene::IMesh *getMesh(u8 layer)
+	scene::IMesh *getMesh_(u8 layer)
 	{
 		return m_mesh[layer];
 	}
+
+	bool isEmpty() const;
 
 	MinimapMapblock *moveMinimapMapblock()
 	{

@@ -23,82 +23,83 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "client/mesh.h"
 
 void MeshCollector::append(const TileSpec &tile, const video::S3DVertex *vertices,
-		u32 numVertices, const u16 *indices, u32 numIndices)
+		u32 numVertices, const u16 *indices, u32 numIndices, MapBlockMesh::Side side)
 {
 	for (int layernum = 0; layernum < MAX_TILE_LAYERS; layernum++) {
 		const TileLayer *layer = &tile.layers[layernum];
 		if (layer->texture_id == 0)
 			continue;
-		append(*layer, vertices, numVertices, indices, numIndices, layernum,
-				tile.world_aligned);
+		append(*layer, vertices, numVertices, indices, numIndices, side,
+				layernum, tile.world_aligned);
 	}
-}
-
-void MeshCollector::append(const TileLayer &layer, const video::S3DVertex *vertices,
-		u32 numVertices, const u16 *indices, u32 numIndices, u8 layernum,
-		bool use_scale)
-{
-	PreMeshBuffer &p = findBuffer(layer, layernum, numVertices);
-
-	f32 scale = 1.0f;
-	if (use_scale)
-		scale = 1.0f / layer.scale;
-
-	u32 vertex_count = p.vertices.size();
-	for (u32 i = 0; i < numVertices; i++)
-		p.vertices.emplace_back(vertices[i].Pos, vertices[i].Normal,
-				vertices[i].Color, scale * vertices[i].TCoords);
-
-	for (u32 i = 0; i < numIndices; i++)
-		p.indices.push_back(indices[i] + vertex_count);
 }
 
 void MeshCollector::append(const TileSpec &tile, const video::S3DVertex *vertices,
 		u32 numVertices, const u16 *indices, u32 numIndices, v3f pos,
-		video::SColor c, u8 light_source)
+		video::SColor color, u8 light_source, MapBlockMesh::Side side)
 {
 	for (int layernum = 0; layernum < MAX_TILE_LAYERS; layernum++) {
 		const TileLayer *layer = &tile.layers[layernum];
 		if (layer->texture_id == 0)
 			continue;
-		append(*layer, vertices, numVertices, indices, numIndices, pos, c,
-				light_source, layernum, tile.world_aligned);
+		append(*layer, vertices, numVertices, indices, numIndices, pos, color,
+				light_source, side, layernum, tile.world_aligned);
 	}
 }
 
 void MeshCollector::append(const TileLayer &layer, const video::S3DVertex *vertices,
-		u32 numVertices, const u16 *indices, u32 numIndices, v3f pos,
-		video::SColor c, u8 light_source, u8 layernum, bool use_scale)
+		u32 numVertices, const u16 *indices, u32 numIndices, MapBlockMesh::Side side,
+		u8 layernum, bool use_scale)
 {
-	PreMeshBuffer &p = findBuffer(layer, layernum, numVertices);
+	PreMeshBuffer &pmb = findBuffer(layer, side, layernum, numVertices);
 
 	f32 scale = 1.0f;
 	if (use_scale)
 		scale = 1.0f / layer.scale;
 
-	u32 vertex_count = p.vertices.size();
+	u32 vertex_count = pmb.vertices.size();
+	for (u32 i = 0; i < numVertices; i++)
+		pmb.vertices.emplace_back(vertices[i].Pos, vertices[i].Normal,
+				vertices[i].Color, scale * vertices[i].TCoords);
+
+	for (u32 i = 0; i < numIndices; i++)
+		pmb.indices.push_back(indices[i] + vertex_count);
+}
+
+void MeshCollector::append(const TileLayer &layer, const video::S3DVertex *vertices,
+		u32 numVertices, const u16 *indices, u32 numIndices, v3f pos,
+		video::SColor color, u8 light_source, MapBlockMesh::Side side, u8 layernum,
+		bool use_scale)
+{
+	PreMeshBuffer &pmb = findBuffer(layer, side, layernum, numVertices);
+
+	f32 scale = 1.0f;
+	if (use_scale)
+		scale = 1.0f / layer.scale;
+
+	u32 vertex_count = pmb.vertices.size();
 	for (u32 i = 0; i < numVertices; i++) {
-		video::SColor color = c;
 		if (!light_source)
 			applyFacesShading(color, vertices[i].Normal);
-		p.vertices.emplace_back(vertices[i].Pos + pos, vertices[i].Normal, color,
+		pmb.vertices.emplace_back(vertices[i].Pos + pos, vertices[i].Normal, color,
 				scale * vertices[i].TCoords);
 	}
 
 	for (u32 i = 0; i < numIndices; i++)
-		p.indices.push_back(indices[i] + vertex_count);
+		pmb.indices.push_back(indices[i] + vertex_count);
 }
 
-PreMeshBuffer &MeshCollector::findBuffer(
-		const TileLayer &layer, u8 layernum, u32 numVertices)
+PreMeshBuffer &MeshCollector::findBuffer(const TileLayer &layer, MapBlockMesh::Side side,
+		u8 layernum, u32 numVertices)
 {
 	if (numVertices > U16_MAX)
 		throw std::invalid_argument(
 				"Mesh can't contain more than 65536 vertices");
-	std::vector<PreMeshBuffer> &buffers = prebuffers[layernum];
-	for (PreMeshBuffer &p : buffers)
-		if (p.layer == layer && p.vertices.size() + numVertices <= U16_MAX)
-			return p;
+	std::vector<PreMeshBuffer> &buffers =
+			prebuffers_per_side[side][layernum];
+	for (PreMeshBuffer &pmb : buffers)
+		if (pmb.layer == layer && pmb.vertices.size() + numVertices <= U16_MAX)
+			return pmb;
 	buffers.emplace_back(layer);
 	return buffers.back();
 }

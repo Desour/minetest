@@ -137,7 +137,7 @@ void MapblockMeshGenerator::drawQuad(v3f *coords, const v3s16 &normal,
 			applyFacesShading(vertices[j].Color, normal2);
 		vertices[j].TCoords = tcoords[j];
 	}
-	collector->append(tile, vertices, 4, quad_indices, 6);
+	collector->append(tile, vertices, 4, quad_indices, 6, MapBlockMesh::SIDE_ALWAYS);
 }
 
 // Create a cuboid.
@@ -279,7 +279,8 @@ void MapblockMeshGenerator::drawCuboid(const aabb3f &box,
 		if (mask & (1 << k))
 			continue;
 		int tileindex = MYMIN(k, tilecount - 1);
-		collector->append(tiles[tileindex], vertices + 4 * k, 4, quad_indices, 6);
+		collector->append(tiles[tileindex], vertices + 4 * k, 4, quad_indices, 6,
+				MapBlockMesh::SIDE_ALWAYS);
 	}
 }
 
@@ -626,7 +627,7 @@ void MapblockMeshGenerator::drawLiquidSides()
 			pos += origin;
 			vertices[j] = video::S3DVertex(pos.X, pos.Y, pos.Z, 0, 0, 0, color, vertex.u, v);
 		};
-		collector->append(tile_liquid, vertices, 4, quad_indices, 6);
+		collector->append(tile_liquid, vertices, 4, quad_indices, 6, MapBlockMesh::SIDE_ALWAYS);
 	}
 }
 
@@ -676,7 +677,7 @@ void MapblockMeshGenerator::drawLiquidTop()
 
 	std::swap(vertices[0].TCoords, vertices[2].TCoords);
 
-	collector->append(tile_liquid_top, vertices, 4, quad_indices, 6);
+	collector->append(tile_liquid_top, vertices, 4, quad_indices, 6, MapBlockMesh::SIDE_ALWAYS);
 }
 
 void MapblockMeshGenerator::drawLiquidBottom()
@@ -694,7 +695,7 @@ void MapblockMeshGenerator::drawLiquidBottom()
 		vertices[i].Pos += origin;
 	}
 
-	collector->append(tile_liquid_top, vertices, 4, quad_indices, 6);
+	collector->append(tile_liquid_top, vertices, 4, quad_indices, 6, MapBlockMesh::SIDE_ALWAYS);
 }
 
 void MapblockMeshGenerator::drawLiquidNode()
@@ -1557,13 +1558,14 @@ void MapblockMeshGenerator::drawMeshNode()
 				vertex.Pos += origin;
 			}
 			collector->append(tile, vertices, vertex_count,
-				buf->getIndices(), buf->getIndexCount());
+				buf->getIndices(), buf->getIndexCount(),
+				MapBlockMesh::SIDE_ALWAYS);
 		} else {
 			// Don't modify the mesh, it may not be private here.
 			// Instead, let the collector process colors, etc.
 			collector->append(tile, vertices, vertex_count,
 				buf->getIndices(), buf->getIndexCount(), origin,
-				color, f->light_source);
+				color, f->light_source, MapBlockMesh::SIDE_ALWAYS);
 		}
 	}
 	if (private_mesh)

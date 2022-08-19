@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "settings.h"
 #include "shader.h"
 #include "inventory.h"
+#include "irr_ptr.h"
 #include "client.h"
 #include "itemdef.h"
 #include "nodedef.h"
@@ -309,7 +310,7 @@ void WieldMeshSceneNode::setExtruded(const std::string &imagename,
 	}
 }
 
-static scene::SMesh *createSpecialNodeMesh(Client *client, MapNode n,
+static irr_ptr<scene::SMesh> createSpecialNodeMesh(Client *client, MapNode n,
 	std::vector<ItemPartColor> *colors, const ContentFeatures &f)
 {
 	MeshMakeData mesh_make_data(client, false);
@@ -334,27 +335,28 @@ static scene::SMesh *createSpecialNodeMesh(Client *client, MapNode n,
 	gen.renderSingle(n.getContent(), n.getParam2());
 
 	colors->clear();
-	scene::SMesh *mesh = new scene::SMesh();
-	for (auto &prebuffers : collector.prebuffers)
-		for (PreMeshBuffer &p : prebuffers) {
-			if (p.layer.material_flags & MATERIAL_FLAG_ANIMATION) {
-				const FrameSpec &frame = (*p.layer.frames)[0];
-				p.layer.texture = frame.texture;
-				p.layer.normal_texture = frame.normal_texture;
+	irr_ptr<scene::SMesh> mesh(new scene::SMesh());
+	for (auto &prebuffers_side : collector.prebuffers_per_side) { // all sides
+	for (auto &prebuffers : prebuffers_side) {
+		for (PreMeshBuffer &pmb : prebuffers) {
+			if (pmb.layer.material_flags & MATERIAL_FLAG_ANIMATION) {
+				const FrameSpec &frame = (*pmb.layer.frames)[0];
+				pmb.layer.texture = frame.texture;
+				pmb.layer.normal_texture = frame.normal_texture;
 			}
-			for (video::S3DVertex &v : p.vertices) {
+			for (video::S3DVertex &v : pmb.vertices) {
 				v.Color.setAlpha(255);
 			}
-			scene::SMeshBuffer *buf = new scene::SMeshBuffer();
-			buf->Material.setTexture(0, p.layer.texture);
-			p.layer.applyMaterialOptions(buf->Material);
-			mesh->addMeshBuffer(buf);
-			buf->append(&p.vertices[0], p.vertices.size(),
-					&p.indices[0], p.indices.size());
-			buf->drop();
+			irr_ptr<scene::SMeshBuffer> buf(new scene::SMeshBuffer());
+			buf->Material.setTexture(0, pmb.layer.texture);
+			pmb.layer.applyMaterialOptions(buf->Material);
+			mesh->addMeshBuffer(buf.get());
+			buf->append(&pmb.vertices[0], pmb.vertices.size(),
+					&pmb.indices[0], pmb.indices.size());
 			colors->push_back(
-				ItemPartColor(p.layer.has_color, p.layer.color));
+				ItemPartColor(pmb.layer.has_color, pmb.layer.color));
 		}
+	}}
 	return mesh;
 }
 
@@ -367,8 +369,6 @@ void WieldMeshSceneNode::setItem(const ItemStack &item, Client *client, bool che
 	const ItemDefinition &def = item.getDefinition(idef);
 	const ContentFeatures &f = ndef->get(def.name);
 	content_t id = ndef->getId(def.name);
-
-	scene::SMesh *mesh = nullptr;
 
 	if (m_enable_shaders) {
 		u32 shader_id = shdrsrc->getShader("object_shader", TILE_MATERIAL_BASIC, NDT_NORMAL);
@@ -441,9 +441,8 @@ void WieldMeshSceneNode::setItem(const ItemStack &item, Client *client, bool che
 			MapNode n(id);
 			n.setParam2(def.place_param2);
 
-			mesh = createSpecialNodeMesh(client, n, &m_colors, f);
-			changeToMesh(mesh);
-			mesh->drop();
+			auto mesh = createSpecialNodeMesh(client, n, &m_colors, f);
+			changeToMesh(mesh.get());
 			m_meshnode->setScale(
 				def.wield_scale * WIELD_SCALE_FACTOR
 				/ (BS * f.visual_scale));
@@ -636,7 +635,7 @@ void getItemMesh(Client *client, const ItemStack &item, ItemMesh *result)
 			MapNode n(id);
 			n.setParam2(def.place_param2);
 
-			mesh = createSpecialNodeMesh(client, n, &result->buffer_colors, f);
+			mesh = createSpecialNodeMesh(client, n, &result->buffer_colors, f).release();
 			scaleMesh(mesh, v3f(0.12, 0.12, 0.12));
 			break;
 		}

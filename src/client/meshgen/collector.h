@@ -18,11 +18,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #pragma once
-#include <array>
-#include <vector>
+#include "client/tile.h"
+#include "client/mapblock_mesh.h"
 #include "irrlichttypes.h"
 #include <S3DVertex.h>
-#include "client/tile.h"
+#include <array>
+#include <vector>
 
 struct PreMeshBuffer
 {
@@ -36,16 +37,19 @@ struct PreMeshBuffer
 
 struct MeshCollector
 {
-	std::array<std::vector<PreMeshBuffer>, MAX_TILE_LAYERS> prebuffers;
+	std::array<std::array<std::vector<PreMeshBuffer>, MAX_TILE_LAYERS>,
+			MapBlockMesh::NUM_SIDES> prebuffers_per_side;
 
 	// clang-format off
 	void append(const TileSpec &material,
 			const video::S3DVertex *vertices, u32 numVertices,
-			const u16 *indices, u32 numIndices);
+			const u16 *indices, u32 numIndices,
+			MapBlockMesh::Side side);
 	void append(const TileSpec &material,
 			const video::S3DVertex *vertices, u32 numVertices,
 			const u16 *indices, u32 numIndices,
-			v3f pos, video::SColor c, u8 light_source);
+			v3f pos, video::SColor color, u8 light_source,
+			MapBlockMesh::Side side);
 	// clang-format on
 
 private:
@@ -53,13 +57,16 @@ private:
 	void append(const TileLayer &material,
 			const video::S3DVertex *vertices, u32 numVertices,
 			const u16 *indices, u32 numIndices,
+			MapBlockMesh::Side side,
 			u8 layernum, bool use_scale = false);
 	void append(const TileLayer &material,
 			const video::S3DVertex *vertices, u32 numVertices,
 			const u16 *indices, u32 numIndices,
-			v3f pos, video::SColor c, u8 light_source,
+			v3f pos, video::SColor color, u8 light_source,
+			MapBlockMesh::Side side,
 			u8 layernum, bool use_scale = false);
 	// clang-format on
 
-	PreMeshBuffer &findBuffer(const TileLayer &layer, u8 layernum, u32 numVertices);
+	PreMeshBuffer &findBuffer(const TileLayer &layer, MapBlockMesh::Side side,
+			u8 layernum, u32 numVertices);
 };

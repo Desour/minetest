@@ -404,7 +404,7 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 			assert(mapBlockMesh);
 
 			for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) {
-				scene::IMesh *mesh = mapBlockMesh->getMesh(layer);
+				scene::IMesh *mesh = mapBlockMesh->getMesh_(layer);
 				assert(mesh);
 
 				u32 c = mesh->getMeshBufferCount();
@@ -751,7 +751,7 @@ void ClientMap::renderMapShadows(video::IVideoDriver *driver,
 			assert(mapBlockMesh);
 
 			for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) {
-				scene::IMesh *mesh = mapBlockMesh->getMesh(layer);
+				scene::IMesh *mesh = mapBlockMesh->getMesh_(layer);
 				assert(mesh);
 
 				u32 c = mesh->getMeshBufferCount();
@@ -772,9 +772,9 @@ void ClientMap::renderMapShadows(video::IVideoDriver *driver,
 	for (auto &lists : grouped_buffers.lists)
 		for (MeshBufList &list : lists)
 			buffer_count += list.bufs.size();
-	
+
 	draw_order.reserve(draw_order.size() + buffer_count);
-	
+
 	// Capture draw order for all solid meshes
 	for (auto &lists : grouped_buffers.lists) {
 		for (MeshBufList &list : lists) {
@@ -910,8 +910,8 @@ void ClientMap::updateTransparentMeshBuffers()
 		MapBlock* block = it->second;
 		if (!block->mesh)
 			continue;
-		
-		if (m_needs_update_transparent_meshes || 
+
+		if (m_needs_update_transparent_meshes ||
 				block->mesh->getTransparentBuffers().size() == 0) {
 
 			v3s16 block_pos = block->getPos();
