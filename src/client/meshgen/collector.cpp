@@ -26,6 +26,7 @@ static MapBlockMesh::Side check_side_hint(const TileLayer &layer, MapBlockMesh::
 {
 	if (!(layer.material_flags & MATERIAL_FLAG_BACKFACE_CULLING))
 		return MapBlockMesh::SIDE_ALWAYS;
+	// TODO: waving
 	return side_hint;
 }
 
@@ -58,7 +59,8 @@ void MeshCollector::append(const TileLayer &layer, const video::S3DVertex *verti
 		u32 numVertices, const u16 *indices, u32 numIndices, MapBlockMesh::Side side_hint,
 		u8 layernum, bool use_scale)
 {
-	PreMeshBuffer &pmb = findBuffer(layer, side_hint, layernum, numVertices);
+	auto side = check_side_hint(layer, side_hint);
+	PreMeshBuffer &pmb = findBuffer(layer, side, layernum, numVertices);
 
 	f32 scale = 1.0f;
 	if (use_scale)
@@ -78,7 +80,8 @@ void MeshCollector::append(const TileLayer &layer, const video::S3DVertex *verti
 		video::SColor color, u8 light_source, MapBlockMesh::Side side_hint, u8 layernum,
 		bool use_scale)
 {
-	PreMeshBuffer &pmb = findBuffer(layer, side_hint, layernum, numVertices);
+	auto side = check_side_hint(layer, side_hint);
+	PreMeshBuffer &pmb = findBuffer(layer, side, layernum, numVertices);
 
 	f32 scale = 1.0f;
 	if (use_scale)

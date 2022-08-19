@@ -1189,7 +1189,8 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 	m_last_crack(-1),
 	m_last_daynight_ratio((u32) -1)
 {
-	for (auto &m : m_mesh)
+	for (auto &mesh_layers : m_mesh_layers_by_side)
+	for (auto &m : mesh_layers)
 		m = new scene::SMesh();
 	m_enable_shaders = data->m_use_shaders;
 	m_enable_vbo = g_settings->getBool("enable_vbo");
@@ -1261,13 +1262,16 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 	const bool desync_animations = g_settings->getBool(
 		"desynchronize_mapblock_texture_animation");
 
-	for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) { //TODO: side first
-		for (Side side : {SIDE_ALWAYS, SIDE_MX, SIDE_PX, SIDE_MY, SIDE_PY, SIDE_MZ,
-				SIDE_PZ}) {
+	for (Side side : {SIDE_ALWAYS, SIDE_MX, SIDE_PX, SIDE_MY, SIDE_PY, SIDE_MZ,
+			SIDE_PZ}) {
+	auto &mesh_layers = m_mesh_layers_by_side[side];
+	for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) {
 		for (u32 pmb_i = 0; pmb_i < collector.prebuffers_per_side[side][layer].size(); pmb_i++) {
 			PreMeshBuffer &pmb = collector.prebuffers_per_side[side][layer][pmb_i];
 
 			applyTileColor(pmb);
+
+			LayerIdx layeridx(side, layer);
 
 			// Generate animation data
 			// - Cracks
@@ -1282,7 +1286,7 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 					os << ":" << (u32)tiles;
 				os << ":" << (u32)pmb.layer.animation_frame_count << ":";
 				m_crack_materials.insert(std::make_pair(
-						std::pair<u8, u32>(layer, pmb_i), os.str()));
+						std::pair<LayerIdx, u32>(layeridx, pmb_i), os.str()));
 				// Replace tile texture with the cracked one
 				pmb.layer.texture = m_tsrc->getTextureForMesh(
 						os.str() + "0",
@@ -1291,7 +1295,7 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 			// - Texture animation
 			if (pmb.layer.material_flags & MATERIAL_FLAG_ANIMATION) {
 				// Add to MapBlockMesh in order to animate these tiles
-				auto &info = m_animation_info[{layer, pmb_i}];
+				auto &info = m_animation_info[{layeridx, pmb_i}];
 				info.tile = pmb.layer;
 				info.frame = 0;
 				if (desync_animations) {
@@ -1329,7 +1333,7 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 					vc->setAlpha(255);
 				}
 				if (!colors.empty())
-					m_daynight_diffs[{layer, pmb_i}] = std::move(colors);
+					m_daynight_diffs[{layeridx, pmb_i}] = std::move(colors);
 			}
 
 			// Create material
@@ -1351,7 +1355,7 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 				pmb.layer.applyMaterialOptions(material);
 			}
 
-			scene::SMesh *mesh = static_cast<scene::SMesh *>(m_mesh[layer]);
+			scene::SMesh *mesh = static_cast<scene::SMesh *>(mesh_layers[layer]);
 
 			irr_ptr<scene::SMeshBuffer> buf(new scene::SMeshBuffer());
 			buf->Material = material;
@@ -1368,14 +1372,14 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 					&pmb.indices[0], pmb.indices.size());
 			}
 			mesh->addMeshBuffer(buf.get());
-		}}
+		}
 
-		if (m_mesh[layer]) {
+		if (mesh_layers[layer]) {
 			// Use VBO for mesh (this just would set this for ever buffer)
 			if (m_enable_vbo)
-				m_mesh[layer]->setHardwareMappingHint(scene::EHM_STATIC);
+				mesh_layers[layer]->setHardwareMappingHint(scene::EHM_STATIC);
 		}
-	}
+	}}
 
 	//std::cout<<"added "<<fastfaces.getSize()<<" faces."<<std::endl;
 	m_bsp_tree.buildTree(&m_transparent_triangles);
@@ -1389,7 +1393,8 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 
 MapBlockMesh::~MapBlockMesh()
 {
-	for (scene::IMesh *m : m_mesh) {
+	for (auto &mesh_layers : m_mesh_layers_by_side) {
+	for (scene::IMesh *m : mesh_layers) {
 #if IRRLICHT_VERSION_MT_REVISION < 5
 		if (m_enable_vbo) {
 			for (u32 i = 0; i < m->getMeshBufferCount(); i++) {
@@ -1399,7 +1404,7 @@ MapBlockMesh::~MapBlockMesh()
 		}
 #endif
 		m->drop();
-	}
+	}}
 }
 
 bool MapBlockMesh::animate(bool faraway, float time, int crack,
@@ -1415,7 +1420,7 @@ bool MapBlockMesh::animate(bool faraway, float time, int crack,
 	// Cracks
 	if (crack != m_last_crack) {
 		for (auto &crack_material : m_crack_materials) {
-			scene::IMeshBuffer *buf = m_mesh[crack_material.first.first]->
+			scene::IMeshBuffer *buf = getMesh(crack_material.first.first)->
 				getMeshBuffer(crack_material.first.second);
 
 			// Create new texture name from original
@@ -1451,7 +1456,7 @@ bool MapBlockMesh::animate(bool faraway, float time, int crack,
 
 		it.second.frame = frameno;
 
-		scene::IMeshBuffer *buf = m_mesh[it.first.first]->getMeshBuffer(it.first.second);
+		scene::IMeshBuffer *buf = getMesh(it.first.first)->getMeshBuffer(it.first.second);
 
 		const FrameSpec &frame = (*tile.frames)[frameno];
 		buf->getMaterial().setTexture(0, frame.texture);
@@ -1466,13 +1471,14 @@ bool MapBlockMesh::animate(bool faraway, float time, int crack,
 	if (!m_enable_shaders && (daynight_ratio != m_last_daynight_ratio)) {
 		// Force reload mesh to VBO
 		if (m_enable_vbo)
-			for (scene::IMesh *m : m_mesh)
+			for (auto &mesh_layers : m_mesh_layers_by_side)
+			for (scene::IMesh *m : mesh_layers)
 				m->setDirty();
 		video::SColorf day_color;
 		get_sunlight_color(&day_color, daynight_ratio);
 
 		for (auto &daynight_diff : m_daynight_diffs) {
-			scene::IMeshBuffer *buf = m_mesh[daynight_diff.first.first]->
+			scene::IMeshBuffer *buf = getMesh(daynight_diff.first.first)->
 				getMeshBuffer(daynight_diff.first.second);
 			video::S3DVertex *vertices = (video::S3DVertex *)buf->getVertices();
 			for (const auto &j : daynight_diff.second)
@@ -1487,7 +1493,8 @@ bool MapBlockMesh::animate(bool faraway, float time, int crack,
 
 bool MapBlockMesh::isEmpty() const
 {
-	for (auto &mesh_layer : m_mesh)
+	for (auto &mesh_layers : m_mesh_layers_by_side)
+	for (auto &mesh_layer : mesh_layers)
 		if (mesh_layer->getMeshBufferCount() != 0)
 			return false;
 	return true;

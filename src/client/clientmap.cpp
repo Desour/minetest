@@ -403,8 +403,11 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 			MapBlockMesh *mapBlockMesh = block->mesh;
 			assert(mapBlockMesh);
 
+			for (MapBlockMesh::Side side : {MapBlockMesh::SIDE_ALWAYS, MapBlockMesh::SIDE_MX,
+					MapBlockMesh::SIDE_PX, MapBlockMesh::SIDE_MY, MapBlockMesh::SIDE_PY, MapBlockMesh::SIDE_MZ,
+					MapBlockMesh::SIDE_PZ}) {
 			for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) {
-				scene::IMesh *mesh = mapBlockMesh->getMesh_(layer);
+				scene::IMesh *mesh = mapBlockMesh->getMesh(MapBlockMesh::LayerIdx(side, layer));
 				assert(mesh);
 
 				u32 c = mesh->getMeshBufferCount();
@@ -423,7 +426,7 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 						grouped_buffers.add(buf, block_pos, layer);
 					}
 				}
-			}
+			}}
 		}
 	}
 
@@ -750,8 +753,11 @@ void ClientMap::renderMapShadows(video::IVideoDriver *driver,
 			MapBlockMesh *mapBlockMesh = block->mesh;
 			assert(mapBlockMesh);
 
+			for (MapBlockMesh::Side side : {MapBlockMesh::SIDE_ALWAYS, MapBlockMesh::SIDE_MX,
+					MapBlockMesh::SIDE_PX, MapBlockMesh::SIDE_MY, MapBlockMesh::SIDE_PY, MapBlockMesh::SIDE_MZ,
+					MapBlockMesh::SIDE_PZ}) {
 			for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) {
-				scene::IMesh *mesh = mapBlockMesh->getMesh_(layer);
+				scene::IMesh *mesh = mapBlockMesh->getMesh(MapBlockMesh::LayerIdx(side, layer));
 				assert(mesh);
 
 				u32 c = mesh->getMeshBufferCount();
@@ -764,7 +770,7 @@ void ClientMap::renderMapShadows(video::IVideoDriver *driver,
 					if (!transparent)
 						grouped_buffers.add(buf, block_pos, layer);
 				}
-			}
+			}}
 		}
 	}
 

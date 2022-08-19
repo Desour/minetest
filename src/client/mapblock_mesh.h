@@ -193,6 +193,29 @@ public:
 		NUM_SIDES
 	};
 
+	// pack layernum and side into a u8
+	struct LayerIdx {
+		u8 m_num;
+
+		LayerIdx(Side side, u8 layernum) :
+				m_num(side * MAX_TILE_LAYERS + layernum) {}
+
+		Side getSide() { return static_cast<Side>(m_num / MAX_TILE_LAYERS); }
+
+		u8 getLayerNum()
+		{
+			static_assert(MAX_TILE_LAYERS == 2);
+			return m_num & 1;
+		}
+
+		bool operator==(const LayerIdx &other) const { return m_num == other.m_num; }
+		bool operator!=(const LayerIdx &other) const { return m_num != other.m_num; }
+		bool operator<(const LayerIdx &other) const { return m_num < other.m_num; }
+		bool operator<=(const LayerIdx &other) const { return m_num <= other.m_num; }
+		bool operator>(const LayerIdx &other) const { return m_num > other.m_num; }
+		bool operator>=(const LayerIdx &other) const { return m_num >= other.m_num; }
+	};
+
 	// Builds the mesh given
 	MapBlockMesh(MeshMakeData *data, v3s16 camera_offset);
 	~MapBlockMesh();
@@ -205,9 +228,14 @@ public:
 	// Returns true if anything has been changed.
 	bool animate(bool faraway, float time, int crack, u32 daynight_ratio);
 
-	scene::IMesh *getMesh_(u8 layer)
+	//~ scene::IMesh *getMesh_(u8 layer)
+	//~ {
+		//~ return m_mesh[layer];
+	//~ }
+
+	scene::IMesh *getMesh(LayerIdx layeridx)
 	{
-		return m_mesh[layer];
+		return m_mesh_layers_by_side[layeridx.getSide()][layeridx.getLayerNum()];
 	}
 
 	bool isEmpty() const;
@@ -245,7 +273,7 @@ private:
 		TileLayer tile;
 	};
 
-	std::array<scene::IMesh *, MAX_TILE_LAYERS> m_mesh;
+	std::array<std::array<scene::IMesh *, MAX_TILE_LAYERS>, NUM_SIDES> m_mesh_layers_by_side;
 	std::unique_ptr<MinimapMapblock> m_minimap_mapblock;
 	ITextureSource *m_tsrc;
 	IShaderSource *m_shdrsrc;
@@ -261,12 +289,12 @@ private:
 	// Last crack value passed to animate()
 	int m_last_crack;
 	// Maps mesh and mesh buffer (i.e. material) indices to base texture names
-	std::map<std::pair<u8, u32>, std::string> m_crack_materials;
+	std::map<std::pair<LayerIdx, u32>, std::string> m_crack_materials;
 
 	// Animation info: texture animation
 	// Maps mesh and mesh buffer indices to TileSpecs
 	// Keys are pairs of (mesh index, buffer index in the mesh)
-	std::map<std::pair<u8, u32>, AnimationInfo> m_animation_info;
+	std::map<std::pair<LayerIdx, u32>, AnimationInfo> m_animation_info;
 
 	// Animation info: day/night transitions
 	// Last daynight_ratio value passed to animate()
@@ -274,7 +302,7 @@ private:
 	// For each mesh and mesh buffer, stores pre-baked colors
 	// of sunlit vertices
 	// Keys are pairs of (mesh index, buffer index in the mesh)
-	std::map<std::pair<u8, u32>, std::map<u32, video::SColor > > m_daynight_diffs;
+	std::map<std::pair<LayerIdx, u32>, std::map<u32, video::SColor > > m_daynight_diffs;
 
 	// list of all semitransparent triangles in the mapblock
 	std::vector<MeshTriangle> m_transparent_triangles;
