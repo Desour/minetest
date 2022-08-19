@@ -332,6 +332,11 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 	const u32 daynight_ratio = m_client->getEnv().getDayNightRatio();
 
 	const v3f camera_position = m_camera_position;
+	const v3s16 camera_block_coord(
+			(s16)std::floor(camera_position.X * (1.0f / BS / MAP_BLOCKSIZE)),
+			(s16)std::floor(camera_position.Y * (1.0f / BS / MAP_BLOCKSIZE)),
+			(s16)std::floor(camera_position.Z * (1.0f / BS / MAP_BLOCKSIZE))
+		);
 
 	/*
 		Get all blocks and draw all visible ones
@@ -359,8 +364,9 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 	video::SMaterial previous_material;
 
 	for (auto &i : m_drawlist) {
-		v3s16 block_pos = i.first;
+		const v3s16 block_pos = i.first;
 		MapBlock *block = i.second;
+		const v3s16 block_coord = block->getPos();
 
 		// If the mesh of the block happened to get deleted, ignore it
 		if (!block->mesh)
@@ -403,30 +409,44 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 			MapBlockMesh *mapBlockMesh = block->mesh;
 			assert(mapBlockMesh);
 
-			for (MapBlockMesh::Side side : {MapBlockMesh::SIDE_ALWAYS, MapBlockMesh::SIDE_MX,
-					MapBlockMesh::SIDE_PX, MapBlockMesh::SIDE_MY, MapBlockMesh::SIDE_PY, MapBlockMesh::SIDE_MZ,
-					MapBlockMesh::SIDE_PZ}) {
-			for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) {
-				scene::IMesh *mesh = mapBlockMesh->getMesh(MapBlockMesh::LayerIdx(side, layer));
-				assert(mesh);
+			auto add_side = [&](MapBlockMesh::Side side) {
+				for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) {
+					scene::IMesh *mesh = mapBlockMesh->getMesh(MapBlockMesh::LayerIdx(side, layer));
+					assert(mesh);
 
-				u32 c = mesh->getMeshBufferCount();
-				for (u32 i = 0; i < c; i++) {
-					scene::IMeshBuffer *buf = mesh->getMeshBuffer(i);
+					u32 c = mesh->getMeshBufferCount();
+					for (u32 i = 0; i < c; i++) {
+						scene::IMeshBuffer *buf = mesh->getMeshBuffer(i);
 
-					video::SMaterial& material = buf->getMaterial();
-					video::IMaterialRenderer* rnd =
-							driver->getMaterialRenderer(material.MaterialType);
-					bool transparent = (rnd && rnd->isTransparent());
-					if (!transparent) {
-						if (buf->getVertexCount() == 0)
-							errorstream << "Block [" << analyze_block(block)
-									<< "] contains an empty meshbuf" << std::endl;
+						video::SMaterial& material = buf->getMaterial();
+						video::IMaterialRenderer* rnd =
+								driver->getMaterialRenderer(material.MaterialType);
+						bool transparent = (rnd && rnd->isTransparent());
+						if (!transparent) {
+							if (buf->getVertexCount() == 0)
+								errorstream << "Block [" << analyze_block(block)
+										<< "] contains an empty meshbuf" << std::endl;
 
-						grouped_buffers.add(buf, block_pos, layer);
+							grouped_buffers.add(buf, block_pos, layer);
+						}
 					}
 				}
-			}}
+			};
+
+			using Tripl = std::tuple<s16 v3s16::*, MapBlockMesh::Side, MapBlockMesh::Side>;
+			for (auto tripl : {Tripl{&v3s16::X, MapBlockMesh::SIDE_MX, MapBlockMesh::SIDE_PX},
+						Tripl{&v3s16::Y, MapBlockMesh::SIDE_MY, MapBlockMesh::SIDE_PY},
+						Tripl{&v3s16::Z, MapBlockMesh::SIDE_MZ, MapBlockMesh::SIDE_PZ}, }) {
+				if (camera_block_coord.*(std::get<0>(tripl)) <= block_coord.*(std::get<0>(tripl)))
+					add_side(std::get<1>(tripl));
+				if (camera_block_coord.*(std::get<0>(tripl)) >= block_coord.*(std::get<0>(tripl)))
+					add_side(std::get<2>(tripl));
+			}
+			//~ if (camera_block_coord.X <= block_coord.X)
+				//~ add_side(MapBlockMesh::SIDE_MX);
+			//~ if (camera_block_coord.X >= block_coord.X)
+				//~ add_side(MapBlockMesh::SIDE_PX);
+			add_side(MapBlockMesh::SIDE_ALWAYS);
 		}
 	}
 
@@ -731,7 +751,7 @@ void ClientMap::renderMapShadows(video::IVideoDriver *driver,
 		if (count > high_bound)
 			break;
 
-		v3s16 block_pos = i.first;
+		const v3s16 block_pos = i.first;
 		MapBlock *block = i.second;
 
 		// If the mesh of the block happened to get deleted, ignore it
@@ -753,24 +773,39 @@ void ClientMap::renderMapShadows(video::IVideoDriver *driver,
 			MapBlockMesh *mapBlockMesh = block->mesh;
 			assert(mapBlockMesh);
 
-			for (MapBlockMesh::Side side : {MapBlockMesh::SIDE_ALWAYS, MapBlockMesh::SIDE_MX,
-					MapBlockMesh::SIDE_PX, MapBlockMesh::SIDE_MY, MapBlockMesh::SIDE_PY, MapBlockMesh::SIDE_MZ,
-					MapBlockMesh::SIDE_PZ}) {
-			for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) {
-				scene::IMesh *mesh = mapBlockMesh->getMesh(MapBlockMesh::LayerIdx(side, layer));
-				assert(mesh);
+			auto add_side = [&](MapBlockMesh::Side side) {
+				for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) {
+					scene::IMesh *mesh = mapBlockMesh->getMesh(MapBlockMesh::LayerIdx(side, layer));
+					assert(mesh);
 
-				u32 c = mesh->getMeshBufferCount();
-				for (u32 i = 0; i < c; i++) {
-					scene::IMeshBuffer *buf = mesh->getMeshBuffer(i);
+					u32 c = mesh->getMeshBufferCount();
+					for (u32 i = 0; i < c; i++) {
+						scene::IMeshBuffer *buf = mesh->getMeshBuffer(i);
 
-					video::SMaterial &mat = buf->getMaterial();
-					auto rnd = driver->getMaterialRenderer(mat.MaterialType);
-					bool transparent = rnd && rnd->isTransparent();
-					if (!transparent)
-						grouped_buffers.add(buf, block_pos, layer);
+						video::SMaterial &mat = buf->getMaterial();
+						auto rnd = driver->getMaterialRenderer(mat.MaterialType);
+						bool transparent = rnd && rnd->isTransparent();
+						if (!transparent)
+							grouped_buffers.add(buf, block_pos, layer);
+					}
 				}
-			}}
+			};
+
+			v3f light_dir(1.0f, -1.0f, 1.0f); //TODO
+
+			if (light_dir.X <= 0.0f) // does the shadowmapping draw backfaces?!
+				add_side(MapBlockMesh::SIDE_MX);
+			if (light_dir.X >= 0.0f)
+				add_side(MapBlockMesh::SIDE_PX);
+			if (light_dir.Y <= 0.0f)
+				add_side(MapBlockMesh::SIDE_MY);
+			if (light_dir.Y >= 0.0f)
+				add_side(MapBlockMesh::SIDE_PY);
+			if (light_dir.Z <= 0.0f)
+				add_side(MapBlockMesh::SIDE_MZ);
+			if (light_dir.Z >= 0.0f)
+				add_side(MapBlockMesh::SIDE_PZ);
+			add_side(MapBlockMesh::SIDE_ALWAYS);
 		}
 	}
 

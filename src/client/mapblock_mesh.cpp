@@ -433,6 +433,7 @@ struct FastFace
 {
 	TileSpec tile;
 	video::S3DVertex vertices[4]; // Precalculated vertices
+	MapBlockMesh::Side side_hint;
 	/*!
 	 * The face is divided into two triangles. If this is true,
 	 * vertices 0 and 2 are connected, othervise vertices 1 and 3
@@ -442,7 +443,8 @@ struct FastFace
 };
 
 static void makeFastFace(const TileSpec &tile, u16 li0, u16 li1, u16 li2, u16 li3,
-	const v3f &tp, const v3f &p, const v3s16 &dir, const v3f &scale, std::vector<FastFace> &dest)
+	const v3f &tp, const v3f &p, const v3s16 &dir, MapBlockMesh::Side side_hint,
+	const v3f &scale, std::vector<FastFace> &dest)
 {
 	// Position is at the center of the cube.
 	v3f pos = p * BS;
@@ -609,9 +611,8 @@ static void makeFastFace(const TileSpec &tile, u16 li0, u16 li1, u16 li2, u16 li
 		core::vector2d<f32>(x0, y0),
 		core::vector2d<f32>(x0 + w * abs_scale, y0) };
 
-	// equivalent to dest.push_back(FastFace()) but faster
 	dest.emplace_back();
-	FastFace& face = *dest.rbegin();
+	FastFace &face = dest.back();
 
 	for (u8 i = 0; i < 4; i++) {
 		video::SColor c = encode_light(li[i], tile.emissive_light);
@@ -628,6 +629,8 @@ static void makeFastFace(const TileSpec &tile, u16 li0, u16 li1, u16 li2, u16 li
 		*/
 	face.vertex_0_2_connected = vertex_0_2_connected;
 	face.tile = tile;
+
+	face.side_hint = side_hint;
 }
 
 /*
@@ -770,10 +773,12 @@ static void getTileInfo(
 		MeshMakeData *data,
 		const v3s16 &p,
 		const v3s16 &face_dir,
+		MapBlockMesh::Side side_hint,
 		// Output:
 		bool &makes_face,
 		v3s16 &p_corrected,
 		v3s16 &face_dir_corrected,
+		MapBlockMesh::Side &side_hint_corrected,
 		u16 *lights,
 		u8 &waving,
 		TileSpec &tile
@@ -815,10 +820,23 @@ static void getTileInfo(
 	if (mf == 1) {
 		p_corrected = p;
 		face_dir_corrected = face_dir;
+		side_hint_corrected = side_hint;
 	} else {
 		n = n1;
 		p_corrected = p + face_dir;
 		face_dir_corrected = -face_dir;
+		static const auto invert_side_hint_arr = [&] {
+			std::array<MapBlockMesh::Side, MapBlockMesh::NUM_SIDES> ret;
+			ret[MapBlockMesh::SIDE_ALWAYS] = MapBlockMesh::SIDE_ALWAYS;
+			ret[MapBlockMesh::SIDE_MX] = MapBlockMesh::SIDE_PX;
+			ret[MapBlockMesh::SIDE_PX] = MapBlockMesh::SIDE_MX;
+			ret[MapBlockMesh::SIDE_MY] = MapBlockMesh::SIDE_PY;
+			ret[MapBlockMesh::SIDE_PY] = MapBlockMesh::SIDE_MY;
+			ret[MapBlockMesh::SIDE_MZ] = MapBlockMesh::SIDE_PZ;
+			ret[MapBlockMesh::SIDE_PZ] = MapBlockMesh::SIDE_MZ;
+			return ret;
+		}();
+		side_hint_corrected = invert_side_hint_arr[side_hint];
 	}
 
 	getNodeTile(n, p_corrected, face_dir_corrected, data, tile);
@@ -856,6 +874,7 @@ static void updateFastFaceRow(
 		v3s16 translate_dir,
 		const v3f &&translate_dir_f,
 		const v3s16 &&face_dir,
+		const MapBlockMesh::Side side_hint,
 		std::vector<FastFace> &dest)
 {
 	static thread_local const bool waving_liquids =
@@ -872,13 +891,14 @@ static void updateFastFaceRow(
 	bool makes_face = false;
 	v3s16 p_corrected;
 	v3s16 face_dir_corrected;
+	MapBlockMesh::Side side_hint_corrected;
 	u16 lights[4] = {0, 0, 0, 0};
 	u8 waving = 0;
 	TileSpec tile;
 
 	// Get info of first tile
-	getTileInfo(data, p, face_dir,
-			makes_face, p_corrected, face_dir_corrected,
+	getTileInfo(data, p, face_dir, side_hint,
+			makes_face, p_corrected, face_dir_corrected, side_hint_corrected,
 			lights, waving, tile);
 
 	// Unroll this variable which has a significant build cost
@@ -890,6 +910,7 @@ static void updateFastFaceRow(
 		bool next_makes_face = false;
 		v3s16 next_p_corrected;
 		v3s16 next_face_dir_corrected;
+		MapBlockMesh::Side next_side_hint_corrected;
 		u16 next_lights[4] = {0, 0, 0, 0};
 
 		// If at last position, there is nothing to compare to and
@@ -897,16 +918,16 @@ static void updateFastFaceRow(
 		if (j != MAP_BLOCKSIZE - 1) {
 			p += translate_dir;
 
-			getTileInfo(data, p, face_dir,
-					next_makes_face, next_p_corrected,
-					next_face_dir_corrected, next_lights,
-					waving,
-					next_tile);
+			getTileInfo(data, p, face_dir, side_hint,
+					next_makes_face, next_p_corrected, next_face_dir_corrected,
+					next_side_hint_corrected,
+					next_lights, waving, next_tile);
 
 			if (!force_not_tiling
 					&& next_makes_face == makes_face
 					&& next_p_corrected == p_corrected + translate_dir
 					&& next_face_dir_corrected == face_dir_corrected
+					&& next_side_hint_corrected == side_hint_corrected
 					&& memcmp(next_lights, lights, sizeof(lights)) == 0
 					// Don't apply fast faces to waving water.
 					&& (waving != 3 || !waving_liquids)
@@ -935,7 +956,7 @@ static void updateFastFaceRow(
 					scale.Z = continuous_tiles_count;
 
 				makeFastFace(tile, lights[0], lights[1], lights[2], lights[3],
-						pf, sp, face_dir_corrected, scale, dest);
+						pf, sp, face_dir_corrected, side_hint_corrected, scale, dest);
 				g_profiler->avg("Meshgen: Tiles per face [#]", continuous_tiles_count);
 			}
 
@@ -945,6 +966,7 @@ static void updateFastFaceRow(
 		makes_face = next_makes_face;
 		p_corrected = next_p_corrected;
 		face_dir_corrected = next_face_dir_corrected;
+		side_hint_corrected = next_side_hint_corrected;
 		memcpy(lights, next_lights, sizeof(lights));
 		if (next_is_different)
 			tile = std::move(next_tile); // faster than copy
@@ -964,6 +986,7 @@ static void updateAllFastFaceRows(MeshMakeData *data,
 				v3s16(1, 0, 0), //dir
 				v3f  (1, 0, 0),
 				v3s16(0, 1, 0), //face dir
+				MapBlockMesh::SIDE_PY,
 				dest);
 
 	/*
@@ -976,6 +999,7 @@ static void updateAllFastFaceRows(MeshMakeData *data,
 				v3s16(0, 0, 1), //dir
 				v3f  (0, 0, 1),
 				v3s16(1, 0, 0), //face dir
+				MapBlockMesh::SIDE_PX,
 				dest);
 
 	/*
@@ -988,6 +1012,7 @@ static void updateAllFastFaceRows(MeshMakeData *data,
 				v3s16(1, 0, 0), //dir
 				v3f  (1, 0, 0),
 				v3s16(0, 0, 1), //face dir
+				MapBlockMesh::SIDE_PZ,
 				dest);
 }
 
@@ -1234,11 +1259,11 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 		//TimeTaker timer2("MeshCollector building");
 
 		for (const FastFace &f : fastfaces_new) {
-			static const u16 indices[] = {0, 1, 2, 2, 3, 0};
-			static const u16 indices_alternate[] = {0, 1, 3, 2, 3, 1};
+			static constexpr u16 indices[] = {0, 1, 2, 2, 3, 0};
+			static constexpr u16 indices_alternate[] = {0, 1, 3, 2, 3, 1};
 			const u16 *indices_p =
 				f.vertex_0_2_connected ? indices : indices_alternate;
-			collector.append(f.tile, f.vertices, 4, indices_p, 6, MapBlockMesh::SIDE_ALWAYS);
+			collector.append(f.tile, f.vertices, 4, indices_p, 6, f.side_hint);
 		}
 	}
 
