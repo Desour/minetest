@@ -1295,6 +1295,9 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 		for (u32 pmb_i = 0; pmb_i < collector.prebuffers_per_sidesmask[sidesmask][layer].size(); pmb_i++) {
 			PreMeshBuffer &pmb = collector.prebuffers_per_sidesmask[sidesmask][layer][pmb_i];
 
+			if (pmb.layer.isTransparent() && sidesmask != 0b111111)
+				continue;
+
 			applyTileColor(pmb);
 
 			LayerIdx layeridx(sidesmask, layer);
