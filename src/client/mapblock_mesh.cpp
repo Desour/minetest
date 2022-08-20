@@ -1214,7 +1214,7 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 	m_last_crack(-1),
 	m_last_daynight_ratio((u32) -1)
 {
-	for (auto &mesh_layers : m_mesh_layers_by_side)
+	for (auto &mesh_layers : m_mesh_layers_by_sidesmask)
 	for (auto &m : mesh_layers)
 		m = new scene::SMesh();
 	m_enable_shaders = data->m_use_shaders;
@@ -1287,16 +1287,17 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 	const bool desync_animations = g_settings->getBool(
 		"desynchronize_mapblock_texture_animation");
 
-	for (Side side : {SIDE_ALWAYS, SIDE_MX, SIDE_PX, SIDE_MY, SIDE_PY, SIDE_MZ,
-			SIDE_PZ}) {
-	auto &mesh_layers = m_mesh_layers_by_side[side];
+	for (SidesMask sidesmask = 0; sidesmask < MAX_SIDESMASK; ++sidesmask) {
+	if (!is_sidesmask_possible(sidesmask))
+		continue;
+	auto &mesh_layers = m_mesh_layers_by_sidesmask[sidesmask];
 	for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) {
-		for (u32 pmb_i = 0; pmb_i < collector.prebuffers_per_side[side][layer].size(); pmb_i++) {
-			PreMeshBuffer &pmb = collector.prebuffers_per_side[side][layer][pmb_i];
+		for (u32 pmb_i = 0; pmb_i < collector.prebuffers_per_sidesmask[sidesmask][layer].size(); pmb_i++) {
+			PreMeshBuffer &pmb = collector.prebuffers_per_sidesmask[sidesmask][layer][pmb_i];
 
 			applyTileColor(pmb);
 
-			LayerIdx layeridx(side, layer);
+			LayerIdx layeridx(sidesmask, layer);
 
 			// Generate animation data
 			// - Cracks
@@ -1418,7 +1419,7 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 
 MapBlockMesh::~MapBlockMesh()
 {
-	for (auto &mesh_layers : m_mesh_layers_by_side) {
+	for (auto &mesh_layers : m_mesh_layers_by_sidesmask) {
 	for (scene::IMesh *m : mesh_layers) {
 #if IRRLICHT_VERSION_MT_REVISION < 5
 		if (m_enable_vbo) {
@@ -1496,7 +1497,7 @@ bool MapBlockMesh::animate(bool faraway, float time, int crack,
 	if (!m_enable_shaders && (daynight_ratio != m_last_daynight_ratio)) {
 		// Force reload mesh to VBO
 		if (m_enable_vbo)
-			for (auto &mesh_layers : m_mesh_layers_by_side)
+			for (auto &mesh_layers : m_mesh_layers_by_sidesmask)
 			for (scene::IMesh *m : mesh_layers)
 				m->setDirty();
 		video::SColorf day_color;
@@ -1518,7 +1519,7 @@ bool MapBlockMesh::animate(bool faraway, float time, int crack,
 
 bool MapBlockMesh::isEmpty() const
 {
-	for (auto &mesh_layers : m_mesh_layers_by_side)
+	for (auto &mesh_layers : m_mesh_layers_by_sidesmask)
 	for (auto &mesh_layer : mesh_layers)
 		if (mesh_layer->getMeshBufferCount() != 0)
 			return false;

@@ -336,8 +336,7 @@ static irr_ptr<scene::SMesh> createSpecialNodeMesh(Client *client, MapNode n,
 
 	colors->clear();
 	irr_ptr<scene::SMesh> mesh(new scene::SMesh());
-	for (auto &prebuffers_side : collector.prebuffers_per_side) { // all sides
-	for (auto &prebuffers : prebuffers_side) {
+	for (auto &prebuffers : collector.prebuffers_per_sidesmask[0b111111]) { // all sides
 		for (PreMeshBuffer &pmb : prebuffers) {
 			if (pmb.layer.material_flags & MATERIAL_FLAG_ANIMATION) {
 				const FrameSpec &frame = (*pmb.layer.frames)[0];
@@ -356,7 +355,7 @@ static irr_ptr<scene::SMesh> createSpecialNodeMesh(Client *client, MapNode n,
 			colors->push_back(
 				ItemPartColor(pmb.layer.has_color, pmb.layer.color));
 		}
-	}}
+	}
 	return mesh;
 }
 

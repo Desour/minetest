@@ -38,7 +38,7 @@ struct PreMeshBuffer
 struct MeshCollector
 {
 	std::array<std::array<std::vector<PreMeshBuffer>, MAX_TILE_LAYERS>,
-			MapBlockMesh::NUM_SIDES> prebuffers_per_side;
+			MapBlockMesh::MAX_SIDESMASK> prebuffers_per_sidesmask;
 
 	// if side_hint is not MapBlockMesh::SIDE_ALWAYS, the material is checked for
 	// backface culling, waving, etc. (but not the normal), and then if possible
@@ -57,15 +57,15 @@ private:
 	void append(const TileLayer &material,
 			const video::S3DVertex *vertices, u32 numVertices,
 			const u16 *indices, u32 numIndices,
-			MapBlockMesh::Side side_hint,
+			MapBlockMesh::SidesMask sidesmask,
 			u8 layernum, bool use_scale = false);
 	void append(const TileLayer &material,
 			const video::S3DVertex *vertices, u32 numVertices,
 			const u16 *indices, u32 numIndices,
 			v3f pos, video::SColor color, u8 light_source,
-			MapBlockMesh::Side side_hint,
+			MapBlockMesh::SidesMask sidesmask,
 			u8 layernum, bool use_scale = false);
 
-	PreMeshBuffer &findBuffer(const TileLayer &layer, MapBlockMesh::Side side,
+	PreMeshBuffer &findBuffer(const TileLayer &layer, MapBlockMesh::SidesMask sidesmask,
 			u8 layernum, u32 numVertices);
 };

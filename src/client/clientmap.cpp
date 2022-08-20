@@ -359,6 +359,8 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 		Draw the selected MapBlocks
 	*/
 
+	//~ TimeTaker get_stuff_to_draw_timer("get_stuff_to_draw_timer");
+
 	MeshBufListList grouped_buffers;
 	std::vector<DrawDescriptor> draw_order;
 	video::SMaterial previous_material;
@@ -366,7 +368,6 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 	for (auto &i : m_drawlist) {
 		const v3s16 block_pos = i.first;
 		MapBlock *block = i.second;
-		const v3s16 block_coord = block->getPos();
 
 		// If the mesh of the block happened to get deleted, ignore it
 		if (!block->mesh)
@@ -409,44 +410,46 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 			MapBlockMesh *mapBlockMesh = block->mesh;
 			assert(mapBlockMesh);
 
+			MapBlockMesh::SidesMask sidesmask = 0;
 			auto add_side = [&](MapBlockMesh::Side side) {
-				for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) {
-					scene::IMesh *mesh = mapBlockMesh->getMesh(MapBlockMesh::LayerIdx(side, layer));
-					assert(mesh);
-
-					u32 c = mesh->getMeshBufferCount();
-					for (u32 i = 0; i < c; i++) {
-						scene::IMeshBuffer *buf = mesh->getMeshBuffer(i);
-
-						video::SMaterial& material = buf->getMaterial();
-						video::IMaterialRenderer* rnd =
-								driver->getMaterialRenderer(material.MaterialType);
-						bool transparent = (rnd && rnd->isTransparent());
-						if (!transparent) {
-							if (buf->getVertexCount() == 0)
-								errorstream << "Block [" << analyze_block(block)
-										<< "] contains an empty meshbuf" << std::endl;
-
-							grouped_buffers.add(buf, block_pos, layer);
-						}
-					}
-				}
+				sidesmask |= (1 << (side-1));
 			};
 
 			using Tripl = std::tuple<s16 v3s16::*, MapBlockMesh::Side, MapBlockMesh::Side>;
 			for (auto tripl : {Tripl{&v3s16::X, MapBlockMesh::SIDE_MX, MapBlockMesh::SIDE_PX},
 						Tripl{&v3s16::Y, MapBlockMesh::SIDE_MY, MapBlockMesh::SIDE_PY},
-						Tripl{&v3s16::Z, MapBlockMesh::SIDE_MZ, MapBlockMesh::SIDE_PZ}, }) {
-				if (camera_block_coord.*(std::get<0>(tripl)) <= block_coord.*(std::get<0>(tripl)))
+						Tripl{&v3s16::Z, MapBlockMesh::SIDE_MZ, MapBlockMesh::SIDE_PZ}}) {
+				if (camera_block_coord.*(std::get<0>(tripl)) <= block_pos.*(std::get<0>(tripl)))
 					add_side(std::get<1>(tripl));
-				if (camera_block_coord.*(std::get<0>(tripl)) >= block_coord.*(std::get<0>(tripl)))
+				if (camera_block_coord.*(std::get<0>(tripl)) >= block_pos.*(std::get<0>(tripl)))
 					add_side(std::get<2>(tripl));
 			}
-			//~ if (camera_block_coord.X <= block_coord.X)
+			//~ if (camera_block_coord.X <= block_pos.X)
 				//~ add_side(MapBlockMesh::SIDE_MX);
-			//~ if (camera_block_coord.X >= block_coord.X)
+			//~ if (camera_block_coord.X >= block_pos.X)
 				//~ add_side(MapBlockMesh::SIDE_PX);
-			add_side(MapBlockMesh::SIDE_ALWAYS);
+
+			for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) {
+				scene::IMesh *mesh = mapBlockMesh->getMesh(MapBlockMesh::LayerIdx(sidesmask, layer));
+				assert(mesh);
+
+				u32 c = mesh->getMeshBufferCount();
+				for (u32 i = 0; i < c; i++) {
+					scene::IMeshBuffer *buf = mesh->getMeshBuffer(i);
+
+					video::SMaterial& material = buf->getMaterial();
+					video::IMaterialRenderer* rnd =
+							driver->getMaterialRenderer(material.MaterialType);
+					bool transparent = (rnd && rnd->isTransparent());
+					if (!transparent) {
+						if (buf->getVertexCount() == 0)
+							errorstream << "Block [" << analyze_block(block)
+									<< "] contains an empty meshbuf" << std::endl;
+
+						grouped_buffers.add(buf, block_pos, layer);
+					}
+				}
+			}
 		}
 	}
 
@@ -459,6 +462,8 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 			}
 		}
 	}
+
+	//~ errorstream << "get_stuff_to_draw_timer [ms]: " << get_stuff_to_draw_timer.getTimerTime() << std::endl;
 
 	TimeTaker draw("Drawing mesh buffers");
 
@@ -512,6 +517,7 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 		vertex_count += buf->getIndexCount();
 	}
 
+	//~ errorstream << "draw meshes [ms]: " << draw.getTimerTime() << std::endl;
 	g_profiler->avg(prefix + "draw meshes [ms]", draw.stop(true));
 
 	// Log only on solid pass because values are the same
@@ -773,25 +779,12 @@ void ClientMap::renderMapShadows(video::IVideoDriver *driver,
 			MapBlockMesh *mapBlockMesh = block->mesh;
 			assert(mapBlockMesh);
 
-			auto add_side = [&](MapBlockMesh::Side side) {
-				for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) {
-					scene::IMesh *mesh = mapBlockMesh->getMesh(MapBlockMesh::LayerIdx(side, layer));
-					assert(mesh);
-
-					u32 c = mesh->getMeshBufferCount();
-					for (u32 i = 0; i < c; i++) {
-						scene::IMeshBuffer *buf = mesh->getMeshBuffer(i);
-
-						video::SMaterial &mat = buf->getMaterial();
-						auto rnd = driver->getMaterialRenderer(mat.MaterialType);
-						bool transparent = rnd && rnd->isTransparent();
-						if (!transparent)
-							grouped_buffers.add(buf, block_pos, layer);
-					}
-				}
-			};
-
 			v3f light_dir(1.0f, -1.0f, 1.0f); //TODO
+
+			MapBlockMesh::SidesMask sidesmask = 0;
+			auto add_side = [&](MapBlockMesh::Side side) {
+				sidesmask |= (1 << (side-1));
+			};
 
 			if (light_dir.X <= 0.0f) // does the shadowmapping draw backfaces?!
 				add_side(MapBlockMesh::SIDE_MX);
@@ -805,7 +798,22 @@ void ClientMap::renderMapShadows(video::IVideoDriver *driver,
 				add_side(MapBlockMesh::SIDE_MZ);
 			if (light_dir.Z >= 0.0f)
 				add_side(MapBlockMesh::SIDE_PZ);
-			add_side(MapBlockMesh::SIDE_ALWAYS);
+
+			for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) {
+				scene::IMesh *mesh = mapBlockMesh->getMesh(MapBlockMesh::LayerIdx(sidesmask, layer));
+				assert(mesh);
+
+				u32 c = mesh->getMeshBufferCount();
+				for (u32 i = 0; i < c; i++) {
+					scene::IMeshBuffer *buf = mesh->getMeshBuffer(i);
+
+					video::SMaterial &mat = buf->getMaterial();
+					auto rnd = driver->getMaterialRenderer(mat.MaterialType);
+					bool transparent = rnd && rnd->isTransparent();
+					if (!transparent)
+						grouped_buffers.add(buf, block_pos, layer);
+				}
+			}
 		}
 	}
 

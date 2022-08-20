@@ -37,8 +37,15 @@ void MeshCollector::append(const TileSpec &tile, const video::S3DVertex *vertice
 		const TileLayer *layer = &tile.layers[layernum];
 		if (layer->texture_id == 0)
 			continue;
-		append(*layer, vertices, numVertices, indices, numIndices, side_hint,
-				layernum, tile.world_aligned);
+		auto side = check_side_hint(*layer, side_hint);
+		for (MapBlockMesh::SidesMask sidesmask = 0; sidesmask < MapBlockMesh::MAX_SIDESMASK;
+				++sidesmask) {
+			if ((side != MapBlockMesh::SIDE_ALWAYS && !(sidesmask & (1 << (side-1))))
+					|| !MapBlockMesh::is_sidesmask_possible(sidesmask))
+				continue;
+			append(*layer, vertices, numVertices, indices, numIndices, sidesmask,
+					layernum, tile.world_aligned);
+		}
 	}
 }
 
@@ -50,17 +57,23 @@ void MeshCollector::append(const TileSpec &tile, const video::S3DVertex *vertice
 		const TileLayer *layer = &tile.layers[layernum];
 		if (layer->texture_id == 0)
 			continue;
-		append(*layer, vertices, numVertices, indices, numIndices, pos, color,
-				light_source, side_hint, layernum, tile.world_aligned);
+		auto side = check_side_hint(*layer, side_hint);
+		for (MapBlockMesh::SidesMask sidesmask = 0; sidesmask < MapBlockMesh::MAX_SIDESMASK;
+				++sidesmask) {
+			if ((side != MapBlockMesh::SIDE_ALWAYS && !(sidesmask & (1 << (side-1))))
+					|| !MapBlockMesh::is_sidesmask_possible(sidesmask))
+				continue;
+			append(*layer, vertices, numVertices, indices, numIndices, pos, color,
+					light_source, sidesmask, layernum, tile.world_aligned);
+		}
 	}
 }
 
 void MeshCollector::append(const TileLayer &layer, const video::S3DVertex *vertices,
-		u32 numVertices, const u16 *indices, u32 numIndices, MapBlockMesh::Side side_hint,
+		u32 numVertices, const u16 *indices, u32 numIndices, MapBlockMesh::SidesMask sidesmask,
 		u8 layernum, bool use_scale)
 {
-	auto side = check_side_hint(layer, side_hint);
-	PreMeshBuffer &pmb = findBuffer(layer, side, layernum, numVertices);
+	PreMeshBuffer &pmb = findBuffer(layer, sidesmask, layernum, numVertices);
 
 	f32 scale = 1.0f;
 	if (use_scale)
@@ -77,11 +90,10 @@ void MeshCollector::append(const TileLayer &layer, const video::S3DVertex *verti
 
 void MeshCollector::append(const TileLayer &layer, const video::S3DVertex *vertices,
 		u32 numVertices, const u16 *indices, u32 numIndices, v3f pos,
-		video::SColor color, u8 light_source, MapBlockMesh::Side side_hint, u8 layernum,
-		bool use_scale)
+		video::SColor color, u8 light_source, MapBlockMesh::SidesMask sidesmask,
+		u8 layernum, bool use_scale)
 {
-	auto side = check_side_hint(layer, side_hint);
-	PreMeshBuffer &pmb = findBuffer(layer, side, layernum, numVertices);
+	PreMeshBuffer &pmb = findBuffer(layer, sidesmask, layernum, numVertices);
 
 	f32 scale = 1.0f;
 	if (use_scale)
@@ -99,14 +111,14 @@ void MeshCollector::append(const TileLayer &layer, const video::S3DVertex *verti
 		pmb.indices.push_back(indices[i] + vertex_count);
 }
 
-PreMeshBuffer &MeshCollector::findBuffer(const TileLayer &layer, MapBlockMesh::Side side,
+PreMeshBuffer &MeshCollector::findBuffer(const TileLayer &layer, MapBlockMesh::SidesMask sidesmask,
 		u8 layernum, u32 numVertices)
 {
 	if (numVertices > U16_MAX)
 		throw std::invalid_argument(
 				"Mesh can't contain more than 65536 vertices");
 	std::vector<PreMeshBuffer> &buffers =
-			prebuffers_per_side[side][layernum];
+			prebuffers_per_sidesmask[sidesmask][layernum];
 	for (PreMeshBuffer &pmb : buffers)
 		if (pmb.layer == layer && pmb.vertices.size() + numVertices <= U16_MAX)
 			return pmb;

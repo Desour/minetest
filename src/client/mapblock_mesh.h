@@ -193,14 +193,26 @@ public:
 		NUM_SIDES
 	};
 
+	// bits: -x,+x,-y,+y,-z,+z
+	using SidesMask = u8;
+	static constexpr u8 MAX_SIDESMASK {1 << (NUM_SIDES-1)};
+
+	static bool is_sidesmask_possible(SidesMask sidesmask)
+	{
+		// check for all w in {x,y,z} that either +w or -w is in the mask
+		constexpr SidesMask every_2nd = (1<<(SIDE_PX-1)) | (1<<(SIDE_PY-1)) | (1<<(SIDE_PZ-1));
+		constexpr SidesMask every_1st = every_2nd >> 1;
+		return ((sidesmask & every_1st) | ((sidesmask & every_2nd) >> 1)) == every_1st;
+	}
+
 	// pack layernum and side into a u8
 	struct LayerIdx {
 		u8 m_num;
 
-		LayerIdx(Side side, u8 layernum) :
-				m_num(side * MAX_TILE_LAYERS + layernum) {}
+		LayerIdx(SidesMask sidesmask, u8 layernum) :
+				m_num(sidesmask * MAX_TILE_LAYERS + layernum) {}
 
-		Side getSide() { return static_cast<Side>(m_num / MAX_TILE_LAYERS); }
+		SidesMask getSidesMask() { return static_cast<Side>(m_num / MAX_TILE_LAYERS); }
 
 		u8 getLayerNum()
 		{
@@ -228,14 +240,9 @@ public:
 	// Returns true if anything has been changed.
 	bool animate(bool faraway, float time, int crack, u32 daynight_ratio);
 
-	//~ scene::IMesh *getMesh_(u8 layer)
-	//~ {
-		//~ return m_mesh[layer];
-	//~ }
-
 	scene::IMesh *getMesh(LayerIdx layeridx)
 	{
-		return m_mesh_layers_by_side[layeridx.getSide()][layeridx.getLayerNum()];
+		return m_mesh_layers_by_sidesmask[layeridx.getSidesMask()][layeridx.getLayerNum()];
 	}
 
 	bool isEmpty() const;
@@ -273,7 +280,7 @@ private:
 		TileLayer tile;
 	};
 
-	std::array<std::array<scene::IMesh *, MAX_TILE_LAYERS>, NUM_SIDES> m_mesh_layers_by_side;
+	std::array<std::array<scene::IMesh *, MAX_TILE_LAYERS>, MAX_SIDESMASK> m_mesh_layers_by_sidesmask;
 	std::unique_ptr<MinimapMapblock> m_minimap_mapblock;
 	ITextureSource *m_tsrc;
 	IShaderSource *m_shdrsrc;
