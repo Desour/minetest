@@ -312,7 +312,7 @@ private:
 	std::map<std::pair<LayerIdx, u32>, std::map<u32, video::SColor > > m_daynight_diffs;
 
 	// list of all semitransparent triangles in the mapblock
-	std::vector<MeshTriangle> m_transparent_triangles;
+	std::array<std::vector<MeshTriangle>, MAX_SIDESMASK> m_transparent_triangles_per_sidesmask;
 	// Binary Space Partitioning tree for the block
 	MapBlockBspTree m_bsp_tree;
 	// Ordered list of references to parts of transparent buffers to draw

@@ -1295,9 +1295,6 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 		for (u32 pmb_i = 0; pmb_i < collector.prebuffers_per_sidesmask[sidesmask][layer].size(); pmb_i++) {
 			PreMeshBuffer &pmb = collector.prebuffers_per_sidesmask[sidesmask][layer][pmb_i];
 
-			if (pmb.layer.isTransparent() && sidesmask != 0b111111)
-				continue;
-
 			applyTileColor(pmb);
 
 			LayerIdx layeridx(sidesmask, layer);
@@ -1391,10 +1388,12 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 			if (pmb.layer.isTransparent()) {
 				buf->append(&pmb.vertices[0], pmb.vertices.size(), nullptr, 0);
 
-				m_transparent_triangles.reserve(pmb.indices.size() / 3);
+				m_transparent_triangles_per_sidesmask[sidesmask]
+						.reserve(pmb.indices.size() / 3);
 				for (u32 i = 0; i < pmb.indices.size(); i += 3) {
-					m_transparent_triangles.emplace_back(buf.get(), pmb.indices[i],
-							pmb.indices[i + 1], pmb.indices[i + 2]);
+					m_transparent_triangles_per_sidesmask[sidesmask]
+							.emplace_back(buf.get(), pmb.indices[i],
+									pmb.indices[i + 1], pmb.indices[i + 2]);
 				}
 			} else {
 				buf->append(&pmb.vertices[0], pmb.vertices.size(),
@@ -1411,7 +1410,7 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 	}}
 
 	//std::cout<<"added "<<fastfaces.getSize()<<" faces."<<std::endl;
-	m_bsp_tree.buildTree(&m_transparent_triangles);
+	m_bsp_tree.buildTree(&m_transparent_triangles_per_sidesmask[0b111111]);
 
 	// Check if animation is required for this mesh
 	m_has_animation =
@@ -1532,7 +1531,7 @@ bool MapBlockMesh::isEmpty() const
 void MapBlockMesh::updateTransparentBuffers(v3f camera_pos, v3s16 block_pos)
 {
 	// nothing to do if the entire block is opaque
-	if (m_transparent_triangles.empty())
+	if (m_transparent_triangles_per_sidesmask[0b111111].empty())
 		return;
 
 	v3f block_posf = intToFloat(block_pos * MAP_BLOCKSIZE, BS);
@@ -1547,7 +1546,7 @@ void MapBlockMesh::updateTransparentBuffers(v3f camera_pos, v3s16 block_pos)
 	scene::SMeshBuffer *current_buffer = nullptr;
 	std::vector<u16> current_strain;
 	for (auto i : triangle_refs) {
-		const auto &t = m_transparent_triangles[i];
+		const auto &t = m_transparent_triangles_per_sidesmask[0b111111][i];
 		if (current_buffer != t.buffer) {
 			if (current_buffer) {
 				m_transparent_buffers.emplace_back(current_buffer, std::move(current_strain));
@@ -1572,7 +1571,7 @@ void MapBlockMesh::consolidateTransparentBuffers()
 	std::vector<u16> current_strain;
 
 	// use the fact that m_transparent_triangles is already arranged by buffer
-	for (const auto &t : m_transparent_triangles) {
+	for (const auto &t : m_transparent_triangles_per_sidesmask[0b111111]) {
 		if (current_buffer != t.buffer) {
 			if (current_buffer != nullptr) {
 				this->m_transparent_buffers.emplace_back(current_buffer, std::move(current_strain));

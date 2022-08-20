@@ -308,7 +308,7 @@ void ClientMap::updateDrawList()
 	g_profiler->avg("MapBlocks loaded [#]", blocks_loaded);
 }
 
-#include <bitset>
+//~ #include <bitset>
 
 void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 {
@@ -347,9 +347,9 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 	u32 vertex_count = 0;
 	u32 drawcall_count = 0;
 
-	std::array<u32, MapBlockMesh::MAX_SIDESMASK> sidesmask_counts;
-	for (u8 i = 0; i < MapBlockMesh::MAX_SIDESMASK; ++i)
-		sidesmask_counts[i] = 0;
+	//~ std::array<u32, MapBlockMesh::MAX_SIDESMASK> sidesmask_counts;
+	//~ for (u8 i = 0; i < MapBlockMesh::MAX_SIDESMASK; ++i)
+		//~ sidesmask_counts[i] = 0;
 
 	// For limiting number of mesh animations per frame
 	u32 mesh_animate_count = 0;
@@ -435,7 +435,7 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 			//~ if (camera_block_coord.X >= block_pos.X)
 				//~ add_side(MapBlockMesh::SIDE_PX);
 
-			sidesmask_counts[sidesmask] += 1;
+			//~ sidesmask_counts[sidesmask] += 1;
 
 			for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) {
 				scene::IMesh *mesh = mapBlockMesh->getMesh(MapBlockMesh::LayerIdx(sidesmask, layer));
@@ -461,14 +461,14 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 		}
 	}
 
-	{
-		u8 max = 0;
-		for (u8 i = 1; i < MapBlockMesh::MAX_SIDESMASK; ++i) {
-			if (sidesmask_counts[i] > sidesmask_counts[max])
-				max = i;
-		}
-		errorstream << "max: "<< std::bitset<6>{max} <<std::endl;
-	}
+	//~ {
+		//~ u8 max = 0;
+		//~ for (u8 i = 1; i < MapBlockMesh::MAX_SIDESMASK; ++i) {
+			//~ if (sidesmask_counts[i] > sidesmask_counts[max])
+				//~ max = i;
+		//~ }
+		//~ errorstream << "max: "<< std::bitset<6>{max} <<std::endl;
+	//~ }
 
 	// Capture draw order for all solid meshes
 	for (auto &lists : grouped_buffers.lists) {
