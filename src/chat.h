@@ -162,7 +162,7 @@ class ChatPrompt
 {
 public:
 	ChatPrompt(const std::wstring &prompt, u32 history_limit);
-	~ChatPrompt() = default;
+	~ChatPrompt() { saveHistory(); };
 
 	// Input character or string
 	void input(wchar_t ch);
@@ -232,6 +232,11 @@ public:
 	//     deletes the word to the left of the cursor.
 	void cursorOperation(CursorOp op, CursorOpDir dir, CursorOpScope scope);
 
+	// Stores the history on disk
+	void saveHistory();
+
+	void step(float dtime);
+
 protected:
 	// set m_view to ensure that 0 <= m_view <= m_cursor < m_view + m_cols
 	// if line can be fully shown, set m_view to zero
@@ -239,6 +244,10 @@ protected:
 	void clampView();
 
 private:
+	// See doc/chat_prompt_history_format.txt
+	void serializeHistory(std::ostream &os) const;
+	void deserializeHistory(std::istream &is);
+
 	// Prompt prefix
 	std::wstring m_prompt = L"";
 	// Currently edited line
@@ -249,6 +258,14 @@ private:
 	u32 m_history_index = 0;
 	// Maximum number of history entries
 	u32 m_history_limit;
+	// Whether m_history changed since last serialization
+	bool m_history_dirty = false;
+	// In seconds
+	f32 m_time_since_last_history_save = 0.0f;
+	// Every 3 seconds, m_history is serialized, if dirty
+	static constexpr f32 c_history_save_interval = 3.0f;
+	// The filepath where the history is saved
+	static const std::string c_history_path;
 
 	// Number of columns excluding columns reserved for the prompt
 	s32 m_cols = 0;

@@ -1,0 +1,15 @@
+
+The chat prompt history is stored in the chat_prompt_history.txt file.
+
+The first line in this file is an ASCII text describing the version. It has the
+following format:
+"minetest chat prompt history version <major>.<minor>.<patch>\n"
+Where <major>, <minor> and <patch> are unsigned decimal integers.
+If the major number is the same, backwards compatibility is ensured.
+If the minor number is also the same, forwards compatibility is also ensured.
+
+Version 1.0.0:
+The rest of the file consists of utf-8 lines, separated by the newline character
+('\n'). These lines are the chat prompt entries, ordered from oldest to newest.
+The characters '\\', '\n' and '\r' in these entries are escaped with the backslash
+character ('\\').

@@ -25,6 +25,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "config.h"
 #include "debug.h"
+#include "filesys.h"
+#include "porting.h"
 #include "util/strfnd.h"
 #include "util/string.h"
 #include "util/numeric.h"
@@ -452,6 +454,14 @@ ChatPrompt::ChatPrompt(const std::wstring &prompt, u32 history_limit):
 	m_prompt(prompt),
 	m_history_limit(history_limit)
 {
+	std::ifstream is(c_history_path, std::ios::binary);
+	if (!is.good()) {
+		warningstream << "[ChatPrompt] Failed to open file: " << c_history_path
+				<< std::endl;
+		return;
+	}
+
+	deserializeHistory(is);
 }
 
 void ChatPrompt::input(wchar_t ch)
@@ -485,6 +495,7 @@ void ChatPrompt::addToHistory(const std::wstring &line)
 	if (m_history.size() > m_history_limit)
 		m_history.erase(m_history.begin());
 	m_history_index = m_history.size();
+	m_history_dirty = true;
 }
 
 void ChatPrompt::clear()
@@ -705,6 +716,31 @@ void ChatPrompt::cursorOperation(CursorOp op, CursorOpDir dir, CursorOpScope sco
 	m_nick_completion_end = 0;
 }
 
+void ChatPrompt::saveHistory()
+{
+	m_time_since_last_history_save = 0.0f;
+	if (!m_history_dirty)
+		return;
+
+	std::ofstream os(c_history_path, std::ios::binary | std::ios::trunc);
+	if (!os.good()) {
+		warningstream << "[ChatPrompt] Failed to open file: " << c_history_path
+				<< std::endl;
+		return;
+	}
+
+	serializeHistory(os);
+
+	m_history_dirty = false;
+}
+
+void ChatPrompt::step(float dtime)
+{
+	m_time_since_last_history_save += dtime;
+	if (m_time_since_last_history_save >= c_history_save_interval)
+		saveHistory();
+}
+
 void ChatPrompt::clampView()
 {
 	s32 length = m_line.size();
@@ -720,6 +756,20 @@ void ChatPrompt::clampView()
 		m_view = MYMAX(m_view, 0);
 	}
 }
+
+void ChatPrompt::serializeHistory(std::ostream &os) const
+{
+	os << "minetest chat prompt history version 1.0.0\n";
+	//TODO
+}
+
+void ChatPrompt::deserializeHistory(std::istream &is)
+{
+	//TODO
+}
+
+const std::string ChatPrompt::c_history_path = porting::path_user + DIR_DELIM
+		+ "chat_prompt_history.txt";
 
 
 
@@ -827,6 +877,9 @@ void ChatBackend::step(float dtime)
 	m_recent_buffer.deleteByAge(60.0);
 
 	// no need to age messages in anything but m_recent_buffer
+
+	// the prompt may want to save its history
+	m_prompt.step(dtime);
 }
 
 void ChatBackend::scroll(s32 rows)
