@@ -100,11 +100,11 @@ public:
 	 * @param time_offset TODO
 	 * @return -1 on failure, otherwise a handle to the sound.
 	 */
-	virtual int playSound(const SimpleSoundSpec &spec) = 0;
+	virtual sound_handle_t playSound(const SimpleSoundSpec &spec) = 0;
 	/**
 	 * Same as `playSound`, but at a position.
 	 */
-	virtual int playSoundAt(const SimpleSoundSpec &spec, const v3f &pos) = 0;
+	virtual sound_handle_t playSoundAt(const SimpleSoundSpec &spec, const v3f &pos) = 0;
 	virtual void stopSound(sound_handle_t sound) = 0;
 	virtual bool soundExists(sound_handle_t sound) = 0;
 	virtual void updateSoundPosition(sound_handle_t sound, v3f pos) = 0;

@@ -139,10 +139,11 @@ GUIEngine::GUIEngine(JoystickController *joystick,
 
 	//create soundmanager
 #if USE_SOUND
-	if (g_settings->getBool("enable_sound") && g_sound_manager_singleton.get())
-		m_sound_manager = createOpenALSoundManager(g_sound_manager_singleton.get(),
-				std::make_unique<MenuMusicFetcher>())
-				.release();
+	if (g_settings->getBool("enable_sound") && g_sound_manager_singleton.get()) {
+		m_openal_sound_manager = createOpenALSoundManager(g_sound_manager_singleton.get(),
+				std::make_unique<MenuMusicFetcher>());
+		m_sound_manager = m_openal_sound_manager.get();
+	}
 #endif
 	if (!m_sound_manager)
 		m_sound_manager = &dummySoundManager;
@@ -316,10 +317,8 @@ void GUIEngine::run()
 /******************************************************************************/
 GUIEngine::~GUIEngine()
 {
-	if (m_sound_manager != &dummySoundManager){
-		delete m_sound_manager;
-		m_sound_manager = NULL;
-	}
+	m_sound_manager = nullptr;
+	m_openal_sound_manager.reset();
 
 	infostream<<"GUIEngine: Deinitializing scripting"<<std::endl;
 	delete m_script;
