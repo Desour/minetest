@@ -800,8 +800,8 @@ private:
 	IWritableItemDefManager *itemdef_manager = nullptr;
 	NodeDefManager *nodedef_manager = nullptr;
 
-	ISoundManager *sound = nullptr;
-	bool sound_is_dummy = false;
+	ISoundManager *sound = nullptr; // non-owning ref to sound (openal or dummy)
+	std::unique_ptr<ISoundManager> sound_openal;
 	SoundMaker *soundmaker = nullptr;
 
 	ChatBackend *chat_backend = nullptr;
@@ -934,8 +934,7 @@ Game::~Game()
 {
 	delete client;
 	delete soundmaker;
-	if (!sound_is_dummy)
-		delete sound;
+	sound_openal.reset();
 
 	delete server; // deleted first to stop all server threads
 
@@ -1214,18 +1213,19 @@ bool Game::initSound()
 #if USE_SOUND
 	if (g_settings->getBool("enable_sound") && g_sound_manager_singleton.get()) {
 		infostream << "Attempting to use OpenAL audio" << std::endl;
-		sound = createOpenALSoundManager(g_sound_manager_singleton.get(),
-				std::make_unique<SoundLocalFallbackPathsGiver>()).release();
-		if (!sound)
+		sound_openal = createOpenALSoundManager(g_sound_manager_singleton.get(),
+				std::make_unique<SoundLocalFallbackPathsGiver>());
+		if (!sound_openal)
 			infostream << "Failed to initialize OpenAL audio" << std::endl;
-	} else
+		sound = sound_openal.get();
+	} else {
 		infostream << "Sound disabled." << std::endl;
+	}
 #endif
 
 	if (!sound) {
 		infostream << "Using dummy audio." << std::endl;
 		sound = &dummySoundManager;
-		sound_is_dummy = true;
 	}
 
 	soundmaker = new SoundMaker(sound, nodedef_manager);
