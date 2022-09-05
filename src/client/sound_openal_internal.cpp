@@ -76,13 +76,6 @@ static ALenum warn_if_al_error(const char *desc)
 	return err;
 }
 
-static void f3_set(ALfloat *f3, v3f v)
-{
-	f3[0] = v.X;
-	f3[1] = v.Y;
-	f3[2] = v.Z;
-}
-
 static bool can_open_file(const std::string &path)
 {
 	std::FILE *f = std::fopen(path.c_str(), "r");
@@ -618,17 +611,15 @@ bool PlayingSound::stepStream()
 	return true;
 }
 
-void PlayingSound::updatePosVel(const v3f &pos_, const v3f &vel_)
+void PlayingSound::updatePosVel(const v3f &pos, const v3f &vel)
 {
-	v3f pos = swap_handedness(pos_);
-	v3f vel = swap_handedness(vel_);
 	alSourcei(m_source_id, AL_SOURCE_RELATIVE, false);
 	alSource3f(m_source_id, AL_POSITION, pos.X, pos.Y, pos.Z);
 	alSource3f(m_source_id, AL_VELOCITY, vel.X, vel.Y, vel.Z);
 	// Using alDistanceModel(AL_INVERSE_DISTANCE_CLAMPED) and setting reference
 	// distance to clamp gain at <1 node distance avoids excessive volume when
 	// closer.
-	alSourcef(m_source_id, AL_REFERENCE_DISTANCE, 1.0f*BS);
+	alSourcef(m_source_id, AL_REFERENCE_DISTANCE, 1.0f);
 
 	warn_if_al_error("PlayingSound::updatePosVel");
 }
@@ -660,8 +651,7 @@ OpenALSoundManager::OpenALSoundManager(SoundManagerSingleton *smg,
 		std::unique_ptr<SoundLocalFallbackPathsGiver> local_fallback_paths_giver) :
 	m_local_fallback_paths_giver(std::move(local_fallback_paths_giver)),
 	m_device(smg->m_device.get()),
-	m_context(smg->m_context.get()),
-	m_next_id(1)
+	m_context(smg->m_context.get())
 {
 	SANITY_CHECK(!!m_local_fallback_paths_giver);
 
@@ -714,6 +704,31 @@ void OpenALSoundManager::stepStreams(float dtime)
 		m_sounds_streaming[i] = std::move(m_sounds_streaming.back());
 		m_sounds_streaming.pop_back();
 		// continue with same i
+	}
+}
+
+void OpenALSoundManager::doFades(float dtime)
+{
+	for (auto i = m_sounds_fading.begin(); i != m_sounds_fading.end();) {
+		FadeState &fade = i->second;
+		assert(fade.step != 0.0f);
+		fade.current_gain += (fade.step * dtime);
+
+		if (fade.step < 0.f)
+			fade.current_gain = std::max(fade.current_gain, fade.target_gain);
+		else
+			fade.current_gain = std::min(fade.current_gain, fade.target_gain);
+
+		if (fade.current_gain <= 0.f)
+			stopSound(i->first);
+		else
+			updateSoundGain(i->first, fade.current_gain);
+
+		// The increment must happen during the erase call, or else it'll segfault.
+		if (fade.current_gain == fade.target_gain)
+			i = m_sounds_fading.erase(i);
+		else
+			++i;
 	}
 }
 
@@ -784,7 +799,7 @@ std::string OpenALSoundManager::getOrLoadLoadedSoundNameFromGroup(const std::str
 }
 
 std::shared_ptr<PlayingSound> OpenALSoundManager::createPlayingSound(const std::string &sound_name,
-		bool loop, float volume, float pitch, float time_offset, Optional<v3f> pos_opt)
+		bool loop, float volume, float pitch, float time_offset, const Optional<v3f> &pos_opt)
 {
 	infostream << "OpenALSoundManager: Creating playing sound" << std::endl;
 	warn_if_al_error("before createPlayingSound");
@@ -822,7 +837,7 @@ std::shared_ptr<PlayingSound> OpenALSoundManager::createPlayingSound(const std::
 
 sound_handle_t OpenALSoundManager::playSoundGeneric(const std::string &group_name, bool loop,
 		float volume, float fade, float pitch, bool use_local_fallback, float time_offset,
-		Optional<v3f> pos_opt)
+		const Optional<v3f> &pos_opt)
 {
 	maintain(); // TODO: call time based
 
@@ -872,6 +887,11 @@ sound_handle_t OpenALSoundManager::playSoundGeneric(const std::string &group_nam
 	return id;
 }
 
+void OpenALSoundManager::deleteSound(sound_handle_t id)
+{
+	m_sounds_playing.erase(id);
+}
+
 void OpenALSoundManager::maintain()
 {
 	if (!m_sounds_playing.empty()) {
@@ -901,6 +921,31 @@ void OpenALSoundManager::maintain()
 }
 
 /* Interface */
+
+void OpenALSoundManager::step(float dtime)
+{
+	doFades(dtime);
+	stepStreams(dtime);
+}
+
+void OpenALSoundManager::updateListener(const v3f &pos_, const v3f &vel_, const v3f &at_, const v3f &up_)
+{
+	v3f pos = swap_handedness(pos_);
+	v3f vel = swap_handedness(vel_);
+	v3f at = swap_handedness(at_);
+	v3f up = swap_handedness(up_);
+	ALfloat orientation[6] = {at.X, at.Y, at.Z, up.X, up.Y, up.Z};
+
+	alListener3f(AL_POSITION, pos.X, pos.Y, pos.Z);
+	alListener3f(AL_VELOCITY, vel.X, vel.Y, vel.Z);
+	alListenerfv(AL_ORIENTATION, orientation);
+	warn_if_al_error("updateListener");
+}
+
+void OpenALSoundManager::setListenerGain(float gain)
+{
+	alListenerf(AL_GAIN, gain);
+}
 
 bool OpenALSoundManager::loadSoundFile(const std::string &name, const std::string &filepath)
 {
@@ -937,18 +982,31 @@ void OpenALSoundManager::addSoundToGroup(const std::string &sound_name, const st
 		m_sound_groups.emplace(group_name, std::vector<std::string>{sound_name});
 }
 
-void OpenALSoundManager::updateListener(const v3f &pos_, const v3f &vel_, const v3f &at, const v3f &up)
+sound_handle_t OpenALSoundManager::playSound(const SimpleSoundSpec &spec)
+{
+	return playSoundGeneric(spec.name, spec.loop, spec.gain, spec.fade, spec.pitch,
+			spec.use_local_fallback, spec.time_offset, nullopt); //TODO: pass spec?
+}
+
+sound_handle_t OpenALSoundManager::playSoundAt(const SimpleSoundSpec &spec, const v3f &pos_)
 {
 	v3f pos = swap_handedness(pos_);
-	v3f vel = swap_handedness(vel_);
 
-	alListener3f(AL_POSITION, pos.X, pos.Y, pos.Z);
-	alListener3f(AL_VELOCITY, vel.X, vel.Y, vel.Z);
-	ALfloat f[6];
-	f3_set(f, swap_handedness(at));
-	f3_set(f+3, swap_handedness(up));
-	alListenerfv(AL_ORIENTATION, f);
-	warn_if_al_error("updateListener");
+	// AL_REFERENCE_DISTANCE was once reduced from 3 nodes to 1 node.
+	// We compensate this by multiplying the volume by 3.
+	// Note that this is just done to newly created sounds (and not in
+	// updateSoundGain) because it was like this for many versions, so someone
+	// might depend on this (inconsistent) behaviour.
+	f32 volume = spec.gain * 3.0f;
+
+	return playSoundGeneric(spec.name, spec.loop, volume, 0.0f /* no fade */,
+			spec.pitch, spec.use_local_fallback, spec.time_offset, pos);
+}
+
+void OpenALSoundManager::stopSound(sound_handle_t sound)
+{
+	maintain();
+	deleteSound(sound);
 }
 
 void OpenALSoundManager::fadeSound(sound_handle_t soundid, float step, float gain)
@@ -969,27 +1027,36 @@ void OpenALSoundManager::fadeSound(sound_handle_t soundid, float step, float gai
 	m_sounds_fading[soundid] = FadeState(step, current_gain, gain);
 }
 
-void OpenALSoundManager::doFades(float dtime)
+bool OpenALSoundManager::soundExists(sound_handle_t sound)
 {
-	for (auto i = m_sounds_fading.begin(); i != m_sounds_fading.end();) {
-		FadeState &fade = i->second;
-		assert(fade.step != 0.0f);
-		fade.current_gain += (fade.step * dtime);
+	maintain();
+	return (m_sounds_playing.count(sound) != 0);
+}
 
-		if (fade.step < 0.f)
-			fade.current_gain = std::max(fade.current_gain, fade.target_gain);
-		else
-			fade.current_gain = std::min(fade.current_gain, fade.target_gain);
+void OpenALSoundManager::updateSoundPosition(sound_handle_t id, const v3f &pos_)
+{
+	v3f pos = swap_handedness(pos_);
 
-		if (fade.current_gain <= 0.f)
-			stopSound(i->first);
-		else
-			updateSoundGain(i->first, fade.current_gain);
+	auto i = m_sounds_playing.find(id);
+	if (i == m_sounds_playing.end())
+		return;
+	i->second->updatePosVel(pos, v3f(0.0f, 0.0f, 0.0f));
+}
 
-		// The increment must happen during the erase call, or else it'll segfault.
-		if (fade.current_gain == fade.target_gain)
-			i = m_sounds_fading.erase(i);
-		else
-			++i;
-	}
+bool OpenALSoundManager::updateSoundGain(sound_handle_t id, float gain)
+{
+	auto i = m_sounds_playing.find(id);
+	if (i == m_sounds_playing.end())
+		return false;
+	i->second->setGain(gain);
+	return true;
+}
+
+float OpenALSoundManager::getSoundGain(sound_handle_t id)
+{
+	auto i = m_sounds_playing.find(id);
+	if (i == m_sounds_playing.end())
+		return 0.0f;
+
+	return i->second->getGain();
 }

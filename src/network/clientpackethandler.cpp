@@ -804,18 +804,18 @@ void Client::handleCommand_ItemDef(NetworkPacket* pkt)
 void Client::handleCommand_PlaySound(NetworkPacket* pkt)
 {
 	/*
-		[0] u32 server_id
+		[0] s32 server_id
 		[4] u16 name length
 		[6] char name[len]
 		[ 6 + len] f32 gain
-		[10 + len] u8 type
-		[11 + len] (f32 * 3) pos
+		[10 + len] u8 type (SoundLocation)
+		[11 + len] v3f pos (in BS-space)
 		[23 + len] u16 object_id
 		[25 + len] bool loop
 		[26 + len] f32 fade
 		[30 + len] f32 pitch
 		[34 + len] bool ephemeral
-		[35 + len] f32 time_offset
+		[35 + len] f32 time_offset (in seconds)
 	*/
 
 	s32 server_id;
@@ -827,6 +827,7 @@ void Client::handleCommand_PlaySound(NetworkPacket* pkt)
 	bool ephemeral = false;
 
 	*pkt >> server_id >> spec.name >> spec.gain >> (u8 &)type >> pos >> object_id >> spec.loop;
+	pos *= 1.0f/BS;
 
 	try {
 		*pkt >> spec.fade;
@@ -848,7 +849,7 @@ void Client::handleCommand_PlaySound(NetworkPacket* pkt)
 		{
 			ClientActiveObject *cao = m_env.getActiveObject(object_id);
 			if (cao)
-				pos = cao->getPosition();
+				pos = cao->getPosition() * (1.0f/BS);
 			client_id = m_sound->playSoundAt(spec, pos);
 			break;
 		}

@@ -61,6 +61,18 @@ class ISoundManager
 public:
 	virtual ~ISoundManager() = default;
 
+	virtual void step(float dtime) = 0;
+
+	/**
+	 * @param pos In node-space.
+	 * @param vel In node-space.
+	 * @param at Vector pointing forwards.
+	 * @param up Vector pointing upwards, orthogonal to `at`.
+	 */
+	virtual void updateListener(const v3f &pos, const v3f &vel, const v3f &at,
+			const v3f &up) = 0;
+	virtual void setListenerGain(float gain) = 0;
+
 	/**
 	 * Adds a sound to load from a file (only OggVorbis).
 	 * @param name The name of the sound. Must be unique, otherwise call fails.
@@ -82,10 +94,6 @@ public:
 	virtual void addSoundToGroup(const std::string &sound_name,
 			const std::string &group_name) = 0;
 
-	virtual void updateListener(const v3f &pos, const v3f &vel, const v3f &at,
-			const v3f &up) = 0;
-	virtual void setListenerGain(float gain) = 0;
-
 	/** //TODO: doc this in lua_api.txt
 	 * Plays a random sound from a sound group (position-less).
 	 * @param group_name If == "", call is ignored without error.
@@ -103,35 +111,39 @@ public:
 	virtual sound_handle_t playSound(const SimpleSoundSpec &spec) = 0;
 	/**
 	 * Same as `playSound`, but at a position.
+	 * @param pos In node-space.
 	 */
 	virtual sound_handle_t playSoundAt(const SimpleSoundSpec &spec, const v3f &pos) = 0;
 	virtual void stopSound(sound_handle_t sound) = 0;
 	virtual bool soundExists(sound_handle_t sound) = 0;
-	virtual void updateSoundPosition(sound_handle_t sound, v3f pos) = 0;
+	/**
+	 * @param pos In node-space.
+	 */
+	virtual void updateSoundPosition(sound_handle_t sound, const v3f &pos) = 0;
 	virtual bool updateSoundGain(sound_handle_t id, float gain) = 0;
 	virtual float getSoundGain(sound_handle_t id) = 0;
-	virtual void step(float dtime) = 0;
 	virtual void fadeSound(sound_handle_t sound, float step, float gain) = 0;
 };
 
 class DummySoundManager final : public ISoundManager
 {
 public:
-	bool loadSoundFile(const std::string &name, const std::string &filepath) override { return true; }
-	bool loadSoundData(const std::string &name, std::string &&filedata) override { return true; }
-	void addSoundToGroup(const std::string &sound_name, const std::string &group_name) override {};
+	void step(float dtime) override {}
 
 	void updateListener(const v3f &pos, const v3f &vel, const v3f &at, const v3f &up) override {}
 	void setListenerGain(float gain) override {}
+
+	bool loadSoundFile(const std::string &name, const std::string &filepath) override { return true; }
+	bool loadSoundData(const std::string &name, std::string &&filedata) override { return true; }
+	void addSoundToGroup(const std::string &sound_name, const std::string &group_name) override {};
 
 	sound_handle_t playSound(const SimpleSoundSpec &spec) override { return 0; }
 	sound_handle_t playSoundAt(const SimpleSoundSpec &spec, const v3f &pos) override { return 0; }
 	void stopSound(sound_handle_t sound) override {}
 	bool soundExists(sound_handle_t sound) override { return false; }
-	void updateSoundPosition(sound_handle_t sound, v3f pos) override {}
+	void updateSoundPosition(sound_handle_t sound, const v3f &pos) override {}
 	bool updateSoundGain(sound_handle_t id, float gain) override { return false; }
 	float getSoundGain(sound_handle_t id) override { return 0; }
-	void step(float dtime) override {}
 	void fadeSound(sound_handle_t sound, float step, float gain) override {}
 };
 

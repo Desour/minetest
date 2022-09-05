@@ -279,7 +279,7 @@ int ModApiClient::l_sound_play(lua_State *L)
 
 		lua_getfield(L, 2, "pos");
 		if (!lua_isnil(L, -1)) {
-			position = read_v3f(L, -1) * BS;
+			position = read_v3f(L, -1);
 			type = SoundLocation::Position;
 			lua_pop(L, 1);
 		}

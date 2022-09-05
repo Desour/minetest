@@ -53,13 +53,12 @@ with this program; ifnot, write to the Free Software Foundation, Inc.,
 /*
  * TODO: more doc
  *
- * The coordinate space for sounds:
- * --------------------------------
+ * The coordinate space for sounds (sound-space):
+ * ---------------------------------------------
  *
- * * The functions from ISoundManager (see sound.h) take spatial vectors in the
- *   object space, that is node coordinate space multiplied by the BS factor.
- * * All other `v3f`s here are, if not told otherwise, in a sapce that you get by
- *   mirroring the above space along the x-axis.
+ * * The functions from ISoundManager (see sound.h) take spatial vectors in node-space.
+ * * All other `v3f`s here are, if not told otherwise, in sound-space, which is
+ *   defined as node-space mirrored along the x-axis.
  *   (This is needed because OpenAL uses a right-handed coordinate system.)
  * * Use `swap_handedness()` to convert between those two coordinate spaces.
  *
@@ -214,7 +213,7 @@ struct ISoundDataOpen
 	 * Iff the data is streaming, there is more than one buffer.
 	 * @return Whether it's streaming data.
 	 */
-	virtual bool isStreaming() = 0;
+	virtual bool isStreaming() const = 0;
 
 	/**
 	 * TODO
@@ -276,7 +275,7 @@ struct SoundDataOpenSinglebuf final : ISoundDataOpen
 	SoundDataOpenSinglebuf(std::unique_ptr<RAIIOggFile> oggfile,
 			const OggFileDecodeInfo &decode_info);
 
-	virtual bool isStreaming() override { return false; }
+	virtual bool isStreaming() const override { return false; }
 
 	virtual std::tuple<ALuint, ALuint, ALuint> getOrLoadBufferAt(ALuint offset) override
 	{
@@ -317,7 +316,7 @@ struct SoundDataOpenStream final : ISoundDataOpen
 	SoundDataOpenStream(std::unique_ptr<RAIIOggFile> oggfile,
 			const OggFileDecodeInfo &decode_info);
 
-	virtual bool isStreaming() override { return true; }
+	virtual bool isStreaming() const override { return true; }
 
 	virtual std::tuple<ALuint, ALuint, ALuint> getOrLoadBufferAt(ALuint offset) override;
 
@@ -354,8 +353,7 @@ public:
 	// return false means streaming finished (TODO)
 	bool stepStream();
 
-	// pos_ and vel_ are left-handed.
-	void updatePosVel(const v3f &pos_, const v3f &vel_);
+	void updatePosVel(const v3f &pos, const v3f &vel);
 
 	void makePositionless();
 
@@ -370,7 +368,7 @@ public:
 
 	void setPitch(float pitch) { alSourcef(m_source_id, AL_PITCH, pitch); }
 
-	bool isStreaming() { return m_data->isStreaming(); }
+	bool isStreaming() const { return m_data->isStreaming(); }
 
 	void play() { alSourcePlay(m_source_id); }
 
@@ -396,7 +394,7 @@ private:
 	ALCcontext *m_context;
 
 	// used to create new ids. sound_handle_t (=int) will hopefully never overflow
-	sound_handle_t m_next_id;
+	sound_handle_t m_next_id = 1;
 
 	// loaded sounds
 	std::unordered_map<std::string, std::unique_ptr<ISoundDataUnopen>> m_sound_datas_unopen;
@@ -436,7 +434,7 @@ private:
 		float target_gain;
 	};
 
-	std::unordered_map<int, FadeState> m_sounds_fading;
+	std::unordered_map<sound_handle_t, FadeState> m_sounds_fading;
 
 private:
 	sound_handle_t newSoundID();
@@ -449,13 +447,8 @@ public:
 
 	DISABLE_CLASS_COPY(OpenALSoundManager)
 
-	void step(float dtime) override //TODO: does not seem to be called unfocused
-	{
-		doFades(dtime);
-		stepStreams(dtime);
-	}
-
 	void stepStreams(float dtime);
+	void doFades(float dtime);
 
 	/**
 	 * TODO
@@ -479,94 +472,35 @@ public:
 
 	// pos_opt is left-handed
 	std::shared_ptr<PlayingSound> createPlayingSound(const std::string &sound_name,
-			bool loop, float volume, float pitch, float time_offset, Optional<v3f> pos_opt);
+			bool loop, float volume, float pitch, float time_offset, const Optional<v3f> &pos_opt);
 
 	// pos_opt is left-handed
 	sound_handle_t playSoundGeneric(const std::string &group_name, bool loop,
 			float volume, float fade, float pitch, bool use_local_fallback, float time_offset,
-			Optional<v3f> pos_opt);
+			const Optional<v3f> &pos_opt);
 
-	void deleteSound(sound_handle_t id)
-	{
-		m_sounds_playing.erase(id);
-	}
+	void deleteSound(sound_handle_t id);
 
 	// Removes stopped sounds
 	void maintain();
 
 	/* Interface */
 
+	void step(float dtime) override; //TODO: does not seem to be called unfocused
+
+	void updateListener(const v3f &pos_, const v3f &vel_, const v3f &at_, const v3f &up_) override;
+	void setListenerGain(float gain) override;
+
 	bool loadSoundFile(const std::string &name, const std::string &filepath) override;
-
 	bool loadSoundData(const std::string &name, std::string &&filedata) override;
-
 	void addSoundToGroup(const std::string &sound_name, const std::string &group_name) override;
 
-	void updateListener(const v3f &pos_, const v3f &vel_, const v3f &at, const v3f &up) override;
-
-	void setListenerGain(float gain) override
-	{
-		alListenerf(AL_GAIN, gain);
-	}
-
-	sound_handle_t playSound(const SimpleSoundSpec &spec) override
-	{
-		return playSoundGeneric(spec.name, spec.loop, spec.gain, spec.fade, spec.pitch, spec.use_local_fallback,
-				spec.time_offset, nullopt);
-	}
-
-	sound_handle_t playSoundAt(const SimpleSoundSpec &spec, const v3f &pos) override
-	{
-		// AL_REFERENCE_DISTANCE was once reduced from 3*BS to 1*BS.
-		// We compensate this by multiplying the volume by 3.
-		// Note that this is just done to newly created sounds (and not in
-		// updateSoundGain) because it was like this for many versions, so someone
-		// might depend on this (inconsistent) behaviour.
-		f32 volume = spec.gain * 3.0f;
-
-		return playSoundGeneric(spec.name, spec.loop, volume, 0.0f /* no fade */,
-				spec.pitch, spec.use_local_fallback, spec.time_offset, pos);
-	}
-
-	void stopSound(sound_handle_t sound) override
-	{
-		maintain();
-		deleteSound(sound);
-	}
-
+	sound_handle_t playSound(const SimpleSoundSpec &spec) override;
+	sound_handle_t playSoundAt(const SimpleSoundSpec &spec, const v3f &pos_) override;
+	void stopSound(sound_handle_t sound) override;
 	void fadeSound(sound_handle_t soundid, float step, float gain) override;
-
-	void doFades(float dtime);
-
-	bool soundExists(sound_handle_t sound) override
-	{
-		maintain();
-		return (m_sounds_playing.count(sound) != 0);
-	}
-
-	void updateSoundPosition(sound_handle_t id, v3f pos) override
-	{
-		auto i = m_sounds_playing.find(id);
-		if (i == m_sounds_playing.end())
-			return;
-		i->second->updatePosVel(pos, v3f(0.0f, 0.0f, 0.0f));
-	}
-
-	bool updateSoundGain(sound_handle_t id, float gain) override
-	{
-		auto i = m_sounds_playing.find(id);
-		if (i == m_sounds_playing.end())
-			return false;
-		i->second->setGain(gain);
-		return true;
-	}
-
-	float getSoundGain(sound_handle_t id) override
-	{
-		auto i = m_sounds_playing.find(id);
-		if (i == m_sounds_playing.end())
-			return 0.0f;
-
-		return i->second->getGain();
-	}
+	bool soundExists(sound_handle_t sound) override;
+	void updateSoundPosition(sound_handle_t id, const v3f &pos_) override;
+	bool updateSoundGain(sound_handle_t id, float gain) override;
+	float getSoundGain(sound_handle_t id) override;
 };

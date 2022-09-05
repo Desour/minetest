@@ -6,6 +6,7 @@ TODO: remove this file
 * long sounds are streamed (makes #8596 possible)
 * time_offset (TODO) (#11865; will be needed at some point anyways for players entering max_hear_distance)
 * sound is no longer upside-down (test eg. with hrtf)
+* got rid of BS. (gain is still the same everywhere)
 
 
 TODO:

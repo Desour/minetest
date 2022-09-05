@@ -449,12 +449,12 @@ enum ToClientCommand
 
 	TOCLIENT_PLAY_SOUND = 0x3f,
 	/*
-		s32 sound_id
+		s32 server_id
 		u16 len
 		u8[len] sound name
-		s32 gain*1000
-		u8 type (0=local, 1=positional, 2=object)
-		s32[3] pos_nodes*10000
+		f32 gain
+		u8 type (SoundLocation: 0=local, 1=positional, 2=object)
+		v3f pos_nodes (in BS-space)
 		u16 object_id
 		u8 loop (bool)
 		f32 fade

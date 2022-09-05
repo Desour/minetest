@@ -2985,8 +2985,8 @@ void Game::updateSound(f32 dtime)
 {
 	// Update sound listener
 	v3s16 camera_offset = camera->getOffset();
-	sound->updateListener(camera->getCameraNode()->getPosition() + intToFloat(camera_offset, BS),
-			      v3f(0, 0, 0), // velocity
+	sound->updateListener((1.0f/BS) * camera->getCameraNode()->getPosition() + intToFloat(camera_offset, 1.0f),
+			      v3f(0, 0, 0), // TODO: velocity
 			      camera->getDirection(),
 			      camera->getCameraNode()->getUpVector());
 
