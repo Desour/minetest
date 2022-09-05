@@ -176,7 +176,7 @@ long OggVorbisBufferSource::tell_func(void *datasource)
 	return s->cur_offset;
 }
 
-ov_callbacks OggVorbisBufferSource::s_ov_callbacks = {
+const ov_callbacks OggVorbisBufferSource::s_ov_callbacks = {
 	&OggVorbisBufferSource::read_func,
 	&OggVorbisBufferSource::seek_func,
 	&OggVorbisBufferSource::close_func,
@@ -344,7 +344,7 @@ std::shared_ptr<ISoundDataOpen> SoundDataUnopenBuffer::open(const std::string &s
 	oggfile->m_needs_clear = true;
 	if (ov_open_callbacks(buffer_source.release(), oggfile->get(), nullptr, 0,
 			OggVorbisBufferSource::s_ov_callbacks) != 0) {
-		infostream << "Audio: Error opening " << sound_name << " for decoding"
+		warningstream << "Audio: Error opening " << sound_name << " for decoding"
 				<< std::endl;
 		return nullptr;
 	}
@@ -362,11 +362,8 @@ std::shared_ptr<ISoundDataOpen> SoundDataUnopenFile::open(const std::string &sou
 
 	auto oggfile = std::make_unique<RAIIOggFile>();
 
-	// Try opening the given file.
-	// This requires libvorbis >= 1.3.2, as
-	// previous versions expect a non-const char *
 	if (ov_fopen(m_path.c_str(), oggfile->get()) != 0) {
-		infostream << "Audio: Error opening " << m_path << " for decoding"
+		warningstream << "Audio: Error opening " << m_path << " for decoding"
 				<< std::endl;
 		return nullptr;
 	}
@@ -509,7 +506,7 @@ std::tuple<ALuint, ALuint, ALuint> SoundDataOpenStream::loadBufferAt(ALuint offs
  */
 
 PlayingSound::PlayingSound(ALuint source_id, std::shared_ptr<ISoundDataOpen> data,
-		bool loop, float time_offset)
+		bool loop, float volume, float pitch, float time_offset, const Optional<v3f> &pos_opt)
 	: m_source_id(source_id), m_data(std::move(data)), m_looping(loop)
 {
 	// calculate actual time_offset (see lua_api.txt for specs)
@@ -526,6 +523,8 @@ PlayingSound::PlayingSound(ALuint source_id, std::shared_ptr<ISoundDataOpen> dat
 	} else {
 		time_offset = time_offset - std::floor(time_offset / len_seconds) * len_seconds;
 	}
+
+	// queue first buffers
 
 	m_next_sample_pos = (time_offset / len_seconds) * len_samples;
 
@@ -568,6 +567,19 @@ PlayingSound::PlayingSound(ALuint source_id, std::shared_ptr<ISoundDataOpen> dat
 
 		warn_if_al_error("when creating streaming sound");
 	}
+
+	// set initial pos, volume, pitch
+	if (pos_opt.has_value()) {
+		updatePosVel(*pos_opt, v3f(0.0f, 0.0f, 0.0f)); //TODO: velocity
+	} else {
+		// make position-less
+		alSourcei(m_source_id, AL_SOURCE_RELATIVE, true);
+		alSource3f(m_source_id, AL_POSITION, 0.0f, 0.0f, 0.0f);
+		alSource3f(m_source_id, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
+		warn_if_al_error("PlayingSound::PlayingSound at making position-less");
+	}
+	setGain(volume);
+	setPitch(pitch);
 }
 
 bool PlayingSound::stepStream()
@@ -622,14 +634,6 @@ void PlayingSound::updatePosVel(const v3f &pos, const v3f &vel)
 	alSourcef(m_source_id, AL_REFERENCE_DISTANCE, 1.0f);
 
 	warn_if_al_error("PlayingSound::updatePosVel");
-}
-
-void PlayingSound::makePositionless()
-{
-	alSourcei(m_source_id, AL_SOURCE_RELATIVE, true);
-	alSource3f(m_source_id, AL_POSITION, 0.0f, 0.0f, 0.0f);
-	alSource3f(m_source_id, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
-	warn_if_al_error("PlayingSound::makePositionless");
 }
 
 /*
@@ -820,16 +824,8 @@ std::shared_ptr<PlayingSound> OpenALSoundManager::createPlayingSound(const std::
 	}
 
 	auto sound = std::make_shared<PlayingSound>(source_id, std::move(lsnd), loop,
-			time_offset);
+			volume, pitch, time_offset, pos_opt);
 
-	if (pos_opt.has_value()) {
-		sound->updatePosVel(*pos_opt, v3f(0.0f, 0.0f, 0.0f));
-	} else {
-		sound->makePositionless();
-	}
-
-	sound->setGain(volume);
-	sound->setPitch(pitch);
 	sound->play();
 	warn_if_al_error("createPlayingSound");
 	return sound;
@@ -854,7 +850,7 @@ sound_handle_t OpenALSoundManager::playSoundGeneric(const std::string &group_nam
 		return -1;
 	}
 
-	volume = std::fmax(0.0f, volume);
+	volume = std::max(0.0f, volume);
 
 	if (!(pitch > 0.0f)) {
 		warningstream << "OpenALSoundManager::playSoundGeneric: illegal pitch value: "

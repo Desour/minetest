@@ -51,16 +51,60 @@ with this program; ifnot, write to the Free Software Foundation, Inc.,
 
 
 /*
- * TODO: more doc
  *
  * The coordinate space for sounds (sound-space):
- * ---------------------------------------------
+ * ----------------------------------------------
  *
  * * The functions from ISoundManager (see sound.h) take spatial vectors in node-space.
  * * All other `v3f`s here are, if not told otherwise, in sound-space, which is
  *   defined as node-space mirrored along the x-axis.
  *   (This is needed because OpenAL uses a right-handed coordinate system.)
  * * Use `swap_handedness()` to convert between those two coordinate spaces.
+ *
+ *
+ * How sounds are loaded:
+ * ----------------------
+ *
+ * * Step 1:
+ *   `loadSoundFile` or `loadSoundFile` is called. This adds an unopen sound with
+ *   the given name to `m_sound_datas_unopen`.
+ *   Unopen sounds (`ISoundDataUnopen`) are ogg-vorbis files that we did not yet
+ *   start to decode. (Decoding an unopen sound does not fail under normal circumstances
+ *   (because we check whether the file exists at least), if it does fail anyways,
+ *   we should notify the user.)
+ * * Step 2:
+ *   `addSoundToGroup` is called, to add the name from step 1 to a group. If the
+ *   group does not yet exist, a new one is created. A group can later be played.
+ *   (The mapping is stored in `m_sound_groups`.)
+ * * Step 3:
+ *   `playSound` or `playSoundAt` is called.
+ *   * Step 3.1:
+ *     If the group with the name `spec.name` does not exist, and `spec.use_local_fallback`
+ *     is true, a new group is created using the user's sound-pack.
+ *   * Step 3.2:
+ *     We choose one random sound name from the given group.
+ *   * Step 3.3:
+ *     We open the sound (see `openSingleSound`).
+ *     If the sound is already open (in `m_sound_datas_open`), we take that one.
+ *     Otherwise we open it by calling `ISoundDataUnopen::open`. We choose (by
+ *     sound length), whether it's a single-buffer (`SoundDataOpenSinglebuf`) or
+ *     streamed (`SoundDataOpenStream`) sound.
+ *     Single-buffer sounds are always completely loaded. Streamed sounds can be
+ *     partially loaded.
+ *     The sound is erased from `m_sound_datas_unopen` and added to `m_sound_datas_open`.
+ *     Open sounds are kept forever.
+ *   * Step 3.4:
+ *     We create the new `PlayingSound`. It has a `shared_ptr` to its open sound.
+ *     If the open sound is streaming, the playing sound needs to be stepped using
+ *     `PlayingSound::stepStream` for enqueuing buffers. For this purpose, the sound
+ *     is added to `m_sounds_streaming` (as `weak_ptr`).
+ *     If the sound is fading, it is added to `m_sounds_fading` for regular fade-stepping.
+ *     The sound is also added to `m_sounds_playing`, so that one can access it
+ *     via its sound handle.
+ * * Step 4:
+ *   TODO: step
+ * * Step 5:
+ *   TODO: delete
  *
  */
 
@@ -106,11 +150,12 @@ struct OggVorbisBufferSource {
 	static int close_func(void *datasource);
 	static long tell_func(void *datasource);
 
-	static ov_callbacks s_ov_callbacks;
+	static const ov_callbacks s_ov_callbacks;
 };
 
 /**
- * TODO
+ * Metadata of an Ogg-Vorbis file, used for decoding.
+ * We query this information once and store it in this struct.
  */
 struct OggFileDecodeInfo {
 	std::string name_for_logging;
@@ -321,7 +366,7 @@ struct SoundDataOpenStream final : ISoundDataOpen
 	virtual std::tuple<ALuint, ALuint, ALuint> getOrLoadBufferAt(ALuint offset) override;
 
 private:
-	// offset must be before after_it's m_start and after (--after_it)'s last m_end
+	// offset must be before after_it's m_start and after (after_it-1)'s last m_end
 	// new buffer will be inserted into m_buffers before after_it
 	// returns same as getOrLoadBufferAt
 	std::tuple<ALuint, ALuint, ALuint> loadBufferAt(ALuint offset,
@@ -341,7 +386,7 @@ class PlayingSound final
 
 public:
 	PlayingSound(ALuint source_id, std::shared_ptr<ISoundDataOpen> data, bool loop,
-			float time_offset);
+			float volume, float pitch, float time_offset, const Optional<v3f> &pos_opt);
 
 	~PlayingSound() noexcept
 	{
@@ -354,8 +399,6 @@ public:
 	bool stepStream();
 
 	void updatePosVel(const v3f &pos, const v3f &vel);
-
-	void makePositionless();
 
 	void setGain(float gain) { alSourcef(m_source_id, AL_GAIN, gain); }
 
@@ -422,7 +465,7 @@ private:
 
 	std::vector<std::weak_ptr<PlayingSound>> m_sounds_streaming;
 
-	struct FadeState {
+	struct FadeState { // TODO: Optional in PlayingSound
 		FadeState() = default;
 
 		FadeState(float step, float current_gain, float target_gain):
