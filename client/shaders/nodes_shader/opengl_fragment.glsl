@@ -20,7 +20,7 @@ uniform float animationTimer;
 	uniform vec4 CameraPos;
 	uniform float xyPerspectiveBias0;
 	uniform float xyPerspectiveBias1;
-	
+
 	varying float adj_shadow_strength;
 	varying float cosLight;
 	varying float f_normal_length;
@@ -48,9 +48,6 @@ varying float nightRatio;
 varying vec3 tsEyeVec;
 varying vec3 lightVec;
 varying vec3 tsLightVec;
-
-const float fogStart = FOG_START;
-const float fogShadingParameter = 1.0 / ( 1.0 - fogStart);
 
 #ifdef ENABLE_DYNAMIC_SHADOWS
 
@@ -448,10 +445,24 @@ void main(void)
 	// As additions usually come for free following a multiplication, the new formula
 	// should be more efficient as well.
 	// Note: clarity = (1 - fogginess)
-	float clarity = clamp(fogShadingParameter
-		- fogShadingParameter * length(eyeVec) / fogDistance, 0.0, 1.0);
+	float clarity;
+	if (vPosition.x < 0) {
+		const float fogShadingParameter = 1.0 / ( 1.0 - FOG_START);
+		clarity = clamp(fogShadingParameter
+			- fogShadingParameter * length(eyeVec) / fogDistance, 0.0, 1.0);
+	} else {
+		const float fogShadingParameter = 1.0 / ( 1.0 - FOG_START);
+		//~ clarity = 1.0 - clamp(exp2(fogShadingParameter * length(eyeVec) / fogDistance) * 0.5, 0.0, 1.0);
+		const float fog_density = fogShadingParameter * 2.0;
+		float fog = clamp(exp2(-pow(fog_density * max(0.0, fogDistance-length(eyeVec)) / fogDistance, 2.0)), 0.0, 1.0);
+		clarity = 1.0 - fog;
+	}
 	col = mix(skyBgColor, col, clarity);
 	col = vec4(col.rgb, base.a);
+
+	//~ float foo = exp2(-pow(vPosition.x * 0.1, 2.0)) * 10.0;
+	//~ if (abs(vPosition.y - foo) < 0.1)
+		//~ col = vec4(1.0, 0.0, 0.0, 0.0);
 
 	gl_FragData[0] = col;
 }
