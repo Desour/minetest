@@ -108,6 +108,11 @@ with this program; ifnot, write to the Free Software Foundation, Inc.,
  *
  */
 
+// constants
+
+// in seconds
+constexpr f32 REMOVE_DEAD_SOUNDS_INTERVAL = 2.0f;
+
 
 /**
  * RAII wrapper for openal sound buffers.
@@ -383,6 +388,7 @@ class PlayingSound final
 	std::shared_ptr<ISoundDataOpen> m_data;
 	ALuint m_next_sample_pos = 0;
 	bool m_looping;
+	bool m_stopped_means_dead = true;
 
 public:
 	PlayingSound(ALuint source_id, std::shared_ptr<ISoundDataOpen> data, bool loop,
@@ -415,11 +421,18 @@ public:
 
 	void play() { alSourcePlay(m_source_id); }
 
-	bool isPlaying()
+	// returns one of AL_INITIAL, AL_PLAYING, AL_PAUSED, AL_STOPPED
+	ALint getState()
 	{
 		ALint state;
 		alGetSourcei(m_source_id, AL_SOURCE_STATE, &state);
-		return state == AL_PLAYING;
+		return state;
+	}
+
+	bool isDead()
+	{
+		// streaming sounds can (but should not) stop because the queue runs empty
+		return m_stopped_means_dead && getState() == AL_STOPPED;
 	}
 };
 
@@ -438,6 +451,9 @@ private:
 
 	// used to create new ids. sound_handle_t (=int) will hopefully never overflow
 	sound_handle_t m_next_id = 1;
+
+	// time in seconds until which removeDeadSounds will be called again
+	f32 m_time_until_dead_removal = REMOVE_DEAD_SOUNDS_INTERVAL;
 
 	// loaded sounds
 	std::unordered_map<std::string, std::unique_ptr<ISoundDataUnopen>> m_sound_datas_unopen;
@@ -482,14 +498,6 @@ private:
 private:
 	sound_handle_t newSoundID();
 
-public:
-	OpenALSoundManager(SoundManagerSingleton *smg,
-			std::unique_ptr<SoundLocalFallbackPathsGiver> local_fallback_paths_giver);
-
-	~OpenALSoundManager() override;
-
-	DISABLE_CLASS_COPY(OpenALSoundManager)
-
 	void stepStreams(float dtime);
 	void doFades(float dtime);
 
@@ -522,14 +530,20 @@ public:
 			float volume, float fade, float pitch, bool use_local_fallback, float time_offset,
 			const Optional<v3f> &pos_opt);
 
-	void deleteSound(sound_handle_t id);
+	// returns number of removed sounds
+	int removeDeadSounds();
 
-	// Removes stopped sounds
-	void maintain();
+public:
+	OpenALSoundManager(SoundManagerSingleton *smg,
+			std::unique_ptr<SoundLocalFallbackPathsGiver> local_fallback_paths_giver);
+
+	~OpenALSoundManager() override;
+
+	DISABLE_CLASS_COPY(OpenALSoundManager)
 
 	/* Interface */
 
-	void step(float dtime) override; //TODO: does not seem to be called unfocused
+	void step(float dtime) override; //TODO: stop sounds or continue stepping when game is paused
 
 	void updateListener(const v3f &pos_, const v3f &vel_, const v3f &at_, const v3f &up_) override;
 	void setListenerGain(float gain) override;

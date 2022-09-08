@@ -565,6 +565,8 @@ PlayingSound::PlayingSound(ALuint source_id, std::shared_ptr<ISoundDataOpen> dat
 		// * streaming
 		// * looping
 
+		m_stopped_means_dead = false;
+
 		warn_if_al_error("when creating streaming sound");
 	}
 
@@ -597,10 +599,13 @@ bool PlayingSound::stepStream()
 	// fill up again
 	for (ALint i = 0; i < num_unqueued_bufs; ++i) {
 		if (m_next_sample_pos == m_data->m_decode_info.length_samples) {
-			if (m_looping)
+			// reached end
+			if (m_looping) {
 				m_next_sample_pos = 0;
-			else
+			} else {
+				m_stopped_means_dead = true;
 				return false;
+			}
 		}
 
 		auto buf_nxtoffset_thisoffset_tpl = m_data->getOrLoadBufferAt(m_next_sample_pos);
@@ -611,9 +616,7 @@ bool PlayingSound::stepStream()
 		alSourceQueueBuffers(m_source_id, 1, &buf_id);
 
 		// start again if queue was empty and resulted in stop
-		ALint state;
-		alGetSourcei(m_source_id, AL_SOURCE_STATE, &state);
-		if (state == AL_STOPPED) {
+		if (getState() == AL_STOPPED) {
 			play();
 			warningstream << "PlayingSound::stepStream: sound queue ran empty"
 					<< std::endl;
@@ -649,36 +652,6 @@ sound_handle_t OpenALSoundManager::newSoundID()
 		FATAL_ERROR("OpenALSoundManager::newSoundID: run out of ids");
 	}
 	return m_next_id++;
-}
-
-OpenALSoundManager::OpenALSoundManager(SoundManagerSingleton *smg,
-		std::unique_ptr<SoundLocalFallbackPathsGiver> local_fallback_paths_giver) :
-	m_local_fallback_paths_giver(std::move(local_fallback_paths_giver)),
-	m_device(smg->m_device.get()),
-	m_context(smg->m_context.get())
-{
-	SANITY_CHECK(!!m_local_fallback_paths_giver);
-
-	infostream << "Audio: Initialized: OpenAL " << std::endl;
-}
-
-OpenALSoundManager::~OpenALSoundManager()
-{
-	infostream << "Audio: Deinitializing..." << std::endl;
-
-	// delete stuff: first sources, then buffers
-	std::vector<int> source_del_list;
-
-	source_del_list.reserve(m_sounds_playing.size());
-	for (const auto &sp : m_sounds_playing)
-		source_del_list.push_back(sp.first);
-
-	for (const auto &id : source_del_list)
-		deleteSound(id);
-
-	//~ m_loaded_sounds.clear(); //TODO
-
-	infostream << "Audio: Deinitialized." << std::endl;
 }
 
 void OpenALSoundManager::stepStreams(float dtime)
@@ -835,8 +808,6 @@ sound_handle_t OpenALSoundManager::playSoundGeneric(const std::string &group_nam
 		float volume, float fade, float pitch, bool use_local_fallback, float time_offset,
 		const Optional<v3f> &pos_opt)
 {
-	maintain(); // TODO: call time based
-
 	if (group_name.empty())
 		return 0;
 
@@ -883,43 +854,75 @@ sound_handle_t OpenALSoundManager::playSoundGeneric(const std::string &group_nam
 	return id;
 }
 
-void OpenALSoundManager::deleteSound(sound_handle_t id)
+int OpenALSoundManager::removeDeadSounds()
 {
-	m_sounds_playing.erase(id);
-}
+	int num_deleted_sounds = 0;
 
-void OpenALSoundManager::maintain()
-{
-	if (!m_sounds_playing.empty()) {
-		verbosestream << "OpenALSoundManager::maintain(): "
-				<< m_sounds_playing.size() << " playing sounds, "
-				<< m_sound_datas_unopen.size() << " unopen sounds, "
-				<< m_sound_datas_open.size() << " open sounds and "
-				<< m_sound_groups.size() << " sound groups loaded"
-				<< std::endl;
-	}
-	std::vector<sound_handle_t> del_list;
-	{
-		for (const auto &sp : m_sounds_playing) {
-			sound_handle_t id = sp.first;
-			PlayingSound &sound = *sp.second;
-			// If not playing, remove it
-			if (!sound.isPlaying())
-				del_list.push_back(id);
+	for (auto it = m_sounds_playing.begin(); it != m_sounds_playing.end();) {
+		PlayingSound &sound = *it->second;
+		// If dead, remove it
+		if (sound.isDead()) {
+			it = m_sounds_playing.erase(it);
+			++num_deleted_sounds;
+		} else {
+			++it;
 		}
 	}
-	if (!del_list.empty())
-		verbosestream << "OpenALSoundManager::maintain(): deleting "
-				<< del_list.size() << " playing sounds" << std::endl;
-	for (sound_handle_t i : del_list) {
-		deleteSound(i);
-	}
+
+	return num_deleted_sounds;
+}
+
+OpenALSoundManager::OpenALSoundManager(SoundManagerSingleton *smg,
+		std::unique_ptr<SoundLocalFallbackPathsGiver> local_fallback_paths_giver) :
+	m_local_fallback_paths_giver(std::move(local_fallback_paths_giver)),
+	m_device(smg->m_device.get()),
+	m_context(smg->m_context.get())
+{
+	SANITY_CHECK(!!m_local_fallback_paths_giver);
+
+	infostream << "Audio: Initialized: OpenAL " << std::endl;
+}
+
+OpenALSoundManager::~OpenALSoundManager()
+{
+	infostream << "Audio: Deinitializing..." << std::endl;
+
+	//~ // first delete sources
+	//~ m_sounds_playing.clear();
+
+	//~ // then buffers
+	//~ m_sound_datas_open.clear();
+
+	//~ // other stuff
+	//~ m_sound_datas_unopen.clear();
+
+	//~ infostream << "Audio: Deinitialized." << std::endl;
 }
 
 /* Interface */
 
 void OpenALSoundManager::step(float dtime)
 {
+	m_time_until_dead_removal -= dtime;
+	if (m_time_until_dead_removal <= 0.0f) {
+		if (!m_sounds_playing.empty()) {
+			verbosestream << "OpenALSoundManager::step(): "
+					<< m_sounds_playing.size() << " playing sounds, "
+					<< m_sound_datas_unopen.size() << " unopen sounds, "
+					<< m_sound_datas_open.size() << " open sounds and "
+					<< m_sound_groups.size() << " sound groups loaded"
+					<< std::endl;
+		}
+
+		int num_deleted_sounds = removeDeadSounds();
+
+		if (num_deleted_sounds != 0)
+			verbosestream << "OpenALSoundManager::step(): deleted "
+					<< num_deleted_sounds << " dead playing sounds" << std::endl;
+
+		m_time_until_dead_removal = REMOVE_DEAD_SOUNDS_INTERVAL;
+	}
+
 	doFades(dtime);
 	stepStreams(dtime);
 }
@@ -1001,8 +1004,7 @@ sound_handle_t OpenALSoundManager::playSoundAt(const SimpleSoundSpec &spec, cons
 
 void OpenALSoundManager::stopSound(sound_handle_t sound)
 {
-	maintain();
-	deleteSound(sound);
+	m_sounds_playing.erase(sound);
 }
 
 void OpenALSoundManager::fadeSound(sound_handle_t soundid, float step, float gain)
@@ -1025,8 +1027,7 @@ void OpenALSoundManager::fadeSound(sound_handle_t soundid, float step, float gai
 
 bool OpenALSoundManager::soundExists(sound_handle_t sound)
 {
-	maintain();
-	return (m_sounds_playing.count(sound) != 0);
+	return (m_sounds_playing.find(sound) != m_sounds_playing.end());
 }
 
 void OpenALSoundManager::updateSoundPosition(sound_handle_t id, const v3f &pos_)
