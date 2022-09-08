@@ -29,8 +29,6 @@ with this program; ifnot, write to the Free Software Foundation, Inc.,
 
 // constants (TODO)
 
-// size of local buffers used in ogg vorbis decoding
-constexpr size_t BUFFER_SIZE = 30000;
 // maximum length in seconds that a sound can have without being streamed
 constexpr double SOUND_DURATION_MAX_SINGLE = 3.0;
 // time in seconds of a single buffer in a streamed sound
@@ -1012,7 +1010,11 @@ void OpenALSoundManager::fadeSound(sound_handle_t soundid, float step, float gai
 	// Ignore the command if step isn't valid.
 	if (step == 0.0f)
 		return;
-	float current_gain = getSoundGain(soundid);
+	auto sound_it = m_sounds_playing.find(soundid);
+	if (sound_it == m_sounds_playing.end())
+		return; // No sound to fade
+	PlayingSound &sound = *sound_it->second;
+	float current_gain = sound.getGain();
 	step = gain - current_gain > 0.0f ? abs(step) : -abs(step);
 	if (m_sounds_fading.find(soundid) != m_sounds_fading.end()) {
 		const auto &current_fade = m_sounds_fading[soundid];
@@ -1047,13 +1049,4 @@ bool OpenALSoundManager::updateSoundGain(sound_handle_t id, float gain)
 		return false;
 	i->second->setGain(gain);
 	return true;
-}
-
-float OpenALSoundManager::getSoundGain(sound_handle_t id)
-{
-	auto i = m_sounds_playing.find(id);
-	if (i == m_sounds_playing.end())
-		return 0.0f;
-
-	return i->second->getGain();
 }

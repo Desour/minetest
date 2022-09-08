@@ -559,5 +559,4 @@ public:
 	bool soundExists(sound_handle_t sound) override;
 	void updateSoundPosition(sound_handle_t id, const v3f &pos_) override;
 	bool updateSoundGain(sound_handle_t id, float gain) override;
-	float getSoundGain(sound_handle_t id) override;
 };

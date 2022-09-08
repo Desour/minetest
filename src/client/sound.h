@@ -120,8 +120,7 @@ public:
 	 * @param pos In node-space.
 	 */
 	virtual void updateSoundPosition(sound_handle_t sound, const v3f &pos) = 0;
-	virtual bool updateSoundGain(sound_handle_t id, float gain) = 0;
-	virtual float getSoundGain(sound_handle_t id) = 0;
+	virtual bool updateSoundGain(sound_handle_t id, float gain) = 0; // TODO: do we need this? (we can fade instead)
 	virtual void fadeSound(sound_handle_t sound, float step, float gain) = 0;
 };
 
@@ -143,7 +142,6 @@ public:
 	bool soundExists(sound_handle_t sound) override { return false; }
 	void updateSoundPosition(sound_handle_t sound, const v3f &pos) override {}
 	bool updateSoundGain(sound_handle_t id, float gain) override { return false; }
-	float getSoundGain(sound_handle_t id) override { return 0; }
 	void fadeSound(sound_handle_t sound, float step, float gain) override {}
 };
 
