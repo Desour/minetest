@@ -128,6 +128,7 @@ class GUIEngine {
 	/** grant ModApiMainMenu access to private members */
 	friend class ModApiMainMenu;
 	friend class ModApiMainMenuSound;
+	friend class MainMenuSoundRef;
 
 public:
 	/**

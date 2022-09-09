@@ -23,6 +23,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "common/c_content.h"
 #include "gui/guiEngine.h"
 
+/* ModApiMainMenuSound */
+
 // sound_play(spec, loop)
 int ModApiMainMenuSound::l_sound_play(lua_State *L)
 {
@@ -32,23 +34,10 @@ int ModApiMainMenuSound::l_sound_play(lua_State *L)
 
 	ISoundManager &sound_manager = *getGuiEngine(L)->m_sound_manager;
 
-	s32 handle = sound_manager.allocateId(2); // TODO: userdata for gc, and 0 if ephemeral
+	sound_handle_t handle = sound_manager.allocateId(2);
 	sound_manager.playSound(handle, spec);
 
-	lua_pushinteger(L, handle);
-
-	return 1;
-}
-
-// sound_stop(handle)
-int ModApiMainMenuSound::l_sound_stop(lua_State *L)
-{
-	u32 handle = luaL_checkinteger(L, 1);
-
-	ISoundManager &sound_manager = *getGuiEngine(L)->m_sound_manager;
-
-	sound_manager.stopSound(handle);
-	sound_manager.freeId(handle, 1);
+	MainMenuSoundRef::create(L, handle);
 
 	return 1;
 }
@@ -56,5 +45,70 @@ int ModApiMainMenuSound::l_sound_stop(lua_State *L)
 void ModApiMainMenuSound::Initialize(lua_State *L, int top)
 {
 	API_FCT(sound_play);
-	API_FCT(sound_stop);
 }
+
+/* MainMenuSoundRef */
+
+MainMenuSoundRef *MainMenuSoundRef::checkobject(lua_State *L, int narg)
+{
+	luaL_checktype(L, narg, LUA_TUSERDATA);
+	void *ud = luaL_checkudata(L, narg, className);
+	if (!ud)
+		luaL_typerror(L, narg, className);
+	return *(MainMenuSoundRef**)ud; // unbox pointer
+}
+
+int MainMenuSoundRef::gc_object(lua_State *L)
+{
+	std::unique_ptr<MainMenuSoundRef> o(*(MainMenuSoundRef **)(lua_touserdata(L, 1)));
+	if (getGuiEngine(L) && getGuiEngine(L)->m_sound_manager)
+		getGuiEngine(L)->m_sound_manager->freeId(o->m_handle, 1);
+	return 0;
+}
+
+// :stop()
+int MainMenuSoundRef::l_stop(lua_State *L)
+{
+	MainMenuSoundRef *o = checkobject(L, 1);
+	getGuiEngine(L)->m_sound_manager->stopSound(o->m_handle);
+	return 0;
+}
+
+void MainMenuSoundRef::create(lua_State *L, sound_handle_t handle)
+{
+	MainMenuSoundRef *o = new MainMenuSoundRef(handle);
+	*(void **)(lua_newuserdata(L, sizeof(void *))) = o;
+	luaL_getmetatable(L, className);
+	lua_setmetatable(L, -2);
+}
+
+void MainMenuSoundRef::Register(lua_State *L)
+{
+	lua_newtable(L);
+	int methodtable = lua_gettop(L);
+	luaL_newmetatable(L, className);
+	int metatable = lua_gettop(L);
+
+	lua_pushliteral(L, "__metatable");
+	lua_pushvalue(L, methodtable);
+	lua_settable(L, metatable);  // hide metatable from Lua getmetatable()
+
+	lua_pushliteral(L, "__index");
+	lua_pushvalue(L, methodtable);
+	lua_settable(L, metatable);
+
+	lua_pushliteral(L, "__gc");
+	lua_pushcfunction(L, gc_object);
+	lua_settable(L, metatable);
+
+	lua_pop(L, 1);  // drop metatable
+
+	luaL_register(L, nullptr, methods);  // fill methodtable
+	lua_pop(L, 1);  // drop methodtable
+}
+
+const char MainMenuSoundRef::className[] = "MainMenuSoundRef";
+const luaL_Reg MainMenuSoundRef::methods[] = {
+	luamethod(MainMenuSoundRef, stop),
+	{0,0}
+};

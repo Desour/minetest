@@ -83,6 +83,7 @@ void MainMenuScripting::initializeModApi(lua_State *L, int top)
 void MainMenuScripting::registerLuaClasses(lua_State *L, int top)
 {
 	LuaSettings::Register(L);
+	MainMenuSoundRef::Register(L);
 }
 
 /******************************************************************************/
