@@ -97,7 +97,7 @@ int ModApiMainMenu::l_update_formspec(lua_State *L)
 	//read formspec
 	std::string formspec(luaL_checkstring(L, 1));
 
-	if (engine->m_formspecgui != 0) {
+	if (engine->m_formspecgui) {
 		engine->m_formspecgui->setForm(formspec);
 	}
 
@@ -506,16 +506,15 @@ int ModApiMainMenu::l_check_mod_configuration(lua_State *L)
 /******************************************************************************/
 int ModApiMainMenu::l_show_keys_menu(lua_State *L)
 {
-	GUIEngine* engine = getGuiEngine(L);
+	GUIEngine *engine = getGuiEngine(L);
 	sanity_check(engine != NULL);
 
-	GUIKeyChangeMenu *kmenu = new GUIKeyChangeMenu(
+	irr_ptr<GUIKeyChangeMenu> kmenu(new GUIKeyChangeMenu(
 			engine->m_rendering_engine->get_gui_env(),
 			engine->m_parent,
 			-1,
 			engine->m_menumanager,
-			engine->m_texture_source);
-	kmenu->drop();
+			engine->m_texture_source.get()));
 	return 0;
 }
 
@@ -844,23 +843,24 @@ int ModApiMainMenu::l_may_modify_path(lua_State *L)
 /******************************************************************************/
 int ModApiMainMenu::l_show_path_select_dialog(lua_State *L)
 {
-	GUIEngine* engine = getGuiEngine(L);
+	GUIEngine *engine = getGuiEngine(L);
 	sanity_check(engine != NULL);
 
 	const char *formname= luaL_checkstring(L, 1);
 	const char *title	= luaL_checkstring(L, 2);
 	bool is_file_select = readParam<bool>(L, 3);
 
-	GUIFileSelectMenu* fileOpenMenu =
-		new GUIFileSelectMenu(engine->m_rendering_engine->get_gui_env(),
+	irr_ptr<GUIFileSelectMenu> fileOpenMenu(
+			new GUIFileSelectMenu(
+				engine->m_rendering_engine->get_gui_env(),
 				engine->m_parent,
 				-1,
 				engine->m_menumanager,
 				title,
 				formname,
-				is_file_select);
+				is_file_select)
+		);
 	fileOpenMenu->setTextDest(engine->m_buttonhandler);
-	fileOpenMenu->drop();
 	return 0;
 }
 
