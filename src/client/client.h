@@ -67,6 +67,7 @@ class NetworkPacket;
 namespace con {
 class Connection;
 }
+using sound_handle_t = int;
 
 enum LocalClientState {
 	LC_Created,
@@ -565,13 +566,12 @@ private:
 	// Sounds
 	float m_removed_sounds_check_timer = 0.0f;
 	// Mapping from server sound ids to our sound ids
-	std::unordered_map<s32, int> m_sounds_server_to_client;
+	std::unordered_map<s32, sound_handle_t> m_sounds_server_to_client;
 	// And the other way!
 	// This takes ownership for the sound handles.
-	std::unordered_map<int, s32> m_sounds_client_to_server;
+	std::unordered_map<sound_handle_t, s32> m_sounds_client_to_server;
 	// Relation of client id to object id
-	std::unordered_map<int, u16> m_sounds_to_objects;
-	int m_next_sound_id = 1;
+	std::unordered_map<sound_handle_t, u16> m_sounds_to_objects;
 
 	// Privileges
 	std::unordered_set<std::string> m_privileges;

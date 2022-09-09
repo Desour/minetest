@@ -36,6 +36,7 @@ int ModApiServerSound::l_sound_play(lua_State *L)
 		getServer(L)->playSound(std::move(params), true);
 		lua_pushnil(L);
 	} else {
+		params.grabbed = true;
 		s32 handle = getServer(L)->playSound(std::move(params));
 		ServerSoundRef::create(L, handle);
 	}
@@ -62,7 +63,8 @@ int ServerSoundRef::gc_object(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
 	std::unique_ptr<ServerSoundRef> o(*(ServerSoundRef **)(lua_touserdata(L, 1)));
-	//TODO
+	if (getServer(L))
+		getServer(L)->dropSound(o->m_handle);
 	return 0;
 }
 

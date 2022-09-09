@@ -673,7 +673,7 @@ void Client::step(float dtime)
 	*/
 	{
 		for (auto &m_sounds_to_object : m_sounds_to_objects) {
-			int client_id = m_sounds_to_object.first;
+			sound_handle_t client_id = m_sounds_to_object.first;
 			u16 object_id = m_sounds_to_object.second;
 			ClientActiveObject *cao = m_env.getActiveObject(object_id);
 			if (!cao)

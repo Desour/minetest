@@ -84,7 +84,7 @@ sound_handle_t ISoundManager::allocateId(u32 num_owners)
 {
 	while (m_occupied_ids.find(m_next_id) != m_occupied_ids.end()
 			|| m_next_id == SOUND_HANDLE_T_MAX) {
-		m_next_id = static_cast<s32>(
+		m_next_id = static_cast<sound_handle_t>(
 				myrand() % static_cast<u32>(SOUND_HANDLE_T_MAX - 1) + 1);
 	}
 	sound_handle_t id = m_next_id++;
