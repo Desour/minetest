@@ -22,6 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "irr_v3d.h"
 #include "../sound.h"
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -54,6 +55,7 @@ private:
  * IDs for playing sounds.
  * 0 is for sounds that are never modified after creation.
  * Negative numbers are invalid.
+ * Positive numbers are allocated via allocateId and are manually reference-counted.
  */
 using sound_handle_t = int;
 
@@ -62,16 +64,12 @@ constexpr sound_handle_t SOUND_HANDLE_T_MAX = std::numeric_limits<sound_handle_t
 class ISoundManager
 {
 private:
-	std::unordered_set<sound_handle_t> m_occupied_ids;
+	std::unordered_map<sound_handle_t, u32> m_occupied_ids;
 	sound_handle_t m_next_id = 1;
 	std::vector<sound_handle_t> m_removed_sounds;
 
 protected:
-	void reportRemovedSound(sound_handle_t id)
-	{
-		if (id > 0)
-			m_removed_sounds.push_back(id);
-	}
+	void reportRemovedSound(sound_handle_t id);
 
 public:
 	virtual ~ISoundManager() = default;
@@ -111,6 +109,7 @@ public:
 
 	/** //TODO: doc this in lua_api.txt
 	 * Plays a random sound from a sound group (position-less).
+	 * @param id Id for new sound. Move semantics apply if id > 0.
 	 * @param group_name If == "", call is ignored without error.
 	 * @param loop If true, sound is played in a loop.
 	 * @param volume The gain of the sound (non-negative).
@@ -131,7 +130,7 @@ public:
 	virtual void playSoundAt(sound_handle_t id, const SimpleSoundSpec &spec, const v3f &pos) = 0;
 	/**
 	 * Request the sound to be stopped.
-	 * The id will later be given back via pollRemovedSounds.
+	 * The id should be freed afterwards.
 	 */
 	virtual void stopSound(sound_handle_t sound) = 0;
 	/**
@@ -143,7 +142,6 @@ public:
 
 	/**
 	 * Get and reset the list of sounds that were stopped.
-	 * Ids can be freed afterwards.
 	 */
 	std::vector<sound_handle_t> pollRemovedSounds()
 	{
@@ -153,17 +151,26 @@ public:
 	/**
 	 * Returns a positive id.
 	 * The id will be returned again until freeId is called.
+	 * @param num_owners Owner-counter for id. Set this to 2, if you want to play
+	 *                   a sound and store the id also otherwhere.
 	 */
-	sound_handle_t allocateId(); //TODO: smart ptrs
+	sound_handle_t allocateId(u32 num_owners);
 
 	/**
 	 * Free an id allocated via allocateId.
+	 * @param num_owners How much the owner-counter should be decreased. Id can
+	 *                   be reused when counter reaches 0.
 	 */
-	void freeId(sound_handle_t id)
-	{
-		m_occupied_ids.erase(id);;
-	}
+	void freeId(sound_handle_t id, u32 num_owners);
 };
+
+//TODO: smart ptrs?
+// TODO: global manager for smart ptrs?
+
+//~ struct OwnedSoundHandle {
+	//~ sound_handle_t m_handle;
+	//~ ISoundManager
+//~ };
 
 class DummySoundManager final : public ISoundManager
 {

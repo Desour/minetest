@@ -287,7 +287,7 @@ int ModApiClient::l_sound_play(lua_State *L)
 
 	spec.gain *= gain;
 
-	s32 handle = sound->allocateId(); // TODO: use 0 if ephemeral
+	s32 handle = sound->allocateId(2); // TODO: use 0 if ephemeral
 	if (type == SoundLocation::Local)
 		sound->playSound(handle, spec);
 	else
@@ -302,7 +302,9 @@ int ModApiClient::l_sound_stop(lua_State *L)
 {
 	s32 handle = luaL_checkinteger(L, 1);
 
-	getClient(L)->getSoundManager()->stopSound(handle);
+	ISoundManager *sound_manager = getClient(L)->getSoundManager();
+	sound_manager->stopSound(handle);
+	sound_manager->freeId(handle, 1);
 
 	return 0;
 }

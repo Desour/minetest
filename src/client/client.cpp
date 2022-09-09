@@ -363,6 +363,11 @@ Client::~Client()
 	if (m_mod_storage_database)
 		m_mod_storage_database->endSave();
 	delete m_mod_storage_database;
+
+	// Free sound ids
+	for (auto &csp : m_sounds_client_to_server)
+		m_sound->freeId(csp.first, 1);
+	m_sounds_client_to_server.clear();
 }
 
 void Client::connect(Address address, bool is_local_server)
@@ -687,11 +692,11 @@ void Client::step(float dtime)
 		std::vector<sound_handle_t> removed_cliend_ids = m_sound->pollRemovedSounds();
 		std::vector<s32> removed_server_ids;
 		for (sound_handle_t client_id : removed_cliend_ids) {
-			m_sound->freeId(client_id); // TODO: what if something else made the id? => smart ptrs
 			auto client_to_server_id_it = m_sounds_client_to_server.find(client_id);
 			if (client_to_server_id_it == m_sounds_client_to_server.end())
-				continue; // TODO: should never happen?
+				continue;
 			s32 server_id = client_to_server_id_it->second;
+			m_sound->freeId(client_id, 1);
 			m_sounds_client_to_server.erase(client_to_server_id_it);
 			if (server_id != -1) {
 				m_sounds_server_to_client.erase(server_id);

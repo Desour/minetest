@@ -71,12 +71,34 @@ void SoundLocalFallbackPathsGiver::addThePaths(const std::string &name,
 	addAllAlternatives(porting::path_user + DIR_DELIM + "sounds" + DIR_DELIM + name, paths);
 }
 
-sound_handle_t ISoundManager::allocateId()
+void ISoundManager::reportRemovedSound(sound_handle_t id)
+{
+	if (id <= 0)
+		return;
+
+	freeId(id, 1);
+	m_removed_sounds.push_back(id);
+}
+
+sound_handle_t ISoundManager::allocateId(u32 num_owners)
 {
 	while (m_occupied_ids.find(m_next_id) != m_occupied_ids.end()
 			|| m_next_id == SOUND_HANDLE_T_MAX) {
 		m_next_id = static_cast<s32>(
 				myrand() % static_cast<u32>(SOUND_HANDLE_T_MAX - 1) + 1);
 	}
-	return m_next_id++;
+	sound_handle_t id = m_next_id++;
+	m_occupied_ids.emplace(id, num_owners);
+	return id;
+}
+
+void ISoundManager::freeId(sound_handle_t id, u32 num_owners)
+{
+	auto it = m_occupied_ids.find(id);
+	if (it == m_occupied_ids.end())
+		return;
+	if (it->second <= num_owners)
+		m_occupied_ids.erase(it);
+	else
+		it->second -= num_owners;
 }

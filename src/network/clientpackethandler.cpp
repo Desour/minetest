@@ -841,7 +841,7 @@ void Client::handleCommand_PlaySound(NetworkPacket* pkt)
 		if (ephemeral && object_id == 0)
 			return 0; // Sound can not be accessed afterwards
 
-		return m_sound->allocateId();
+		return m_sound->allocateId(2);
 	}();
 
 	// Start playing
@@ -861,13 +861,14 @@ void Client::handleCommand_PlaySound(NetworkPacket* pkt)
 	} default:
 		// Unknown SoundLocation, instantly remove sound
 		if (client_id != 0)
-			m_sound->freeId(client_id);
+			m_sound->freeId(client_id, 2);
 		if (!ephemeral)
 			sendRemovedSounds({server_id});
 		return;
 	}
 
 	if (client_id != 0) {
+		// Note: m_sounds_client_to_server takes 1 ownership
 		// For ephemeral sounds, server_id is not meaningful
 		if (ephemeral) {
 			m_sounds_client_to_server[client_id] = -1;

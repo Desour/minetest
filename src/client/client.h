@@ -567,6 +567,7 @@ private:
 	// Mapping from server sound ids to our sound ids
 	std::unordered_map<s32, int> m_sounds_server_to_client;
 	// And the other way!
+	// This takes ownership for the sound handles.
 	std::unordered_map<int, s32> m_sounds_client_to_server;
 	// Relation of client id to object id
 	std::unordered_map<int, u16> m_sounds_to_objects;
