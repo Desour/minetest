@@ -839,6 +839,9 @@ void OpenALSoundManager::playSoundGeneric(sound_handle_t id, const std::string &
 		bool loop, f32 volume, f32 fade, f32 pitch, bool use_local_fallback,
 		f32 time_offset, const Optional<v3f> &pos_opt)
 {
+	if (id == 0)
+		id = allocateId(1);
+
 	if (group_name.empty()) {
 		reportRemovedSound(id);
 		return;
