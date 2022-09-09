@@ -181,7 +181,7 @@ GUIEngine::GUIEngine(JoystickController *joystick,
 
 	infostream << "GUIEngine: Initializing Lua" << std::endl;
 
-	m_script = new MainMenuScripting(this);
+	m_script = std::make_unique<MainMenuScripting>(this);
 
 	try {
 		m_script->setMainMenuData(&m_data->script_data);
@@ -316,10 +316,11 @@ void GUIEngine::run()
 /******************************************************************************/
 GUIEngine::~GUIEngine()
 {
-	m_sound_manager.reset();
+	// deinitialize script first. gc destructors might depend on other stuff
+	infostream << "GUIEngine: Deinitializing scripting" << std::endl;
+	m_script.reset();
 
-	infostream<<"GUIEngine: Deinitializing scripting"<<std::endl;
-	delete m_script;
+	m_sound_manager.reset();
 
 	m_irr_toplefttext->setText(L"");
 

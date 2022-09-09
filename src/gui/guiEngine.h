@@ -153,7 +153,7 @@ public:
 	 */
 	MainMenuScripting *getScriptIface()
 	{
-		return m_script;
+		return m_script.get();
 	}
 
 	/**
@@ -203,7 +203,7 @@ private:
 	bool                     m_startgame = false;
 
 	/** scripting interface */
-	MainMenuScripting       *m_script = nullptr;
+	std::unique_ptr<MainMenuScripting> m_script;
 
 	/** script basefolder */
 	std::string              m_scriptdir = "";
