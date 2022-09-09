@@ -821,7 +821,7 @@ void Client::handleCommand_PlaySound(NetworkPacket* pkt)
 	s32 server_id;
 
 	SimpleSoundSpec spec;
-	SoundLocation type; // 0=local, 1=positional, 2=object
+	SoundLocation type;
 	v3f pos;
 	u16 object_id;
 	bool ephemeral = false;
@@ -836,28 +836,42 @@ void Client::handleCommand_PlaySound(NetworkPacket* pkt)
 		*pkt >> spec.time_offset;
 	} catch (PacketError &e) {};
 
+	// Generate a new id
+	sound_handle_t client_id = [&] {
+		if (ephemeral && object_id == 0)
+			return 0; // Sound can not be accessed afterwards
+
+		return m_sound->allocateId();
+	}();
+
 	// Start playing
-	int client_id = -1;
 	switch(type) {
 	case SoundLocation::Local:
-		client_id = m_sound->playSound(spec);
+		m_sound->playSound(client_id, spec);
 		break;
 	case SoundLocation::Position:
-		client_id = m_sound->playSoundAt(spec, pos);
+		m_sound->playSoundAt(client_id, spec, pos);
 		break;
-	case SoundLocation::Object:
-		{
-			ClientActiveObject *cao = m_env.getActiveObject(object_id);
-			if (cao)
-				pos = cao->getPosition() * (1.0f/BS);
-			client_id = m_sound->playSoundAt(spec, pos);
-			break;
-		}
+	case SoundLocation::Object: {
+		ClientActiveObject *cao = m_env.getActiveObject(object_id);
+		if (cao)
+			pos = cao->getPosition() * (1.0f/BS);
+		m_sound->playSoundAt(client_id, spec, pos);
+		break;
+	} default:
+		// Unknown SoundLocation, instantly remove sound
+		if (client_id != 0)
+			m_sound->freeId(client_id);
+		if (!ephemeral)
+			sendRemovedSounds({server_id});
+		return;
 	}
 
-	if (client_id != -1) {
-		// for ephemeral sounds, server_id is not meaningful
-		if (!ephemeral) {
+	if (client_id != 0) {
+		// For ephemeral sounds, server_id is not meaningful
+		if (ephemeral) {
+			m_sounds_client_to_server[client_id] = -1;
+		} else {
 			m_sounds_server_to_client[server_id] = client_id;
 			m_sounds_client_to_server[client_id] = server_id;
 		}

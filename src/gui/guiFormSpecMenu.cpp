@@ -825,9 +825,9 @@ void GUIFormSpecMenu::parseImage(parserData* data, const std::string &element)
 	core::rect<s32> middle;
 	if (parts.size() >= 4)
 		parseMiddleRect(parts[3], &middle);
-	
+
 	// Temporary fix for issue #12581 in 5.6.0.
-	// Use legacy image when not rendering 9-slice image because GUIAnimatedImage 
+	// Use legacy image when not rendering 9-slice image because GUIAnimatedImage
 	// uses NNAA filter which causes visual artifacts when image uses alpha blending.
 
 	gui::IGUIElement *e;
@@ -4515,7 +4515,7 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 				if ((s.ftype == f_TabHeader) &&
 						(s.fid == event.GUIEvent.Caller->getID())) {
 					if (!s.sound.empty() && m_sound_manager)
-						m_sound_manager->playSound(SimpleSoundSpec(s.sound, 1.0f));
+						m_sound_manager->playSound(0, SimpleSoundSpec(s.sound, 1.0f));
 					s.send = true;
 					acceptInput();
 					s.send = false;
@@ -4560,7 +4560,7 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 
 				if (s.ftype == f_Button || s.ftype == f_CheckBox) {
 					if (!s.sound.empty() && m_sound_manager)
-						m_sound_manager->playSound(SimpleSoundSpec(s.sound, 1.0f));
+						m_sound_manager->playSound(0, SimpleSoundSpec(s.sound, 1.0f));
 
 					s.send = true;
 					if (s.is_exit) {
@@ -4585,7 +4585,7 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 						}
 					}
 					if (!s.sound.empty() && m_sound_manager)
-						m_sound_manager->playSound(SimpleSoundSpec(s.sound, 1.0f));
+						m_sound_manager->playSound(0, SimpleSoundSpec(s.sound, 1.0f));
 					s.send = true;
 					acceptInput(quit_mode_no);
 
@@ -4603,7 +4603,7 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 					s.fdefault = L"";
 				} else if (s.ftype == f_Unknown || s.ftype == f_HyperText) {
 					if (!s.sound.empty() && m_sound_manager)
-						m_sound_manager->playSound(SimpleSoundSpec(s.sound, 1.0f));
+						m_sound_manager->playSound(0, SimpleSoundSpec(s.sound, 1.0f));
 					s.send = true;
 					acceptInput();
 					s.send = false;

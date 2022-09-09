@@ -1172,7 +1172,7 @@ void GenericCAO::step(float dtime, ClientEnvironment *env)
 				// Reduce footstep gain, as non-local-player footsteps are
 				// somehow louder.
 				spec.gain *= 0.6f;
-				m_client->sound()->playSoundAt(spec, getPosition() * (1.0f/BS)); // TODO: footstep at feet
+				m_client->sound()->playSoundAt(0, spec, getPosition() * (1.0f/BS)); // TODO: footstep at feet
 			}
 		}
 	}

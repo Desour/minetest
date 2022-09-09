@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "irr_v3d.h"
 #include "../sound.h"
+#include "util/numeric.h"
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -52,16 +53,31 @@ private:
 
 /**
  * IDs for playing sounds.
- * Non-positive values are invalid.
+ * 0 is for sounds that are never modified after creation.
+ * Negative numbers are invalid.
  */
 using sound_handle_t = int;
 
+constexpr sound_handle_t SOUND_HANDLE_T_MAX = std::numeric_limits<sound_handle_t>::max();
+
 class ISoundManager
 {
+private:
+	std::unordered_set<sound_handle_t> m_occupied_ids;
+	sound_handle_t m_next_id = 1;
+	std::vector<sound_handle_t> m_removed_sounds;
+
+protected:
+	void reportRemovedSound(sound_handle_t id)
+	{
+		if (id > 0)
+			m_removed_sounds.push_back(id);
+	}
+
 public:
 	virtual ~ISoundManager() = default;
 
-	virtual void step(float dtime) = 0;
+	virtual void step(f32 dtime) = 0;
 
 	/**
 	 * @param pos In node-space.
@@ -71,7 +87,7 @@ public:
 	 */
 	virtual void updateListener(const v3f &pos, const v3f &vel, const v3f &at,
 			const v3f &up) = 0;
-	virtual void setListenerGain(float gain) = 0;
+	virtual void setListenerGain(f32 gain) = 0;
 
 	/**
 	 * Adds a sound to load from a file (only OggVorbis).
@@ -108,42 +124,75 @@ public:
 	 * @param time_offset TODO
 	 * @return -1 on failure, otherwise a handle to the sound.
 	 */
-	virtual sound_handle_t playSound(const SimpleSoundSpec &spec) = 0;
+	virtual void playSound(sound_handle_t id, const SimpleSoundSpec &spec) = 0;
 	/**
 	 * Same as `playSound`, but at a position.
 	 * @param pos In node-space.
 	 */
-	virtual sound_handle_t playSoundAt(const SimpleSoundSpec &spec, const v3f &pos) = 0;
+	virtual void playSoundAt(sound_handle_t id, const SimpleSoundSpec &spec, const v3f &pos) = 0;
+	/**
+	 * Request the sound to be stopped.
+	 * The id will later be given back via pollRemovedSounds.
+	 */
 	virtual void stopSound(sound_handle_t sound) = 0;
-	virtual bool soundExists(sound_handle_t sound) = 0;
 	/**
 	 * @param pos In node-space.
 	 */
 	virtual void updateSoundPosition(sound_handle_t sound, const v3f &pos) = 0;
-	virtual bool updateSoundGain(sound_handle_t id, float gain) = 0; // TODO: do we need this? (we can fade instead)
-	virtual void fadeSound(sound_handle_t sound, float step, float gain) = 0;
+	virtual void updateSoundGain(sound_handle_t id, f32 gain) = 0; // TODO: do we need this? (we can fade instead)
+	virtual void fadeSound(sound_handle_t sound, f32 step, f32 target_gain) = 0;
+
+	/**
+	 * Get and reset the list of sounds that were stopped.
+	 * Ids can be freed afterwards.
+	 */
+	std::vector<sound_handle_t> pollRemovedSounds()
+	{
+		return std::move(m_removed_sounds);
+	}
+
+	/**
+	 * Returns a positive id.
+	 * The id will be returned again until freeId is called.
+	 */
+	sound_handle_t allocateId() //TODO: smart ptrs
+	{
+		while (m_occupied_ids.find(m_next_id) != m_occupied_ids.end()
+				|| m_next_id == SOUND_HANDLE_T_MAX) {
+			m_next_id = static_cast<s32>(
+					myrand() % static_cast<u32>(SOUND_HANDLE_T_MAX - 1) + 1);
+		}
+		return m_next_id++;
+	}
+
+	/**
+	 * Free an id allocated via allocateId.
+	 */
+	void freeId(sound_handle_t id)
+	{
+		m_occupied_ids.erase(id);;
+	}
 };
 
 class DummySoundManager final : public ISoundManager
 {
 public:
-	void step(float dtime) override {}
+	void step(f32 dtime) override {}
 
 	void updateListener(const v3f &pos, const v3f &vel, const v3f &at, const v3f &up) override {}
-	void setListenerGain(float gain) override {}
+	void setListenerGain(f32 gain) override {}
 
 	bool loadSoundFile(const std::string &name, const std::string &filepath) override { return true; }
 	bool loadSoundData(const std::string &name, std::string &&filedata) override { return true; }
 	void addSoundToGroup(const std::string &sound_name, const std::string &group_name) override {};
 
-	sound_handle_t playSound(const SimpleSoundSpec &spec) override { return 0; }
-	sound_handle_t playSoundAt(const SimpleSoundSpec &spec, const v3f &pos) override { return 0; }
+	void playSound(sound_handle_t id, const SimpleSoundSpec &spec) override { reportRemovedSound(id); }
+	void playSoundAt(sound_handle_t id, const SimpleSoundSpec &spec, const v3f &pos) override { reportRemovedSound(id); }
 	void stopSound(sound_handle_t sound) override {}
-	bool soundExists(sound_handle_t sound) override { return false; }
 	void updateSoundPosition(sound_handle_t sound, const v3f &pos) override {}
-	bool updateSoundGain(sound_handle_t id, float gain) override { return false; }
-	void fadeSound(sound_handle_t sound, float step, float gain) override {}
+	void updateSoundGain(sound_handle_t id, f32 gain) override {}
+	void fadeSound(sound_handle_t sound, f32 step, f32 target_gain) override {}
 };
 
 // Global DummySoundManager singleton
-extern DummySoundManager dummySoundManager;
+extern DummySoundManager dummySoundManager; // TODO: remove this

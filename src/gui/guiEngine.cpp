@@ -609,16 +609,3 @@ void GUIEngine::updateTopLeftTextSize()
 	m_irr_toplefttext = gui::StaticText::add(m_rendering_engine->get_gui_env(),
 			m_toplefttext, rect, false, true, 0, -1);
 }
-
-/******************************************************************************/
-s32 GUIEngine::playSound(const SimpleSoundSpec &spec)
-{
-	s32 handle = m_sound_manager->playSound(spec);
-	return handle;
-}
-
-/******************************************************************************/
-void GUIEngine::stopSound(s32 handle)
-{
-	m_sound_manager->stopSound(handle);
-}

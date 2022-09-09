@@ -463,7 +463,7 @@ private:
 	void startAuth(AuthMechanism chosen_auth_mechanism);
 	void sendDeletedBlocks(std::vector<v3s16> &blocks);
 	void sendGotBlocks(const std::vector<v3s16> &blocks);
-	void sendRemovedSounds(std::vector<s32> &soundList);
+	void sendRemovedSounds(const std::vector<s32> &soundList);
 
 	// Helper function
 	inline std::string getPlayerName()
@@ -570,6 +570,7 @@ private:
 	std::unordered_map<int, s32> m_sounds_client_to_server;
 	// Relation of client id to object id
 	std::unordered_map<int, u16> m_sounds_to_objects;
+	int m_next_sound_id = 1;
 
 	// Privileges
 	std::unordered_set<std::string> m_privileges;

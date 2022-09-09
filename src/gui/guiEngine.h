@@ -285,11 +285,4 @@ private:
 	bool        m_clouds_enabled = true;
 	/** data used to draw clouds */
 	clouddata   m_cloud;
-
-	/** start playing a sound and return handle */
-	s32 playSound(const SimpleSoundSpec &spec);
-	/** stop playing a sound started with playSound() */
-	void stopSound(s32 handle);
-
-
 };

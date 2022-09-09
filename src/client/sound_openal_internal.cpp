@@ -210,7 +210,7 @@ Optional<OggFileDecodeInfo> RAIIOggFile::getDecodeInfo(const std::string &filena
 	ret.freq = pInfo->rate;
 
 	ret.length_samples = static_cast<ALuint>(ov_pcm_total(&m_file, -1));
-	ret.length_seconds = static_cast<float>(ov_time_total(&m_file, -1));
+	ret.length_seconds = static_cast<f32>(ov_time_total(&m_file, -1));
 
 	return ret;
 }
@@ -504,12 +504,12 @@ std::tuple<ALuint, ALuint, ALuint> SoundDataOpenStream::loadBufferAt(ALuint offs
  */
 
 PlayingSound::PlayingSound(ALuint source_id, std::shared_ptr<ISoundDataOpen> data,
-		bool loop, float volume, float pitch, float time_offset, const Optional<v3f> &pos_opt)
+		bool loop, f32 volume, f32 pitch, f32 time_offset, const Optional<v3f> &pos_opt)
 	: m_source_id(source_id), m_data(std::move(data)), m_looping(loop)
 {
 	// calculate actual time_offset (see lua_api.txt for specs)
-	float len_seconds = m_data->m_decode_info.length_seconds;
-	float len_samples = m_data->m_decode_info.length_samples;
+	f32 len_seconds = m_data->m_decode_info.length_seconds;
+	f32 len_samples = m_data->m_decode_info.length_samples;
 	if (!m_looping) {
 		if (time_offset < 0.0f) {
 			time_offset = std::fmax(time_offset + len_seconds, 0.0f);
@@ -584,6 +584,9 @@ PlayingSound::PlayingSound(ALuint source_id, std::shared_ptr<ISoundDataOpen> dat
 
 bool PlayingSound::stepStream()
 {
+	if (isDead())
+		return false;
+
 	// unqueue finished buffers
 	ALint num_unqueued_bufs = 0;
 	alGetSourcei(m_source_id, AL_BUFFERS_PROCESSED, &num_unqueued_bufs);
@@ -624,6 +627,53 @@ bool PlayingSound::stepStream()
 	return true;
 }
 
+bool PlayingSound::fade(f32 step, f32 target_gain)
+{
+	bool already_fading = m_fade_state.has_value();
+
+	target_gain = rangelim(target_gain, 0.0f, 1.0f);
+	step = target_gain - getGain() > 0.0f ? std::abs(step) : -std::abs(step);
+
+	m_fade_state = FadeState{step, target_gain};
+
+	return !already_fading;
+}
+
+bool PlayingSound::doFade(f32 dtime)
+{
+	if (!m_fade_state || isDead())
+		return false;
+
+	FadeState &fade = *m_fade_state;
+	assert(fade.step != 0.0f);
+
+	f32 current_gain = getGain();
+	current_gain += fade.step * dtime;
+
+	if (fade.step < 0.0f)
+		current_gain = std::max(current_gain, fade.target_gain);
+	else
+		current_gain = std::min(current_gain, fade.target_gain);
+
+	if (current_gain <= 0.0f) {
+		// stop sound
+		m_stopped_means_dead = true;
+		alSourceStop(m_source_id);
+
+		m_fade_state = nullopt;
+		return false;
+	}
+
+	setGain(current_gain);
+
+	if (current_gain == fade.target_gain) {
+		m_fade_state = nullopt;
+		return false;
+	} else {
+		return true;
+	}
+}
+
 void PlayingSound::updatePosVel(const v3f &pos, const v3f &vel)
 {
 	alSourcei(m_source_id, AL_SOURCE_RELATIVE, false);
@@ -641,18 +691,7 @@ void PlayingSound::updatePosVel(const v3f &pos, const v3f &vel)
  * OpenALSoundManager class
  */
 
-sound_handle_t OpenALSoundManager::newSoundID()
-{
-	// if already existent or too big
-	while (m_sounds_playing.find(m_next_id) != m_sounds_playing.end()
-			|| m_next_id == std::numeric_limits<sound_handle_t>::max()) {
-		//TODO: rand (is it legal to re-use ids?)
-		FATAL_ERROR("OpenALSoundManager::newSoundID: run out of ids");
-	}
-	return m_next_id++;
-}
-
-void OpenALSoundManager::stepStreams(float dtime)
+void OpenALSoundManager::stepStreams(f32 dtime)
 {
 	//~ // if m_stream_timer becomes 0 this step, issue all sounds, otherwise
 	//~ // spread work across steps
@@ -682,28 +721,22 @@ void OpenALSoundManager::stepStreams(float dtime)
 	}
 }
 
-void OpenALSoundManager::doFades(float dtime)
+void OpenALSoundManager::doFades(f32 dtime)
 {
-	for (auto i = m_sounds_fading.begin(); i != m_sounds_fading.end();) {
-		FadeState &fade = i->second;
-		assert(fade.step != 0.0f);
-		fade.current_gain += (fade.step * dtime);
+	for (size_t i = 0; i < m_sounds_fading.size();) {
+		std::shared_ptr<PlayingSound> snd = m_sounds_fading[i].lock();
+		if (snd) {
+			if (snd->doFade(dtime)) {
+				// needs more fading later, keep in m_sounds_fading
+				++i;
+				continue;
+			}
+		}
 
-		if (fade.step < 0.f)
-			fade.current_gain = std::max(fade.current_gain, fade.target_gain);
-		else
-			fade.current_gain = std::min(fade.current_gain, fade.target_gain);
-
-		if (fade.current_gain <= 0.f)
-			stopSound(i->first);
-		else
-			updateSoundGain(i->first, fade.current_gain);
-
-		// The increment must happen during the erase call, or else it'll segfault.
-		if (fade.current_gain == fade.target_gain)
-			i = m_sounds_fading.erase(i);
-		else
-			++i;
+		// sound no longer needs to be faded
+		m_sounds_fading[i] = std::move(m_sounds_fading.back());
+		m_sounds_fading.pop_back();
+		// continue with same i
 	}
 }
 
@@ -774,7 +807,7 @@ std::string OpenALSoundManager::getOrLoadLoadedSoundNameFromGroup(const std::str
 }
 
 std::shared_ptr<PlayingSound> OpenALSoundManager::createPlayingSound(const std::string &sound_name,
-		bool loop, float volume, float pitch, float time_offset, const Optional<v3f> &pos_opt)
+		bool loop, f32 volume, f32 pitch, f32 time_offset, const Optional<v3f> &pos_opt)
 {
 	infostream << "OpenALSoundManager: Creating playing sound" << std::endl;
 	warn_if_al_error("before createPlayingSound");
@@ -802,12 +835,14 @@ std::shared_ptr<PlayingSound> OpenALSoundManager::createPlayingSound(const std::
 	return sound;
 }
 
-sound_handle_t OpenALSoundManager::playSoundGeneric(const std::string &group_name, bool loop,
-		float volume, float fade, float pitch, bool use_local_fallback, float time_offset,
-		const Optional<v3f> &pos_opt)
+void OpenALSoundManager::playSoundGeneric(sound_handle_t id, const std::string &group_name,
+		bool loop, f32 volume, f32 fade, f32 pitch, bool use_local_fallback,
+		f32 time_offset, const Optional<v3f> &pos_opt)
 {
-	if (group_name.empty())
-		return 0;
+	if (group_name.empty()) {
+		reportRemovedSound(id);
+		return;
+	}
 
 	// choose random sound name from group name
 	std::string sound_name = use_local_fallback ?
@@ -816,7 +851,8 @@ sound_handle_t OpenALSoundManager::playSoundGeneric(const std::string &group_nam
 	if (sound_name.empty()) {
 		infostream << "OpenALSoundManager: \"" << group_name << "\" not found."
 				<< std::endl;
-		return -1;
+		reportRemovedSound(id);
+		return;
 	}
 
 	volume = std::max(0.0f, volume);
@@ -836,9 +872,10 @@ sound_handle_t OpenALSoundManager::playSoundGeneric(const std::string &group_nam
 	// play it
 	std::shared_ptr<PlayingSound> sound = createPlayingSound(sound_name,
 			loop, fade > 0.0f ? 0.0f : volume, pitch, time_offset, pos_opt);
-	if (!sound)
-		return -1;
-	sound_handle_t id = newSoundID();
+	if (!sound) {
+		reportRemovedSound(id);
+		return;
+	}
 
 	// add to streaming sounds if streaming
 	if (sound->isStreaming())
@@ -848,8 +885,6 @@ sound_handle_t OpenALSoundManager::playSoundGeneric(const std::string &group_nam
 
 	if (fade > 0.0f)
 		fadeSound(id, fade, volume);
-
-	return id;
 }
 
 int OpenALSoundManager::removeDeadSounds()
@@ -857,10 +892,12 @@ int OpenALSoundManager::removeDeadSounds()
 	int num_deleted_sounds = 0;
 
 	for (auto it = m_sounds_playing.begin(); it != m_sounds_playing.end();) {
+		sound_handle_t id = it->first;
 		PlayingSound &sound = *it->second;
 		// If dead, remove it
 		if (sound.isDead()) {
 			it = m_sounds_playing.erase(it);
+			reportRemovedSound(id);
 			++num_deleted_sounds;
 		} else {
 			++it;
@@ -899,7 +936,7 @@ OpenALSoundManager::~OpenALSoundManager()
 
 /* Interface */
 
-void OpenALSoundManager::step(float dtime)
+void OpenALSoundManager::step(f32 dtime)
 {
 	m_time_until_dead_removal -= dtime;
 	if (m_time_until_dead_removal <= 0.0f) {
@@ -939,7 +976,7 @@ void OpenALSoundManager::updateListener(const v3f &pos_, const v3f &vel_, const 
 	warn_if_al_error("updateListener");
 }
 
-void OpenALSoundManager::setListenerGain(float gain)
+void OpenALSoundManager::setListenerGain(f32 gain)
 {
 	alListenerf(AL_GAIN, gain);
 }
@@ -979,13 +1016,13 @@ void OpenALSoundManager::addSoundToGroup(const std::string &sound_name, const st
 		m_sound_groups.emplace(group_name, std::vector<std::string>{sound_name});
 }
 
-sound_handle_t OpenALSoundManager::playSound(const SimpleSoundSpec &spec)
+void OpenALSoundManager::playSound(sound_handle_t id, const SimpleSoundSpec &spec)
 {
-	return playSoundGeneric(spec.name, spec.loop, spec.gain, spec.fade, spec.pitch,
+	return playSoundGeneric(id, spec.name, spec.loop, spec.gain, spec.fade, spec.pitch,
 			spec.use_local_fallback, spec.time_offset, nullopt); //TODO: pass spec?
 }
 
-sound_handle_t OpenALSoundManager::playSoundAt(const SimpleSoundSpec &spec, const v3f &pos_)
+void OpenALSoundManager::playSoundAt(sound_handle_t id, const SimpleSoundSpec &spec, const v3f &pos_)
 {
 	v3f pos = swap_handedness(pos_);
 
@@ -996,16 +1033,17 @@ sound_handle_t OpenALSoundManager::playSoundAt(const SimpleSoundSpec &spec, cons
 	// might depend on this (inconsistent) behaviour.
 	f32 volume = spec.gain * 3.0f;
 
-	return playSoundGeneric(spec.name, spec.loop, volume, 0.0f /* no fade */,
+	return playSoundGeneric(id, spec.name, spec.loop, volume, 0.0f /* no fade */,
 			spec.pitch, spec.use_local_fallback, spec.time_offset, pos);
 }
 
 void OpenALSoundManager::stopSound(sound_handle_t sound)
 {
 	m_sounds_playing.erase(sound);
+	reportRemovedSound(sound);
 }
 
-void OpenALSoundManager::fadeSound(sound_handle_t soundid, float step, float gain)
+void OpenALSoundManager::fadeSound(sound_handle_t soundid, f32 step, f32 target_gain)
 {
 	// Ignore the command if step isn't valid.
 	if (step == 0.0f)
@@ -1014,22 +1052,8 @@ void OpenALSoundManager::fadeSound(sound_handle_t soundid, float step, float gai
 	if (sound_it == m_sounds_playing.end())
 		return; // No sound to fade
 	PlayingSound &sound = *sound_it->second;
-	float current_gain = sound.getGain();
-	step = gain - current_gain > 0.0f ? abs(step) : -abs(step);
-	if (m_sounds_fading.find(soundid) != m_sounds_fading.end()) {
-		const auto &current_fade = m_sounds_fading[soundid];
-		// Do not replace the fade if it's equivalent.
-		if (current_fade.target_gain == gain && current_fade.step == step)
-			return;
-		m_sounds_fading.erase(soundid);
-	}
-	gain = rangelim(gain, 0.0f, 1.0f);
-	m_sounds_fading[soundid] = FadeState(step, current_gain, gain);
-}
-
-bool OpenALSoundManager::soundExists(sound_handle_t sound)
-{
-	return (m_sounds_playing.find(sound) != m_sounds_playing.end());
+	if (sound.fade(step, target_gain))
+		m_sounds_fading.emplace_back(sound_it->second);
 }
 
 void OpenALSoundManager::updateSoundPosition(sound_handle_t id, const v3f &pos_)
@@ -1042,11 +1066,10 @@ void OpenALSoundManager::updateSoundPosition(sound_handle_t id, const v3f &pos_)
 	i->second->updatePosVel(pos, v3f(0.0f, 0.0f, 0.0f));
 }
 
-bool OpenALSoundManager::updateSoundGain(sound_handle_t id, float gain)
+void OpenALSoundManager::updateSoundGain(sound_handle_t id, f32 gain)
 {
 	auto i = m_sounds_playing.find(id);
 	if (i == m_sounds_playing.end())
-		return false;
+		return;
 	i->second->setGain(gain);
-	return true;
 }

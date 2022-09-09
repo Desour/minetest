@@ -168,7 +168,7 @@ struct OggFileDecodeInfo {
 	size_t bytes_per_sample;
 	ALsizei freq;
 	ALuint length_samples = 0;
-	float length_seconds = 0.0f;
+	f32 length_seconds = 0.0f;
 };
 
 /**
@@ -384,15 +384,21 @@ private:
  */
 class PlayingSound final
 {
+	struct FadeState {
+		f32 step;
+		f32 target_gain;
+	};
+
 	ALuint m_source_id;
 	std::shared_ptr<ISoundDataOpen> m_data;
 	ALuint m_next_sample_pos = 0;
 	bool m_looping;
 	bool m_stopped_means_dead = true;
+	Optional<FadeState> m_fade_state = nullopt;
 
 public:
 	PlayingSound(ALuint source_id, std::shared_ptr<ISoundDataOpen> data, bool loop,
-			float volume, float pitch, float time_offset, const Optional<v3f> &pos_opt);
+			f32 volume, f32 pitch, f32 time_offset, const Optional<v3f> &pos_opt);
 
 	~PlayingSound() noexcept
 	{
@@ -404,18 +410,24 @@ public:
 	// return false means streaming finished (TODO)
 	bool stepStream();
 
+	// retruns true if it wasn't fading already
+	bool fade(f32 step, f32 target_gain);
+
+	// returns true if more fade is needed later
+	bool doFade(f32 dtime);
+
 	void updatePosVel(const v3f &pos, const v3f &vel);
 
-	void setGain(float gain) { alSourcef(m_source_id, AL_GAIN, gain); }
+	void setGain(f32 gain) { alSourcef(m_source_id, AL_GAIN, gain); }
 
-	float getGain()
+	f32 getGain()
 	{
 		ALfloat gain;
 		alGetSourcef(m_source_id, AL_GAIN, &gain);
 		return gain;
 	}
 
-	void setPitch(float pitch) { alSourcef(m_source_id, AL_PITCH, pitch); }
+	void setPitch(f32 pitch) { alSourcef(m_source_id, AL_PITCH, pitch); }
 
 	bool isStreaming() const { return m_data->isStreaming(); }
 
@@ -449,9 +461,6 @@ private:
 	ALCdevice *m_device;
 	ALCcontext *m_context;
 
-	// used to create new ids. sound_handle_t (=int) will hopefully never overflow
-	sound_handle_t m_next_id = 1;
-
 	// time in seconds until which removeDeadSounds will be called again
 	f32 m_time_until_dead_removal = REMOVE_DEAD_SOUNDS_INTERVAL;
 
@@ -477,29 +486,19 @@ private:
 	//~ // sounds inserted in here have at least 1 full buffer remaining
 	//~ std::vector<std::weak_ptr<PlayingSound>> m_sounds_streaming_treating;
 	//~ // TODO
-	//~ float m_stream_timer; // = STREAM_BIG_STEP_TIME; MIN_BUF_SIZE_SECS * 0.5
+	//~ f32 m_stream_timer; // = STREAM_BIG_STEP_TIME; MIN_BUF_SIZE_SECS * 0.5
 
 	std::vector<std::weak_ptr<PlayingSound>> m_sounds_streaming;
 
-	struct FadeState { // TODO: Optional in PlayingSound
-		FadeState() = default;
+	std::vector<sound_handle_t> m_removed_sounds;
 
-		FadeState(float step, float current_gain, float target_gain):
-			step(step),
-			current_gain(current_gain),
-			target_gain(target_gain) {}
-		float step;
-		float current_gain;
-		float target_gain;
-	};
-
-	std::unordered_map<sound_handle_t, FadeState> m_sounds_fading;
+	std::vector<std::weak_ptr<PlayingSound>> m_sounds_fading;
 
 private:
 	sound_handle_t newSoundID();
 
-	void stepStreams(float dtime);
-	void doFades(float dtime);
+	void stepStreams(f32 dtime);
+	void doFades(f32 dtime);
 
 	/**
 	 * TODO
@@ -523,11 +522,11 @@ private:
 
 	// pos_opt is left-handed
 	std::shared_ptr<PlayingSound> createPlayingSound(const std::string &sound_name,
-			bool loop, float volume, float pitch, float time_offset, const Optional<v3f> &pos_opt);
+			bool loop, f32 volume, f32 pitch, f32 time_offset, const Optional<v3f> &pos_opt);
 
 	// pos_opt is left-handed
-	sound_handle_t playSoundGeneric(const std::string &group_name, bool loop,
-			float volume, float fade, float pitch, bool use_local_fallback, float time_offset,
+	void playSoundGeneric(sound_handle_t id, const std::string &group_name, bool loop,
+			f32 volume, f32 fade, f32 pitch, bool use_local_fallback, f32 time_offset,
 			const Optional<v3f> &pos_opt);
 
 	// returns number of removed sounds
@@ -543,20 +542,19 @@ public:
 
 	/* Interface */
 
-	void step(float dtime) override; //TODO: stop sounds or continue stepping when game is paused
+	void step(f32 dtime) override; //TODO: stop sounds or continue stepping when game is paused
 
 	void updateListener(const v3f &pos_, const v3f &vel_, const v3f &at_, const v3f &up_) override;
-	void setListenerGain(float gain) override;
+	void setListenerGain(f32 gain) override;
 
 	bool loadSoundFile(const std::string &name, const std::string &filepath) override;
 	bool loadSoundData(const std::string &name, std::string &&filedata) override;
 	void addSoundToGroup(const std::string &sound_name, const std::string &group_name) override;
 
-	sound_handle_t playSound(const SimpleSoundSpec &spec) override;
-	sound_handle_t playSoundAt(const SimpleSoundSpec &spec, const v3f &pos_) override;
+	void playSound(sound_handle_t id, const SimpleSoundSpec &spec) override;
+	void playSoundAt(sound_handle_t id, const SimpleSoundSpec &spec, const v3f &pos_) override;
 	void stopSound(sound_handle_t sound) override;
-	void fadeSound(sound_handle_t soundid, float step, float gain) override;
-	bool soundExists(sound_handle_t sound) override;
+	void fadeSound(sound_handle_t soundid, f32 step, f32 target_gain) override;
 	void updateSoundPosition(sound_handle_t id, const v3f &pos_) override;
-	bool updateSoundGain(sound_handle_t id, float gain) override;
+	void updateSoundGain(sound_handle_t id, f32 gain) override;
 };

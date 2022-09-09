@@ -287,13 +287,13 @@ int ModApiClient::l_sound_play(lua_State *L)
 
 	spec.gain *= gain;
 
-	s32 handle;
+	s32 handle = sound->allocateId(); // TODO: use 0 if ephemeral
 	if (type == SoundLocation::Local)
-		handle = sound->playSound(spec);
+		sound->playSound(handle, spec);
 	else
-		handle = sound->playSoundAt(spec, position);
+		sound->playSoundAt(handle, spec, position);
 
-	lua_pushinteger(L, handle);
+	lua_pushinteger(L, handle); // TODO: put into userdata for garbage collection
 	return 1;
 }
 

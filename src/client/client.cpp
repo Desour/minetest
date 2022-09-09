@@ -684,23 +684,34 @@ void Client::step(float dtime)
 	if(m_removed_sounds_check_timer >= 2.32) {
 		m_removed_sounds_check_timer = 0;
 		// Find removed sounds and clear references to them
+		std::vector<sound_handle_t> removed_cliend_ids = m_sound->pollRemovedSounds();
 		std::vector<s32> removed_server_ids;
-		for (std::unordered_map<s32, int>::iterator i = m_sounds_server_to_client.begin();
-				i != m_sounds_server_to_client.end();) {
-			s32 server_id = i->first;
-			int client_id = i->second;
-			++i;
-			if(!m_sound->soundExists(client_id)) {
+		for (sound_handle_t client_id : removed_cliend_ids) {
+			m_sound->freeId(client_id); // TODO: what if something else made the id? => smart ptrs
+			auto client_to_server_id_it = m_sounds_client_to_server.find(client_id);
+			if (client_to_server_id_it == m_sounds_client_to_server.end())
+				continue; // TODO: should never happen?
+			s32 server_id = client_to_server_id_it->second;
+			m_sounds_client_to_server.erase(client_to_server_id_it);
+			if (server_id != -1) {
 				m_sounds_server_to_client.erase(server_id);
-				m_sounds_client_to_server.erase(client_id);
-				m_sounds_to_objects.erase(client_id);
 				removed_server_ids.push_back(server_id);
 			}
+			m_sounds_to_objects.erase(client_id);
 		}
 
 		// Sync to server
 		if(!removed_server_ids.empty()) {
 			sendRemovedSounds(removed_server_ids);
+			// TODO: fix this:
+			// possible race condition:
+			// 1) server frees id, sends this
+			// 2) server reuses id, sends this
+			// 3) client frees id, sends this
+			// 4) server receives 3), assumes client doesn't have sound with this id
+			// 5) client receives 1), does nothing (sound already deleted)
+			// 6) client receives 2), makes new sound with this id
+			// => 4) and 6) are incompatible
 		}
 	}
 
@@ -1170,7 +1181,7 @@ void Client::sendGotBlocks(const std::vector<v3s16> &blocks)
 	Send(&pkt);
 }
 
-void Client::sendRemovedSounds(std::vector<s32> &soundList)
+void Client::sendRemovedSounds(const std::vector<s32> &soundList)
 {
 	size_t server_ids = soundList.size();
 	assert(server_ids <= 0xFFFF);

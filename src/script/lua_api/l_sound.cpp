@@ -30,7 +30,10 @@ int ModApiSound::l_sound_play(lua_State *L)
 	read_soundspec(L, 1, spec);
 	spec.loop = readParam<bool>(L, 2);
 
-	s32 handle = getGuiEngine(L)->playSound(spec);
+	ISoundManager *sound_manager = getGuiEngine(L)->m_sound_manager;
+
+	s32 handle = sound_manager->allocateId(); // TODO: userdata for gc, and 0 if ephemeral
+	sound_manager->playSound(handle, spec);
 
 	lua_pushinteger(L, handle);
 
@@ -41,7 +44,7 @@ int ModApiSound::l_sound_stop(lua_State *L)
 {
 	u32 handle = luaL_checkinteger(L, 1);
 
-	getGuiEngine(L)->stopSound(handle);
+	getGuiEngine(L)->m_sound_manager->stopSound(handle);
 
 	return 1;
 }
