@@ -186,10 +186,8 @@ private:
 	MainMenuData            *m_data = nullptr;
 	/** pointer to texture source */
 	ISimpleTextureSource    *m_texture_source = nullptr;
-	/** pointer to soundmanager, non-owning */
-	ISoundManager           *m_sound_manager = nullptr;
-	/** openal soundmanager, for ownership */
-	std::unique_ptr<ISoundManager> m_openal_sound_manager;
+	/** soundmanager */
+	std::unique_ptr<ISoundManager> m_sound_manager;
 
 	/** representation of form source to be used in mainmenu formspec */
 	FormspecFormSource      *m_formspecgui = nullptr;

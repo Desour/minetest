@@ -22,12 +22,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "filesys.h"
 #include "log.h"
 #include "porting.h"
+#include "util/numeric.h"
 #include <algorithm>
 #include <string>
 #include <vector>
-
-// Global DummySoundManager singleton
-DummySoundManager dummySoundManager;
 
 std::vector<std::string> SoundLocalFallbackPathsGiver::
 		getLocalFallbackPathsForSoundname(const std::string &name)
@@ -71,4 +69,14 @@ void SoundLocalFallbackPathsGiver::addThePaths(const std::string &name,
 {
 	addAllAlternatives(porting::path_share + DIR_DELIM + "sounds" + DIR_DELIM + name, paths);
 	addAllAlternatives(porting::path_user + DIR_DELIM + "sounds" + DIR_DELIM + name, paths);
+}
+
+sound_handle_t ISoundManager::allocateId()
+{
+	while (m_occupied_ids.find(m_next_id) != m_occupied_ids.end()
+			|| m_next_id == SOUND_HANDLE_T_MAX) {
+		m_next_id = static_cast<s32>(
+				myrand() % static_cast<u32>(SOUND_HANDLE_T_MAX - 1) + 1);
+	}
+	return m_next_id++;
 }

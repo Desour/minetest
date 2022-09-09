@@ -140,13 +140,12 @@ GUIEngine::GUIEngine(JoystickController *joystick,
 	//create soundmanager
 #if USE_SOUND
 	if (g_settings->getBool("enable_sound") && g_sound_manager_singleton.get()) {
-		m_openal_sound_manager = createOpenALSoundManager(g_sound_manager_singleton.get(),
+		m_sound_manager = createOpenALSoundManager(g_sound_manager_singleton.get(),
 				std::make_unique<MenuMusicFetcher>());
-		m_sound_manager = m_openal_sound_manager.get();
 	}
 #endif
 	if (!m_sound_manager)
-		m_sound_manager = &dummySoundManager;
+		m_sound_manager = std::make_unique<DummySoundManager>();
 
 	//create topleft header
 	m_toplefttext = L"";
@@ -169,7 +168,7 @@ GUIEngine::GUIEngine(JoystickController *joystick,
 			NULL /* &client */,
 			m_rendering_engine->get_gui_env(),
 			m_texture_source,
-			m_sound_manager,
+			m_sound_manager.get(),
 			m_formspecgui,
 			m_buttonhandler,
 			"",
@@ -317,8 +316,7 @@ void GUIEngine::run()
 /******************************************************************************/
 GUIEngine::~GUIEngine()
 {
-	m_sound_manager = nullptr;
-	m_openal_sound_manager.reset();
+	m_sound_manager.reset();
 
 	infostream<<"GUIEngine: Deinitializing scripting"<<std::endl;
 	delete m_script;

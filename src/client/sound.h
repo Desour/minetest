@@ -21,7 +21,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "irr_v3d.h"
 #include "../sound.h"
-#include "util/numeric.h"
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -155,15 +154,7 @@ public:
 	 * Returns a positive id.
 	 * The id will be returned again until freeId is called.
 	 */
-	sound_handle_t allocateId() //TODO: smart ptrs
-	{
-		while (m_occupied_ids.find(m_next_id) != m_occupied_ids.end()
-				|| m_next_id == SOUND_HANDLE_T_MAX) {
-			m_next_id = static_cast<s32>(
-					myrand() % static_cast<u32>(SOUND_HANDLE_T_MAX - 1) + 1);
-		}
-		return m_next_id++;
-	}
+	sound_handle_t allocateId(); //TODO: smart ptrs
 
 	/**
 	 * Free an id allocated via allocateId.
@@ -193,6 +184,3 @@ public:
 	void updateSoundGain(sound_handle_t id, f32 gain) override {}
 	void fadeSound(sound_handle_t sound, f32 step, f32 target_gain) override {}
 };
-
-// Global DummySoundManager singleton
-extern DummySoundManager dummySoundManager; // TODO: remove this
