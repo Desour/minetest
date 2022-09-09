@@ -22,12 +22,21 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "lua_api/l_base.h"
 
-class ModApiSound : public ModApiBase
+class ModApiMainMenuSound : public ModApiBase
 {
 private:
+	// sound_play(spec, loop)
 	static int l_sound_play(lua_State *L);
+
+	// sound_stop(handle)
 	static int l_sound_stop(lua_State *L);
 
 public:
 	static void Initialize(lua_State *L, int top);
 };
+
+//~ class MainMenuSoundRef final : public ModApiBase
+//~ {
+//~ public:
+	//~ ~MainMenuSoundRef() override = default;
+//~ };

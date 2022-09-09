@@ -260,65 +260,6 @@ int ModApiClient::l_get_meta(lua_State *L)
 	return 1;
 }
 
-// sound_play(spec, parameters)
-int ModApiClient::l_sound_play(lua_State *L)
-{
-	ISoundManager *sound = getClient(L)->getSoundManager();
-
-	SimpleSoundSpec spec;
-	read_soundspec(L, 1, spec);
-
-	SoundLocation type = SoundLocation::Local;
-	float gain = 1.0f;
-	v3f position;
-
-	if (lua_istable(L, 2)) {
-		getfloatfield(L, 2, "gain", gain);
-		getfloatfield(L, 2, "pitch", spec.pitch);
-		getboolfield(L, 2, "loop", spec.loop);
-
-		lua_getfield(L, 2, "pos");
-		if (!lua_isnil(L, -1)) {
-			position = read_v3f(L, -1);
-			type = SoundLocation::Position;
-			lua_pop(L, 1);
-		}
-	}
-
-	spec.gain *= gain;
-
-	s32 handle = sound->allocateId(2); // TODO: use 0 if ephemeral
-	if (type == SoundLocation::Local)
-		sound->playSound(handle, spec);
-	else
-		sound->playSoundAt(handle, spec, position);
-
-	lua_pushinteger(L, handle); // TODO: put into userdata for garbage collection
-	return 1;
-}
-
-// sound_stop(handle)
-int ModApiClient::l_sound_stop(lua_State *L)
-{
-	s32 handle = luaL_checkinteger(L, 1);
-
-	ISoundManager *sound_manager = getClient(L)->getSoundManager();
-	sound_manager->stopSound(handle);
-	sound_manager->freeId(handle, 1);
-
-	return 0;
-}
-
-// sound_fade(handle, step, gain)
-int ModApiClient::l_sound_fade(lua_State *L)
-{
-	s32 handle = luaL_checkinteger(L, 1);
-	float step = readParam<float>(L, 2);
-	float gain = readParam<float>(L, 3);
-	getClient(L)->getSoundManager()->fadeSound(handle, step, gain);
-	return 0;
-}
-
 // get_server_info()
 int ModApiClient::l_get_server_info(lua_State *L)
 {
@@ -435,9 +376,6 @@ void ModApiClient::Initialize(lua_State *L, int top)
 	API_FCT(get_node_or_nil);
 	API_FCT(disconnect);
 	API_FCT(get_meta);
-	API_FCT(sound_play);
-	API_FCT(sound_stop);
-	API_FCT(sound_fade);
 	API_FCT(get_server_info);
 	API_FCT(get_item_def);
 	API_FCT(get_node_def);

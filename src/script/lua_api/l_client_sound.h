@@ -18,42 +18,28 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "l_sound.h"
-#include "l_internal.h"
-#include "common/c_content.h"
-#include "gui/guiEngine.h"
+#pragma once
 
+#include "lua_api/l_base.h"
 
-int ModApiSound::l_sound_play(lua_State *L)
+class ModApiClientSound : public ModApiBase
 {
-	SimpleSoundSpec spec;
-	read_soundspec(L, 1, spec);
-	spec.loop = readParam<bool>(L, 2);
+private:
+	// sound_play(spec, parameters)
+	static int l_sound_play(lua_State *L);
 
-	ISoundManager &sound_manager = *getGuiEngine(L)->m_sound_manager;
+	// sound_stop(handle)
+	static int l_sound_stop(lua_State *L);
 
-	s32 handle = sound_manager.allocateId(2); // TODO: userdata for gc, and 0 if ephemeral
-	sound_manager.playSound(handle, spec);
+	// sound_fade(handle, step, gain)
+	static int l_sound_fade(lua_State *L);
 
-	lua_pushinteger(L, handle);
+public:
+	static void Initialize(lua_State *L, int top);
+};
 
-	return 1;
-}
-
-int ModApiSound::l_sound_stop(lua_State *L)
-{
-	u32 handle = luaL_checkinteger(L, 1);
-
-	ISoundManager &sound_manager = *getGuiEngine(L)->m_sound_manager;
-
-	sound_manager.stopSound(handle);
-	sound_manager.freeId(handle, 1);
-
-	return 1;
-}
-
-void ModApiSound::Initialize(lua_State *L, int top)
-{
-	API_FCT(sound_play);
-	API_FCT(sound_stop);
-}
+//~ class ClientSoundRef final : public ModApiBase
+//~ {
+//~ public:
+	//~ ~ClientSoundRef() override = default;
+//~ };

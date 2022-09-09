@@ -2133,7 +2133,7 @@ inline s32 Server::nextSoundId()
 	return ret;
 }
 
-s32 Server::playSound(ServerPlayingSound &params, bool ephemeral)
+s32 Server::playSound(ServerPlayingSound &&params, bool ephemeral)
 {
 	// Find out initial position of sound
 	bool pos_exists = false;

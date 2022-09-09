@@ -228,7 +228,7 @@ public:
 
 	// Returns -1 if failed, sound handle on success
 	// Envlock
-	s32 playSound(ServerPlayingSound &params, bool ephemeral=false);
+	s32 playSound(ServerPlayingSound &&params, bool ephemeral=false);
 	void stopSound(s32 handle);
 	void fadeSound(s32 handle, float step, float gain);
 

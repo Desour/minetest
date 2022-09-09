@@ -127,7 +127,7 @@ protected:
 class GUIEngine {
 	/** grant ModApiMainMenu access to private members */
 	friend class ModApiMainMenu;
-	friend class ModApiSound;
+	friend class ModApiMainMenuSound;
 
 public:
 	/**
