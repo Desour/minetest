@@ -102,9 +102,30 @@ with this program; ifnot, write to the Free Software Foundation, Inc.,
  *     The sound is also added to `m_sounds_playing`, so that one can access it
  *     via its sound handle.
  * * Step 4:
- *   TODO: step
+ *     Streaming sounds are updated. For details see [Streaming of sounds].
  * * Step 5:
- *   TODO: delete
+ *     At deinitialization, we can just let the destructors do their work.
+ *     Sound sources are deleted (and with this also stopped) by ~PlayingSound.
+ *     Buffers can't be deleted while sound sources using them exist, because
+ *     PlayingSound has a shared_ptr to its ISoundData.
+ *
+ *
+ * Streaming of sounds:
+ * --------------------
+ *
+ * In each "bigstep", all streamed sounds are stepStream()ed. This means a
+ * sound can be stepped at any point in time in the bigstep's interval.
+ *
+ * In the worst case, a sound is stepped at the start of one bigstep and in the
+ * end of the next bigstep. So between two stepStream()-calls lie at most
+ * 2 * STREAM_BIGSTEP_TIME seconds.
+ * As there are always 2 sound buffers enqueued, at least one untouched full buffer
+ * is still available after the first stepStream().
+ * If we take a MIN_STREAM_BUFFER_LENGTH > 2 * STREAM_BIGSTEP_TIME, we can hence
+ * not run into an empty queue.
+ *
+ * The MIN_STREAM_BUFFER_LENGTH needs to be a little bigger because of dtime jitter
+ * and because of other sounds that may have taken long to stepStream().
  *
  */
 
@@ -112,6 +133,15 @@ with this program; ifnot, write to the Free Software Foundation, Inc.,
 
 // in seconds
 constexpr f32 REMOVE_DEAD_SOUNDS_INTERVAL = 2.0f;
+// maximum length in seconds that a sound can have without being streamed
+constexpr f32 SOUND_DURATION_MAX_SINGLE = 3.0f;
+// minimum time in seconds of a single buffer in a streamed sound
+constexpr f32 MIN_STREAM_BUFFER_LENGTH = 1.0f;
+// duration in seconds of one bigstep
+constexpr f32 STREAM_BIGSTEP_TIME = 0.3f;
+
+static_assert(MIN_STREAM_BUFFER_LENGTH > STREAM_BIGSTEP_TIME * 2.0f);
+static_assert(SOUND_DURATION_MAX_SINGLE >= MIN_STREAM_BUFFER_LENGTH * 2.0f);
 
 
 /**
@@ -214,7 +244,7 @@ struct RAIIOggFile {
 /**
  * Class for the openal device and context
  */
-class SoundManagerSingleton
+class SoundManagerSingleton // TODO: remove this?
 {
 public:
 	struct AlcDeviceDeleter {
@@ -274,6 +304,7 @@ struct ISoundDataOpen
 	 * @return {buffer, buffer_end, offset_in_buffer}
 	 */
 	virtual std::tuple<ALuint, ALuint, ALuint> getOrLoadBufferAt(ALuint offset) = 0;
+	// TODO: what if offset >= end?
 
 	static std::shared_ptr<ISoundDataOpen> fromOggFile(std::unique_ptr<RAIIOggFile> oggfile,
 		const std::string &filename_for_logging);
@@ -407,7 +438,7 @@ public:
 
 	DISABLE_CLASS_COPY(PlayingSound)
 
-	// return false means streaming finished (TODO)
+	// return false means streaming finished
 	bool stepStream();
 
 	// retruns true if it wasn't fading already
@@ -473,24 +504,11 @@ private:
 	// currently playing sounds
 	std::unordered_map<sound_handle_t, std::shared_ptr<PlayingSound>> m_sounds_playing;
 
-	//~ /* * Streaming sounds always have 3 buffers enqueued.
-	 //~ * * The streams are maintained in big-steps of 0.5 minimum buffer lengths.
-	 //~ * * The sounds in m_sounds_streaming_treating are treated at
-	 //~ * * In the steps in each big-step,
-	 //~ * * If there's no buffer to dequeue, a sound is added to m_sounds_streaming_waiting,
-	 //~ *   and nothing happens to it until the next stream step.
-	 //~ *
-	 //~ */
-	//~ // sounds inserted in here have at least 2 full buffers remaining
-	//~ std::vector<std::weak_ptr<PlayingSound>> m_sounds_streaming_waiting;
-	//~ // sounds inserted in here have at least 1 full buffer remaining
-	//~ std::vector<std::weak_ptr<PlayingSound>> m_sounds_streaming_treating;
-	//~ // TODO
-	//~ f32 m_stream_timer; // = STREAM_BIG_STEP_TIME; MIN_BUF_SIZE_SECS * 0.5
-
-	std::vector<std::weak_ptr<PlayingSound>> m_sounds_streaming;
-
-	std::vector<sound_handle_t> m_removed_sounds;
+	// streamed sounds
+	std::vector<std::weak_ptr<PlayingSound>> m_sounds_streaming_current_bigstep;
+	std::vector<std::weak_ptr<PlayingSound>> m_sounds_streaming_next_bigstep;
+	// time left until current bigstep finishes
+	f32 m_stream_timer = STREAM_BIGSTEP_TIME;
 
 	std::vector<std::weak_ptr<PlayingSound>> m_sounds_fading;
 

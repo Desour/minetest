@@ -27,19 +27,6 @@ with this program; ifnot, write to the Free Software Foundation, Inc.,
 #include "util/numeric.h" // myrand()
 #include <algorithm>
 
-// constants (TODO)
-
-// maximum length in seconds that a sound can have without being streamed
-constexpr double SOUND_DURATION_MAX_SINGLE = 3.0;
-// time in seconds of a single buffer in a streamed sound
-constexpr double STREAM_BUFFER_LENGTH = 1.0;
-// remaining play time in seconds at which the next part of a stream is enqueued for loading
-constexpr double STREAM_REMAINING_TIME_LOAD_ENQUEUE = 2.0;
-// remaining play time in seconds at which the next part of a stream is loaded immediately
-constexpr double STREAM_REMAINING_TIME_LOAD_NOW = 1.0;
-constexpr ALuint MIN_STREAM_BUFFER_LENGTH_SAMPLES = 133713; //TODO
-
-
 /*
  * Helpers
  */
@@ -441,27 +428,29 @@ std::tuple<ALuint, ALuint, ALuint> SoundDataOpenStream::loadBufferAt(ALuint offs
 	ALuint end_before = has_before ? (after_it - 1)->m_buffers.back().m_end : 0;
 	ALuint start_after = has_after ? after_it->m_start : m_decode_info.length_samples;
 
+	const ALuint min_buf_len_samples = m_decode_info.freq * MIN_STREAM_BUFFER_LENGTH;
+
 	//
 	// 1) find the actual start and end of the new buffer
 	//
 
 	ALuint new_buf_start = offset;
-	ALuint new_buf_end = offset + MIN_STREAM_BUFFER_LENGTH_SAMPLES;
+	ALuint new_buf_end = offset + min_buf_len_samples;
 
 	// don't load into next buffer
 	if (new_buf_end > start_after) {
 		new_buf_end = start_after;
 		// also move start (for min buf size)
-		if (new_buf_end - new_buf_start < MIN_STREAM_BUFFER_LENGTH_SAMPLES) {
-			new_buf_start = new_buf_end < MIN_STREAM_BUFFER_LENGTH_SAMPLES ? 0
-					: new_buf_end - MIN_STREAM_BUFFER_LENGTH_SAMPLES;
+		if (new_buf_end - new_buf_start < min_buf_len_samples) {
+			new_buf_start = new_buf_end < min_buf_len_samples ? 0
+					: new_buf_end - min_buf_len_samples;
 		}
 	}
 
 	// widen if space to right or left is smaller than min buf size
-	if (new_buf_start - end_before < MIN_STREAM_BUFFER_LENGTH_SAMPLES)
+	if (new_buf_start - end_before < min_buf_len_samples)
 		new_buf_start = end_before;
-	if (start_after - new_buf_end < MIN_STREAM_BUFFER_LENGTH_SAMPLES)
+	if (start_after - new_buf_end < min_buf_len_samples)
 		new_buf_end = start_after;
 
 	//
@@ -559,10 +548,6 @@ PlayingSound::PlayingSound(ALuint source_id, std::shared_ptr<ISoundDataOpen> dat
 		// we can't use AL_LOOPING because more buffers are queued later
 		// looping is therefore done manually
 
-		// TODO:
-		// * streaming
-		// * looping
-
 		m_stopped_means_dead = false;
 
 		warn_if_al_error("when creating streaming sound");
@@ -619,8 +604,8 @@ bool PlayingSound::stepStream()
 		// start again if queue was empty and resulted in stop
 		if (getState() == AL_STOPPED) {
 			play();
-			warningstream << "PlayingSound::stepStream: sound queue ran empty"
-					<< std::endl;
+			warningstream << "PlayingSound::stepStream: sound queue ran empty for '"
+					<< m_data->m_decode_info.name_for_logging << "'" << std::endl;
 		}
 	}
 
@@ -693,31 +678,29 @@ void PlayingSound::updatePosVel(const v3f &pos, const v3f &vel)
 
 void OpenALSoundManager::stepStreams(f32 dtime)
 {
-	//~ // if m_stream_timer becomes 0 this step, issue all sounds, otherwise
-	//~ // spread work across steps
-	//~ size_t num_issued_sounds = std::ceil(m_sounds_streaming_treating.size()
-			//~ * (m_stream_timer <= dtime ? 1.0f : m_stream_timer / dtime));
+	// spread work across steps
+	int num_issued_sounds = std::ceil(m_sounds_streaming_current_bigstep.size()
+			* dtime / m_stream_timer);
 
-	//~ //TODO
+	for (; num_issued_sounds > 0; --num_issued_sounds) {
+		auto wptr = std::move(m_sounds_streaming_current_bigstep.back());
+		m_sounds_streaming_current_bigstep.pop_back();
 
-	//~ m_stream_timer -= dtime;
-	//~ if (m_stream_timer <= 0) {
-		//~ m_stream_timer = STREAM_STEP_TIME; //TODO
-		//~ std::swap(m_sounds_streaming_waiting, m_sounds_streaming_treating);
-	//~ }
+		std::shared_ptr<PlayingSound> snd = wptr.lock();
+		if (!snd)
+			continue;
 
-	for (size_t i = 0; i < m_sounds_streaming.size();) {
-		std::shared_ptr<PlayingSound> snd = m_sounds_streaming[i].lock();
-		if (snd) {
-			if (snd->stepStream()) {
-				++i;
-				continue;
-			}
-		}
-		// sound no longer needs to be streamed => remove
-		m_sounds_streaming[i] = std::move(m_sounds_streaming.back());
-		m_sounds_streaming.pop_back();
-		// continue with same i
+		if (!snd->stepStream())
+			continue;
+
+		// sound still lives and needs more stream-stepping => add to next bigstep
+		m_sounds_streaming_next_bigstep.push_back(std::move(wptr));
+	}
+
+	m_stream_timer -= dtime;
+	if (m_stream_timer <= 0.0f) {
+		m_stream_timer = STREAM_BIGSTEP_TIME;
+		std::swap(m_sounds_streaming_current_bigstep, m_sounds_streaming_next_bigstep);
 	}
 }
 
@@ -882,7 +865,7 @@ void OpenALSoundManager::playSoundGeneric(sound_handle_t id, const std::string &
 
 	// add to streaming sounds if streaming
 	if (sound->isStreaming())
-		m_sounds_streaming.push_back(sound);
+		m_sounds_streaming_next_bigstep.push_back(sound);
 
 	m_sounds_playing.emplace(id, std::move(sound));
 
