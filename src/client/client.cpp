@@ -706,17 +706,8 @@ void Client::step(float dtime)
 		}
 
 		// Sync to server
-		if(!removed_server_ids.empty()) {
+		if (!removed_server_ids.empty()) {
 			sendRemovedSounds(removed_server_ids);
-			// TODO: fix this:
-			// possible race condition:
-			// 1) server frees id, sends this
-			// 2) server reuses id, sends this
-			// 3) client frees id, sends this
-			// 4) server receives 3), assumes client doesn't have sound with this id
-			// 5) client receives 1), does nothing (sound already deleted)
-			// 6) client receives 2), makes new sound with this id
-			// => 4) and 6) are incompatible
 		}
 	}
 

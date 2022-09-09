@@ -2214,9 +2214,6 @@ void Server::stopSound(s32 handle)
 		return;
 
 	ServerPlayingSound &psound = it->second;
-	if (psound.stopped)
-		return;
-	psound.stopped = true;
 
 	NetworkPacket pkt(TOCLIENT_STOP_SOUND, 4);
 	pkt << handle;
@@ -2226,8 +2223,18 @@ void Server::stopSound(s32 handle)
 		m_clients.send(peer_id, 0, &pkt, true);
 	}
 
-	// Give clients some time to remove sound, then kill
-	m_sound_conveyor_belt_to_death
+	psound.clients.clear();
+
+	if (!psound.grabbed)
+		m_playing_sounds.erase(it);
+
+	// Note:
+	// Race conditions where the server reuses an id that the client hasn't removed
+	// yet are possible, but extremely unlikely, because:
+	// 1) There are about 0x1p31 (many) possible ids. And recent ones are not more
+	//    likely to be reused.
+	// 2) Under normal circumstances, the script still has the handle grabbed,
+	//    and will not drop it til the next gc step. So the client has some time.
 }
 
 void Server::fadeSound(s32 handle, float step, float gain)
@@ -2237,9 +2244,6 @@ void Server::fadeSound(s32 handle, float step, float gain)
 		return;
 
 	ServerPlayingSound &psound = it->second;
-	if (psound.stopped)
-		return;
-
 	psound.gain = gain; // destination gain
 
 	NetworkPacket pkt(TOCLIENT_FADE_SOUND, 4);
@@ -2250,12 +2254,15 @@ void Server::fadeSound(s32 handle, float step, float gain)
 		m_clients.send(peer_id, 0, &pkt, true);
 	}
 
-	//~ // Remove sound reference
-	//~ if (gain <= 0 || psound.clients.empty())
-		//~ m_playing_sounds.erase(it);
+	if (gain <= 0)
+		psound.clients.clear();
 
-	//~ if (gain <= 0)
-		//~ // TODO: clear clients after some longer time
+	if (!psound.grabbed && psound.clients.empty())
+		m_playing_sounds.erase(it);
+
+	// Note:
+	// Point 1) of the note from stopSound also applies here. But it can take
+	// years until the sound is removed by the client (if the user is very patient).
 }
 
 void Server::dropSound(s32 handle)

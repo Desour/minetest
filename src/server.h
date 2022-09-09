@@ -117,11 +117,6 @@ struct ServerPlayingSound
 
 	// if true, some ServerSoundRef has a handle to this; don't reuse id
 	bool grabbed = false;
-	// if true, stop or fade to gain=0.0f was already sent to clients.
-	// fade and other operations are effectless.
-	// the sound is in m_sound_conveyor_belt_to_death and therefore doomed to death,
-	// only a bug could save if from its inevitable fate
-	bool stopped = false;
 };
 
 struct MinimapMode {
@@ -702,16 +697,7 @@ private:
 	/*
 		Sounds
 	*/
-	using sound_ms_p = std::pair<s32, u64>;
-	struct SoundMsPCompare {
-		bool operator()(const sound_ms_p &a, const sound_ms_p &b)
-		{
-			return a.second < b.second;
-		}
-	};
 	std::unordered_map<s32, ServerPlayingSound> m_playing_sounds;
-	std::priority_queue<sound_ms_p, std::vector<sound_ms_p>, SoundMsPCompare>
-			m_sound_conveyor_belt_to_death;
 	s32 m_next_sound_id = 0; // non-negative values only
 	s32 nextSoundId();
 
