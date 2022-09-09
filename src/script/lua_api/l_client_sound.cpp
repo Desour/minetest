@@ -25,10 +25,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "client/client.h"
 #include "client/sound.h"
 
+/* ModApiClientSound */
+
 // sound_play(spec, parameters)
 int ModApiClientSound::l_sound_play(lua_State *L)
 {
-	ISoundManager *sound = getClient(L)->getSoundManager();
+	ISoundManager *sound_manager = getClient(L)->getSoundManager();
 
 	SimpleSoundSpec spec;
 	read_soundspec(L, 1, spec);
@@ -52,41 +54,95 @@ int ModApiClientSound::l_sound_play(lua_State *L)
 
 	spec.gain *= gain;
 
-	s32 handle = sound->allocateId(2); // TODO: use 0 if ephemeral
+	sound_handle_t handle = sound_manager->allocateId(2);
+
 	if (type == SoundLocation::Local)
-		sound->playSound(handle, spec);
+		sound_manager->playSound(handle, spec);
 	else
-		sound->playSoundAt(handle, spec, position);
+		sound_manager->playSoundAt(handle, spec, position);
 
-	lua_pushinteger(L, handle); // TODO: put into userdata for garbage collection
+	ClientSoundRef::create(L, handle);
 	return 1;
-}
-
-// sound_stop(handle)
-int ModApiClientSound::l_sound_stop(lua_State *L)
-{
-	s32 handle = luaL_checkinteger(L, 1);
-
-	ISoundManager *sound_manager = getClient(L)->getSoundManager();
-	sound_manager->stopSound(handle);
-	sound_manager->freeId(handle, 1);
-
-	return 0;
-}
-
-// sound_fade(handle, step, gain)
-int ModApiClientSound::l_sound_fade(lua_State *L)
-{
-	s32 handle = luaL_checkinteger(L, 1);
-	float step = readParam<float>(L, 2);
-	float gain = readParam<float>(L, 3);
-	getClient(L)->getSoundManager()->fadeSound(handle, step, gain);
-	return 0;
 }
 
 void ModApiClientSound::Initialize(lua_State *L, int top)
 {
 	API_FCT(sound_play);
-	API_FCT(sound_stop);
-	API_FCT(sound_fade);
 }
+
+/* ClientSoundRef */
+
+ClientSoundRef *ClientSoundRef::checkobject(lua_State *L, int narg)
+{
+	luaL_checktype(L, narg, LUA_TUSERDATA);
+	void *ud = luaL_checkudata(L, narg, className);
+	if (!ud)
+		luaL_typerror(L, narg, className);
+	return *(ClientSoundRef**)ud; // unbox pointer
+}
+
+int ClientSoundRef::gc_object(lua_State *L)
+{
+	std::unique_ptr<ClientSoundRef> o(*(ClientSoundRef **)(lua_touserdata(L, 1)));
+	if (getClient(L) && getClient(L)->getSoundManager())
+		getClient(L)->getSoundManager()->freeId(o->m_handle, 1);
+	return 0;
+}
+
+// :stop()
+int ClientSoundRef::l_stop(lua_State *L)
+{
+	ClientSoundRef *o = checkobject(L, 1);
+	getClient(L)->getSoundManager()->stopSound(o->m_handle);
+	return 0;
+}
+
+// :fade(step, gain)
+int ClientSoundRef::l_fade(lua_State *L)
+{
+	ClientSoundRef *o = checkobject(L, 1);
+	float step = readParam<float>(L, 2);
+	float gain = readParam<float>(L, 3);
+	getClient(L)->getSoundManager()->fadeSound(o->m_handle, step, gain);
+	return 0;
+}
+
+void ClientSoundRef::create(lua_State *L, sound_handle_t handle)
+{
+	ClientSoundRef *o = new ClientSoundRef(handle);
+	*(void **)(lua_newuserdata(L, sizeof(void *))) = o;
+	luaL_getmetatable(L, className);
+	lua_setmetatable(L, -2);
+}
+
+void ClientSoundRef::Register(lua_State *L)
+{
+	lua_newtable(L);
+	int methodtable = lua_gettop(L);
+	luaL_newmetatable(L, className);
+	int metatable = lua_gettop(L);
+
+	lua_pushliteral(L, "__metatable");
+	lua_pushvalue(L, methodtable);
+	lua_settable(L, metatable);  // hide metatable from Lua getmetatable()
+
+	lua_pushliteral(L, "__index");
+	lua_pushvalue(L, methodtable);
+	lua_settable(L, metatable);
+
+	lua_pushliteral(L, "__gc");
+	lua_pushcfunction(L, gc_object);
+	lua_settable(L, metatable);
+
+	lua_pop(L, 1);  // drop metatable
+
+	luaL_register(L, nullptr, methods);  // fill methodtable
+	lua_pop(L, 1);  // drop methodtable
+}
+
+const char ClientSoundRef::className[] = "ClientSoundRef";
+const luaL_Reg ClientSoundRef::methods[] = {
+	luamethod(ClientSoundRef, stop),
+	luamethod(ClientSoundRef, fade),
+	{0,0}
+};
