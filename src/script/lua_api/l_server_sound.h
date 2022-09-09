@@ -20,6 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include "lua_api/l_base.h"
+#include "util/basic_macros.h"
 
 class ModApiServerSound : public ModApiBase
 {
@@ -37,8 +38,31 @@ public:
 	static void Initialize(lua_State *L, int top);
 };
 
-//~ class ServerSoundRef final : public ModApiBase
-//~ {
-//~ public:
-	//~ ~ServerSoundRef() override = default;
-//~ };
+class ServerSoundRef final : public ModApiBase
+{
+private:
+	s32 m_handle;
+
+	static const char className[];
+	static const luaL_Reg methods[];
+
+	ServerSoundRef(s32 handle) : m_handle(handle) {}
+
+	DISABLE_CLASS_COPY(ServerSoundRef)
+
+	static ServerSoundRef *checkobject(lua_State *L, int narg);
+
+	static int gc_object(lua_State *L);
+
+	// :stop()
+	static int l_stop(lua_State *L);
+
+	// :fade(step, gain)
+	static int l_fade(lua_State *L);
+
+public:
+	~ServerSoundRef() = default;
+
+	static void create(lua_State *L, s32 handle);
+	static void Register(lua_State *L);
+};
