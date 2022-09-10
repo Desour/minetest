@@ -3,20 +3,37 @@ TODO: remove this file
 
 * internal refactors, ie. introduction of "sound groups"
 * sounds are loaded lazily (fixes #10603, improves #10316)
-* long sounds are streamed (makes #8596 possible)
-* time_offset (TODO) (#11865; will be needed at some point anyways for players entering max_hear_distance)
+* long sounds are streamed (makes #8596/#7867 possible)
+* time_offset (TODO) (fixes #11865; will be needed at some point anyways for players entering max_hear_distance)
 * sound is no longer upside-down (test eg. with hrtf)
 * got rid of BS. (gain is still the same everywhere)
 * sound handles are now userdata => method syntax; ids are owned and garbage collected
 
 
 TODO:
-* implement looped streamed sounds properly
-* make time_offset work
-* consider #10306 (delay)
-* remove sounds that are too far away or finished
-* add multithreading
-* consider #11617 (sound_play warnings)
-* optionally preload starts of sounds
+* implement looped streamed sounds properly <- done?
+* make time_offset work <- done?
+* optionally preload starts of sounds <- no?
 * fix small issues like footstep sounds playing at wrong place or missing vel
-* add api or something for setting node size in meters (for speed of sound)
+* add api or something for setting speed of sound in nodes per second, per player
+* Add Doppler effect #9172
+* Audio: Error opening file for decoding #10979
+* minetest.sound_fade [fading in] doesn't work with positional sounds. #6748
+* Add warning when stereo sounds are loaded #6622
+* No check for missing sounds #4955
+
+
+not included in PR:
+* sound manager in separate thread for performance (but could be easily implemented)
+* hrtf
+* sound effects (e.g. #10873)
+* starting and stopping sounds when players enter and leave max_hear_distance (#3559)
+* Add Delay To SimpleSoundSpec #10306
+* manipulate sound parameters for already playing sound handles #12510
+* Get sound duration #12375
+* Sound attached to objects do not disappear even when object is removed #11521
+* Audio attached to object stops moving when object leaves #8094
+* Incomplete Documentation of 'params' sound parameter table, used by minetest.sound_play() #11414
+* CSM: playing sounds connected to entities is unimplemented #5389
+* Add 'max hear distance' parameter for mob footstep sounds #4361
+* more
