@@ -13,6 +13,7 @@ TODO: remove this file
 * warning in errorstream for positional stereo sounds, and don't play (fixes #6622)
 * don't spam logs with every file tried in sound-pack (fixes #10979)
 * correct documentation of sound params
+* enable fade in for positional sounds (fixes #6748)
 
 
 TODO:
@@ -21,7 +22,6 @@ TODO:
 * fix small issues like footstep sounds playing at wrong place or missing vel
 * add api or something for setting speed of sound in nodes per second, per player
 * Add Doppler effect #9172
-* minetest.sound_fade [fading in] doesn't work with positional sounds. #6748
 * testing stuff in devtest
 
 

@@ -1039,7 +1039,7 @@ void OpenALSoundManager::addSoundToGroup(const std::string &sound_name, const st
 void OpenALSoundManager::playSound(sound_handle_t id, const SimpleSoundSpec &spec)
 {
 	return playSoundGeneric(id, spec.name, spec.loop, spec.gain, spec.fade, spec.pitch,
-			spec.use_local_fallback, spec.time_offset, nullopt); //TODO: pass spec?
+			spec.use_local_fallback, spec.time_offset, nullopt);
 }
 
 void OpenALSoundManager::playSoundAt(sound_handle_t id, const SimpleSoundSpec &spec, const v3f &pos_)
@@ -1053,8 +1053,8 @@ void OpenALSoundManager::playSoundAt(sound_handle_t id, const SimpleSoundSpec &s
 	// might depend on this (inconsistent) behaviour.
 	f32 volume = spec.gain * 3.0f;
 
-	return playSoundGeneric(id, spec.name, spec.loop, volume, 0.0f /* no fade */,
-			spec.pitch, spec.use_local_fallback, spec.time_offset, pos);
+	return playSoundGeneric(id, spec.name, spec.loop, volume, spec.fade, spec.pitch,
+			spec.use_local_fallback, spec.time_offset, pos);
 }
 
 void OpenALSoundManager::stopSound(sound_handle_t sound)
