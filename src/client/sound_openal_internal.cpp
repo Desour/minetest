@@ -814,6 +814,8 @@ std::shared_ptr<PlayingSound> OpenALSoundManager::createPlayingSound(const std::
 			volume, pitch, time_offset, pos_opt);
 
 	sound->play();
+	if (m_is_paused)
+		sound->pause();
 	warn_if_al_error("createPlayingSound");
 	return sound;
 }
@@ -946,6 +948,24 @@ void OpenALSoundManager::step(f32 dtime)
 
 	doFades(dtime);
 	stepStreams(dtime);
+}
+
+void OpenALSoundManager::pauseAll()
+{
+	for (auto &snd_p : m_sounds_playing) {
+		PlayingSound &snd = *snd_p.second;
+		snd.pause();
+	}
+	m_is_paused = true;
+}
+
+void OpenALSoundManager::resumeAll()
+{
+	for (auto &snd_p : m_sounds_playing) {
+		PlayingSound &snd = *snd_p.second;
+		snd.resume();
+	}
+	m_is_paused = false;
 }
 
 void OpenALSoundManager::updateListener(const v3f &pos_, const v3f &vel_, const v3f &at_, const v3f &up_)

@@ -477,6 +477,18 @@ public:
 		// streaming sounds can (but should not) stop because the queue runs empty
 		return m_stopped_means_dead && getState() == AL_STOPPED;
 	}
+
+	void pause()
+	{
+		// this is a NOP if state != AL_PLAYING
+		alSourcePause(m_source_id);
+	}
+
+	void resume()
+	{
+		if (getState() == AL_PAUSED)
+			play();
+	}
 };
 
 
@@ -511,6 +523,9 @@ private:
 	f32 m_stream_timer = STREAM_BIGSTEP_TIME;
 
 	std::vector<std::weak_ptr<PlayingSound>> m_sounds_fading;
+
+	// if true, all sounds will be directly paused after creation
+	bool m_is_paused = false;
 
 private:
 	sound_handle_t newSoundID();
@@ -560,7 +575,9 @@ public:
 
 	/* Interface */
 
-	void step(f32 dtime) override; //TODO: stop sounds or continue stepping when game is paused
+	void step(f32 dtime) override;
+	void pauseAll() override;
+	void resumeAll() override;
 
 	void updateListener(const v3f &pos_, const v3f &vel_, const v3f &at_, const v3f &up_) override;
 	void setListenerGain(f32 gain) override;

@@ -74,7 +74,20 @@ protected:
 public:
 	virtual ~ISoundManager() = default;
 
+	/**
+	 * Removes finished sounds, steps streamed sounds, and does similar tasks.
+	 * Should not be called while paused.
+	 * @param dtime In seconds.
+	 */
 	virtual void step(f32 dtime) = 0;
+	/**
+	 * Pause all sound playback.
+	 */
+	virtual void pauseAll() = 0;
+	/**
+	 * Resume sound playback after pause.
+	 */
+	virtual void resumeAll() = 0;
 
 	/**
 	 * @param pos In node-space.
@@ -176,6 +189,8 @@ class DummySoundManager final : public ISoundManager
 {
 public:
 	void step(f32 dtime) override {}
+	void pauseAll() override {}
+	void resumeAll() override {}
 
 	void updateListener(const v3f &pos, const v3f &vel, const v3f &at, const v3f &up) override {}
 	void setListenerGain(f32 gain) override {}
