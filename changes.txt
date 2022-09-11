@@ -9,6 +9,7 @@ TODO: remove this file
 * got rid of BS. (gain is still the same everywhere)
 * sound handles are now userdata => method syntax; ids are owned and garbage collected
 * sounds are paused while in pause menu in singleplayer
+* shader animation timer is also paused
 
 
 TODO:

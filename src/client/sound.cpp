@@ -37,6 +37,7 @@ std::vector<std::string> SoundLocalFallbackPathsGiver::
 		return paths;
 	m_done_names.insert(name);
 
+	// TODO
 	//~ // check for '.'. might be evil "../something" or "something.ogg"
 	//~ if (name.find('.') != name.npos) {
 		//~ errorstream << "SoundLocalFallbackPathsGiver: Sound names may not contain '.', but this one does: \""

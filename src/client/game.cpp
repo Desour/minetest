@@ -1110,7 +1110,6 @@ void Game::run()
 		if (!was_paused && m_is_paused) {
 			pauseAnimation();
 			sound_manager->pauseAll();
-			// TODO: stop shader animation
 		} else if (was_paused && !m_is_paused) {
 			resumeAnimation();
 			sound_manager->resumeAll();
@@ -3737,7 +3736,7 @@ void Game::updateFrame(ProfilerGraph *graph, RunStats *stats, f32 dtime,
 		Frame time
 	*/
 
-	client->getEnv().updateFrameTime();
+	client->getEnv().updateFrameTime(m_is_paused);
 
 	/*
 		Fog range
