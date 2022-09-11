@@ -784,20 +784,10 @@ std::string OpenALSoundManager::getOrLoadLoadedSoundNameFromGroup(const std::str
 	// load
 	std::vector<std::string> paths = m_local_fallback_paths_giver
 			->getLocalFallbackPathsForSoundname(group_name);
-	//~ if (!paths.empty()) {
-		//~ bool satisfied = false;
-		for (const std::string &path : paths) {
-			if (loadSoundFile(path, path)) {
-				addSoundToGroup(path, group_name);
-				//~ satisfied = true;
-			}
-		}
-		//TODO
-		//~ if (!satisfied) {
-			//~ warningstream << "OpenALSoundManager: No sound found for \""
-					//~ << group_name << "\"" << std::endl;
-		//~ }
-	//~ }
+	for (const std::string &path : paths) {
+		if (loadSoundFile(path, path))
+			addSoundToGroup(path, group_name);
+	}
 	return getLoadedSoundNameFromGroup(group_name);
 }
 
