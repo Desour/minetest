@@ -183,9 +183,11 @@ Optional<OggFileDecodeInfo> RAIIOggFile::getDecodeInfo(const std::string &filena
 	ret.name_for_logging = filename_for_logging;
 
 	if (pInfo->channels == 1) {
+		ret.is_stereo = false;
 		ret.format = AL_FORMAT_MONO16;
 		ret.bytes_per_sample = 2;
 	} else if (pInfo->channels == 2) {
+		ret.is_stereo = true;
 		ret.format = AL_FORMAT_STEREO16;
 		ret.bytes_per_sample = 4;
 	} else {
@@ -798,8 +800,15 @@ std::shared_ptr<PlayingSound> OpenALSoundManager::createPlayingSound(const std::
 	std::shared_ptr<ISoundDataOpen> lsnd = openSingleSound(sound_name);
 	if (!lsnd) {
 		// does not happen because of the call to getLoadedSoundNameFromGroup
-		errorstream << "OpenALSoundManager::createPlayingSound: " <<
-				"sound '" << sound_name << "' disappeared." << std::endl;
+		errorstream << "OpenALSoundManager::createPlayingSound: sound '"
+				<< sound_name << "' disappeared." << std::endl;
+		return nullptr;
+	}
+
+	if (lsnd->m_decode_info.is_stereo && pos_opt.has_value()) {
+		errorstream << "OpenALSoundManager::createPlayingSound: "
+				<< "tried to create positional stereo sound '" << sound_name << "'."
+				<< std::endl;
 		return nullptr;
 	}
 
@@ -844,6 +853,9 @@ void OpenALSoundManager::playSoundGeneric(sound_handle_t id, const std::string &
 	}
 
 	volume = std::max(0.0f, volume);
+	f32 target_fade_volume = volume;
+	if (fade > 0.0f)
+		volume = 0.0f;
 
 	if (!(pitch > 0.0f)) {
 		warningstream << "OpenALSoundManager::playSoundGeneric: illegal pitch value: "
@@ -858,8 +870,8 @@ void OpenALSoundManager::playSoundGeneric(sound_handle_t id, const std::string &
 	}
 
 	// play it
-	std::shared_ptr<PlayingSound> sound = createPlayingSound(sound_name,
-			loop, fade > 0.0f ? 0.0f : volume, pitch, time_offset, pos_opt);
+	std::shared_ptr<PlayingSound> sound = createPlayingSound(sound_name, loop,
+			volume, pitch, time_offset, pos_opt);
 	if (!sound) {
 		reportRemovedSound(id);
 		return;
@@ -872,7 +884,7 @@ void OpenALSoundManager::playSoundGeneric(sound_handle_t id, const std::string &
 	m_sounds_playing.emplace(id, std::move(sound));
 
 	if (fade > 0.0f)
-		fadeSound(id, fade, volume);
+		fadeSound(id, fade, target_fade_volume);
 }
 
 int OpenALSoundManager::removeDeadSounds()

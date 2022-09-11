@@ -194,6 +194,7 @@ struct OggVorbisBufferSource {
  */
 struct OggFileDecodeInfo {
 	std::string name_for_logging;
+	bool is_stereo;
 	ALenum format; // AL_FORMAT_MONO16 or AL_FORMAT_STEREO16
 	size_t bytes_per_sample;
 	ALsizei freq;
