@@ -40,17 +40,6 @@ private:
 };
 
 
-/*
- * Sounds to be played can be:
- * * a single sound: just a sound. identified by a unique name. can not be played
- *   directly
- * * or a sound group: a set of single sounds. when played, one of these sounds is
- *   chosen by random
- *
- * TODO
- *
- */
-
 /**
  * IDs for playing sounds.
  * 0 is for sounds that are never modified after creation.

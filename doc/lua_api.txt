@@ -870,11 +870,13 @@ the mod name "`foomod`", a sound could be called:
 
     foomod_foosound.ogg
 
-Sounds are referred to by their name with a dot, a single digit and the
-file extension stripped out. When a sound is played, the actual sound file
-is chosen randomly from the matching sounds.
+A sound group is the set of all sound files, whose filenames are of the following
+format:
+`<sound-group name>[.<single digit>].ogg`
+When a sound-group is played, one the files in the group is chosen at random.
+Sound files can only be referred to by their sound-group name.
 
-When playing the sound `foomod_foosound`, the sound is chosen randomly
+Example: When playing the sound `foomod_foosound`, the sound is chosen randomly
 from the available ones of the following files:
 
 * `foomod_foosound.ogg`
