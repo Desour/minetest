@@ -249,9 +249,9 @@ RAIIALSoundBuffer RAIIOggFile::loadBuffer(const OggFileDecodeInfo &decode_info,
 
 	ALenum error = alGetError();
 	if (error != AL_NO_ERROR) {
-		infostream << "Audio: OpenAL error: " << getAlErrorString(error)
-				<< "preparing sound buffer for sound '"
-				<< decode_info.name_for_logging << "'" << std::endl;
+		warningstream << "Audio: OpenAL error: " << getAlErrorString(error)
+				<< "preparing sound buffer for sound \""
+				<< decode_info.name_for_logging << "\"" << std::endl;
 	}
 
 	return snd_buffer_id;
@@ -368,8 +368,8 @@ SoundDataOpenSinglebuf::SoundDataOpenSinglebuf(std::unique_ptr<RAIIOggFile> oggf
 {
 	m_buffer = oggfile->loadBuffer(m_decode_info, 0, m_decode_info.length_samples);
 	if (m_buffer.get() == 0) {
-		warningstream << "SoundDataOpenSinglebuf: failed to load sound '"
-				<< m_decode_info.name_for_logging << "'" << std::endl;
+		warningstream << "SoundDataOpenSinglebuf: failed to load sound \""
+				<< m_decode_info.name_for_logging << "\"" << std::endl;
 		return;
 	}
 }
@@ -606,8 +606,8 @@ bool PlayingSound::stepStream()
 		// start again if queue was empty and resulted in stop
 		if (getState() == AL_STOPPED) {
 			play();
-			warningstream << "PlayingSound::stepStream: sound queue ran empty for '"
-					<< m_data->m_decode_info.name_for_logging << "'" << std::endl;
+			warningstream << "PlayingSound::stepStream: sound queue ran empty for \""
+					<< m_data->m_decode_info.name_for_logging << "\"" << std::endl;
 		}
 	}
 
@@ -784,30 +784,41 @@ std::string OpenALSoundManager::getOrLoadLoadedSoundNameFromGroup(const std::str
 	// load
 	std::vector<std::string> paths = m_local_fallback_paths_giver
 			->getLocalFallbackPathsForSoundname(group_name);
-	for (const std::string &path : paths) {
-		if (loadSoundFile(path, path))
-			addSoundToGroup(path, group_name);
-	}
+	//~ if (!paths.empty()) {
+		//~ bool satisfied = false;
+		for (const std::string &path : paths) {
+			if (loadSoundFile(path, path)) {
+				addSoundToGroup(path, group_name);
+				//~ satisfied = true;
+			}
+		}
+		//TODO
+		//~ if (!satisfied) {
+			//~ warningstream << "OpenALSoundManager: No sound found for \""
+					//~ << group_name << "\"" << std::endl;
+		//~ }
+	//~ }
 	return getLoadedSoundNameFromGroup(group_name);
 }
 
 std::shared_ptr<PlayingSound> OpenALSoundManager::createPlayingSound(const std::string &sound_name,
 		bool loop, f32 volume, f32 pitch, f32 time_offset, const Optional<v3f> &pos_opt)
 {
-	infostream << "OpenALSoundManager: Creating playing sound" << std::endl;
+	infostream << "OpenALSoundManager: Creating playing sound \"" << sound_name
+			<< "\"" << std::endl;
 	warn_if_al_error("before createPlayingSound");
 
 	std::shared_ptr<ISoundDataOpen> lsnd = openSingleSound(sound_name);
 	if (!lsnd) {
 		// does not happen because of the call to getLoadedSoundNameFromGroup
-		errorstream << "OpenALSoundManager::createPlayingSound: sound '"
-				<< sound_name << "' disappeared." << std::endl;
+		errorstream << "OpenALSoundManager::createPlayingSound: sound \""
+				<< sound_name << "\" disappeared." << std::endl;
 		return nullptr;
 	}
 
 	if (lsnd->m_decode_info.is_stereo && pos_opt.has_value()) {
 		errorstream << "OpenALSoundManager::createPlayingSound: "
-				<< "tried to create positional stereo sound '" << sound_name << "'."
+				<< "tried to create positional stereo sound \"" << sound_name << "\"."
 				<< std::endl;
 		return nullptr;
 	}

@@ -11,18 +11,17 @@ TODO: remove this file
 * sounds are paused while in pause menu in singleplayer
 * shader animation timer is also paused
 * warning in errorstream for positional stereo sounds, and don't play (fixes #6622)
+* don't spam logs with every file tried in sound-pack (fixes #10979)
 
 
 TODO:
 * implement looped streamed sounds properly <- done?
 * make time_offset work <- done? -> test
-* optionally preload starts of sounds <- no?
 * fix small issues like footstep sounds playing at wrong place or missing vel
 * add api or something for setting speed of sound in nodes per second, per player
 * Add Doppler effect #9172
-* Audio: Error opening file for decoding #10979
 * minetest.sound_fade [fading in] doesn't work with positional sounds. #6748
-* No check for missing sounds #4955
+* No check for missing sounds #4955 <- could be easily changed
 * testing stuff in devtest
 
 
