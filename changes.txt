@@ -12,6 +12,7 @@ TODO: remove this file
 * shader animation timer is also paused
 * warning in errorstream for positional stereo sounds, and don't play (fixes #6622)
 * don't spam logs with every file tried in sound-pack (fixes #10979)
+* correct documentation of sound params
 
 
 TODO:

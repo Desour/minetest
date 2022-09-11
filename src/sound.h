@@ -61,6 +61,8 @@ struct SimpleSoundSpec
 	float pitch = 1.0f;
 	float time_offset = 0.0f;
 	bool loop = false;
+	// If true, a local fallback (ie. from the user's sound pack) is used if the
+	// sound-group does not exist.
 	bool use_local_fallback = true;
 };
 

@@ -591,6 +591,5 @@ public:
 	void playSoundAt(sound_handle_t id, const SimpleSoundSpec &spec, const v3f &pos_) override;
 	void stopSound(sound_handle_t sound) override;
 	void fadeSound(sound_handle_t soundid, f32 step, f32 target_gain) override;
-	void updateSoundPosition(sound_handle_t id, const v3f &pos_) override;
-	void updateSoundGain(sound_handle_t id, f32 gain) override;
+	void updateSoundPosition(sound_handle_t sound, const v3f &pos_) override;
 };

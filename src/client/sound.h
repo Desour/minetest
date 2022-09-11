@@ -20,11 +20,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include "irr_v3d.h"
-#include "../sound.h"
+#include <limits>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
+struct SimpleSoundSpec;
 
 class SoundLocalFallbackPathsGiver
 {
@@ -109,38 +111,26 @@ public:
 	virtual void addSoundToGroup(const std::string &sound_name,
 			const std::string &group_name) = 0;
 
-	/** //TODO: doc this in lua_api.txt
+	/**
 	 * Plays a random sound from a sound group (position-less).
 	 * @param id Id for new sound. Move semantics apply if id > 0.
-	 * @param group_name If == "", call is ignored without error.
-	 * @param loop If true, sound is played in a loop.
-	 * @param volume The gain of the sound (non-negative).
-	 * @param fade If > 0.0f, the sound is faded in, with this value in gain per
-	 *        second, until `volume` is reached.
-	 * @param pitch Applies a pitch-shift to the sound. Each factor of 2.0f results
-	 *        in a pitch-shift of +12 semitones. Must be positive.
-	 * @param use_local_fallback If true, a local fallback (ie. from the user's
-	 *        sound pack) is used if the sound-group does not exist.
-	 * @param time_offset TODO
-	 * @return -1 on failure, otherwise a handle to the sound.
 	 */
 	virtual void playSound(sound_handle_t id, const SimpleSoundSpec &spec) = 0;
 	/**
 	 * Same as `playSound`, but at a position.
 	 * @param pos In node-space.
 	 */
-	virtual void playSoundAt(sound_handle_t id, const SimpleSoundSpec &spec, const v3f &pos) = 0;
+	virtual void playSoundAt(sound_handle_t id, const SimpleSoundSpec &spec, const v3f &pos) = 0; // TODO: vel
 	/**
 	 * Request the sound to be stopped.
 	 * The id should be freed afterwards.
 	 */
 	virtual void stopSound(sound_handle_t sound) = 0;
+	virtual void fadeSound(sound_handle_t sound, f32 step, f32 target_gain) = 0;
 	/**
 	 * @param pos In node-space.
 	 */
-	virtual void updateSoundPosition(sound_handle_t sound, const v3f &pos) = 0;
-	virtual void updateSoundGain(sound_handle_t id, f32 gain) = 0; // TODO: do we need this? (we can fade instead)
-	virtual void fadeSound(sound_handle_t sound, f32 step, f32 target_gain) = 0;
+	virtual void updateSoundPosition(sound_handle_t sound, const v3f &pos) = 0; // TODO: vel
 
 	/**
 	 * Get and reset the list of sounds that were stopped.
@@ -166,14 +156,6 @@ public:
 	void freeId(sound_handle_t id, u32 num_owners);
 };
 
-//TODO: smart ptrs?
-// TODO: global manager for smart ptrs?
-
-//~ struct OwnedSoundHandle {
-	//~ sound_handle_t m_handle;
-	//~ ISoundManager
-//~ };
-
 class DummySoundManager final : public ISoundManager
 {
 public:
@@ -191,7 +173,6 @@ public:
 	void playSound(sound_handle_t id, const SimpleSoundSpec &spec) override { reportRemovedSound(id); }
 	void playSoundAt(sound_handle_t id, const SimpleSoundSpec &spec, const v3f &pos) override { reportRemovedSound(id); }
 	void stopSound(sound_handle_t sound) override {}
-	void updateSoundPosition(sound_handle_t sound, const v3f &pos) override {}
-	void updateSoundGain(sound_handle_t id, f32 gain) override {}
 	void fadeSound(sound_handle_t sound, f32 step, f32 target_gain) override {}
+	void updateSoundPosition(sound_handle_t sound, const v3f &pos) override {}
 };

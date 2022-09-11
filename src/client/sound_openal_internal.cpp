@@ -25,6 +25,7 @@ with this program; ifnot, write to the Free Software Foundation, Inc.,
 #include "sound_openal_internal.h"
 
 #include "util/numeric.h" // myrand()
+#include "../sound.h"
 #include <algorithm>
 
 /*
@@ -1047,8 +1048,8 @@ void OpenALSoundManager::playSoundAt(sound_handle_t id, const SimpleSoundSpec &s
 
 	// AL_REFERENCE_DISTANCE was once reduced from 3 nodes to 1 node.
 	// We compensate this by multiplying the volume by 3.
-	// Note that this is just done to newly created sounds (and not in
-	// updateSoundGain) because it was like this for many versions, so someone
+	// Note that this is just done to newly created sounds (and not in fadeSound)
+	// because it was like this for many versions, so someone
 	// might depend on this (inconsistent) behaviour.
 	f32 volume = spec.gain * 3.0f;
 
@@ -1083,12 +1084,4 @@ void OpenALSoundManager::updateSoundPosition(sound_handle_t id, const v3f &pos_)
 	if (i == m_sounds_playing.end())
 		return;
 	i->second->updatePosVel(pos, v3f(0.0f, 0.0f, 0.0f));
-}
-
-void OpenALSoundManager::updateSoundGain(sound_handle_t id, f32 gain)
-{
-	auto i = m_sounds_playing.find(id);
-	if (i == m_sounds_playing.end())
-		return;
-	i->second->setGain(gain);
 }
