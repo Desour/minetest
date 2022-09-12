@@ -231,18 +231,14 @@ struct RAIIOggFile {
 	Optional<OggFileDecodeInfo> getDecodeInfo(const std::string &filename_for_logging);
 
 	/**
-	 * Main function for loading ogg vorbis sounds. //TODO
+	 * Main function for loading ogg vorbis sounds.
+	 * Loads exactly the specified interval of PCM-data, and creates an OpenAL
+	 * buffer with it.
 	 *
-	 * @param oggfile An opened ogg file.
-	 * @param filename_for_logging Used for logging warnings when something is wrong.
-	 * @param time_limit If != 0.0, determines the maximum number of seconds that are
-	 *                   loaded.
-	 * @param is_all_read If != nullptr and reading was successful, this will contain
-	 *                    whether the file was read completely. (If not, the file pos
-	 *                    will advance.)
-	 * @param time_end If != nullptr and reading was successful, this will contain the
-	 *                 time in seconds until which the file was loaded.
-	 * @return 0 if not successful, otherwise an openal buffer name.
+	 * @param decode_info Cached meta information of the file.
+	 * @param pcm_start First sample in the interval.
+	 * @param pcm_end One after last sample of the interval (=> exclusive).
+	 * @return An AL sound buffer, or 0 on failure.
 	 */
 	RAIIALSoundBuffer loadBuffer(const OggFileDecodeInfo &decode_info, ALuint pcm_start,
 			ALuint pcm_end);
@@ -252,7 +248,7 @@ struct RAIIOggFile {
 /**
  * Class for the openal device and context
  */
-class SoundManagerSingleton // TODO: remove this?
+class SoundManagerSingleton
 {
 public:
 	struct AlcDeviceDeleter {
@@ -286,9 +282,6 @@ public:
 };
 
 
-/**
- * TODO: doc
- */
 struct ISoundDataOpen
 {
 	OggFileDecodeInfo m_decode_info;
@@ -301,26 +294,30 @@ struct ISoundDataOpen
 	 * Iff the data is streaming, there is more than one buffer.
 	 * @return Whether it's streaming data.
 	 */
-	virtual bool isStreaming() const = 0;
+	virtual bool isStreaming() const noexcept = 0;
 
 	/**
-	 * TODO
+	 * Load a buffer containing data starting at the given offset. Or just get it
+	 * if it was already loaded.
 	 *
-	 * `offset_in_buffer == 0` is guaranteed if some loaded buffer ends at `offset`.
+	 * This function returns multiple values:
+	 * * `buffer`: The OpenAL buffer.
+	 * * `buffer_end`: The offset (in the file) where `buffer` ends (exclusive).
+	 * * `offset_in_buffer`: Offset relative to `buffer`'s start where the requested
+	 *       `offset` is.
+	 *       `offset_in_buffer == 0` is guaranteed if some loaded buffer ends at
+	 *       `offset`.
 	 *
-	 * @param offset TODO
-	 * @return {buffer, buffer_end, offset_in_buffer}
+	 * @param offset The start of the buffer.
+	 * @return `{buffer, buffer_end, offset_in_buffer}` or `{0, 0, 0}` if `offset`
+	 *         is invalid.
 	 */
 	virtual std::tuple<ALuint, ALuint, ALuint> getOrLoadBufferAt(ALuint offset) = 0;
-	// TODO: what if offset >= end?
 
 	static std::shared_ptr<ISoundDataOpen> fromOggFile(std::unique_ptr<RAIIOggFile> oggfile,
 		const std::string &filename_for_logging);
 };
 
-/**
- * TODO: doc
- */
 struct ISoundDataUnopen
 {
 	virtual ~ISoundDataUnopen() = default;
@@ -355,7 +352,8 @@ struct SoundDataUnopenFile final : ISoundDataUnopen
 };
 
 /**
- * TODO: doc
+ * Non-streaming opened sound data.
+ * All data is completely loaded in one buffer.
  */
 struct SoundDataOpenSinglebuf final : ISoundDataOpen
 {
@@ -364,7 +362,7 @@ struct SoundDataOpenSinglebuf final : ISoundDataOpen
 	SoundDataOpenSinglebuf(std::unique_ptr<RAIIOggFile> oggfile,
 			const OggFileDecodeInfo &decode_info);
 
-	virtual bool isStreaming() const override { return false; }
+	virtual bool isStreaming() const noexcept override { return false; }
 
 	virtual std::tuple<ALuint, ALuint, ALuint> getOrLoadBufferAt(ALuint offset) override
 	{
@@ -375,7 +373,10 @@ struct SoundDataOpenSinglebuf final : ISoundDataOpen
 };
 
 /**
- * TODO: doc
+ * Streaming opened sound data.
+ *
+ * Uses a sorted list of contiguous sound data regions (`ContiguousBuffers`s) for
+ * efficient seeking.
  */
 struct SoundDataOpenStream final : ISoundDataOpen
 {
@@ -387,7 +388,7 @@ struct SoundDataOpenStream final : ISoundDataOpen
 		ALuint m_end;
 		RAIIALSoundBuffer m_buffer;
 
-		friend void swap(SoundBufferUntil &l, SoundBufferUntil &r)
+		friend void swap(SoundBufferUntil &l, SoundBufferUntil &r) noexcept
 		{
 			using std::swap;
 			swap(l.m_end, r.m_end);
@@ -413,13 +414,13 @@ struct SoundDataOpenStream final : ISoundDataOpen
 	SoundDataOpenStream(std::unique_ptr<RAIIOggFile> oggfile,
 			const OggFileDecodeInfo &decode_info);
 
-	virtual bool isStreaming() const override { return true; }
+	virtual bool isStreaming() const noexcept override { return true; }
 
 	virtual std::tuple<ALuint, ALuint, ALuint> getOrLoadBufferAt(ALuint offset) override;
 
 private:
 	// offset must be before after_it's m_start and after (after_it-1)'s last m_end
-	// new buffer will be inserted into m_buffers before after_it
+	// new buffer will be inserted into m_bufferss before after_it
 	// returns same as getOrLoadBufferAt
 	std::tuple<ALuint, ALuint, ALuint> loadBufferAt(ALuint offset,
 			std::vector<ContiguousBuffers>::iterator after_it);
@@ -427,7 +428,9 @@ private:
 
 
 /**
- * TODO: doc
+ * A sound that is currently played.
+ * Can be streaming.
+ * Can be fading.
  */
 class PlayingSound final
 {
@@ -458,49 +461,49 @@ public:
 	bool stepStream();
 
 	// retruns true if it wasn't fading already
-	bool fade(f32 step, f32 target_gain);
+	bool fade(f32 step, f32 target_gain) noexcept;
 
 	// returns true if more fade is needed later
-	bool doFade(f32 dtime);
+	bool doFade(f32 dtime) noexcept;
 
-	void updatePosVel(const v3f &pos, const v3f &vel);
+	void updatePosVel(const v3f &pos, const v3f &vel) noexcept;
 
-	void setGain(f32 gain) { alSourcef(m_source_id, AL_GAIN, gain); }
+	void setGain(f32 gain) noexcept { alSourcef(m_source_id, AL_GAIN, gain); }
 
-	f32 getGain()
+	f32 getGain() noexcept
 	{
 		ALfloat gain;
 		alGetSourcef(m_source_id, AL_GAIN, &gain);
 		return gain;
 	}
 
-	void setPitch(f32 pitch) { alSourcef(m_source_id, AL_PITCH, pitch); }
+	void setPitch(f32 pitch) noexcept { alSourcef(m_source_id, AL_PITCH, pitch); }
 
-	bool isStreaming() const { return m_data->isStreaming(); }
+	bool isStreaming() const noexcept { return m_data->isStreaming(); }
 
-	void play() { alSourcePlay(m_source_id); }
+	void play() noexcept { alSourcePlay(m_source_id); }
 
 	// returns one of AL_INITIAL, AL_PLAYING, AL_PAUSED, AL_STOPPED
-	ALint getState()
+	ALint getState() noexcept
 	{
 		ALint state;
 		alGetSourcei(m_source_id, AL_SOURCE_STATE, &state);
 		return state;
 	}
 
-	bool isDead()
+	bool isDead() noexcept
 	{
 		// streaming sounds can (but should not) stop because the queue runs empty
 		return m_stopped_means_dead && getState() == AL_STOPPED;
 	}
 
-	void pause()
+	void pause() noexcept
 	{
 		// this is a NOP if state != AL_PLAYING
 		alSourcePause(m_source_id);
 	}
 
-	void resume()
+	void resume() noexcept
 	{
 		if (getState() == AL_PAUSED)
 			play();
@@ -550,7 +553,11 @@ private:
 	void doFades(f32 dtime);
 
 	/**
-	 * TODO
+	 * Gives the open sound for a loaded sound.
+	 * Opens the sound if currently unopened.
+	 *
+	 * @param sound_name Name of the sound.
+	 * @return The open sound.
 	 */
 	std::shared_ptr<ISoundDataOpen> openSingleSound(const std::string &sound_name);
 
@@ -559,26 +566,28 @@ private:
 	 *
 	 * @param group_name The name of the sound group.
 	 * @return The name of a sound in the group, or "" on failure. Getting the
-	 * sound with openSingleSound directly afterwards will not fail.
+	 *         sound with `openSingleSound` directly afterwards will not fail.
 	 */
 	std::string getLoadedSoundNameFromGroup(const std::string &group_name);
 
 	/**
-	 * Same as getLoadedSoundNameFromGroup, but if sound does not exist, try to
+	 * Same as `getLoadedSoundNameFromGroup`, but if sound does not exist, try to
 	 * load from local files.
 	 */
 	std::string getOrLoadLoadedSoundNameFromGroup(const std::string &group_name);
 
-	// pos_opt is left-handed
 	std::shared_ptr<PlayingSound> createPlayingSound(const std::string &sound_name,
 			bool loop, f32 volume, f32 pitch, f32 time_offset, const Optional<v3f> &pos_opt);
 
-	// pos_opt is left-handed
 	void playSoundGeneric(sound_handle_t id, const std::string &group_name, bool loop,
 			f32 volume, f32 fade, f32 pitch, bool use_local_fallback, f32 time_offset,
 			const Optional<v3f> &pos_opt);
 
-	// returns number of removed sounds
+	/**
+	 * Deletes sounds that are dead (=finished).
+	 *
+	 * @return Number of removed sounds.
+	 */
 	int removeDeadSounds();
 
 public:

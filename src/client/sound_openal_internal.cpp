@@ -73,9 +73,9 @@ static bool can_open_file(const std::string &path) noexcept
 	return true;
 }
 
-// transforms vectors from a left-handed coordinate system to a right-handed one
-// and vice-versa
-// (needed because Minetest uses a left-handed one and OpenAL a right-handed one)
+// Transforms vectors from a left-handed coordinate system to a right-handed one
+// and vice-versa.
+// (Needed because Minetest uses a left-handed one and OpenAL a right-handed one.)
 static v3f swap_handedness(const v3f &v) noexcept
 {
 	return v3f(-v.X, v.Y, v.Z);
@@ -223,10 +223,10 @@ RAIIALSoundBuffer RAIIOggFile::loadBuffer(const OggFileDecodeInfo &decode_info,
 		}
 	}
 
-	const size_t size = static_cast<size_t>(pcm_end - pcm_start) * decode_info.bytes_per_sample;
+	const size_t size = static_cast<size_t>(pcm_end - pcm_start)
+			* decode_info.bytes_per_sample;
 
-	std::vector<char> snd_buffer;
-	snd_buffer.resize(size); // TODO: do not 0-init
+	std::unique_ptr<char[]> snd_buffer(new char[size]);
 
 	// read size bytes
 	size_t read_count = 0;
@@ -390,6 +390,9 @@ SoundDataOpenStream::SoundDataOpenStream(std::unique_ptr<RAIIOggFile> oggfile,
 
 std::tuple<ALuint, ALuint, ALuint> SoundDataOpenStream::getOrLoadBufferAt(ALuint offset)
 {
+	if (offset >= m_decode_info.length_samples)
+		return {0, 0, 0};
+
 	// find the right-most ContiguousBuffers, such that `m_start <= offset`
 	// equivalent: the first element from the right such that `!(m_start > offset)`
 	// (from the right, `offset` is a lower bound to the `m_start`s)
@@ -436,58 +439,61 @@ std::tuple<ALuint, ALuint, ALuint> SoundDataOpenStream::loadBufferAt(ALuint offs
 	const ALuint min_buf_len_samples = m_decode_info.freq * MIN_STREAM_BUFFER_LENGTH;
 
 	//
-	// 1) find the actual start and end of the new buffer
+	// 1) Find the actual start and end of the new buffer
 	//
 
 	ALuint new_buf_start = offset;
 	ALuint new_buf_end = offset + min_buf_len_samples;
 
-	// don't load into next buffer
+	// Don't load into next buffer, or past the end
 	if (new_buf_end > start_after) {
 		new_buf_end = start_after;
-		// also move start (for min buf size)
+		// Also move start (for min buf size) (but not *into* previous buffer)
 		if (new_buf_end - new_buf_start < min_buf_len_samples) {
-			new_buf_start = new_buf_end < min_buf_len_samples ? 0
-					: new_buf_end - min_buf_len_samples;
+			new_buf_start = std::max(
+					end_before,
+					new_buf_end < min_buf_len_samples ? 0
+							: new_buf_end - min_buf_len_samples
+				);
 		}
 	}
 
-	// widen if space to right or left is smaller than min buf size
+	// Widen if space to right or left is smaller than min buf size
 	if (new_buf_start - end_before < min_buf_len_samples)
 		new_buf_start = end_before;
 	if (start_after - new_buf_end < min_buf_len_samples)
 		new_buf_end = start_after;
 
 	//
-	// 2) load [new_buf_start, new_buf_end)
+	// 2) Load [new_buf_start, new_buf_end)
 	//
 
-	// if it fails, we get a 0-buffer. we store it and won't try loading again
+	// If it fails, we get a 0-buffer. we store it and won't try loading again
 	RAIIALSoundBuffer new_buf = m_oggfile->loadBuffer(m_decode_info, new_buf_start,
 			new_buf_end);
 
 	//
-	// 3) insert before after_it
+	// 3) Insert before after_it
 	//
 
-	// choose ContiguousBuffers to add the new SoundBufferUntil into:
-	// * after_it - 1 (=before) if existent and there's no space between its
+	// Choose ContiguousBuffers to add the new SoundBufferUntil into:
+	// * `after_it - 1` (=before) if existent and if there's no space between its
 	//   last buffer and the new buffer
-	// * a new ContiguousBuffers otherwise
+	// * A new ContiguousBuffers otherwise
 	auto it = has_before && new_buf_start == end_before ? after_it - 1
 			: m_bufferss.insert(after_it, ContiguousBuffers{new_buf_start, {}});
 
-	// add the new SoundBufferUntil
+	// Add the new SoundBufferUntil
 	size_t new_buf_i = it->m_buffers.size();
 	it->m_buffers.push_back(SoundBufferUntil{new_buf_end, std::move(new_buf)});
 
 	if (has_after && new_buf_end == start_after) {
-		// merge after into my ContiguousBuffers
+		// Merge after into my ContiguousBuffers
 		auto &bufs = it->m_buffers;
 		auto &bufs_after = (it + 1)->m_buffers;
 		bufs.insert(bufs.end(), std::make_move_iterator(bufs_after.begin()),
 				std::make_move_iterator(bufs_after.end()));
-		it = --m_bufferss.erase(++it);
+		it = m_bufferss.erase(it + 1) - 1;
 	}
 
 	return {it->m_buffers[new_buf_i].m_buffer.get(), new_buf_end, offset - new_buf_start};
@@ -617,7 +623,7 @@ bool PlayingSound::stepStream()
 	return true;
 }
 
-bool PlayingSound::fade(f32 step, f32 target_gain)
+bool PlayingSound::fade(f32 step, f32 target_gain) noexcept
 {
 	bool already_fading = m_fade_state.has_value();
 
@@ -629,7 +635,7 @@ bool PlayingSound::fade(f32 step, f32 target_gain)
 	return !already_fading;
 }
 
-bool PlayingSound::doFade(f32 dtime)
+bool PlayingSound::doFade(f32 dtime) noexcept
 {
 	if (!m_fade_state || isDead())
 		return false;
@@ -664,7 +670,7 @@ bool PlayingSound::doFade(f32 dtime)
 	}
 }
 
-void PlayingSound::updatePosVel(const v3f &pos, const v3f &vel)
+void PlayingSound::updatePosVel(const v3f &pos, const v3f &vel) noexcept
 {
 	alSourcei(m_source_id, AL_SOURCE_RELATIVE, false);
 	alSource3f(m_source_id, AL_POSITION, pos.X, pos.Y, pos.Z);
