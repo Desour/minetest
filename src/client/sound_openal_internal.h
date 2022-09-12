@@ -47,6 +47,7 @@ with this program; ifnot, write to the Free Software Foundation, Inc.,
 #include <vorbis/vorbisfile.h>
 
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 
@@ -159,9 +160,15 @@ struct RAIIALSoundBuffer final
 	RAIIALSoundBuffer(RAIIALSoundBuffer &&other) noexcept : m_buffer(other.release()) {}
 	RAIIALSoundBuffer &operator=(RAIIALSoundBuffer &&other) noexcept;
 
+	friend void swap(RAIIALSoundBuffer &l, RAIIALSoundBuffer &r) noexcept
+	{
+		using std::swap;
+		swap(l.m_buffer, r.m_buffer); // no reset() needed
+	}
+
 	ALuint get() noexcept { return m_buffer; }
 
-	ALuint release() noexcept;
+	ALuint release() noexcept { return std::exchange(m_buffer, 0); }
 
 	void reset(ALuint buf) noexcept;
 
@@ -379,6 +386,13 @@ struct SoundDataOpenStream final : ISoundDataOpen
 	{
 		ALuint m_end;
 		RAIIALSoundBuffer m_buffer;
+
+		friend void swap(SoundBufferUntil &l, SoundBufferUntil &r)
+		{
+			using std::swap;
+			swap(l.m_end, r.m_end);
+			swap(l.m_buffer, r.m_buffer);
+		}
 	};
 
 	/**
@@ -386,7 +400,8 @@ struct SoundDataOpenStream final : ISoundDataOpen
 	 * The start (inclusive) of each buffer is the end of its predecessor, or
 	 * `m_start` for the first buffer.
 	 */
-	struct ContiguousBuffers final {
+	struct ContiguousBuffers final
+	{
 		ALuint m_start;
 		std::vector<SoundBufferUntil> m_buffers;
 	};

@@ -32,7 +32,7 @@ with this program; ifnot, write to the Free Software Foundation, Inc.,
  * Helpers
  */
 
-static const char *getAlErrorString(ALenum err)
+static const char *getAlErrorString(ALenum err) noexcept
 {
 	switch (err) {
 	case AL_NO_ERROR:
@@ -64,7 +64,7 @@ static ALenum warn_if_al_error(const char *desc) noexcept
 	return err;
 }
 
-static bool can_open_file(const std::string &path)
+static bool can_open_file(const std::string &path) noexcept
 {
 	std::FILE *f = std::fopen(path.c_str(), "r");
 	if (!f)
@@ -76,7 +76,7 @@ static bool can_open_file(const std::string &path)
 // transforms vectors from a left-handed coordinate system to a right-handed one
 // and vice-versa
 // (needed because Minetest uses a left-handed one and OpenAL a right-handed one)
-static v3f swap_handedness(const v3f &v)
+static v3f swap_handedness(const v3f &v) noexcept
 {
 	return v3f(-v.X, v.Y, v.Z);
 }
@@ -90,13 +90,6 @@ RAIIALSoundBuffer &RAIIALSoundBuffer::operator=(RAIIALSoundBuffer &&other) noexc
 	if (&other != this)
 		reset(other.release());
 	return *this;
-}
-
-ALuint RAIIALSoundBuffer::release() noexcept
-{
-	auto buf = m_buffer;
-	m_buffer = 0;
-	return buf;
 }
 
 void RAIIALSoundBuffer::reset(ALuint buf) noexcept
@@ -493,7 +486,7 @@ std::tuple<ALuint, ALuint, ALuint> SoundDataOpenStream::loadBufferAt(ALuint offs
 		auto &bufs = it->m_buffers;
 		auto &bufs_after = (it + 1)->m_buffers;
 		bufs.insert(bufs.end(), std::make_move_iterator(bufs_after.begin()),
-				std::make_move_iterator(bufs_after.end())); // TODO: impl swap? in c++17, insert form(4) needs swappable
+				std::make_move_iterator(bufs_after.end()));
 		it = --m_bufferss.erase(++it);
 	}
 
@@ -712,7 +705,8 @@ void OpenALSoundManager::stepStreams(f32 dtime)
 	m_stream_timer -= dtime;
 	if (m_stream_timer <= 0.0f) {
 		m_stream_timer = STREAM_BIGSTEP_TIME;
-		std::swap(m_sounds_streaming_current_bigstep, m_sounds_streaming_next_bigstep);
+		using std::swap;
+		swap(m_sounds_streaming_current_bigstep, m_sounds_streaming_next_bigstep);
 	}
 }
 
