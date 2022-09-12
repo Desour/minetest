@@ -14,6 +14,7 @@ TODO: remove this file
 * don't spam logs with every file tried in sound-pack (fixes #10979)
 * correct documentation of sound params
 * enable fade in for positional sounds (fixes #6748)
+* vorbis seek callback now supports SEEK_END (is *not* optional according to <https://www.xiph.org/vorbis/doc/vorbisfile/callbacks.html>)
 
 
 TODO:

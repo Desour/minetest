@@ -52,13 +52,15 @@ static const char *getAlErrorString(ALenum err)
 	}
 }
 
-static ALenum warn_if_al_error(const char *desc)
+static ALenum warn_if_al_error(const char *desc) noexcept
 {
 	ALenum err = alGetError();
 	if (err == AL_NO_ERROR)
 		return err;
-	warningstream << "[OpenAL Error] " << desc << ": " << getAlErrorString(err)
-			<< std::endl;
+	try {
+		warningstream << "[OpenAL Error] " << desc << ": " << getAlErrorString(err)
+				<< std::endl;
+	} catch (...) { /* ignore */ }
 	return err;
 }
 
@@ -83,21 +85,21 @@ static v3f swap_handedness(const v3f &v)
  * RAIIALSoundBuffer struct
  */
 
-RAIIALSoundBuffer &RAIIALSoundBuffer::operator=(RAIIALSoundBuffer &&other)
+RAIIALSoundBuffer &RAIIALSoundBuffer::operator=(RAIIALSoundBuffer &&other) noexcept
 {
 	if (&other != this)
 		reset(other.release());
 	return *this;
 }
 
-ALuint RAIIALSoundBuffer::release()
+ALuint RAIIALSoundBuffer::release() noexcept
 {
 	auto buf = m_buffer;
 	m_buffer = 0;
 	return buf;
 }
 
-void RAIIALSoundBuffer::reset(ALuint buf)
+void RAIIALSoundBuffer::reset(ALuint buf) noexcept
 {
 	if (m_buffer != 0) {
 		alDeleteBuffers(1, &m_buffer);
@@ -107,7 +109,7 @@ void RAIIALSoundBuffer::reset(ALuint buf)
 	m_buffer = buf;
 }
 
-RAIIALSoundBuffer RAIIALSoundBuffer::generate()
+RAIIALSoundBuffer RAIIALSoundBuffer::generate() noexcept
 {
 	ALuint buf;
 	alGenBuffers(1, &buf);
@@ -118,7 +120,8 @@ RAIIALSoundBuffer RAIIALSoundBuffer::generate()
  * OggVorbisBufferSource struct
  */
 
-size_t OggVorbisBufferSource::read_func(void *ptr, size_t size, size_t nmemb, void *datasource)
+size_t OggVorbisBufferSource::read_func(void *ptr, size_t size, size_t nmemb,
+		void *datasource) noexcept
 {
 	OggVorbisBufferSource *s = (OggVorbisBufferSource *)datasource;
 	size_t copied_size = MYMIN(s->buf.size() - s->cur_offset, size);
@@ -127,11 +130,11 @@ size_t OggVorbisBufferSource::read_func(void *ptr, size_t size, size_t nmemb, vo
 	return copied_size;
 }
 
-int OggVorbisBufferSource::seek_func(void *datasource, ogg_int64_t offset, int whence)
+int OggVorbisBufferSource::seek_func(void *datasource, ogg_int64_t offset, int whence) noexcept
 {
 	OggVorbisBufferSource *s = (OggVorbisBufferSource *)datasource;
 	if (whence == SEEK_SET) {
-		if (offset < 0 || (size_t)MYMAX(offset, 0) >= s->buf.size()) {
+		if (offset < 0 || (size_t)offset > s->buf.size()) {
 			// offset out of bounds
 			return -1;
 		}
@@ -145,18 +148,24 @@ int OggVorbisBufferSource::seek_func(void *datasource, ogg_int64_t offset, int w
 		}
 		s->cur_offset += offset;
 		return 0;
+	} else if (whence == SEEK_END) {
+		if (offset > 0 || (size_t)-offset > s->buf.size()) {
+			// offset out of bounds
+			return -1;
+		}
+		s->cur_offset = s->buf.size() - offset;
+		return 0;
 	}
-	// invalid whence param (SEEK_END doesn't have to be supported)
 	return -1;
 }
 
-int OggVorbisBufferSource::close_func(void *datasource)
+int OggVorbisBufferSource::close_func(void *datasource) noexcept
 {
 	std::unique_ptr<OggVorbisBufferSource> s((OggVorbisBufferSource *)datasource);
 	return 0;
 }
 
-long OggVorbisBufferSource::tell_func(void *datasource)
+long OggVorbisBufferSource::tell_func(void *datasource) noexcept
 {
 	OggVorbisBufferSource *s = (OggVorbisBufferSource *)datasource;
 	return s->cur_offset;
@@ -484,7 +493,7 @@ std::tuple<ALuint, ALuint, ALuint> SoundDataOpenStream::loadBufferAt(ALuint offs
 		auto &bufs = it->m_buffers;
 		auto &bufs_after = (it + 1)->m_buffers;
 		bufs.insert(bufs.end(), std::make_move_iterator(bufs_after.begin()),
-				std::make_move_iterator(bufs_after.end())); // TODO: impl swap?
+				std::make_move_iterator(bufs_after.end())); // TODO: impl swap? in c++17, insert form(4) needs swappable
 		it = --m_bufferss.erase(++it);
 	}
 

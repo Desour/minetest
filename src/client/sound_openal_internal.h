@@ -149,23 +149,23 @@ static_assert(SOUND_DURATION_MAX_SINGLE >= MIN_STREAM_BUFFER_LENGTH * 2.0f);
  */
 struct RAIIALSoundBuffer final
 {
-	RAIIALSoundBuffer() = default;
-	RAIIALSoundBuffer(ALuint buffer) : m_buffer(buffer) {};
+	RAIIALSoundBuffer() noexcept = default;
+	RAIIALSoundBuffer(ALuint buffer) noexcept : m_buffer(buffer) {};
 
 	~RAIIALSoundBuffer() noexcept { reset(0); }
 
 	DISABLE_CLASS_COPY(RAIIALSoundBuffer)
 
-	RAIIALSoundBuffer(RAIIALSoundBuffer &&other) : m_buffer(other.release()) {}
-	RAIIALSoundBuffer &operator=(RAIIALSoundBuffer &&other);
+	RAIIALSoundBuffer(RAIIALSoundBuffer &&other) noexcept : m_buffer(other.release()) {}
+	RAIIALSoundBuffer &operator=(RAIIALSoundBuffer &&other) noexcept;
 
-	ALuint get() { return m_buffer; }
+	ALuint get() noexcept { return m_buffer; }
 
-	ALuint release();
+	ALuint release() noexcept;
 
-	void reset(ALuint buf);
+	void reset(ALuint buf) noexcept;
 
-	static RAIIALSoundBuffer generate();
+	static RAIIALSoundBuffer generate() noexcept;
 
 private:
 	// according to openal specification:
@@ -180,10 +180,10 @@ struct OggVorbisBufferSource {
 	std::string buf;
 	size_t cur_offset = 0;
 
-	static size_t read_func(void *ptr, size_t size, size_t nmemb, void *datasource);
-	static int seek_func(void *datasource, ogg_int64_t offset, int whence);
-	static int close_func(void *datasource);
-	static long tell_func(void *datasource);
+	static size_t read_func(void *ptr, size_t size, size_t nmemb, void *datasource) noexcept;
+	static int seek_func(void *datasource, ogg_int64_t offset, int whence) noexcept;
+	static int close_func(void *datasource) noexcept;
+	static long tell_func(void *datasource) noexcept;
 
 	static const ov_callbacks s_ov_callbacks;
 };
