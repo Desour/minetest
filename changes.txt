@@ -15,15 +15,16 @@ TODO: remove this file
 * correct documentation of sound params
 * enable fade in for positional sounds (fixes #6748)
 * vorbis seek callback now supports SEEK_END (is *not* optional according to <https://www.xiph.org/vorbis/doc/vorbisfile/callbacks.html>)
+* doppler effect (fixes #9172)
 
 
 TODO:
 * implement looped streamed sounds properly <- done?
 * make time_offset work <- done? -> test
-* fix small issues like footstep sounds playing at wrong place or missing vel
+* fix footstep sounds playing at wrong place, see client/content_cao.cpp
 * add api or something for setting speed of sound in nodes per second, per player
-* Add Doppler effect #9172
 * testing stuff in devtest
+* fix TODOs in client/sound.cpp, client/sound_openal.cpp
 
 
 not included in PR:

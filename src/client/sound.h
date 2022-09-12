@@ -83,8 +83,8 @@ public:
 	/**
 	 * @param pos In node-space.
 	 * @param vel In node-space.
-	 * @param at Vector pointing forwards.
-	 * @param up Vector pointing upwards, orthogonal to `at`.
+	 * @param at Vector in node-space pointing forwards.
+	 * @param up Vector in node-space pointing upwards, orthogonal to `at`.
 	 */
 	virtual void updateListener(const v3f &pos, const v3f &vel, const v3f &at,
 			const v3f &up) = 0;
@@ -119,8 +119,10 @@ public:
 	/**
 	 * Same as `playSound`, but at a position.
 	 * @param pos In node-space.
+	 * @param vel In node-space.
 	 */
-	virtual void playSoundAt(sound_handle_t id, const SimpleSoundSpec &spec, const v3f &pos) = 0; // TODO: vel
+	virtual void playSoundAt(sound_handle_t id, const SimpleSoundSpec &spec,
+			const v3f &pos, const v3f &vel) = 0;
 	/**
 	 * Request the sound to be stopped.
 	 * The id should be freed afterwards.
@@ -128,9 +130,12 @@ public:
 	virtual void stopSound(sound_handle_t sound) = 0;
 	virtual void fadeSound(sound_handle_t sound, f32 step, f32 target_gain) = 0;
 	/**
+	 * Update position and velocity of positional sound.
 	 * @param pos In node-space.
+	 * @param vel In node-space.
 	 */
-	virtual void updateSoundPosition(sound_handle_t sound, const v3f &pos) = 0; // TODO: vel
+	virtual void updateSoundPosVel(sound_handle_t sound, const v3f &pos,
+			const v3f &vel) = 0;
 
 	/**
 	 * Get and reset the list of sounds that were stopped.
@@ -171,8 +176,9 @@ public:
 	void addSoundToGroup(const std::string &sound_name, const std::string &group_name) override {};
 
 	void playSound(sound_handle_t id, const SimpleSoundSpec &spec) override { reportRemovedSound(id); }
-	void playSoundAt(sound_handle_t id, const SimpleSoundSpec &spec, const v3f &pos) override { reportRemovedSound(id); }
+	void playSoundAt(sound_handle_t id, const SimpleSoundSpec &spec, const v3f &pos,
+			const v3f &vel) override { reportRemovedSound(id); }
 	void stopSound(sound_handle_t sound) override {}
 	void fadeSound(sound_handle_t sound, f32 step, f32 target_gain) override {}
-	void updateSoundPosition(sound_handle_t sound, const v3f &pos) override {}
+	void updateSoundPosVel(sound_handle_t sound, const v3f &pos, const v3f &vel) override {}
 };

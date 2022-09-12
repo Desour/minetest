@@ -850,13 +850,16 @@ void Client::handleCommand_PlaySound(NetworkPacket* pkt)
 		m_sound->playSound(client_id, spec);
 		break;
 	case SoundLocation::Position:
-		m_sound->playSoundAt(client_id, spec, pos);
+		m_sound->playSoundAt(client_id, spec, pos, v3f(0.0f));
 		break;
 	case SoundLocation::Object: {
 		ClientActiveObject *cao = m_env.getActiveObject(object_id);
-		if (cao)
+		v3f vel(0.0f);
+		if (cao) {
 			pos = cao->getPosition() * (1.0f/BS);
-		m_sound->playSoundAt(client_id, spec, pos);
+			vel = cao->getVelocity() * (1.0f/BS);
+		}
+		m_sound->playSoundAt(client_id, spec, pos, vel);
 		break;
 	} default:
 		// Unknown SoundLocation, instantly remove sound

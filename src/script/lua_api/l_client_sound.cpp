@@ -59,7 +59,7 @@ int ModApiClientSound::l_sound_play(lua_State *L)
 	if (type == SoundLocation::Local)
 		sound_manager->playSound(handle, spec);
 	else
-		sound_manager->playSoundAt(handle, spec, position);
+		sound_manager->playSoundAt(handle, spec, position, v3f(0.0f));
 
 	ClientSoundRef::create(L, handle);
 	return 1;

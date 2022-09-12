@@ -2992,11 +2992,12 @@ void Game::updateCamera(f32 dtime)
 void Game::updateSound(f32 dtime)
 {
 	// Update sound listener
+	LocalPlayer *player = client->getEnv().getLocalPlayer();
 	v3s16 camera_offset = camera->getOffset();
 	sound_manager->updateListener(
 			(1.0f/BS) * camera->getCameraNode()->getPosition()
 					+ intToFloat(camera_offset, 1.0f),
-			v3f(0, 0, 0), // TODO: velocity
+			(1.0f/BS) * player->getSpeed(),
 			camera->getDirection(),
 			camera->getCameraNode()->getUpVector());
 
@@ -3013,8 +3014,6 @@ void Game::updateSound(f32 dtime)
 			g_settings->setFloat("sound_volume", new_volume);
 		}
 	}
-
-	LocalPlayer *player = client->getEnv().getLocalPlayer();
 
 	// Tell the sound maker whether to make footstep sounds
 	soundmaker->makes_footstep_sound = player->makes_footstep_sound;

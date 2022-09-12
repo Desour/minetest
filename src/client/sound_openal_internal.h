@@ -151,7 +151,7 @@ static_assert(SOUND_DURATION_MAX_SINGLE >= MIN_STREAM_BUFFER_LENGTH * 2.0f);
 struct RAIIALSoundBuffer final
 {
 	RAIIALSoundBuffer() noexcept = default;
-	RAIIALSoundBuffer(ALuint buffer) noexcept : m_buffer(buffer) {};
+	explicit RAIIALSoundBuffer(ALuint buffer) noexcept : m_buffer(buffer) {};
 
 	~RAIIALSoundBuffer() noexcept { reset(0); }
 
@@ -238,7 +238,7 @@ struct RAIIOggFile {
 	 * @param decode_info Cached meta information of the file.
 	 * @param pcm_start First sample in the interval.
 	 * @param pcm_end One after last sample of the interval (=> exclusive).
-	 * @return An AL sound buffer, or 0 on failure.
+	 * @return An AL sound buffer, or a 0-buffer on failure.
 	 */
 	RAIIALSoundBuffer loadBuffer(const OggFileDecodeInfo &decode_info, ALuint pcm_start,
 			ALuint pcm_end);
@@ -286,7 +286,8 @@ struct ISoundDataOpen
 {
 	OggFileDecodeInfo m_decode_info;
 
-	ISoundDataOpen(const OggFileDecodeInfo &decode_info) : m_decode_info(decode_info) {}
+	explicit ISoundDataOpen(const OggFileDecodeInfo &decode_info) :
+			m_decode_info(decode_info) {}
 
 	virtual ~ISoundDataOpen() = default;
 
@@ -448,7 +449,8 @@ class PlayingSound final
 
 public:
 	PlayingSound(ALuint source_id, std::shared_ptr<ISoundDataOpen> data, bool loop,
-			f32 volume, f32 pitch, f32 time_offset, const Optional<v3f> &pos_opt);
+			f32 volume, f32 pitch, f32 time_offset,
+			const Optional<std::pair<v3f, v3f>> &pos_vel_opt);
 
 	~PlayingSound() noexcept
 	{
@@ -577,11 +579,12 @@ private:
 	std::string getOrLoadLoadedSoundNameFromGroup(const std::string &group_name);
 
 	std::shared_ptr<PlayingSound> createPlayingSound(const std::string &sound_name,
-			bool loop, f32 volume, f32 pitch, f32 time_offset, const Optional<v3f> &pos_opt);
+			bool loop, f32 volume, f32 pitch, f32 time_offset,
+			const Optional<std::pair<v3f, v3f>> &pos_vel_opt);
 
 	void playSoundGeneric(sound_handle_t id, const std::string &group_name, bool loop,
 			f32 volume, f32 fade, f32 pitch, bool use_local_fallback, f32 time_offset,
-			const Optional<v3f> &pos_opt);
+			const Optional<std::pair<v3f, v3f>> &pos_vel_opt);
 
 	/**
 	 * Deletes sounds that are dead (=finished).
@@ -612,8 +615,9 @@ public:
 	void addSoundToGroup(const std::string &sound_name, const std::string &group_name) override;
 
 	void playSound(sound_handle_t id, const SimpleSoundSpec &spec) override;
-	void playSoundAt(sound_handle_t id, const SimpleSoundSpec &spec, const v3f &pos_) override;
+	void playSoundAt(sound_handle_t id, const SimpleSoundSpec &spec, const v3f &pos_,
+			const v3f &vel_) override;
 	void stopSound(sound_handle_t sound) override;
 	void fadeSound(sound_handle_t soundid, f32 step, f32 target_gain) override;
-	void updateSoundPosition(sound_handle_t sound, const v3f &pos_) override;
+	void updateSoundPosVel(sound_handle_t sound, const v3f &pos_, const v3f &vel_) override;
 };

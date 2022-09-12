@@ -678,7 +678,8 @@ void Client::step(float dtime)
 			ClientActiveObject *cao = m_env.getActiveObject(object_id);
 			if (!cao)
 				continue;
-			m_sound->updateSoundPosition(client_id, cao->getPosition() * (1.0f/BS)); // TODO: velocity
+			m_sound->updateSoundPosVel(client_id, cao->getPosition() * (1.0f/BS),
+					cao->getVelocity() * (1.0f/BS));
 		}
 	}
 

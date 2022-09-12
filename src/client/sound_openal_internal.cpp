@@ -219,7 +219,7 @@ RAIIALSoundBuffer RAIIOggFile::loadBuffer(const OggFileDecodeInfo &decode_info,
 		if (ov_pcm_seek(&m_file, pcm_start) != 0) {
 			warningstream << "Audio: Error decoding (could not seek) "
 					<< decode_info.name_for_logging << std::endl;
-			return 0;
+			return RAIIALSoundBuffer();
 		}
 	}
 
@@ -239,7 +239,7 @@ RAIIALSoundBuffer RAIIOggFile::loadBuffer(const OggFileDecodeInfo &decode_info,
 		if (num_bytes <= 0) {
 			warningstream << "Audio: Error decoding "
 					<< decode_info.name_for_logging << std::endl;
-			return 0;
+			return RAIIALSoundBuffer();
 		}
 
 		read_count += num_bytes;
@@ -282,6 +282,11 @@ bool SoundManagerSingleton::init()
 	}
 
 	alDistanceModel(AL_INVERSE_DISTANCE_CLAMPED);
+
+	// Speed of sound in nodes per second
+	// FIXME: This value assumes 1 node sidelength = 1 meter, and "normal" air.
+	//        Ideally this should be mod-controlled.
+	alSpeedOfSound(343.3f);
 
 	if (alGetError() != AL_NO_ERROR) {
 		errorstream << "Audio: Global Initialization: OpenAL Error " << alGetError() << std::endl;
@@ -504,7 +509,8 @@ std::tuple<ALuint, ALuint, ALuint> SoundDataOpenStream::loadBufferAt(ALuint offs
  */
 
 PlayingSound::PlayingSound(ALuint source_id, std::shared_ptr<ISoundDataOpen> data,
-		bool loop, f32 volume, f32 pitch, f32 time_offset, const Optional<v3f> &pos_opt)
+		bool loop, f32 volume, f32 pitch, f32 time_offset,
+		const Optional<std::pair<v3f, v3f>> &pos_vel_opt)
 	: m_source_id(source_id), m_data(std::move(data)), m_looping(loop)
 {
 	// calculate actual time_offset (see lua_api.txt for specs)
@@ -565,8 +571,8 @@ PlayingSound::PlayingSound(ALuint source_id, std::shared_ptr<ISoundDataOpen> dat
 	}
 
 	// set initial pos, volume, pitch
-	if (pos_opt.has_value()) {
-		updatePosVel(*pos_opt, v3f(0.0f, 0.0f, 0.0f)); //TODO: velocity
+	if (pos_vel_opt.has_value()) {
+		updatePosVel(pos_vel_opt->first, pos_vel_opt->second);
 	} else {
 		// make position-less
 		alSourcei(m_source_id, AL_SOURCE_RELATIVE, true);
@@ -801,8 +807,9 @@ std::string OpenALSoundManager::getOrLoadLoadedSoundNameFromGroup(const std::str
 	return getLoadedSoundNameFromGroup(group_name);
 }
 
-std::shared_ptr<PlayingSound> OpenALSoundManager::createPlayingSound(const std::string &sound_name,
-		bool loop, f32 volume, f32 pitch, f32 time_offset, const Optional<v3f> &pos_opt)
+std::shared_ptr<PlayingSound> OpenALSoundManager::createPlayingSound(
+		const std::string &sound_name, bool loop, f32 volume, f32 pitch,
+		f32 time_offset, const Optional<std::pair<v3f, v3f>> &pos_vel_opt)
 {
 	infostream << "OpenALSoundManager: Creating playing sound \"" << sound_name
 			<< "\"" << std::endl;
@@ -816,7 +823,7 @@ std::shared_ptr<PlayingSound> OpenALSoundManager::createPlayingSound(const std::
 		return nullptr;
 	}
 
-	if (lsnd->m_decode_info.is_stereo && pos_opt.has_value()) {
+	if (lsnd->m_decode_info.is_stereo && pos_vel_opt.has_value()) {
 		errorstream << "OpenALSoundManager::createPlayingSound: "
 				<< "tried to create positional stereo sound \"" << sound_name << "\"."
 				<< std::endl;
@@ -831,7 +838,7 @@ std::shared_ptr<PlayingSound> OpenALSoundManager::createPlayingSound(const std::
 	}
 
 	auto sound = std::make_shared<PlayingSound>(source_id, std::move(lsnd), loop,
-			volume, pitch, time_offset, pos_opt);
+			volume, pitch, time_offset, pos_vel_opt);
 
 	sound->play();
 	if (m_is_paused)
@@ -842,7 +849,7 @@ std::shared_ptr<PlayingSound> OpenALSoundManager::createPlayingSound(const std::
 
 void OpenALSoundManager::playSoundGeneric(sound_handle_t id, const std::string &group_name,
 		bool loop, f32 volume, f32 fade, f32 pitch, bool use_local_fallback,
-		f32 time_offset, const Optional<v3f> &pos_opt)
+		f32 time_offset, const Optional<std::pair<v3f, v3f>> &pos_vel_opt)
 {
 	if (id == 0)
 		id = allocateId(1);
@@ -882,7 +889,7 @@ void OpenALSoundManager::playSoundGeneric(sound_handle_t id, const std::string &
 
 	// play it
 	std::shared_ptr<PlayingSound> sound = createPlayingSound(sound_name, loop,
-			volume, pitch, time_offset, pos_opt);
+			volume, pitch, time_offset, pos_vel_opt);
 	if (!sound) {
 		reportRemovedSound(id);
 		return;
@@ -991,7 +998,8 @@ void OpenALSoundManager::resumeAll()
 	m_is_paused = false;
 }
 
-void OpenALSoundManager::updateListener(const v3f &pos_, const v3f &vel_, const v3f &at_, const v3f &up_)
+void OpenALSoundManager::updateListener(const v3f &pos_, const v3f &vel_,
+		const v3f &at_, const v3f &up_)
 {
 	v3f pos = swap_handedness(pos_);
 	v3f vel = swap_handedness(vel_);
@@ -1051,9 +1059,13 @@ void OpenALSoundManager::playSound(sound_handle_t id, const SimpleSoundSpec &spe
 			spec.use_local_fallback, spec.time_offset, nullopt);
 }
 
-void OpenALSoundManager::playSoundAt(sound_handle_t id, const SimpleSoundSpec &spec, const v3f &pos_)
+void OpenALSoundManager::playSoundAt(sound_handle_t id, const SimpleSoundSpec &spec,
+		const v3f &pos_, const v3f &vel_)
 {
-	v3f pos = swap_handedness(pos_);
+	Optional<std::pair<v3f, v3f>> pos_vel_opt({
+			swap_handedness(pos_),
+			swap_handedness(vel_)
+		});
 
 	// AL_REFERENCE_DISTANCE was once reduced from 3 nodes to 1 node.
 	// We compensate this by multiplying the volume by 3.
@@ -1063,7 +1075,7 @@ void OpenALSoundManager::playSoundAt(sound_handle_t id, const SimpleSoundSpec &s
 	f32 volume = spec.gain * 3.0f;
 
 	return playSoundGeneric(id, spec.name, spec.loop, volume, spec.fade, spec.pitch,
-			spec.use_local_fallback, spec.time_offset, pos);
+			spec.use_local_fallback, spec.time_offset, pos_vel_opt);
 }
 
 void OpenALSoundManager::stopSound(sound_handle_t sound)
@@ -1085,12 +1097,14 @@ void OpenALSoundManager::fadeSound(sound_handle_t soundid, f32 step, f32 target_
 		m_sounds_fading.emplace_back(sound_it->second);
 }
 
-void OpenALSoundManager::updateSoundPosition(sound_handle_t id, const v3f &pos_)
+void OpenALSoundManager::updateSoundPosVel(sound_handle_t id, const v3f &pos_,
+		const v3f &vel_)
 {
 	v3f pos = swap_handedness(pos_);
+	v3f vel = swap_handedness(vel_);
 
 	auto i = m_sounds_playing.find(id);
 	if (i == m_sounds_playing.end())
 		return;
-	i->second->updatePosVel(pos, v3f(0.0f, 0.0f, 0.0f));
+	i->second->updatePosVel(pos, vel);
 }
