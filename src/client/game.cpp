@@ -260,29 +260,30 @@ class SoundMaker
 	ISoundManager *m_sound;
 	const NodeDefManager *m_ndef;
 public:
-	bool makes_footstep_sound;
-	float m_player_step_timer;
-	float m_player_jump_timer;
+	bool makes_footstep_sound = true;
+	float m_player_step_timer = 0.0f;
+	float m_player_jump_timer = 0.0f;
+
+	v3f m_player_feet_pos = v3f(0.0f);
 
 	SimpleSoundSpec m_player_step_sound;
 	SimpleSoundSpec m_player_leftpunch_sound;
 	SimpleSoundSpec m_player_rightpunch_sound;
 
 	SoundMaker(ISoundManager *sound, const NodeDefManager *ndef):
-		m_sound(sound),
-		m_ndef(ndef),
-		makes_footstep_sound(true),
-		m_player_step_timer(0.0f),
-		m_player_jump_timer(0.0f)
-	{
-	}
+		m_sound(sound), m_ndef(ndef) {}
 
 	void playPlayerStep()
 	{
 		if (m_player_step_timer <= 0 && m_player_step_sound.exists()) {
 			m_player_step_timer = 0.03;
-			if (makes_footstep_sound)
-				m_sound->playSound(0, m_player_step_sound); // TODO: make positional and reduce gain?
+			if (makes_footstep_sound) {
+				SimpleSoundSpec spec = m_player_step_sound;
+				// Footstep sound gains are always scaled by this.
+				// See also in `content_cao.cpp`.
+				spec.gain *= 0.6f;
+				m_sound->playSoundAt(0, spec, m_player_feet_pos, v3f(0.0f));
+			}
 		}
 	}
 
@@ -3026,6 +3027,7 @@ void Game::updateSound(f32 dtime)
 	ClientMap &map = client->getEnv().getClientMap();
 	MapNode n = map.getNode(player->getFootstepNodePos());
 	soundmaker->m_player_step_sound = nodedef_manager->get(n).sound_footstep;
+	soundmaker->m_player_feet_pos = player->getFeetPos();
 }
 
 
