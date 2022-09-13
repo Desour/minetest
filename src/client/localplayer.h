@@ -72,7 +72,6 @@ public:
 	void applyControl(float dtime, Environment *env);
 
 	v3s16 getStandingNodePos();
-	v3f getFeetPos(); // in node-space
 	v3s16 getFootstepNodePos();
 
 	// Used to check if anything changed and prevent sending packets if not
