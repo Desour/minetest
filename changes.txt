@@ -23,7 +23,6 @@ TODO: remove this file
 
 
 TODO:
-* fix TODOs in client/sound.cpp, client/sound_openal.cpp
 * remove benchmark code
 * testing stuff in devtest
 * test:

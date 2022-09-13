@@ -40,6 +40,3 @@ std::unique_ptr<ISoundManager> createOpenALSoundManager(SoundManagerSingleton *s
 {
 	return std::make_unique<OpenALSoundManager>(smg, std::move(local_fallback_paths_giver));
 };
-
-//TODO: merge into sound_openal_internal.cpp
-
