@@ -115,8 +115,8 @@ void ItemDefinition::reset()
 	delete tool_capabilities;
 	tool_capabilities = NULL;
 	groups.clear();
-	sound_place = SimpleSoundSpec();
-	sound_place_failed = SimpleSoundSpec();
+	sound_place = SoundSpec();
+	sound_place_failed = SoundSpec();
 	range = -1;
 	node_placement_prediction = "";
 	place_param2 = 0;
@@ -154,8 +154,8 @@ void ItemDefinition::serialize(std::ostream &os, u16 protocol_version) const
 	os << serializeString16(node_placement_prediction);
 
 	// Version from ContentFeatures::serialize to keep in sync
-	sound_place.serialize(os, protocol_version);
-	sound_place_failed.serialize(os, protocol_version);
+	sound_place.serializeSimple(os, protocol_version);
+	sound_place_failed.serializeSimple(os, protocol_version);
 
 	writeF32(os, range);
 	os << serializeString16(palette_image);
@@ -205,8 +205,8 @@ void ItemDefinition::deSerialize(std::istream &is, u16 protocol_version)
 
 	node_placement_prediction = deSerializeString16(is);
 
-	sound_place.deSerialize(is, protocol_version);
-	sound_place_failed.deSerialize(is, protocol_version);
+	sound_place.deSerializeSimple(is, protocol_version);
+	sound_place_failed.deSerializeSimple(is, protocol_version);
 
 	range = readF32(is);
 	palette_image = deSerializeString16(is);

@@ -32,8 +32,8 @@ int ModApiClientSound::l_sound_play(lua_State *L)
 {
 	ISoundManager *sound_manager = getClient(L)->getSoundManager();
 
-	SimpleSoundSpec spec;
-	read_soundspec(L, 1, spec);
+	SoundSpec spec;
+	read_simplesoundspec(L, 1, spec);
 
 	SoundLocation type = SoundLocation::Local;
 	float gain = 1.0f;

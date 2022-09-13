@@ -264,9 +264,9 @@ public:
 	float m_player_step_timer = 0.0f;
 	float m_player_jump_timer = 0.0f;
 
-	SimpleSoundSpec m_player_step_sound;
-	SimpleSoundSpec m_player_leftpunch_sound;
-	SimpleSoundSpec m_player_rightpunch_sound;
+	SoundSpec m_player_step_sound;
+	SoundSpec m_player_leftpunch_sound;
+	SoundSpec m_player_rightpunch_sound;
 
 	SoundMaker(ISoundManager *sound, const NodeDefManager *ndef) :
 		m_sound(sound), m_ndef(ndef) {}
@@ -284,7 +284,7 @@ public:
 	{
 		if (m_player_jump_timer <= 0.0f) {
 			m_player_jump_timer = 0.2f;
-			m_sound->playSound(0, SimpleSoundSpec("player_jump", 0.5f));
+			m_sound->playSound(0, SoundSpec("player_jump", 0.5f));
 		}
 	}
 
@@ -328,13 +328,13 @@ public:
 	static void playerDamage(MtEvent *e, void *data)
 	{
 		SoundMaker *sm = (SoundMaker *)data;
-		sm->m_sound->playSound(0, SimpleSoundSpec("player_damage", 0.5));
+		sm->m_sound->playSound(0, SoundSpec("player_damage", 0.5));
 	}
 
 	static void playerFallingDamage(MtEvent *e, void *data)
 	{
 		SoundMaker *sm = (SoundMaker *)data;
-		sm->m_sound->playSound(0, SimpleSoundSpec("player_falling_damage", 0.5));
+		sm->m_sound->playSound(0, SoundSpec("player_falling_damage", 0.5));
 	}
 
 	void registerReceiver(MtEventManager *mgr)
@@ -3319,7 +3319,7 @@ void Game::handlePointingAtNode(const PointedThing &pointed,
 		// Placing animation (always shown for feedback)
 		camera->setDigging(1);
 
-		soundmaker->m_player_rightpunch_sound = SimpleSoundSpec();
+		soundmaker->m_player_rightpunch_sound = SoundSpec();
 
 		// If the wielded item has node placement prediction,
 		// make that happen
@@ -3635,7 +3635,7 @@ void Game::handleDigging(const PointedThing &pointed, const v3s16 &nodepos,
 		runData.dig_index = crack_animation_length;
 	}
 
-	SimpleSoundSpec sound_dig = nodedef_manager->get(n).sound_dig;
+	SoundSpec sound_dig = nodedef_manager->get(n).sound_dig;
 
 	if (sound_dig.exists() && params.diggable) {
 		if (sound_dig.name == "__group") {

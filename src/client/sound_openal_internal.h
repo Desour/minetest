@@ -618,8 +618,8 @@ public:
 	bool loadSoundData(const std::string &name, std::string &&filedata) override;
 	void addSoundToGroup(const std::string &sound_name, const std::string &group_name) override;
 
-	void playSound(sound_handle_t id, const SimpleSoundSpec &spec) override;
-	void playSoundAt(sound_handle_t id, const SimpleSoundSpec &spec, const v3f &pos_,
+	void playSound(sound_handle_t id, const SoundSpec &spec) override;
+	void playSoundAt(sound_handle_t id, const SoundSpec &spec, const v3f &pos_,
 			const v3f &vel_) override;
 	void stopSound(sound_handle_t sound) override;
 	void fadeSound(sound_handle_t soundid, f32 step, f32 target_gain) override;

@@ -26,7 +26,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <unordered_set>
 #include <vector>
 
-struct SimpleSoundSpec;
+struct SoundSpec;
 
 class SoundLocalFallbackPathsGiver
 {
@@ -115,14 +115,14 @@ public:
 	 * Plays a random sound from a sound group (position-less).
 	 * @param id Id for new sound. Move semantics apply if id > 0.
 	 */
-	virtual void playSound(sound_handle_t id, const SimpleSoundSpec &spec) = 0;
+	virtual void playSound(sound_handle_t id, const SoundSpec &spec) = 0;
 	/**
 	 * Same as `playSound`, but at a position.
 	 * @param pos In node-space.
 	 * @param vel In node-space.
 	 */
-	virtual void playSoundAt(sound_handle_t id, const SimpleSoundSpec &spec,
-			const v3f &pos, const v3f &vel) = 0;
+	virtual void playSoundAt(sound_handle_t id, const SoundSpec &spec, const v3f &pos,
+			const v3f &vel) = 0;
 	/**
 	 * Request the sound to be stopped.
 	 * The id should be freed afterwards.
@@ -175,8 +175,8 @@ public:
 	bool loadSoundData(const std::string &name, std::string &&filedata) override { return true; }
 	void addSoundToGroup(const std::string &sound_name, const std::string &group_name) override {};
 
-	void playSound(sound_handle_t id, const SimpleSoundSpec &spec) override { reportRemovedSound(id); }
-	void playSoundAt(sound_handle_t id, const SimpleSoundSpec &spec, const v3f &pos,
+	void playSound(sound_handle_t id, const SoundSpec &spec) override { reportRemovedSound(id); }
+	void playSoundAt(sound_handle_t id, const SoundSpec &spec, const v3f &pos,
 			const v3f &vel) override { reportRemovedSound(id); }
 	void stopSound(sound_handle_t sound) override {}
 	void fadeSound(sound_handle_t sound, f32 step, f32 target_gain) override {}

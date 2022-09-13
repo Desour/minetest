@@ -29,7 +29,7 @@ int ModApiServerSound::l_sound_play(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
 	ServerPlayingSound params;
-	read_soundspec(L, 1, params.spec);
+	read_simplesoundspec(L, 1, params.spec);
 	read_server_sound_params(L, 2, params);
 	bool ephemeral = lua_gettop(L) > 2 && readParam<bool>(L, 3);
 	if (ephemeral) {

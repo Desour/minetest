@@ -820,7 +820,7 @@ void Client::handleCommand_PlaySound(NetworkPacket* pkt)
 
 	s32 server_id;
 
-	SimpleSoundSpec spec;
+	SoundSpec spec;
 	SoundLocation type;
 	v3f pos;
 	u16 object_id;

@@ -1085,13 +1085,13 @@ void OpenALSoundManager::addSoundToGroup(const std::string &sound_name, const st
 		m_sound_groups.emplace(group_name, std::vector<std::string>{sound_name});
 }
 
-void OpenALSoundManager::playSound(sound_handle_t id, const SimpleSoundSpec &spec)
+void OpenALSoundManager::playSound(sound_handle_t id, const SoundSpec &spec)
 {
 	return playSoundGeneric(id, spec.name, spec.loop, spec.gain, spec.fade, spec.pitch,
 			spec.use_local_fallback, spec.time_offset, nullopt);
 }
 
-void OpenALSoundManager::playSoundAt(sound_handle_t id, const SimpleSoundSpec &spec,
+void OpenALSoundManager::playSoundAt(sound_handle_t id, const SoundSpec &spec,
 		const v3f &pos_, const v3f &vel_)
 {
 	Optional<std::pair<v3f, v3f>> pos_vel_opt({

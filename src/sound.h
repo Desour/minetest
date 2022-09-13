@@ -24,12 +24,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "util/serialize.h"
 #include "irrlichttypes_bloated.h"
 
-// This class describes the basic sound information for playback.
-// Positional handling is done separately.
-
-struct SimpleSoundSpec
+/**
+ * Describes the sound information for playback.
+ * Positional handling is done separately.
+ *
+ * `SimpleSoundSpec`, as used by modding, is a `SoundSpec` with only name, fain,
+ * pitch and fade.
+*/
+struct SoundSpec
 {
-	SimpleSoundSpec(const std::string &name = "", float gain = 1.0f,
+	SoundSpec(const std::string &name = "", float gain = 1.0f,
 			bool loop = false, float fade = 0.0f, float pitch = 1.0f,
 			float time_offset = 0.0f) :
 			name(name), gain(gain), fade(fade), pitch(pitch), time_offset(time_offset),
@@ -39,8 +43,10 @@ struct SimpleSoundSpec
 
 	bool exists() const { return !name.empty(); }
 
-	// TODO: rename to sterializeSimple
-	void serialize(std::ostream &os, u16 protocol_version) const
+	/**
+	 * Serialize a `SimpleSoundSpec`.
+	 */
+	void serializeSimple(std::ostream &os, u16 protocol_version) const
 	{
 		os << serializeString16(name);
 		writeF32(os, gain);
@@ -48,7 +54,10 @@ struct SimpleSoundSpec
 		writeF32(os, fade);
 	}
 
-	void deSerialize(std::istream &is, u16 protocol_version)
+	/**
+	 * Deserialize a `SimpleSoundSpec`.
+	 */
+	void deSerializeSimple(std::istream &is, u16 protocol_version)
 	{
 		name = deSerializeString16(is);
 		gain = readF32(is);
@@ -56,7 +65,8 @@ struct SimpleSoundSpec
 		fade = readF32(is);
 	}
 
-	std::string name; // name of the sound-group
+	// Name of the sound-group
+	std::string name;
 	float gain = 1.0f;
 	float fade = 0.0f;
 	float pitch = 1.0f;

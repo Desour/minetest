@@ -28,8 +28,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // sound_play(spec, loop)
 int ModApiMainMenuSound::l_sound_play(lua_State *L)
 {
-	SimpleSoundSpec spec;
-	read_soundspec(L, 1, spec);
+	SoundSpec spec;
+	read_simplesoundspec(L, 1, spec);
 	spec.loop = readParam<bool>(L, 2);
 
 	ISoundManager &sound_manager = *getGuiEngine(L)->m_sound_manager;

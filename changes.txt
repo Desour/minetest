@@ -19,10 +19,10 @@ TODO: remove this file
 * client-side setting for doppler factor (because you can be very fast in minetest)
 * footstep sounds of objects are played at feet (vel=0)
 * player footstep sounds are still position-less (sounds bad otherwise, if running with fast)
+* C++ SimpleSoundSpec struct was renamed to SoundSpec, because it's not simple, and to differentiate from modding SimpleSoundSpec
 
 
 TODO:
-* SimpleSoundSpec -> SoundSpec
 * fix TODOs in client/sound.cpp, client/sound_openal.cpp
 * remove benchmark code
 * testing stuff in devtest

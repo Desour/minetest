@@ -78,8 +78,8 @@ struct ItemDefinition
 	// May be NULL. If non-NULL, deleted by destructor
 	ToolCapabilities *tool_capabilities;
 	ItemGroupList groups;
-	SimpleSoundSpec sound_place;
-	SimpleSoundSpec sound_place_failed;
+	SoundSpec sound_place;
+	SoundSpec sound_place_failed;
 	f32 range;
 
 	// Client shall immediately place this node when player places the item.
