@@ -415,7 +415,7 @@ SoundDataOpenStream::SoundDataOpenStream(std::unique_ptr<RAIIOggFile> oggfile,
 std::tuple<ALuint, ALuint, ALuint> SoundDataOpenStream::getOrLoadBufferAt(ALuint offset)
 {
 	if (offset >= m_decode_info.length_samples)
-		return {0, 0, 0};
+		return {0, m_decode_info.length_samples, 0};
 
 	// find the right-most ContiguousBuffers, such that `m_start <= offset`
 	// equivalent: the first element from the right such that `!(m_start > offset)`
@@ -532,14 +532,14 @@ PlayingSound::PlayingSound(ALuint source_id, std::shared_ptr<ISoundDataOpen> dat
 		const Optional<std::pair<v3f, v3f>> &pos_vel_opt)
 	: m_source_id(source_id), m_data(std::move(data)), m_looping(loop)
 {
-	// calculate actual time_offset (see lua_api.txt for specs)
+	// Calculate actual time_offset (see lua_api.txt for specs)
 	f32 len_seconds = m_data->m_decode_info.length_seconds;
 	f32 len_samples = m_data->m_decode_info.length_samples;
 	if (!m_looping) {
 		if (time_offset < 0.0f) {
 			time_offset = std::fmax(time_offset + len_seconds, 0.0f);
 		} else if (time_offset >= len_seconds) {
-			// no sound
+			// No sound
 			m_next_sample_pos = len_samples;
 			return;
 		}
@@ -547,11 +547,18 @@ PlayingSound::PlayingSound(ALuint source_id, std::shared_ptr<ISoundDataOpen> dat
 		time_offset = time_offset - std::floor(time_offset / len_seconds) * len_seconds;
 	}
 
-	// queue first buffers
+	// Queue first buffers
 
-	m_next_sample_pos = (time_offset / len_seconds) * len_samples;
+	m_next_sample_pos = std::min((time_offset / len_seconds) * len_samples, len_samples);
+
+	if (m_looping && m_next_sample_pos == len_samples)
+		m_next_sample_pos = 0;
 
 	if (!m_data->isStreaming()) {
+		// If m_next_sample_pos >= len_samples, buf will be 0, and setting it as
+		// AL_BUFFER is a NOP (source stays AL_UNDETERMINED). => No sound will be
+		// played.
+
 		auto buf_nxtoffset_thisoffset_tpl = m_data->getOrLoadBufferAt(m_next_sample_pos);
 		ALuint buf = std::get<0>(buf_nxtoffset_thisoffset_tpl);
 		m_next_sample_pos = std::get<1>(buf_nxtoffset_thisoffset_tpl);
@@ -565,13 +572,19 @@ PlayingSound::PlayingSound(ALuint source_id, std::shared_ptr<ISoundDataOpen> dat
 		warn_if_al_error("when creating non-streaming sound");
 
 	} else {
-		// start with 2 buffers
+		// Start with 2 buffers
 		ALuint buf_ids[2];
+
+		// If m_next_sample_pos >= len_samples (happens only if not looped), one
+		// or both of buf_ids will be 0. Queuing 0 is a NOP.
 
 		auto buf_nxtoffset_thisoffset_tpl1 = m_data->getOrLoadBufferAt(m_next_sample_pos);
 		buf_ids[0] = std::get<0>(buf_nxtoffset_thisoffset_tpl1);
 		m_next_sample_pos = std::get<1>(buf_nxtoffset_thisoffset_tpl1);
 		ALuint sample_offset1 = std::get<2>(buf_nxtoffset_thisoffset_tpl1);
+
+		if (m_looping && m_next_sample_pos == len_samples)
+			m_next_sample_pos = 0;
 
 		auto buf_nxtoffset_thisoffset_tpl2 = m_data->getOrLoadBufferAt(m_next_sample_pos);
 		buf_ids[1] = std::get<0>(buf_nxtoffset_thisoffset_tpl2);
@@ -581,7 +594,7 @@ PlayingSound::PlayingSound(ALuint source_id, std::shared_ptr<ISoundDataOpen> dat
 		alSourceQueueBuffers(m_source_id, 2, buf_ids);
 		alSourcei(m_source_id, AL_SAMPLE_OFFSET, sample_offset1);
 
-		// we can't use AL_LOOPING because more buffers are queued later
+		// We can't use AL_LOOPING because more buffers are queued later
 		// looping is therefore done manually
 
 		m_stopped_means_dead = false;
@@ -589,11 +602,11 @@ PlayingSound::PlayingSound(ALuint source_id, std::shared_ptr<ISoundDataOpen> dat
 		warn_if_al_error("when creating streaming sound");
 	}
 
-	// set initial pos, volume, pitch
+	// Set initial pos, volume, pitch
 	if (pos_vel_opt.has_value()) {
 		updatePosVel(pos_vel_opt->first, pos_vel_opt->second);
 	} else {
-		// make position-less
+		// Make position-less
 		alSourcei(m_source_id, AL_SOURCE_RELATIVE, true);
 		alSource3f(m_source_id, AL_POSITION, 0.0f, 0.0f, 0.0f);
 		alSource3f(m_source_id, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
@@ -613,15 +626,15 @@ bool PlayingSound::stepStream()
 	alGetSourcei(m_source_id, AL_BUFFERS_PROCESSED, &num_unqueued_bufs);
 	if (num_unqueued_bufs == 0)
 		return true;
-	// we always have 2 buffers enqueued at most
+	// We always have 2 buffers enqueued at most
 	SANITY_CHECK(num_unqueued_bufs <= 2);
 	ALuint unqueued_buffer_ids[2];
 	alSourceUnqueueBuffers(m_source_id, num_unqueued_bufs, unqueued_buffer_ids);
 
-	// fill up again
+	// Fill up again
 	for (ALint i = 0; i < num_unqueued_bufs; ++i) {
 		if (m_next_sample_pos == m_data->m_decode_info.length_samples) {
-			// reached end
+			// Reached end
 			if (m_looping) {
 				m_next_sample_pos = 0;
 			} else {
@@ -637,7 +650,7 @@ bool PlayingSound::stepStream()
 
 		alSourceQueueBuffers(m_source_id, 1, &buf_id);
 
-		// start again if queue was empty and resulted in stop
+		// Start again if queue was empty and resulted in stop
 		if (getState() == AL_STOPPED) {
 			play();
 			warningstream << "PlayingSound::stepStream: sound queue ran empty for \""

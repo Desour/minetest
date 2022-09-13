@@ -19,12 +19,16 @@ TODO: remove this file
 
 
 TODO:
-* implement looped streamed sounds properly <- done?
-* make time_offset work <- done? -> test
 * fix footstep sounds playing at wrong place, see client/content_cao.cpp
-* add api or something for setting speed of sound in nodes per second, per player
-* testing stuff in devtest
+* fix doppler in cart
 * fix TODOs in client/sound.cpp, client/sound_openal.cpp
+* testing stuff in devtest
+* test:
+  * looped streamed sounds
+  * time_offset
+  * doppler (i.e. attached objs)
+  * footstep pos
+  * positional fade
 
 
 not included in PR:

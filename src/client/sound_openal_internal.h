@@ -176,8 +176,11 @@ struct RAIIALSoundBuffer final
 	static RAIIALSoundBuffer generate() noexcept;
 
 private:
-	// according to openal specification:
+	// According to openal specification:
 	// > Deleting buffer name 0 is a legal NOP.
+	//
+	// and:
+	// > [...] the NULL buffer (i.e., 0) which can always be queued.
 	ALuint m_buffer = 0;
 };
 
@@ -311,8 +314,8 @@ struct ISoundDataOpen
 	 *       `offset`.
 	 *
 	 * @param offset The start of the buffer.
-	 * @return `{buffer, buffer_end, offset_in_buffer}` or `{0, 0, 0}` if `offset`
-	 *         is invalid.
+	 * @return `{buffer, buffer_end, offset_in_buffer}` or `{0, sound_data_end, 0}`
+	 *         if `offset` is invalid.
 	 */
 	virtual std::tuple<ALuint, ALuint, ALuint> getOrLoadBufferAt(ALuint offset) = 0;
 
@@ -369,7 +372,7 @@ struct SoundDataOpenSinglebuf final : ISoundDataOpen
 	virtual std::tuple<ALuint, ALuint, ALuint> getOrLoadBufferAt(ALuint offset) override
 	{
 		if (offset >= m_decode_info.length_samples)
-			return {0, 0, 0};
+			return {0, m_decode_info.length_samples, 0};
 		return {m_buffer.get(), m_decode_info.length_samples, offset};
 	}
 };
