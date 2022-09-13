@@ -39,6 +39,7 @@ struct SimpleSoundSpec
 
 	bool exists() const { return !name.empty(); }
 
+	// TODO: rename to sterializeSimple
 	void serialize(std::ostream &os, u16 protocol_version) const
 	{
 		os << serializeString16(name);

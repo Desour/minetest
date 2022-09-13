@@ -17,10 +17,12 @@ TODO: remove this file
 * vorbis seek callback now supports SEEK_END (is *not* optional according to <https://www.xiph.org/vorbis/doc/vorbisfile/callbacks.html>)
 * doppler effect (fixes #9172)
 * client-side setting for doppler factor (because you can be very fast in minetest)
-* footstep sounds of objects are played at feet
+* footstep sounds of objects are played at feet (vel=0)
+* player footstep sounds are still position-less (sounds bad otherwise, if running with fast)
 
 
 TODO:
+* SimpleSoundSpec -> SoundSpec
 * fix TODOs in client/sound.cpp, client/sound_openal.cpp
 * remove benchmark code
 * testing stuff in devtest

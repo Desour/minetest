@@ -8267,7 +8267,10 @@ Used by `minetest.register_node`.
 
             footstep = <SimpleSoundSpec>,
             -- If walkable, played when object walks on it. If node is
-            -- climbable or a liquid, played when object moves through it
+            -- climbable or a liquid, played when object moves through it.
+            -- Sound is played at the base of the object's collision-box.
+            -- Gain is multiplied by `0.6`.
+            -- For local player, it's played position-less, with normal gain.
 
             dig = <SimpleSoundSpec> or "__group",
             -- While digging node.
