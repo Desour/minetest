@@ -4,7 +4,7 @@ TODO: remove this file
 * internal refactors, ie. introduction of "sound groups"
 * sounds are loaded lazily (fixes #10603, improves #10316)
 * long sounds are streamed (makes #8596/#7867 possible)
-* time_offset (TODO?) (fixes #11865; will be needed at some point anyways for players entering max_hear_distance)
+* time_offset (fixes #11865; will be needed at some point anyways for players entering max_hear_distance)
 * sound is no longer upside-down (test eg. with hrtf)
 * got rid of BS. (gain is still the same everywhere)
 * sound handles are now userdata => method syntax; ids are owned and garbage collected
@@ -15,13 +15,14 @@ TODO: remove this file
 * correct documentation of sound params
 * enable fade in for positional sounds (fixes #6748)
 * vorbis seek callback now supports SEEK_END (is *not* optional according to <https://www.xiph.org/vorbis/doc/vorbisfile/callbacks.html>)
-* doppler effect (fixes #9172) + client-side setting for doppler factor (because you can be very fast in minetest)
+* doppler effect (fixes #9172)
+* client-side setting for doppler factor (because you can be very fast in minetest)
 * footstep sounds of objects are played at feet
 
 
 TODO:
-* fix doppler in cart
 * fix TODOs in client/sound.cpp, client/sound_openal.cpp
+* remove benchmark code
 * testing stuff in devtest
 * test:
   * looped streamed sounds

@@ -282,7 +282,7 @@ public:
 		if (m_player_step_timer <= 0 && m_player_step_sound.exists()) {
 			m_player_step_timer = 0.03;
 			if (makes_footstep_sound)
-				m_sound->playSound(0, m_player_step_sound);
+				m_sound->playSound(0, m_player_step_sound); // TODO: make positional and reduce gain?
 		}
 	}
 
@@ -2993,11 +2993,12 @@ void Game::updateSound(f32 dtime)
 {
 	// Update sound listener
 	LocalPlayer *player = client->getEnv().getLocalPlayer();
+	ClientActiveObject *parent = player->getParent();
 	v3s16 camera_offset = camera->getOffset();
 	sound_manager->updateListener(
 			(1.0f/BS) * camera->getCameraNode()->getPosition()
 					+ intToFloat(camera_offset, 1.0f),
-			(1.0f/BS) * player->getSpeed(),
+			(1.0f/BS) * (parent ? parent->getVelocity() : player->getSpeed()),
 			camera->getDirection(),
 			camera->getCameraNode()->getUpVector());
 
