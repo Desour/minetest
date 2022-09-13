@@ -125,8 +125,9 @@ with this program; ifnot, write to the Free Software Foundation, Inc.,
  * If we take a MIN_STREAM_BUFFER_LENGTH > 2 * STREAM_BIGSTEP_TIME, we can hence
  * not run into an empty queue.
  *
- * The MIN_STREAM_BUFFER_LENGTH needs to be a little bigger because of dtime jitter
- * and because of other sounds that may have taken long to stepStream().
+ * The MIN_STREAM_BUFFER_LENGTH needs to be a little bigger because of dtime jitter,
+ * other sounds that may have taken long to stepStream(), and sounds being played
+ * faster due to Doppler effect.
  *
  */
 
@@ -275,10 +276,10 @@ public:
 public:
 	bool init();
 
-	~SoundManagerSingleton()
-	{
-		infostream << "Audio: Global Deinitialized." << std::endl;
-	}
+	~SoundManagerSingleton();
+
+private:
+	static void readDopplerFactorFromSettings(const std::string &, void *);
 };
 
 

@@ -15,7 +15,7 @@ TODO: remove this file
 * correct documentation of sound params
 * enable fade in for positional sounds (fixes #6748)
 * vorbis seek callback now supports SEEK_END (is *not* optional according to <https://www.xiph.org/vorbis/doc/vorbisfile/callbacks.html>)
-* doppler effect (fixes #9172)
+* doppler effect (fixes #9172) + client-side setting for doppler factor (because you can be very fast in minetest)
 
 
 TODO:
