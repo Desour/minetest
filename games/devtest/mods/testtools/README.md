@@ -120,6 +120,17 @@ Usage:
 * Punch entity to increase visual size
 * Sneak+punch entity to decrease visual size
 
+## Branding Iron
+Give an object a temporary name.
+
+Usage:
+* Punch object: Brand the object
+* Punch air: Brand yourself
+* The name is valid until the object unloads.
+* Devices that accept the returned name also accept "player:<playername>" for players.
+
+Use `testtools.get_branded_object(name)` to get an ObjRef.
+
 ## Light Tool
 Show light level of node.
 
