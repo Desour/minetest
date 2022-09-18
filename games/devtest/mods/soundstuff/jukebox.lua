@@ -295,9 +295,9 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 
 	else
 		if fields.btn_stop then
-			log_msg("[soundstuff:jukebox] Stopping sound: minetest.sound_stop(<handle>)")
+			log_msg("[soundstuff:jukebox] Stopping sound: <handle>:stop()")
 
-			try_call(minetest.sound_stop, sound_handle)
+			try_call(sound_handle.stop, sound_handle)
 
 		elseif fields.btn_release then
 			log_msg("[soundstuff:jukebox] Releasing handle.")
@@ -312,10 +312,10 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 			local gain = tonumber(md.fade.gain)
 
 			log_msg(string.format(
-					"[soundstuff:jukebox] Fading sound: minetest.sound_fade(<hanlde>, %s, %s)",
+					"[soundstuff:jukebox] Fading sound: <hanlde>:fade(%s, %s)",
 					step, gain))
 
-			try_call(minetest.sound_fade, sound_handle, step, gain)
+			try_call(sound_handle.fade, sound_handle, step, gain)
 		end
 	end
 
