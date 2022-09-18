@@ -38,7 +38,7 @@ public:
 	static void Initialize(lua_State *L, int top);
 };
 
-class ServerSoundRef final : public ModApiBase
+class ServerSoundHandle final : public ModApiBase
 {
 private:
 	s32 m_handle;
@@ -46,11 +46,11 @@ private:
 	static const char className[];
 	static const luaL_Reg methods[];
 
-	ServerSoundRef(s32 handle) : m_handle(handle) {}
+	ServerSoundHandle(s32 handle) : m_handle(handle) {}
 
-	DISABLE_CLASS_COPY(ServerSoundRef)
+	DISABLE_CLASS_COPY(ServerSoundHandle)
 
-	static ServerSoundRef *checkobject(lua_State *L, int narg);
+	static ServerSoundHandle *checkobject(lua_State *L, int narg);
 
 	static int gc_object(lua_State *L);
 
@@ -61,7 +61,7 @@ private:
 	static int l_fade(lua_State *L);
 
 public:
-	~ServerSoundRef() = default;
+	~ServerSoundHandle() = default;
 
 	// takes ownership of handle
 	static void create(lua_State *L, s32 handle);

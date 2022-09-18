@@ -38,7 +38,7 @@ int ModApiServerSound::l_sound_play(lua_State *L)
 	} else {
 		params.grabbed = true;
 		s32 handle = getServer(L)->playSound(std::move(params));
-		ServerSoundRef::create(L, handle);
+		ServerSoundHandle::create(L, handle);
 	}
 	return 1;
 }
@@ -48,55 +48,55 @@ void ModApiServerSound::Initialize(lua_State *L, int top)
 	API_FCT(sound_play);
 }
 
-/* ServerSoundRef */
+/* ServerSoundHandle */
 
-ServerSoundRef *ServerSoundRef::checkobject(lua_State *L, int narg)
+ServerSoundHandle *ServerSoundHandle::checkobject(lua_State *L, int narg)
 {
 	luaL_checktype(L, narg, LUA_TUSERDATA);
 	void *ud = luaL_checkudata(L, narg, className);
 	if (!ud)
 		luaL_typerror(L, narg, className);
-	return *(ServerSoundRef **)ud; // unbox pointer
+	return *(ServerSoundHandle **)ud; // unbox pointer
 }
 
-int ServerSoundRef::gc_object(lua_State *L)
+int ServerSoundHandle::gc_object(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
-	std::unique_ptr<ServerSoundRef> o(*(ServerSoundRef **)(lua_touserdata(L, 1)));
+	std::unique_ptr<ServerSoundHandle> o(*(ServerSoundHandle **)(lua_touserdata(L, 1)));
 	if (getServer(L))
 		getServer(L)->dropSound(o->m_handle);
 	return 0;
 }
 
 // :stop()
-int ServerSoundRef::l_stop(lua_State *L)
+int ServerSoundHandle::l_stop(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
-	ServerSoundRef *o = checkobject(L, 1);
+	ServerSoundHandle *o = checkobject(L, 1);
 	getServer(L)->stopSound(o->m_handle);
 	return 0;
 }
 
 // :fade(step, gain)
-int ServerSoundRef::l_fade(lua_State *L)
+int ServerSoundHandle::l_fade(lua_State *L)
 {
 	NO_MAP_LOCK_REQUIRED;
-	ServerSoundRef *o = checkobject(L, 1);
+	ServerSoundHandle *o = checkobject(L, 1);
 	float step = readParam<float>(L, 2);
 	float gain = readParam<float>(L, 3);
 	getServer(L)->fadeSound(o->m_handle, step, gain);
 	return 0;
 }
 
-void ServerSoundRef::create(lua_State *L, s32 handle)
+void ServerSoundHandle::create(lua_State *L, s32 handle)
 {
-	ServerSoundRef *o = new ServerSoundRef(handle);
+	ServerSoundHandle *o = new ServerSoundHandle(handle);
 	*(void **)(lua_newuserdata(L, sizeof(void *))) = o;
 	luaL_getmetatable(L, className);
 	lua_setmetatable(L, -2);
 }
 
-void ServerSoundRef::Register(lua_State *L)
+void ServerSoundHandle::Register(lua_State *L)
 {
 	lua_newtable(L);
 	int methodtable = lua_gettop(L);
@@ -121,9 +121,9 @@ void ServerSoundRef::Register(lua_State *L)
 	lua_pop(L, 1);  // drop methodtable
 }
 
-const char ServerSoundRef::className[] = "ServerSoundRef";
-const luaL_Reg ServerSoundRef::methods[] = {
-	luamethod(ServerSoundRef, stop),
-	luamethod(ServerSoundRef, fade),
+const char ServerSoundHandle::className[] = "ServerSoundHandle";
+const luaL_Reg ServerSoundHandle::methods[] = {
+	luamethod(ServerSoundHandle, stop),
+	luamethod(ServerSoundHandle, fade),
 	{0,0}
 };
