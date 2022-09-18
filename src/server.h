@@ -112,7 +112,11 @@ struct ServerPlayingSound
 
 	SimpleSoundSpec spec;
 
-	std::unordered_set<session_t> clients; // peer ids
+	// peer ids; don't reuse id if not empty
+	std::unordered_set<session_t> clients;
+
+	// if true, some ServerSoundRef has a handle to this; don't reuse id
+	bool grabbed = false;
 };
 
 struct MinimapMode {
@@ -228,9 +232,11 @@ public:
 
 	// Returns -1 if failed, sound handle on success
 	// Envlock
-	s32 playSound(ServerPlayingSound &params, bool ephemeral=false);
+	s32 playSound(ServerPlayingSound &&params, bool ephemeral = false);
 	void stopSound(s32 handle);
 	void fadeSound(s32 handle, float step, float gain);
+	// handle id is no longer grabbed afterwards and can be reused
+	void dropSound(s32 handle);
 
 	// Envlock
 	std::set<std::string> getPlayerEffectivePrivs(const std::string &name);
@@ -692,7 +698,7 @@ private:
 		Sounds
 	*/
 	std::unordered_map<s32, ServerPlayingSound> m_playing_sounds;
-	s32 m_next_sound_id = 0; // positive values only
+	s32 m_next_sound_id = 0; // non-negative values only
 	s32 nextSoundId();
 
 	std::unordered_map<std::string, ModMetadata *> m_mod_storages;
