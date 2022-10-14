@@ -185,30 +185,11 @@ void RenderingEngine::cleanupMeshCache()
 	}
 }
 
-bool RenderingEngine::setupTopLevelWindow(const std::string &name)
-{
-	//TODO?
-
-	// FIXME: It would make more sense for there to be a switch of some
-	// sort here that would call the correct toplevel setup methods for
-	// the environment Minetest is running in.
-
-	/* Setting Xorg properties for the top level window */
-	setupTopLevelXorgWindow(name);
-
-	/* Setting general properties for the top level window */
-	verbosestream << "Client: Configuring general top level"
-		<< " window properties"
-		<< std::endl;
-	bool result = setWindowIcon();
-
-	return result;
-}
-
-void RenderingEngine::setupTopLevelXorgWindow(const std::string &name)
-{
-	//TODO
 #ifdef XORG_USED
+static void setup_top_level_xorg_window(irr::IrrlichtDevice *device,
+		const std::string &name)
+{
+	irr::video::IVideoDriver *driver = device->getVideoDriver();
 	const video::SExposedVideoData exposedData = driver->getExposedVideoData();
 
 	Display *x11_dpl = reinterpret_cast<Display *>(exposedData.OpenGLLinux.X11Display);
@@ -281,7 +262,27 @@ void RenderingEngine::setupTopLevelXorgWindow(const std::string &name)
 	XChangeProperty (x11_dpl, x11_win, WM_CLIENT_LEADER,
 		XA_WINDOW, 32, PropModeReplace,
 		reinterpret_cast<unsigned char *>(&x11_win), 1);
+}
 #endif
+
+bool RenderingEngine::setupTopLevelWindow(const std::string &name)
+{
+	//TODO?
+
+	// FIXME: It would make more sense for there to be a switch of some
+	// sort here that would call the correct toplevel setup methods for
+	// the environment Minetest is running in.
+
+	/* Setting Xorg properties for the top level window */
+	setup_top_level_xorg_window(m_device, name);
+
+	/* Setting general properties for the top level window */
+	verbosestream << "Client: Configuring general top level"
+		<< " window properties"
+		<< std::endl;
+	bool result = setWindowIcon();
+
+	return result;
 }
 
 //TODO

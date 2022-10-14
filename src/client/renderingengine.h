@@ -61,7 +61,6 @@ public:
 	static float getDisplayDensity();
 
 	bool setupTopLevelWindow(const std::string &name);
-	void setupTopLevelXorgWindow(const std::string &name);
 	bool setWindowIcon();
 	static bool print_video_modes();
 	void cleanupMeshCache();
