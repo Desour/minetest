@@ -35,6 +35,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "inputhandler.h"
 #include "gettext.h"
 #include "../gui/guiSkin.h"
+#include "irr_ptr.h"
 
 #if !defined(_WIN32) && !defined(__APPLE__) && !defined(__ANDROID__) && \
 		!defined(SERVER) && !defined(__HAIKU__)
@@ -58,10 +59,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 RenderingEngine *RenderingEngine::s_singleton = nullptr;
 
 
-static gui::GUISkin *createSkin(gui::IGUIEnvironment *environment,
+static irr_ptr<gui::GUISkin> create_skin(gui::IGUIEnvironment *environment,
 		gui::EGUI_SKIN_TYPE type, video::IVideoDriver *driver)
 {
-	gui::GUISkin *skin = new gui::GUISkin(type, driver);
+	auto skin = make_irr<gui::GUISkin>(type, driver);
 
 	gui::IGUIFont *builtinfont = environment->getBuiltInFont();
 	gui::IGUIFontBitmap *bitfont = nullptr;
@@ -146,10 +147,9 @@ RenderingEngine::RenderingEngine(IEventReceiver *receiver)
 
 	s_singleton = this;
 
-	auto skin = createSkin(m_device->getGUIEnvironment(),
+	auto skin = create_skin(m_device->getGUIEnvironment(),
 			gui::EGST_WINDOWS_METALLIC, driver);
-	m_device->getGUIEnvironment()->setSkin(skin);
-	skin->drop();
+	m_device->getGUIEnvironment()->setSkin(skin.get());
 }
 
 RenderingEngine::~RenderingEngine()
@@ -212,7 +212,7 @@ void RenderingEngine::setupTopLevelXorgWindow(const std::string &name)
 	const video::SExposedVideoData exposedData = driver->getExposedVideoData();
 
 	Display *x11_dpl = reinterpret_cast<Display *>(exposedData.OpenGLLinux.X11Display);
-	if (x11_dpl == NULL) {
+	if (x11_dpl == nullptr) {
 		warningstream << "Client: Could not find X11 Display in ExposedVideoData"
 			<< std::endl;
 		return;
@@ -313,7 +313,7 @@ static bool set_xorg_window_icon_from_path(irr::IrrlichtDevice *device,
 {
 	irr::video::IVideoDriver *driver = device->getVideoDriver();
 
-	video::IImageLoader *image_loader = NULL;
+	video::IImageLoader *image_loader = nullptr;
 	u32 cnt = driver->getImageLoaderCount();
 	for (u32 i = 0; i < cnt; i++) {
 		if (driver->getImageLoader(i)->isALoadableFileExtension(
@@ -329,8 +329,8 @@ static bool set_xorg_window_icon_from_path(irr::IrrlichtDevice *device,
 		return false;
 	}
 
-	io::IReadFile *icon_f =
-			device->getFileSystem()->createAndOpenFile(icon_file.c_str());
+	irr_ptr<io::IReadFile> icon_f(device->getFileSystem()
+			->createAndOpenFile(icon_file.c_str()));
 
 	if (!icon_f) {
 		warningstream << "Could not load icon file '" << icon_file << "'"
@@ -338,12 +338,11 @@ static bool set_xorg_window_icon_from_path(irr::IrrlichtDevice *device,
 		return false;
 	}
 
-	video::IImage *img = image_loader->loadImage(icon_f);
+	irr_ptr<video::IImage> img(image_loader->loadImage(icon_f.get()));
 
 	if (!img) {
 		warningstream << "Could not load icon file '" << icon_file << "'"
 			      << std::endl;
-		icon_f->drop();
 		return false;
 	}
 
@@ -351,7 +350,7 @@ static bool set_xorg_window_icon_from_path(irr::IrrlichtDevice *device,
 	u32 width = img->getDimension().Width;
 
 	size_t icon_buffer_len = 2 + height * width;
-	long *icon_buffer = new long[icon_buffer_len];
+	auto icon_buffer = std::make_unique<long[]>(icon_buffer_len);
 
 	icon_buffer[0] = width;
 	icon_buffer[1] = height;
@@ -368,17 +367,16 @@ static bool set_xorg_window_icon_from_path(irr::IrrlichtDevice *device,
 		}
 	}
 
-	img->drop();
-	icon_f->drop();
+	img.reset();
+	icon_f.reset();
 
 	const video::SExposedVideoData &video_data = driver->getExposedVideoData();
 
 	Display *x11_dpl = (Display *)video_data.OpenGLLinux.X11Display;
 
-	if (x11_dpl == NULL) {
+	if (x11_dpl == nullptr) {
 		warningstream << "Could not find x11 display for setting its icon."
 			      << std::endl;
-		delete[] icon_buffer;
 		return false;
 	}
 
@@ -387,9 +385,7 @@ static bool set_xorg_window_icon_from_path(irr::IrrlichtDevice *device,
 	Atom net_wm_icon = XInternAtom(x11_dpl, "_NET_WM_ICON", False);
 	Atom cardinal = XInternAtom(x11_dpl, "CARDINAL", False);
 	XChangeProperty(x11_dpl, x11_win, net_wm_icon, cardinal, 32, PropModeReplace,
-			(const unsigned char *)icon_buffer, icon_buffer_len);
-
-	delete[] icon_buffer;
+			(const unsigned char *)&icon_buffer[0], icon_buffer_len);
 
 	return true;
 }
@@ -424,7 +420,7 @@ bool RenderingEngine::setWindowIcon()
 		return false;
 
 	// Load the ICON from resource file
-	const HICON hicon = LoadIcon(GetModuleHandle(NULL),
+	const HICON hicon = LoadIcon(GetModuleHandle(nullptr),
 			MAKEINTRESOURCE(130) // The ID of the ICON defined in winresource.rc
 	);
 
@@ -589,10 +585,10 @@ static float getDPI(irr::video::IVideoDriver *driver)
 #if defined(XORG_USED)
 	const char *current_display = getenv("DISPLAY");
 
-	if (current_display != NULL) {
+	if (current_display != nullptr) {
 		Display *x11display = XOpenDisplay(current_display);
 
-		if (x11display != NULL) {
+		if (x11display != nullptr) {
 			/* try x direct */
 			int dh = DisplayHeight(x11display, 0);
 			int dw = DisplayWidth(x11display, 0);
