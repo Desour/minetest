@@ -306,54 +306,12 @@ static bool getWindowHandle(irr::video::IVideoDriver *driver, HWND &hWnd)
 }
 #endif
 
-bool RenderingEngine::setWindowIcon()
-{
-	//TODO
-#if 0
-	return m_device->TODO();
-#else
-#if defined(XORG_USED)
-#if RUN_IN_PLACE
-	return setXorgWindowIconFromPath(
-			porting::path_share + "/misc/" PROJECT_NAME "-xorg-icon-128.png");
-#else
-	// We have semi-support for reading in-place data if we are
-	// compiled with RUN_IN_PLACE. Don't break with this and
-	// also try the path_share location.
-	return setXorgWindowIconFromPath(
-			       ICON_DIR "/hicolor/128x128/apps/" PROJECT_NAME ".png") ||
-	       setXorgWindowIconFromPath(porting::path_share + "/misc/" PROJECT_NAME
-							       "-xorg-icon-128.png");
-#endif
-#elif defined(_WIN32)
-	HWND hWnd; // Window handle
-	if (!getWindowHandle(driver, hWnd))
-		return false;
-
-	// Load the ICON from resource file
-	const HICON hicon = LoadIcon(GetModuleHandle(NULL),
-			MAKEINTRESOURCE(130) // The ID of the ICON defined in
-					     // winresource.rc
-	);
-
-	if (hicon) {
-		SendMessage(hWnd, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hicon));
-		SendMessage(hWnd, WM_SETICON, ICON_SMALL,
-				reinterpret_cast<LPARAM>(hicon));
-		return true;
-	}
-	return false;
-#else
-	return false;
-#endif
-#endif
-}
-
-bool RenderingEngine::setXorgWindowIconFromPath(const std::string &icon_file)
-{
-	//TODO
 
 #ifdef XORG_USED
+static bool set_xorg_window_icon_from_path(irr::IrrlichtDevice *device,
+		const std::string &icon_file)
+{
+	irr::video::IVideoDriver *driver = device->getVideoDriver();
 
 	video::IImageLoader *image_loader = NULL;
 	u32 cnt = driver->getImageLoaderCount();
@@ -372,7 +330,7 @@ bool RenderingEngine::setXorgWindowIconFromPath(const std::string &icon_file)
 	}
 
 	io::IReadFile *icon_f =
-			m_device->getFileSystem()->createAndOpenFile(icon_file.c_str());
+			device->getFileSystem()->createAndOpenFile(icon_file.c_str());
 
 	if (!icon_f) {
 		warningstream << "Could not load icon file '" << icon_file << "'"
@@ -433,8 +391,52 @@ bool RenderingEngine::setXorgWindowIconFromPath(const std::string &icon_file)
 
 	delete[] icon_buffer;
 
-#endif
 	return true;
+}
+#endif
+
+bool RenderingEngine::setWindowIcon()
+{
+	std::vector<std::string> icon_paths = {
+#if RUN_IN_PLACE
+		porting::path_share + "/misc/" PROJECT_NAME "-xorg-icon-128.png",
+#else
+		// We have semi-support for reading in-place data if we are
+		// compiled with RUN_IN_PLACE. Don't break with this and
+		// also try the path_share location.
+		ICON_DIR "/hicolor/128x128/apps/" PROJECT_NAME ".png",
+		porting::path_share + "/misc/" PROJECT_NAME "-xorg-icon-128.png"
+#endif
+	};
+
+	//~ for (const auto &p : icon_paths)
+		//~ if (m_device->setWindowIconFromPath(p))
+			//~ return true;
+
+#if defined(XORG_USED)
+	for (const auto &p : icon_paths)
+		if (set_xorg_window_icon_from_path(m_device, p))
+			return true;
+
+#elif defined(_WIN32)
+	HWND hWnd; // Window handle
+	if (!getWindowHandle(driver, hWnd))
+		return false;
+
+	// Load the ICON from resource file
+	const HICON hicon = LoadIcon(GetModuleHandle(NULL),
+			MAKEINTRESOURCE(130) // The ID of the ICON defined in winresource.rc
+	);
+
+	if (hicon) {
+		SendMessage(hWnd, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hicon));
+		SendMessage(hWnd, WM_SETICON, ICON_SMALL,
+				reinterpret_cast<LPARAM>(hicon));
+		return true;
+	}
+#endif
+
+	return false;
 }
 
 /*
