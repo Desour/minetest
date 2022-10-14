@@ -85,6 +85,198 @@ static irr_ptr<gui::GUISkin> create_skin(gui::IGUIEnvironment *environment,
 	return skin;
 }
 
+#ifdef _IRR_COMPILE_WITH_X11_DEVICE_
+static void setup_top_level_xorg_window(irr::IrrlichtDevice *device,
+		const std::string &name)
+{
+	irr::video::IVideoDriver *driver = device->getVideoDriver();
+	const video::SExposedVideoData exposedData = driver->getExposedVideoData();
+
+	Display *x11_dpl = reinterpret_cast<Display *>(exposedData.OpenGLLinux.X11Display);
+	if (x11_dpl == nullptr) {
+		warningstream << "Client: Could not find X11 Display in ExposedVideoData"
+			<< std::endl;
+		return;
+	}
+
+	verbosestream << "Client: Configuring X11-specific top level"
+		<< " window properties"
+		<< std::endl;
+
+
+	Window x11_win = reinterpret_cast<Window>(exposedData.OpenGLLinux.X11Window);
+
+	// Set application name and class hints. For now name and class are the same.
+	XClassHint *classhint = XAllocClassHint();
+	classhint->res_name = const_cast<char *>(name.c_str());
+	classhint->res_class = const_cast<char *>(name.c_str());
+
+	XSetClassHint(x11_dpl, x11_win, classhint);
+	XFree(classhint);
+
+	// FIXME: In the future WMNormalHints should be set ... e.g see the
+	// gtk/gdk code (gdk/x11/gdksurface-x11.c) for the setup_top_level
+	// method. But for now (as it would require some significant changes)
+	// leave the code as is.
+
+	// The following is borrowed from the above gdk source for setting top
+	// level windows. The source indicates and the Xlib docs suggest that
+	// this will set the WM_CLIENT_MACHINE and WM_LOCAL_NAME. This will not
+	// set the WM_CLIENT_MACHINE to a Fully Qualified Domain Name (FQDN) which is
+	// required by the Extended Window Manager Hints (EWMH) spec when setting
+	// the _NET_WM_PID (see further down) but running Minetest in an env
+	// where the window manager is on another machine from Minetest (therefore
+	// making the PID useless) is not expected to be a problem. Further
+	// more, using gtk/gdk as the model it would seem that not using a FQDN is
+	// not an issue for modern Xorg window managers.
+
+	verbosestream << "Client: Setting Xorg window manager Properties"
+		<< std::endl;
+
+	XSetWMProperties (x11_dpl, x11_win, NULL, NULL, NULL, 0, NULL, NULL, NULL);
+
+	// Set the _NET_WM_PID window property according to the EWMH spec. _NET_WM_PID
+	// (in conjunction with WM_CLIENT_MACHINE) can be used by window managers to
+	// force a shutdown of an application if it doesn't respond to the destroy
+	// window message.
+
+	verbosestream << "Client: Setting Xorg _NET_WM_PID extended window manager property"
+		<< std::endl;
+
+	Atom NET_WM_PID = XInternAtom(x11_dpl, "_NET_WM_PID", false);
+
+	pid_t pid = getpid();
+
+	XChangeProperty(x11_dpl, x11_win, NET_WM_PID,
+			XA_CARDINAL, 32, PropModeReplace,
+			reinterpret_cast<unsigned char *>(&pid),1);
+
+	// Set the WM_CLIENT_LEADER window property here. Minetest has only one
+	// window and that window will always be the leader.
+
+	verbosestream << "Client: Setting Xorg WM_CLIENT_LEADER property"
+		<< std::endl;
+
+	Atom WM_CLIENT_LEADER = XInternAtom(x11_dpl, "WM_CLIENT_LEADER", false);
+
+	XChangeProperty (x11_dpl, x11_win, WM_CLIENT_LEADER,
+		XA_WINDOW, 32, PropModeReplace,
+		reinterpret_cast<unsigned char *>(&x11_win), 1);
+}
+#endif
+
+#ifdef USE_WIN32
+static bool get_window_handle(irr::video::IVideoDriver *driver, HWND &hWnd)
+{
+	const video::SExposedVideoData exposedData = driver->getExposedVideoData();
+
+	switch (driver->getDriverType()) {
+#if ENABLE_GLES
+	case video::EDT_OGLES1:
+	case video::EDT_OGLES2:
+#endif
+	case video::EDT_OPENGL:
+		hWnd = reinterpret_cast<HWND>(exposedData.OpenGLWin32.HWnd);
+		break;
+	default:
+		return false;
+	}
+
+	return true;
+}
+#endif
+
+static bool set_window_icon_from_path(irr::IrrlichtDevice *device,
+		const std::string &icon_file)
+{
+#if defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
+	// TODO (would be trivial with SDL_image)
+	return false;
+
+#elif defined(_IRR_COMPILE_WITH_X11_DEVICE_)
+	irr::video::IVideoDriver *driver = device->getVideoDriver();
+
+	video::IImageLoader *image_loader = nullptr;
+	u32 cnt = driver->getImageLoaderCount();
+	for (u32 i = 0; i < cnt; i++) {
+		if (driver->getImageLoader(i)->isALoadableFileExtension(
+				    icon_file.c_str())) {
+			image_loader = driver->getImageLoader(i);
+			break;
+		}
+	}
+
+	if (!image_loader) {
+		warningstream << "Could not find image loader for file '" << icon_file
+			      << "'" << std::endl;
+		return false;
+	}
+
+	irr_ptr<io::IReadFile> icon_f(device->getFileSystem()
+			->createAndOpenFile(icon_file.c_str()));
+
+	if (!icon_f) {
+		warningstream << "Could not load icon file '" << icon_file << "'"
+			      << std::endl;
+		return false;
+	}
+
+	irr_ptr<video::IImage> img(image_loader->loadImage(icon_f.get()));
+
+	if (!img) {
+		warningstream << "Could not load icon file '" << icon_file << "'"
+			      << std::endl;
+		return false;
+	}
+
+	u32 height = img->getDimension().Height;
+	u32 width = img->getDimension().Width;
+
+	size_t icon_buffer_len = 2 + height * width;
+	auto icon_buffer = std::make_unique<long[]>(icon_buffer_len);
+
+	icon_buffer[0] = width;
+	icon_buffer[1] = height;
+
+	for (u32 x = 0; x < width; x++) {
+		for (u32 y = 0; y < height; y++) {
+			video::SColor col = img->getPixel(x, y);
+			long pixel_val = 0;
+			pixel_val |= (u8)col.getAlpha() << 24;
+			pixel_val |= (u8)col.getRed() << 16;
+			pixel_val |= (u8)col.getGreen() << 8;
+			pixel_val |= (u8)col.getBlue();
+			icon_buffer[2 + x + y * width] = pixel_val;
+		}
+	}
+
+	img.reset();
+	icon_f.reset();
+
+	const video::SExposedVideoData &video_data = driver->getExposedVideoData();
+
+	Display *x11_dpl = (Display *)video_data.OpenGLLinux.X11Display;
+
+	if (x11_dpl == nullptr) {
+		warningstream << "Could not find x11 display for setting its icon."
+			      << std::endl;
+		return false;
+	}
+
+	Window x11_win = (Window)video_data.OpenGLLinux.X11Window;
+
+	Atom net_wm_icon = XInternAtom(x11_dpl, "_NET_WM_ICON", False);
+	Atom cardinal = XInternAtom(x11_dpl, "CARDINAL", False);
+	XChangeProperty(x11_dpl, x11_win, net_wm_icon, cardinal, 32, PropModeReplace,
+			(const unsigned char *)&icon_buffer[0], icon_buffer_len);
+
+	return true;
+
+#else
+	return false;
+#endif
+}
+
 
 RenderingEngine::RenderingEngine(IEventReceiver *receiver)
 {
@@ -190,86 +382,6 @@ void RenderingEngine::cleanupMeshCache()
 	}
 }
 
-#ifdef _IRR_COMPILE_WITH_X11_DEVICE_
-static void setup_top_level_xorg_window(irr::IrrlichtDevice *device,
-		const std::string &name)
-{
-	irr::video::IVideoDriver *driver = device->getVideoDriver();
-	const video::SExposedVideoData exposedData = driver->getExposedVideoData();
-
-	Display *x11_dpl = reinterpret_cast<Display *>(exposedData.OpenGLLinux.X11Display);
-	if (x11_dpl == nullptr) {
-		warningstream << "Client: Could not find X11 Display in ExposedVideoData"
-			<< std::endl;
-		return;
-	}
-
-	verbosestream << "Client: Configuring X11-specific top level"
-		<< " window properties"
-		<< std::endl;
-
-
-	Window x11_win = reinterpret_cast<Window>(exposedData.OpenGLLinux.X11Window);
-
-	// Set application name and class hints. For now name and class are the same.
-	XClassHint *classhint = XAllocClassHint();
-	classhint->res_name = const_cast<char *>(name.c_str());
-	classhint->res_class = const_cast<char *>(name.c_str());
-
-	XSetClassHint(x11_dpl, x11_win, classhint);
-	XFree(classhint);
-
-	// FIXME: In the future WMNormalHints should be set ... e.g see the
-	// gtk/gdk code (gdk/x11/gdksurface-x11.c) for the setup_top_level
-	// method. But for now (as it would require some significant changes)
-	// leave the code as is.
-
-	// The following is borrowed from the above gdk source for setting top
-	// level windows. The source indicates and the Xlib docs suggest that
-	// this will set the WM_CLIENT_MACHINE and WM_LOCAL_NAME. This will not
-	// set the WM_CLIENT_MACHINE to a Fully Qualified Domain Name (FQDN) which is
-	// required by the Extended Window Manager Hints (EWMH) spec when setting
-	// the _NET_WM_PID (see further down) but running Minetest in an env
-	// where the window manager is on another machine from Minetest (therefore
-	// making the PID useless) is not expected to be a problem. Further
-	// more, using gtk/gdk as the model it would seem that not using a FQDN is
-	// not an issue for modern Xorg window managers.
-
-	verbosestream << "Client: Setting Xorg window manager Properties"
-		<< std::endl;
-
-	XSetWMProperties (x11_dpl, x11_win, NULL, NULL, NULL, 0, NULL, NULL, NULL);
-
-	// Set the _NET_WM_PID window property according to the EWMH spec. _NET_WM_PID
-	// (in conjunction with WM_CLIENT_MACHINE) can be used by window managers to
-	// force a shutdown of an application if it doesn't respond to the destroy
-	// window message.
-
-	verbosestream << "Client: Setting Xorg _NET_WM_PID extended window manager property"
-		<< std::endl;
-
-	Atom NET_WM_PID = XInternAtom(x11_dpl, "_NET_WM_PID", false);
-
-	pid_t pid = getpid();
-
-	XChangeProperty(x11_dpl, x11_win, NET_WM_PID,
-			XA_CARDINAL, 32, PropModeReplace,
-			reinterpret_cast<unsigned char *>(&pid),1);
-
-	// Set the WM_CLIENT_LEADER window property here. Minetest has only one
-	// window and that window will always be the leader.
-
-	verbosestream << "Client: Setting Xorg WM_CLIENT_LEADER property"
-		<< std::endl;
-
-	Atom WM_CLIENT_LEADER = XInternAtom(x11_dpl, "WM_CLIENT_LEADER", false);
-
-	XChangeProperty (x11_dpl, x11_win, WM_CLIENT_LEADER,
-		XA_WINDOW, 32, PropModeReplace,
-		reinterpret_cast<unsigned char *>(&x11_win), 1);
-}
-#endif
-
 bool RenderingEngine::setupTopLevelWindow(const std::string &name)
 {
 	// FIXME: It would make more sense for there to be a switch of some
@@ -288,119 +400,6 @@ bool RenderingEngine::setupTopLevelWindow(const std::string &name)
 	bool result = setWindowIcon();
 
 	return result;
-}
-
-#ifdef USE_WIN32
-static bool get_window_handle(irr::video::IVideoDriver *driver, HWND &hWnd)
-{
-	const video::SExposedVideoData exposedData = driver->getExposedVideoData();
-
-	switch (driver->getDriverType()) {
-#if ENABLE_GLES
-	case video::EDT_OGLES1:
-	case video::EDT_OGLES2:
-#endif
-	case video::EDT_OPENGL:
-		hWnd = reinterpret_cast<HWND>(exposedData.OpenGLWin32.HWnd);
-		break;
-	default:
-		return false;
-	}
-
-	return true;
-}
-#endif
-
-
-static bool set_window_icon_from_path(irr::IrrlichtDevice *device,
-		const std::string &icon_file)
-{
-#if defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
-	// TODO (would be trivial with SDL_image)
-	return false;
-
-#elif defined(_IRR_COMPILE_WITH_X11_DEVICE_)
-	irr::video::IVideoDriver *driver = device->getVideoDriver();
-
-	video::IImageLoader *image_loader = nullptr;
-	u32 cnt = driver->getImageLoaderCount();
-	for (u32 i = 0; i < cnt; i++) {
-		if (driver->getImageLoader(i)->isALoadableFileExtension(
-				    icon_file.c_str())) {
-			image_loader = driver->getImageLoader(i);
-			break;
-		}
-	}
-
-	if (!image_loader) {
-		warningstream << "Could not find image loader for file '" << icon_file
-			      << "'" << std::endl;
-		return false;
-	}
-
-	irr_ptr<io::IReadFile> icon_f(device->getFileSystem()
-			->createAndOpenFile(icon_file.c_str()));
-
-	if (!icon_f) {
-		warningstream << "Could not load icon file '" << icon_file << "'"
-			      << std::endl;
-		return false;
-	}
-
-	irr_ptr<video::IImage> img(image_loader->loadImage(icon_f.get()));
-
-	if (!img) {
-		warningstream << "Could not load icon file '" << icon_file << "'"
-			      << std::endl;
-		return false;
-	}
-
-	u32 height = img->getDimension().Height;
-	u32 width = img->getDimension().Width;
-
-	size_t icon_buffer_len = 2 + height * width;
-	auto icon_buffer = std::make_unique<long[]>(icon_buffer_len);
-
-	icon_buffer[0] = width;
-	icon_buffer[1] = height;
-
-	for (u32 x = 0; x < width; x++) {
-		for (u32 y = 0; y < height; y++) {
-			video::SColor col = img->getPixel(x, y);
-			long pixel_val = 0;
-			pixel_val |= (u8)col.getAlpha() << 24;
-			pixel_val |= (u8)col.getRed() << 16;
-			pixel_val |= (u8)col.getGreen() << 8;
-			pixel_val |= (u8)col.getBlue();
-			icon_buffer[2 + x + y * width] = pixel_val;
-		}
-	}
-
-	img.reset();
-	icon_f.reset();
-
-	const video::SExposedVideoData &video_data = driver->getExposedVideoData();
-
-	Display *x11_dpl = (Display *)video_data.OpenGLLinux.X11Display;
-
-	if (x11_dpl == nullptr) {
-		warningstream << "Could not find x11 display for setting its icon."
-			      << std::endl;
-		return false;
-	}
-
-	Window x11_win = (Window)video_data.OpenGLLinux.X11Window;
-
-	Atom net_wm_icon = XInternAtom(x11_dpl, "_NET_WM_ICON", False);
-	Atom cardinal = XInternAtom(x11_dpl, "CARDINAL", False);
-	XChangeProperty(x11_dpl, x11_win, net_wm_icon, cardinal, 32, PropModeReplace,
-			(const unsigned char *)&icon_buffer[0], icon_buffer_len);
-
-	return true;
-
-#else
-	return false;
-#endif
 }
 
 bool RenderingEngine::setWindowIcon()
