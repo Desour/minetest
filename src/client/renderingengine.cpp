@@ -19,6 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include <IrrlichtDevice.h>
+#include <IrrCompileConfig.h>
 #include "fontengine.h"
 #include "client.h"
 #include "clouds.h"
@@ -37,17 +38,21 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "../gui/guiSkin.h"
 #include "irr_ptr.h"
 
-#if !defined(_WIN32) && !defined(__APPLE__) && !defined(__ANDROID__) && \
-		!defined(SERVER) && !defined(__HAIKU__)
-#define XORG_USED
+#ifdef _IRR_COMPILE_WITH_SDL_DEVICE_
+#include <SDL2/SDL_video.h>
 #endif
-#ifdef XORG_USED
+
+#ifdef _IRR_COMPILE_WITH_X11_DEVICE_
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #endif
 
-#ifdef _WIN32
+#if defined(_IRR_COMPILE_WITH_WINDOWS_DEVICE_) && defined(_WIN32)
+#define USE_WIN32
+#endif
+
+#ifdef USE_WIN32
 #include <windows.h>
 #include <winuser.h>
 #endif
@@ -185,7 +190,7 @@ void RenderingEngine::cleanupMeshCache()
 	}
 }
 
-#ifdef XORG_USED
+#ifdef _IRR_COMPILE_WITH_X11_DEVICE_
 static void setup_top_level_xorg_window(irr::IrrlichtDevice *device,
 		const std::string &name)
 {
@@ -267,14 +272,14 @@ static void setup_top_level_xorg_window(irr::IrrlichtDevice *device,
 
 bool RenderingEngine::setupTopLevelWindow(const std::string &name)
 {
-	//TODO?
-
 	// FIXME: It would make more sense for there to be a switch of some
 	// sort here that would call the correct toplevel setup methods for
 	// the environment Minetest is running in.
 
+#ifdef _IRR_COMPILE_WITH_X11_DEVICE_
 	/* Setting Xorg properties for the top level window */
 	setup_top_level_xorg_window(m_device, name);
+#endif
 
 	/* Setting general properties for the top level window */
 	verbosestream << "Client: Configuring general top level"
@@ -285,9 +290,8 @@ bool RenderingEngine::setupTopLevelWindow(const std::string &name)
 	return result;
 }
 
-//TODO
-#ifdef _WIN32
-static bool getWindowHandle(irr::video::IVideoDriver *driver, HWND &hWnd)
+#ifdef USE_WIN32
+static bool get_window_handle(irr::video::IVideoDriver *driver, HWND &hWnd)
 {
 	const video::SExposedVideoData exposedData = driver->getExposedVideoData();
 
@@ -308,10 +312,14 @@ static bool getWindowHandle(irr::video::IVideoDriver *driver, HWND &hWnd)
 #endif
 
 
-#ifdef XORG_USED
-static bool set_xorg_window_icon_from_path(irr::IrrlichtDevice *device,
+static bool set_window_icon_from_path(irr::IrrlichtDevice *device,
 		const std::string &icon_file)
 {
+#if defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
+	// TODO (would be trivial with SDL_image)
+	return false;
+
+#elif defined(_IRR_COMPILE_WITH_X11_DEVICE_)
 	irr::video::IVideoDriver *driver = device->getVideoDriver();
 
 	video::IImageLoader *image_loader = nullptr;
@@ -389,8 +397,11 @@ static bool set_xorg_window_icon_from_path(irr::IrrlichtDevice *device,
 			(const unsigned char *)&icon_buffer[0], icon_buffer_len);
 
 	return true;
-}
+
+#else
+	return false;
 #endif
+}
 
 bool RenderingEngine::setWindowIcon()
 {
@@ -406,18 +417,13 @@ bool RenderingEngine::setWindowIcon()
 #endif
 	};
 
-	//~ for (const auto &p : icon_paths)
-		//~ if (m_device->setWindowIconFromPath(p))
-			//~ return true;
-
-#if defined(XORG_USED)
 	for (const auto &p : icon_paths)
-		if (set_xorg_window_icon_from_path(m_device, p))
+		if (set_window_icon_from_path(m_device, p))
 			return true;
 
-#elif defined(_WIN32)
+#if defined(USE_WIN32)
 	HWND hWnd; // Window handle
-	if (!getWindowHandle(driver, hWnd))
+	if (!get_window_handle(driver, hWnd))
 		return false;
 
 	// Load the ICON from resource file
@@ -579,56 +585,71 @@ const VideoDriverInfo &RenderingEngine::getVideoDriverInfo(irr::video::E_DRIVER_
 	return driver_info_map.at((int)type);
 }
 
-//TODO
-#ifndef __ANDROID__
-static float getDPI(irr::video::IVideoDriver *driver)
+float RenderingEngine::getDisplayDensity()
 {
-#if defined(XORG_USED)
-	const char *current_display = getenv("DISPLAY");
+#ifndef __ANDROID__
+	const static auto get_dpi = [](irr::video::IVideoDriver *driver) -> float
+	{
+#if defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
+		// TODO: SDL_GetDisplayDPI doesn't quite work. use hints from sdl wiki
 
-	if (current_display != nullptr) {
-		Display *x11display = XOpenDisplay(current_display);
+		//~ int display_index = [] {
+			//~ const char *current_display = getenv("DISPLAY");
+			//~ if (!current_display)
+				//~ return 0;
+			//~ return 0; //TODO: parse DISPLAY
+		//~ }();
+		//~ f32 hdpi;
+		//~ f32 vdpi;
+		//~ if (SDL_GetDisplayDPI(display_index, nullptr, &hdpi, &vdpi) != 0) {
+			//~ warningstream << "Could not retrieve display dpi: "
+					//~ << SDL_GetError() << std::endl;
+		//~ } else {
+			//~ return std::max(hdpi, vdpi);
+		//~ }
 
-		if (x11display != nullptr) {
-			/* try x direct */
-			int dh = DisplayHeight(x11display, 0);
-			int dw = DisplayWidth(x11display, 0);
-			int dh_mm = DisplayHeightMM(x11display, 0);
-			int dw_mm = DisplayWidthMM(x11display, 0);
-			XCloseDisplay(x11display);
+#elif defined(_IRR_COMPILE_WITH_X11_DEVICE_)
+		const char *current_display = getenv("DISPLAY");
 
-			if (dh_mm != 0 && dw_mm != 0) {
-				float dpi_height = floor(dh / (dh_mm * 0.039370) + 0.5);
-				float dpi_width = floor(dw / (dw_mm * 0.039370) + 0.5);
-				return std::max(dpi_height, dpi_width);
+		if (current_display != nullptr) {
+			Display *x11display = XOpenDisplay(current_display);
+
+			if (x11display != nullptr) {
+				/* try x direct */
+				int dh = DisplayHeight(x11display, 0);
+				int dw = DisplayWidth(x11display, 0);
+				int dh_mm = DisplayHeightMM(x11display, 0);
+				int dw_mm = DisplayWidthMM(x11display, 0);
+				XCloseDisplay(x11display);
+
+				if (dh_mm != 0 && dw_mm != 0) {
+					float dpi_height = floor(dh / (dh_mm * 0.039370) + 0.5);
+					float dpi_width = floor(dw / (dw_mm * 0.039370) + 0.5);
+					return std::max(dpi_height, dpi_width);
+				}
 			}
 		}
-	}
 
-#elif defined(_WIN32)
-	HWND hWnd;
-	if (getWindowHandle(driver, hWnd)) {
-		HDC hdc = GetDC(hWnd);
-		float dpi = GetDeviceCaps(hdc, LOGPIXELSX);
-		ReleaseDC(hWnd, hdc);
-		return dpi;
-	}
+#elif defined(USE_WIN32)
+		HWND hWnd;
+		if (get_window_handle(driver, hWnd)) {
+			HDC hdc = GetDC(hWnd);
+			float dpi = GetDeviceCaps(hdc, LOGPIXELSX);
+			ReleaseDC(hWnd, hdc);
+			return dpi;
+		}
 #endif
 
-	/* return manually specified dpi */
-	return g_settings->getFloat("screen_dpi");
-}
+		/* return manually specified dpi */
+		return g_settings->getFloat("screen_dpi");
+	};
 
-float RenderingEngine::getDisplayDensity()
-{
-	static float cached_display_density = getDPI(get_video_driver()) / 96.0f;
+	static float cached_display_density = get_dpi(get_video_driver()) / 96.0f;
 	return std::max(cached_display_density * g_settings->getFloat("display_density_factor"), 0.5f);
-}
 
 #else // __ANDROID__
-float RenderingEngine::getDisplayDensity()
-{
+	// TODO: try out SDL on android
 	return porting::getDisplayDensity();
+#endif // __ANDROID__
 }
 
-#endif // __ANDROID__
