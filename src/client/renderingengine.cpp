@@ -187,6 +187,8 @@ void RenderingEngine::cleanupMeshCache()
 
 bool RenderingEngine::setupTopLevelWindow(const std::string &name)
 {
+	//TODO?
+
 	// FIXME: It would make more sense for there to be a switch of some
 	// sort here that would call the correct toplevel setup methods for
 	// the environment Minetest is running in.
@@ -205,6 +207,7 @@ bool RenderingEngine::setupTopLevelWindow(const std::string &name)
 
 void RenderingEngine::setupTopLevelXorgWindow(const std::string &name)
 {
+	//TODO
 #ifdef XORG_USED
 	const video::SExposedVideoData exposedData = driver->getExposedVideoData();
 
@@ -281,6 +284,7 @@ void RenderingEngine::setupTopLevelXorgWindow(const std::string &name)
 #endif
 }
 
+//TODO
 #ifdef _WIN32
 static bool getWindowHandle(irr::video::IVideoDriver *driver, HWND &hWnd)
 {
@@ -304,6 +308,10 @@ static bool getWindowHandle(irr::video::IVideoDriver *driver, HWND &hWnd)
 
 bool RenderingEngine::setWindowIcon()
 {
+	//TODO
+#if 0
+	return m_device->TODO();
+#else
 #if defined(XORG_USED)
 #if RUN_IN_PLACE
 	return setXorgWindowIconFromPath(
@@ -338,10 +346,13 @@ bool RenderingEngine::setWindowIcon()
 #else
 	return false;
 #endif
+#endif
 }
 
 bool RenderingEngine::setXorgWindowIconFromPath(const std::string &icon_file)
 {
+	//TODO
+
 #ifdef XORG_USED
 
 	video::IImageLoader *image_loader = NULL;
@@ -569,11 +580,11 @@ const VideoDriverInfo &RenderingEngine::getVideoDriverInfo(irr::video::E_DRIVER_
 	return driver_info_map.at((int)type);
 }
 
+//TODO
 #ifndef __ANDROID__
-#if defined(XORG_USED)
-
-static float calcDisplayDensity()
+static float getDPI(irr::video::IVideoDriver *driver)
 {
+#if defined(XORG_USED)
 	const char *current_display = getenv("DISPLAY");
 
 	if (current_display != NULL) {
@@ -590,58 +601,30 @@ static float calcDisplayDensity()
 			if (dh_mm != 0 && dw_mm != 0) {
 				float dpi_height = floor(dh / (dh_mm * 0.039370) + 0.5);
 				float dpi_width = floor(dw / (dw_mm * 0.039370) + 0.5);
-				return std::max(dpi_height, dpi_width) / 96.0;
+				return std::max(dpi_height, dpi_width);
 			}
 		}
 	}
 
-	/* return manually specified dpi */
-	return g_settings->getFloat("screen_dpi") / 96.0;
-}
-
-float RenderingEngine::getDisplayDensity()
-{
-	static float cached_display_density = calcDisplayDensity();
-	return std::max(cached_display_density * g_settings->getFloat("display_density_factor"), 0.5f);
-}
-
 #elif defined(_WIN32)
-
-
-static float calcDisplayDensity(irr::video::IVideoDriver *driver)
-{
 	HWND hWnd;
 	if (getWindowHandle(driver, hWnd)) {
 		HDC hdc = GetDC(hWnd);
 		float dpi = GetDeviceCaps(hdc, LOGPIXELSX);
 		ReleaseDC(hWnd, hdc);
-		return dpi / 96.0f;
+		return dpi;
 	}
+#endif
 
 	/* return manually specified dpi */
-	return g_settings->getFloat("screen_dpi") / 96.0f;
+	return g_settings->getFloat("screen_dpi");
 }
 
 float RenderingEngine::getDisplayDensity()
 {
-	static bool cached = false;
-	static float display_density;
-	if (!cached) {
-		display_density = calcDisplayDensity(get_video_driver());
-		cached = true;
-	}
-	return std::max(display_density * g_settings->getFloat("display_density_factor"), 0.5f);
+	static float cached_display_density = getDPI(get_video_driver()) / 96.0f;
+	return std::max(cached_display_density * g_settings->getFloat("display_density_factor"), 0.5f);
 }
-
-#else
-
-float RenderingEngine::getDisplayDensity()
-{
-	return std::max(g_settings->getFloat("screen_dpi") / 96.0f *
-		g_settings->getFloat("display_density_factor"), 0.5f);
-}
-
-#endif
 
 #else // __ANDROID__
 float RenderingEngine::getDisplayDensity()
