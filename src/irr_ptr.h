@@ -198,3 +198,12 @@ bool operator!=(const ReferenceCounted *a, const irr_ptr<ReferenceCounted> &b) n
 }
 
 // clang-format on
+
+/** Creates a new IReferenceCounted instance in an irr_ptr.
+ * This is essentially the same as std::make_unique.
+ */
+template <class ReferenceCounted, class ...Args>
+irr_ptr<ReferenceCounted> make_irr(Args &&...args)
+{
+	return irr_ptr<ReferenceCounted>(new ReferenceCounted(std::forward<Args>(args)...));
+}
