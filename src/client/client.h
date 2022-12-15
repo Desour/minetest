@@ -70,6 +70,7 @@ class NetworkPacket;
 namespace con {
 class Connection;
 }
+class SSCSMController;
 
 enum LocalClientState {
 	LC_Created,
@@ -407,6 +408,7 @@ public:
 	}
 
 	ClientScripting *getScript() { return m_script; }
+	SSCSMController *getSSCSMController() { return m_sscsm_controller; }
 	bool modsLoaded() const { return m_mods_loaded; }
 
 	void pushToEventQueue(ClientEvent *event);
@@ -596,6 +598,9 @@ private:
 	float m_mod_storage_save_timer = 10.0f;
 	std::vector<ModSpec> m_mods;
 	StringMap m_mod_vfs;
+
+	// Server-sent client modding
+	SSCSMController *m_sscsm_controller = nullptr;
 
 	bool m_shutdown = false;
 
