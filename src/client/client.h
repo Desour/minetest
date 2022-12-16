@@ -70,7 +70,7 @@ class NetworkPacket;
 namespace con {
 class Connection;
 }
-class SSCSMController;
+class CSMController;
 
 enum LocalClientState {
 	LC_Created,
@@ -408,7 +408,7 @@ public:
 	}
 
 	ClientScripting *getScript() { return m_script; }
-	SSCSMController *getSSCSMController() { return m_sscsm_controller; }
+	CSMController *getCSMController() { return m_csm_controller; }
 	bool modsLoaded() const { return m_mods_loaded; }
 
 	void pushToEventQueue(ClientEvent *event);
@@ -600,7 +600,7 @@ private:
 	StringMap m_mod_vfs;
 
 	// Server-sent client modding
-	SSCSMController *m_sscsm_controller = nullptr;
+	CSMController *m_csm_controller = nullptr;
 
 	bool m_shutdown = false;
 
