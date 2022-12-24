@@ -404,6 +404,7 @@ set(common_SRCS
 	remoteplayer.cpp
 	rollback.cpp
 	rollback_interface.cpp
+	sandbox.cpp
 	serialization.cpp
 	server.cpp
 	serverenvironment.cpp
