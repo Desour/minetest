@@ -71,6 +71,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "irr_ptr.h"
 #include "version.h"
 #include "script/scripting_client.h"
+#include "script/csm/csm_controller.h"
 #include "hud.h"
 #include "clientdynamicinfo.h"
 
@@ -182,8 +183,10 @@ struct LocalFormspecHandler : public TextDest
 			return;
 		}
 
-		if (m_client->modsLoaded())
-			m_client->getScript()->on_formspec_input(m_formname, fields);
+		if (m_client->modsLoaded()) {
+			if (!m_client->getCSMController()->runFormspecInput(m_formname, fields))
+				m_client->getScript()->on_formspec_input(m_formname, fields);
+		}
 	}
 
 	Client *m_client = nullptr;
@@ -1498,9 +1501,11 @@ bool Game::createClient(const GameStartData &start_data)
 	/* Camera
 	 */
 	camera = new Camera(*draw_control, client, m_rendering_engine);
-	if (client->modsLoaded())
-		client->getScript()->on_camera_ready(camera);
 	client->setCamera(camera);
+	if (client->modsLoaded()) {
+		client->getCSMController()->runCameraReady();
+		client->getScript()->on_camera_ready(camera);
+	}
 #ifdef HAVE_TOUCHSCREENGUI
 	if (g_touchscreengui) {
 		g_touchscreengui->setUseCrosshair(!isNoCrosshairAllowed());
@@ -1554,8 +1559,10 @@ bool Game::createClient(const GameStartData &start_data)
 
 	mapper = client->getMinimap();
 
-	if (mapper && client->modsLoaded())
+	if (mapper && client->modsLoaded()) {
+		client->getCSMController()->runMinimapReady();
 		client->getScript()->on_minimap_ready(mapper);
+	}
 
 	return true;
 }
@@ -2227,9 +2234,13 @@ void Game::openInventory()
 	InventoryLocation inventoryloc;
 	inventoryloc.setCurrentPlayer();
 
-	if (client->modsLoaded() && client->getScript()->on_inventory_open(fs_src->m_client->getInventory(inventoryloc))) {
-		delete fs_src;
-		return;
+	if (client->modsLoaded()) {
+		Inventory *inventory = fs_src->m_client->getInventory(inventoryloc);
+		if (client->getCSMController()->runInventoryOpen(inventory) |
+				client->getScript()->on_inventory_open(inventory)) {
+			delete fs_src;
+			return;
+		}
 	}
 
 	if (fs_src->getForm().empty()) {
@@ -2782,8 +2793,10 @@ void Game::handleClientEvent_None(ClientEvent *event, CameraOrientation *cam)
 
 void Game::handleClientEvent_PlayerDamage(ClientEvent *event, CameraOrientation *cam)
 {
-	if (client->modsLoaded())
-		client->getScript()->on_damage_taken(event->player_damage.amount);
+	if (client->modsLoaded()) {
+		if (!client->getCSMController()->runDamageTaken(event->player_damage.amount))
+			client->getScript()->on_damage_taken(event->player_damage.amount);
+	}
 
 	if (!event->player_damage.effect)
 		return;
@@ -2818,9 +2831,10 @@ void Game::handleClientEvent_Deathscreen(ClientEvent *event, CameraOrientation *
 {
 	// If client scripting is enabled, deathscreen is handled by CSM code in
 	// builtin/client/init.lua
-	if (client->modsLoaded())
+	if (client->modsLoaded()) {
+		client->getCSMController()->runDeath();
 		client->getScript()->on_death();
-	else
+	} else
 		showDeathFormspec();
 
 	/* Handle visualization */
@@ -3344,7 +3358,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
 
 	if (selected_def.usable && isKeyDown(KeyType::DIG)) {
 		if (wasKeyPressed(KeyType::DIG) && (!client->modsLoaded() ||
-				!client->getScript()->on_item_use(selected_item, pointed)))
+				!(client->getCSMController()->runItemUse(selected_item, pointed) |
+					client->getScript()->on_item_use(selected_item, pointed))))
 			client->interact(INTERACT_USE, pointed);
 	} else if (pointed.type == POINTEDTHING_NODE) {
 		handlePointingAtNode(pointed, selected_item, hand_item, dtime);
@@ -3357,8 +3372,10 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
 		// When button is held down in air, show continuous animation
 		runData.punching = true;
 		// Run callback even though item is not usable
-		if (wasKeyPressed(KeyType::DIG) && client->modsLoaded())
+		if (wasKeyPressed(KeyType::DIG) && client->modsLoaded()) {
+			client->getCSMController()->runItemUse(selected_item, pointed);
 			client->getScript()->on_item_use(selected_item, pointed);
+		}
 	} else if (wasKeyPressed(KeyType::PLACE)) {
 		handlePointingAtNothing(selected_item);
 	}
@@ -3540,8 +3557,10 @@ void Game::handlePointingAtNode(const PointedThing &pointed,
 		bool placed = nodePlacement(def, selected_item, nodepos, neighborpos,
 			pointed, meta);
 
-		if (placed && client->modsLoaded())
+		if (placed && client->modsLoaded()) {
+			client->getCSMController()->runPlacenode(pointed, def);
 			client->getScript()->on_placenode(pointed, def);
+		}
 	}
 }
 
@@ -3840,7 +3859,8 @@ void Game::handleDigging(const PointedThing &pointed, const v3s16 &nodepos,
 	if (!runData.digging) {
 		infostream << "Started digging" << std::endl;
 		runData.dig_instantly = runData.dig_time_complete == 0;
-		if (client->modsLoaded() && client->getScript()->on_punchnode(nodepos, n))
+		if (client->modsLoaded() && (client->getCSMController()->runPunchnode(nodepos, n) |
+				client->getScript()->on_punchnode(nodepos, n)))
 			return;
 
 		client->interact(INTERACT_START_DIGGING, pointed);
@@ -3897,7 +3917,8 @@ void Game::handleDigging(const PointedThing &pointed, const v3s16 &nodepos,
 			runData.nodig_delay_timer = 0.15;
 
 		if (client->modsLoaded() &&
-				client->getScript()->on_dignode(nodepos, n)) {
+				(client->getCSMController()->runDignode(nodepos, n) |
+						client->getScript()->on_dignode(nodepos, n))) {
 			return;
 		}
 
