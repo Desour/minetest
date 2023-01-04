@@ -84,6 +84,13 @@ public:
 		return true;
 	}
 	u16 size() const { return m_id_to_name.size(); }
+	template <typename F>
+	void doForAllIds(const F &f) const
+	{
+		for (const auto &p : m_id_to_name) {
+			f(p.first);
+		}
+	}
 
 private:
 	IdToNameMap m_id_to_name;

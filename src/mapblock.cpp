@@ -259,47 +259,36 @@ void MapBlock::expireDayNightDiff()
 	Serialization
 */
 
-// List relevant id-name pairs for ids in the block using nodedef
-// Renumbers the content IDs (starting at 0 and incrementing)
-static void getBlockNodeIdMapping(NameIdMapping *nimap, MapNode *nodes,
+void MapBlock::getBlockNodeIdMapping(NameIdMapping *nimap, MapNode *nodes, // TODO: remove nodes, use cache
 	const NodeDefManager *nodedef)
 {
-	// The static memory requires about 65535 * sizeof(int) RAM in order to be
-	// sure we can handle all content ids. But it's absolutely worth it as it's
-	// a speedup of 4 for one of the major time consuming functions on storing
-	// mapblocks.
-	thread_local std::unique_ptr<content_t[]> mapping;
+	// The static memory requires about 65535 bytes RAM in order to be
+	// sure we can handle all content ids. But it's worth it as it's faster than
+	// e.g. a hashmap.
+	thread_local auto is_mapped = std::make_unique<bool[]>(USHRT_MAX + 1); // initialize with 0 (false)
 	static_assert(sizeof(content_t) == 2, "content_t must be 16-bit");
-	if (!mapping)
-		mapping = std::make_unique<content_t[]>(USHRT_MAX + 1);
-
-	memset(mapping.get(), 0xFF, (USHRT_MAX + 1) * sizeof(content_t));
 
 	std::unordered_set<content_t> unknown_contents;
-	content_t id_counter = 0;
 	for (u32 i = 0; i < MapBlock::nodecount; i++) {
-		content_t global_id = nodes[i].getContent();
-		content_t id = CONTENT_IGNORE;
+		content_t id = nodes[i].getContent();
 
-		// Try to find an existing mapping
-		if (mapping[global_id] != 0xFFFF) {
-			id = mapping[global_id];
-		} else {
-			// We have to assign a new mapping
-			id = id_counter++;
-			mapping[global_id] = id;
-
-			const ContentFeatures &f = nodedef->get(global_id);
+		if (!is_mapped[id]) {
+			const ContentFeatures &f = nodedef->get(id);
 			const std::string &name = f.name;
-			if (name.empty())
-				unknown_contents.insert(global_id);
-			else
+			if (name.empty()) {
+				unknown_contents.insert(id);
+			} else {
 				nimap->set(id, name);
+				is_mapped[id] = true;
+			}
 		}
-
-		// Update the MapNode
-		nodes[i].setContent(id);
 	}
+
+	// reset is_mapped
+	nimap->doForAllIds([&](u16 id) {
+			is_mapped[id] = false;
+		});
+
 	for (u16 unknown_content : unknown_contents) {
 		errorstream << "getBlockNodeIdMapping(): IGNORING ERROR: "
 				<< "Name for node id " << unknown_content << " not known" << std::endl;
@@ -403,15 +392,13 @@ void MapBlock::serialize(std::ostream &os_compressed, u8 version, bool disk, int
 	SharedBuffer<u8> buf;
 	const u8 content_width = 2;
 	const u8 params_width = 2;
- 	if(disk)
-	{
-		MapNode *tmp_nodes = new MapNode[nodecount];
-		memcpy(tmp_nodes, data, nodecount * sizeof(MapNode));
-		getBlockNodeIdMapping(&nimap, tmp_nodes, m_gamedef->ndef());
+ 	if (disk) {
+		std::unique_ptr<MapNode[]> tmp_nodes(new MapNode[nodecount]);
+		memcpy(tmp_nodes.get(), data, nodecount * sizeof(MapNode));
+		getBlockNodeIdMapping(&nimap, tmp_nodes.get(), m_gamedef->ndef());
 
-		buf = MapNode::serializeBulk(version, tmp_nodes, nodecount,
+		buf = MapNode::serializeBulk(version, tmp_nodes.get(), nodecount,
 				content_width, params_width);
-		delete[] tmp_nodes;
 
 		// write timestamp and node/id mapping first
 		if (version >= 29) {
@@ -419,9 +406,7 @@ void MapBlock::serialize(std::ostream &os_compressed, u8 version, bool disk, int
 
 			nimap.serialize(os);
 		}
-	}
-	else
-	{
+	} else {
 		buf = MapNode::serializeBulk(version, data, nodecount,
 				content_width, params_width);
 	}

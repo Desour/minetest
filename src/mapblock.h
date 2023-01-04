@@ -445,6 +445,11 @@ private:
 
 	void deSerialize_pre22(std::istream &is, u8 version, bool disk);
 
+	// List relevant id-name pairs for ids in the block using nodedef
+	// We always choose the same ids as for content_t.
+	void getBlockNodeIdMapping(NameIdMapping *nimap, MapNode *nodes,
+			const NodeDefManager *nodedef);
+
 public:
 	/*
 		Public member variables
