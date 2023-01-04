@@ -447,8 +447,7 @@ private:
 
 	// List relevant id-name pairs for ids in the block using nodedef
 	// We always choose the same ids as for content_t.
-	void getBlockNodeIdMapping(NameIdMapping *nimap, MapNode *nodes,
-			const NodeDefManager *nodedef);
+	NameIdMapping getBlockNodeIdMapping() const;
 
 public:
 	/*

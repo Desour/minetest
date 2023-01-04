@@ -259,18 +259,24 @@ void MapBlock::expireDayNightDiff()
 	Serialization
 */
 
-void MapBlock::getBlockNodeIdMapping(NameIdMapping *nimap, MapNode *nodes, // TODO: remove nodes, use cache
-	const NodeDefManager *nodedef)
+NameIdMapping MapBlock::getBlockNodeIdMapping() const
 {
+	// TODO: use cache
+
+	NameIdMapping nimap;
+
+	const NodeDefManager *nodedef = m_gamedef->ndef();
+
 	// The static memory requires about 65535 bytes RAM in order to be
 	// sure we can handle all content ids. But it's worth it as it's faster than
 	// e.g. a hashmap.
-	thread_local auto is_mapped = std::make_unique<bool[]>(USHRT_MAX + 1); // initialize with 0 (false)
+	// initialize with 0 (false)
+	thread_local auto is_mapped = std::make_unique<bool[]>(USHRT_MAX + 1);
 	static_assert(sizeof(content_t) == 2, "content_t must be 16-bit");
 
 	std::unordered_set<content_t> unknown_contents;
 	for (u32 i = 0; i < MapBlock::nodecount; i++) {
-		content_t id = nodes[i].getContent();
+		content_t id = data[i].getContent();
 
 		if (!is_mapped[id]) {
 			const ContentFeatures &f = nodedef->get(id);
@@ -278,14 +284,14 @@ void MapBlock::getBlockNodeIdMapping(NameIdMapping *nimap, MapNode *nodes, // TO
 			if (name.empty()) {
 				unknown_contents.insert(id);
 			} else {
-				nimap->set(id, name);
+				nimap.set(id, name);
 				is_mapped[id] = true;
 			}
 		}
 	}
 
 	// reset is_mapped
-	nimap->doForAllIds([&](u16 id) {
+	nimap.doForAllIds([&](u16 id) {
 			is_mapped[id] = false;
 		});
 
@@ -293,6 +299,8 @@ void MapBlock::getBlockNodeIdMapping(NameIdMapping *nimap, MapNode *nodes, // TO
 		errorstream << "getBlockNodeIdMapping(): IGNORING ERROR: "
 				<< "Name for node id " << unknown_content << " not known" << std::endl;
 	}
+
+	return nimap;
 }
 
 // Correct ids in the block to match nodedef based on names.
@@ -389,16 +397,10 @@ void MapBlock::serialize(std::ostream &os_compressed, u8 version, bool disk, int
 		Bulk node data
 	*/
 	NameIdMapping nimap;
-	SharedBuffer<u8> buf;
 	const u8 content_width = 2;
 	const u8 params_width = 2;
  	if (disk) {
-		std::unique_ptr<MapNode[]> tmp_nodes(new MapNode[nodecount]);
-		memcpy(tmp_nodes.get(), data, nodecount * sizeof(MapNode));
-		getBlockNodeIdMapping(&nimap, tmp_nodes.get(), m_gamedef->ndef());
-
-		buf = MapNode::serializeBulk(version, tmp_nodes.get(), nodecount,
-				content_width, params_width);
+		nimap = getBlockNodeIdMapping();
 
 		// write timestamp and node/id mapping first
 		if (version >= 29) {
@@ -406,15 +408,15 @@ void MapBlock::serialize(std::ostream &os_compressed, u8 version, bool disk, int
 
 			nimap.serialize(os);
 		}
-	} else {
-		buf = MapNode::serializeBulk(version, data, nodecount,
-				content_width, params_width);
 	}
 
 	writeU8(os, content_width);
 	writeU8(os, params_width);
+
+	SharedBuffer<u8> buf = MapNode::serializeBulk(version, data, nodecount,
+			content_width, params_width);
 	if (version >= 29) {
-		os.write(reinterpret_cast<char*>(*buf), buf.getSize());
+		os.write(reinterpret_cast<char *>(*buf), buf.getSize());
 	} else {
 		// prior to 29 node data was compressed individually
 		compress(buf, os, version, compression_level);
@@ -476,7 +478,7 @@ void MapBlock::serialize(std::ostream &os_compressed, u8 version, bool disk, int
 		count += 1;
 		thread_local u64 last_print_t = t1;
 		if (t1 - last_print_t >= 1000000) {
-			errorstream << "MapBlock::serialize stats:\t"
+			errorstream << "MapBlock::serialize stats: "
 					<< "count = " << count << ",\t"
 					<< "dt_sum = " << ((double)dt_sum * 1.0e-3) << " ms,\t"
 					<< "dt_min = " << ((double)dt_min * 1.0e-3) << " ms,\t"
@@ -650,7 +652,7 @@ void MapBlock::deSerialize(std::istream &in_compressed, u8 version, bool disk)
 		count += 1;
 		thread_local u64 last_print_t = t1;
 		if (t1 - last_print_t >= 1000000) {
-			errorstream << "MapBlock::deSerialize stats:\t"
+			errorstream << "MapBlock::deSerialize stats: "
 					<< "count = " << count << ",\t"
 					<< "dt_sum = " << ((double)dt_sum * 1.0e-3) << " ms,\t"
 					<< "dt_min = " << ((double)dt_min * 1.0e-3) << " ms,\t"
