@@ -373,6 +373,8 @@ static void correctBlockNodeIds(const NameIdMapping *nimap, MapNode *nodes,
 
 void MapBlock::serialize(std::ostream &os_compressed, u8 version, bool disk, int compression_level)
 {
+	const u64 t0 = porting::getTimeUs();
+
 	if(!ser_ver_supported(version))
 		throw VersionMismatchException("ERROR: MapBlock format not supported");
 
@@ -475,6 +477,34 @@ void MapBlock::serialize(std::ostream &os_compressed, u8 version, bool disk, int
 		// now compress the whole thing
 		compress(os_raw.str(), os_compressed, version, compression_level);
 	}
+
+	const u64 t1 = porting::getTimeUs();
+	{
+		u64 dt = t1 >= t0 ? t1 - t0 : U64_MAX - (t0 - t1);
+		thread_local u64 dt_sum = 0;
+		thread_local u64 dt_min = U64_MAX;
+		thread_local u64 dt_max = 0;
+		thread_local u32 count = 0;
+		dt_sum += dt;
+		dt_min = std::min(dt, dt_min);
+		dt_max = std::max(dt, dt_max);
+		count += 1;
+		thread_local u64 last_print_t = t1;
+		if (t1 - last_print_t >= 1000000) {
+			errorstream << "MapBlock::serialize stats:\t"
+					<< "count = " << count << ",\t"
+					<< "dt_sum = " << ((double)dt_sum * 1.0e-3) << " ms,\t"
+					<< "dt_min = " << ((double)dt_min * 1.0e-3) << " ms,\t"
+					<< "dt_max = " << ((double)dt_max * 1.0e-3) << " ms,\t"
+					<< "avg = " << ((double)dt_sum * 1.0e-3 / (double)count) << " ms/call"
+					<< std::endl;
+			dt_sum = 0;
+			dt_min = U64_MAX;
+			dt_max = 0;
+			count = 0;
+			last_print_t = t1;
+		}
+	}
 }
 
 void MapBlock::serializeNetworkSpecific(std::ostream &os)
@@ -484,6 +514,8 @@ void MapBlock::serializeNetworkSpecific(std::ostream &os)
 
 void MapBlock::deSerialize(std::istream &in_compressed, u8 version, bool disk)
 {
+	const u64 t0 = porting::getTimeUs();
+
 	if(!ser_ver_supported(version))
 		throw VersionMismatchException("ERROR: MapBlock format not supported");
 
@@ -619,6 +651,34 @@ void MapBlock::deSerialize(std::istream &in_compressed, u8 version, bool disk)
 
 	TRACESTREAM(<<"MapBlock::deSerialize "<<PP(getPos())
 			<<": Done."<<std::endl);
+
+	const u64 t1 = porting::getTimeUs();
+	{
+		u64 dt = t1 >= t0 ? t1 - t0 : U64_MAX - (t0 - t1);
+		thread_local u64 dt_sum = 0;
+		thread_local u64 dt_min = U64_MAX;
+		thread_local u64 dt_max = 0;
+		thread_local u32 count = 0;
+		dt_sum += dt;
+		dt_min = std::min(dt, dt_min);
+		dt_max = std::max(dt, dt_max);
+		count += 1;
+		thread_local u64 last_print_t = t1;
+		if (t1 - last_print_t >= 1000000) {
+			errorstream << "MapBlock::deSerialize stats:\t"
+					<< "count = " << count << ",\t"
+					<< "dt_sum = " << ((double)dt_sum * 1.0e-3) << " ms,\t"
+					<< "dt_min = " << ((double)dt_min * 1.0e-3) << " ms,\t"
+					<< "dt_max = " << ((double)dt_max * 1.0e-3) << " ms,\t"
+					<< "avg = " << ((double)dt_sum * 1.0e-3 / (double)count) << " ms/call"
+					<< std::endl;
+			dt_sum = 0;
+			dt_min = U64_MAX;
+			dt_max = 0;
+			count = 0;
+			last_print_t = t1;
+		}
+	}
 }
 
 void MapBlock::deSerializeNetworkSpecific(std::istream &is)
