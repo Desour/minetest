@@ -261,18 +261,27 @@ void MapBlock::expireDayNightDiff()
 
 NameIdMapping MapBlock::getBlockNodeIdMapping() const
 {
-	// TODO: use cache
+	static_assert(sizeof(content_t) == 2, "content_t must be 16-bit");
 
 	NameIdMapping nimap;
 
 	const NodeDefManager *nodedef = m_gamedef->ndef();
+
+	if (contents_cached) {
+		for (content_t id : contents) {
+			const ContentFeatures &f = nodedef->get(id);
+			const std::string &name = f.name;
+			SANITY_CHECK(!name.empty());
+			nimap.set(id, name);
+		}
+		return nimap;
+	}
 
 	// The static memory requires about 65535 bytes RAM in order to be
 	// sure we can handle all content ids. But it's worth it as it's faster than
 	// e.g. a hashmap.
 	// initialize with 0 (false)
 	thread_local auto is_mapped = std::make_unique<bool[]>(USHRT_MAX + 1);
-	static_assert(sizeof(content_t) == 2, "content_t must be 16-bit");
 
 	std::unordered_set<content_t> unknown_contents;
 	for (u32 i = 0; i < MapBlock::nodecount; i++) {
@@ -303,13 +312,9 @@ NameIdMapping MapBlock::getBlockNodeIdMapping() const
 	return nimap;
 }
 
-// Correct ids in the block to match nodedef based on names.
-// Unknown ones are added to nodedef.
-// Will not update itself to match id-name pairs in nodedef.
-static void correctBlockNodeIds(const NameIdMapping *nimap, MapNode *nodes,
-		IGameDef *gamedef)
+void MapBlock::correctBlockNodeIds(const NameIdMapping &nimap)
 {
-	const NodeDefManager *nodedef = gamedef->ndef();
+	const NodeDefManager *nodedef = m_gamedef->ndef();
 	// This means the block contains incorrect ids, and we contain
 	// the information to convert those to names.
 	// nodedef contains information to convert our names to globally
@@ -322,18 +327,18 @@ static void correctBlockNodeIds(const NameIdMapping *nimap, MapNode *nodes,
 	content_t previous_global_id = CONTENT_IGNORE;
 
 	for (u32 i = 0; i < MapBlock::nodecount; i++) {
-		content_t local_id = nodes[i].getContent();
+		content_t local_id = data[i].getContent();
 		// If previous node local_id was found and same than before, don't lookup maps
 		// apply directly previous resolved id
 		// This permits to massively improve loading performance when nodes are similar
 		// example: default:air, default:stone are massively present
 		if (previous_exists && local_id == previous_local_id) {
-			nodes[i].setContent(previous_global_id);
+			data[i].setContent(previous_global_id);
 			continue;
 		}
 
 		std::string name;
-		if (!nimap->getName(local_id, name)) {
+		if (!nimap.getName(local_id, name)) {
 			unnamed_contents.insert(local_id);
 			previous_exists = false;
 			continue;
@@ -341,20 +346,25 @@ static void correctBlockNodeIds(const NameIdMapping *nimap, MapNode *nodes,
 
 		content_t global_id;
 		if (!nodedef->getId(name, global_id)) {
-			global_id = gamedef->allocateUnknownNodeId(name);
+			global_id = m_gamedef->allocateUnknownNodeId(name);
 			if (global_id == CONTENT_IGNORE) {
 				unallocatable_contents.insert(name);
 				previous_exists = false;
 				continue;
 			}
 		}
-		nodes[i].setContent(global_id);
+		data[i].setContent(global_id);
 
 		// Save previous node local_id & global_id result
 		previous_local_id = local_id;
 		previous_global_id = global_id;
 		previous_exists = true;
 	}
+
+	// fill content cache
+	contents.reserve(nimap.size());
+	nimap.doForAllIds([&](u16 id) { contents.insert(id); });
+	contents_cached = true;
 
 	for (const content_t c: unnamed_contents) {
 		errorstream << "correctBlockNodeIds(): IGNORING ERROR: "
@@ -483,7 +493,7 @@ void MapBlock::serialize(std::ostream &os_compressed, u8 version, bool disk, int
 					<< "dt_sum = " << ((double)dt_sum * 1.0e-3) << " ms,\t"
 					<< "dt_min = " << ((double)dt_min * 1.0e-3) << " ms,\t"
 					<< "dt_max = " << ((double)dt_max * 1.0e-3) << " ms,\t"
-					<< "avg = " << ((double)dt_sum * 1.0e-3 / (double)count) << " ms/call"
+					<< "avg = " << ((double)dt_sum * 1.0e-3 / (double)count) << " ms/call (seri)"
 					<< std::endl;
 			dt_sum = 0;
 			dt_min = U64_MAX;
@@ -627,9 +637,9 @@ void MapBlock::deSerialize(std::istream &in_compressed, u8 version, bool disk)
 		}
 
 		// Dynamically re-set ids based on node names
-		correctBlockNodeIds(&nimap, data, m_gamedef);
+		correctBlockNodeIds(nimap);
 
-		if(version >= 25){
+		if (version >= 25) {
 			TRACESTREAM(<<"MapBlock::deSerialize "<<PP(getPos())
 					<<": Node timers (ver>=25)"<<std::endl);
 			m_node_timers.deSerialize(is, version);
@@ -657,7 +667,7 @@ void MapBlock::deSerialize(std::istream &in_compressed, u8 version, bool disk)
 					<< "dt_sum = " << ((double)dt_sum * 1.0e-3) << " ms,\t"
 					<< "dt_min = " << ((double)dt_min * 1.0e-3) << " ms,\t"
 					<< "dt_max = " << ((double)dt_max * 1.0e-3) << " ms,\t"
-					<< "avg = " << ((double)dt_sum * 1.0e-3 / (double)count) << " ms/call"
+					<< "avg = " << ((double)dt_sum * 1.0e-3 / (double)count) << " ms/call (deseri)"
 					<< std::endl;
 			dt_sum = 0;
 			dt_min = U64_MAX;
@@ -865,7 +875,7 @@ void MapBlock::deSerialize_pre22(std::istream &is, u8 version, bool disk)
 		} else {
 			content_mapnode_get_name_id_mapping(&nimap);
 		}
-		correctBlockNodeIds(&nimap, data, m_gamedef);
+		correctBlockNodeIds(nimap);
 	}
 
 	// Legacy data changes

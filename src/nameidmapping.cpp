@@ -42,6 +42,7 @@ void NameIdMapping::deSerialize(std::istream &is)
 	for (u32 i = 0; i < count; i++) {
 		u16 id = readU16(is);
 		std::string name = deSerializeString16(is);
+		SANITY_CHECK(!name.empty());
 		m_id_to_name[id] = name;
 		m_name_to_id[name] = id;
 	}

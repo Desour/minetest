@@ -421,7 +421,7 @@ public:
 
 	////
 	//// Serialization
-	///
+	////
 
 	// These don't write or read version by itself
 	// Set disk to true for on-disk format, false for over-the-network format
@@ -448,6 +448,11 @@ private:
 	// List relevant id-name pairs for ids in the block using nodedef
 	// We always choose the same ids as for content_t.
 	NameIdMapping getBlockNodeIdMapping() const;
+
+	// Correct ids in the block to match nodedef based on names.
+	// Unknown ones are added to nodedef.
+	// Will not update itself to match id-name pairs in nodedef.
+	void correctBlockNodeIds(const NameIdMapping &nimap);
 
 public:
 	/*
