@@ -403,6 +403,8 @@ void MapBlock::serialize(std::ostream &os_compressed, u8 version, bool disk, int
 		writeU16(os, m_lighting_complete);
 	}
 
+	const u64 t001 = porting::getTimeUs();
+
 	/*
 		Bulk node data
 	*/
@@ -420,6 +422,8 @@ void MapBlock::serialize(std::ostream &os_compressed, u8 version, bool disk, int
 		}
 	}
 
+	const u64 t002 = porting::getTimeUs();
+
 	writeU8(os, content_width);
 	writeU8(os, params_width);
 
@@ -431,6 +435,8 @@ void MapBlock::serialize(std::ostream &os_compressed, u8 version, bool disk, int
 		// prior to 29 node data was compressed individually
 		compress(buf, os, version, compression_level);
 	}
+
+	const u64 t003 = porting::getTimeUs();
 
 	/*
 		Node metadata
@@ -470,6 +476,8 @@ void MapBlock::serialize(std::ostream &os_compressed, u8 version, bool disk, int
 		}
 	}
 
+	const u64 t05 = porting::getTimeUs();
+
 	if (version >= 29) {
 		// now compress the whole thing
 		compress(os_raw.str(), os_compressed, version, compression_level);
@@ -477,12 +485,28 @@ void MapBlock::serialize(std::ostream &os_compressed, u8 version, bool disk, int
 
 	const u64 t1 = porting::getTimeUs();
 	{
-		u64 dt = t1 >= t0 ? t1 - t0 : U64_MAX - (t0 - t1);
+		auto tdiff = [] (u64 ta, u64 tb) { return tb >= ta ? tb - ta : U64_MAX - (ta - tb); };
+		u64 dt = tdiff(t0, t1);
+		u64 dt01 = tdiff(t0, t001);
+		u64 dt02 = tdiff(t001, t002);
+		u64 dt03 = tdiff(t002, t003);
+		u64 dt05 = tdiff(t003, t05);
+		u64 dtc = tdiff(t05, t1);
 		thread_local u64 dt_sum = 0;
+		thread_local u64 dt01_sum = 0;
+		thread_local u64 dt02_sum = 0;
+		thread_local u64 dt03_sum = 0;
+		thread_local u64 dt05_sum = 0;
+		thread_local u64 dtc_sum = 0;
 		thread_local u64 dt_min = U64_MAX;
 		thread_local u64 dt_max = 0;
 		thread_local u32 count = 0;
 		dt_sum += dt;
+		dt01_sum += dt01;
+		dt02_sum += dt02;
+		dt03_sum += dt03;
+		dt05_sum += dt05;
+		dtc_sum += dtc;
 		dt_min = std::min(dt, dt_min);
 		dt_max = std::max(dt, dt_max);
 		count += 1;
@@ -491,11 +515,22 @@ void MapBlock::serialize(std::ostream &os_compressed, u8 version, bool disk, int
 			errorstream << "MapBlock::serialize stats: "
 					<< "count = " << count << ",\t"
 					<< "dt_sum = " << ((double)dt_sum * 1.0e-3) << " ms,\t"
+					//~ << "dtc_sum = " << ((double)dtc_sum * 1.0e-3) << " ms,\t"
 					<< "dt_min = " << ((double)dt_min * 1.0e-3) << " ms,\t"
 					<< "dt_max = " << ((double)dt_max * 1.0e-3) << " ms,\t"
-					<< "avg = " << ((double)dt_sum * 1.0e-3 / (double)count) << " ms/call (seri)"
+					<< "avg = " << ((double)dt_sum * 1.0e-3 / (double)count) << " ms/call (seri)\n"
+					<< "avg_dt01 = " << ((double)dt01_sum * 1.0e-3 / (double)count) << " ms/call,\t"
+					<< "avg_dt02 = " << ((double)dt02_sum * 1.0e-3 / (double)count) << " ms/call,\t"
+					<< "avg_dt03 = " << ((double)dt03_sum * 1.0e-3 / (double)count) << " ms/call,\t"
+					<< "avg_dt05 = " << ((double)dt05_sum * 1.0e-3 / (double)count) << " ms/call,\t"
+					<< "avg_dtc = " << ((double)dtc_sum * 1.0e-3 / (double)count) << " ms/call"
 					<< std::endl;
 			dt_sum = 0;
+			dt01_sum = 0;
+			dt02_sum = 0;
+			dt03_sum = 0;
+			dt05_sum = 0;
+			dtc_sum = 0;
 			dt_min = U64_MAX;
 			dt_max = 0;
 			count = 0;
