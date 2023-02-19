@@ -493,6 +493,116 @@ std::string CraftDefinitionShapeless::getName() const
 	return "shapeless";
 }
 
+// Checks if there's a matching that matches all nodes in a given bipartite graph.
+// bip_graph has graph_size nodes on each side.
+// See https://en.wikipedia.org/w/index.php?title=Hopcroft-Karp_algorithm for
+// details.
+static bool hopcroft_karp_can_match_all(const std::array<std::array<bool, 9>, 9> &bip_graph,
+		u8 graph_size)
+{
+	assert(graph_size <= 9);
+	constexpr u8 nil = 9; // nil / dummy index
+	constexpr u8 inf = 255; // bigger than any path length
+
+	std::array<u8, 10> pair_u;
+	std::array<u8, 10> pair_v;
+	std::array<u8, 10> dist;
+	u8 num_matched;
+	std::queue<u8> queue{};
+
+	// calculates distances from unmatched nodes for augmentation paths until
+	// dummy is reached
+	// returns false if dummy can't be reached (and hence there are no further
+	// augmentation paths)
+	auto do_bfs = [&]() {
+		assert(queue.empty());
+
+		// enqueue all unmatched, give inf dist to the rest
+		for (u8 u = 0; u < graph_size; ++u) {
+			if (pair_u[u] == nil) {
+				dist[u] = 0;
+				queue.push(u);
+			} else {
+				dist[u] = inf;
+			}
+		}
+		dist[nil] = inf;
+
+		while (!queue.empty()) {
+			u8 u = queue.front();
+			queue.pop();
+
+			if (dist[u] < dist[nil]) { // if dummy not yet reached
+				for (u8 v = 0; v < graph_size; ++v) { // for all adjanced of u
+					if (!bip_graph[u][v])
+						continue;
+
+					u8 u_back = pair_v[v];
+					// if u_back unvisited, go there
+					if (dist[u_back] == inf) {
+						dist[u_back] = dist[u] + 1;
+						queue.push(u_back);
+					}
+				}
+			}
+		}
+
+		return dist[nil] != inf;
+	};
+
+	// tries to find an augmenting path from u to the dummy
+	// if successful, swaps all edges along path and returns true
+	// otherwise returns false
+	auto do_dfs_raw = [&](u8 u, auto &&recurse) -> bool {
+		if (u == nil) // dummy => dest reached
+			return true;
+
+		for (u8 v = 0; v < graph_size; ++v) { // for all adjanced of u
+			if (!bip_graph[u][v])
+				continue;
+
+			u8 u_back = pair_v[v];
+			// only walk according to bfs dists
+			if (dist[u_back] != dist[u] + 1)
+				continue;
+
+			// if walk along u_back reached dummy, swap edges and backtrack
+			if (recurse(u_back, recurse)) {
+				pair_v[v] = u;
+				pair_u[u] = v;
+				return true;
+			}
+		}
+
+		// unsuccessful path, don't walk here again
+		dist[u] = inf;
+		return false;
+	};
+
+	auto do_dfs = [&](u8 u) {
+		return do_dfs_raw(u, do_dfs_raw);
+	};
+
+	// everyone starts as matched to dummy
+	pair_u.fill(nil);
+	pair_v.fill(nil);
+
+	num_matched = 0;
+
+	while (do_bfs()) {
+		// try to match unmatched u nodes
+		for (u8 u = 0; u < graph_size; ++u) {
+			if (pair_u[u] == nil) {
+				if (do_dfs(u)) {
+					num_matched += 1;
+				}
+			}
+		}
+	}
+
+	return num_matched == graph_size;
+}
+
 bool CraftDefinitionShapeless::check(const CraftInput &input, IGameDef *gamedef) const
 {
 	if (input.method != CRAFT_METHOD_NORMAL)
@@ -513,35 +623,53 @@ bool CraftDefinitionShapeless::check(const CraftInput &input, IGameDef *gamedef)
 		return false;
 	}
 
+	// Sort input and recipe
+	std::sort(input_filtered.begin(), input_filtered.end());
+
 	std::vector<std::string> recipe_copy;
-	if (hash_inited)
+	if (hash_inited) {
 		recipe_copy = recipe_names;
-	else {
+	} else {
 		recipe_copy = craftGetItemNames(recipe, gamedef);
 		std::sort(recipe_copy.begin(), recipe_copy.end());
 	}
 
-	// Try with all permutations of the recipe,
-	// start from the lexicographically first permutation (=sorted),
-	// recipe_names is pre-sorted
-	do {
-		// If all items match, the recipe matches
-		bool all_match = true;
-		//dstream<<"Testing recipe (output="<<output<<"):";
-		for (size_t i=0; i<recipe.size(); i++) {
-			//dstream<<" ("<<input_filtered[i]<<" == "<<recipe_copy[i]<<")";
-			if (!inputItemMatchesRecipe(input_filtered[i], recipe_copy[i],
-					gamedef->idef())) {
-				all_match = false;
-				break;
-			}
-		}
-		//dstream<<" -> match="<<all_match<<std::endl;
-		if (all_match)
-			return true;
-	} while (std::next_permutation(recipe_copy.begin(), recipe_copy.end()));
+	// Split recipe in group and non-group
+	std::vector<std::string> recipe_nogroup;
+	std::vector<std::string> recipe_onlygroup;
+	std::partition_copy(recipe_copy.begin(), recipe_copy.end(),
+			std::back_inserter(recipe_onlygroup),
+			std::back_inserter(recipe_nogroup),
+			[](const std::string &name) { return str_starts_with(name, "group:"); });
 
-	return false;
+	// Filter out non-group recipe slots, using sorted merge.
+	// (This prefiltering is only a performance optimization and not strictly
+	// necessary.)
+	std::vector<std::string> input_for_group;
+	std::set_difference(input_filtered.begin(), input_filtered.end(),
+			recipe_nogroup.begin(), recipe_nogroup.end(),
+			std::back_inserter(input_for_group));
+
+	// All non-group slots must be satisfied
+	if (input_filtered.size() - input_for_group.size() != recipe_nogroup.size())
+		return false;
+
+	// Find out which recipe slots each input item satisfies. This creates a
+	// bipartite graph
+	SANITY_CHECK(recipe_onlygroup.size() <= 9);
+	assert(recipe_onlygroup.size() == input_for_group.size());
+	u8 graph_size = recipe_onlygroup.size();
+	// bip_graph[i][j] is true iff input_for_group[i] can satisfy recipe_onlygroup[j]
+	std::array<std::array<bool, 9>, 9> bip_graph;
+	for (u8 i = 0; i < graph_size; ++i) {
+		for (u8 j = 0; j < graph_size; ++j) {
+			bip_graph[i][j] = inputItemMatchesRecipe(input_for_group[i],
+					recipe_onlygroup[j], gamedef->idef());
+		}
+	}
+
+	// Check if the maximum cardinality matching of bip_graph matches all items
+	return hopcroft_karp_can_match_all(bip_graph, graph_size);
 }
 
 CraftOutput CraftDefinitionShapeless::getOutput(const CraftInput &input, IGameDef *gamedef) const
