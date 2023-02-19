@@ -717,6 +717,8 @@ elseif(NOT MSVC)
 	endif()
 endif()
 
+SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--dynamic-list=${PROJECT_SOURCE_DIR}/dynamic_list_file.txt")
+
 if(MSVC)
 	# Visual Studio
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D WIN32_LEAN_AND_MEAN")

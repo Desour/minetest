@@ -500,7 +500,7 @@ constexpr u16 SHAPELESS_GROUPS_MAX = 30000;
 // neighbors from one side.
 // See https://en.wikipedia.org/w/index.php?title=Hopcroft-Karp_algorithm for
 // details.
-static bool hopcroft_karp_can_match_all(const std::vector<std::vector<u16>> &bip_graph)
+static u16 hopcroft_karp_num_matches(const std::vector<std::vector<u16>> &bip_graph)
 {
 	assert(bip_graph.size() <= SHAPELESS_GROUPS_MAX);
 	u16 graph_size = bip_graph.size();
@@ -597,7 +597,34 @@ static bool hopcroft_karp_can_match_all(const std::vector<std::vector<u16>> &bip
 		}
 	}
 
-	return num_matched == graph_size;
+	return num_matched;
+}
+
+extern "C" {
+int ffi_hopcroft_karp_num_matches(const bool *bip_graph_arr, int graph_size)
+{
+	std::vector<std::vector<u16>> bip_graph;
+	bip_graph.resize(graph_size);
+
+	for (u16 i = 0; i < graph_size; ++i) {
+		std::vector<u16> &neighbors_i = bip_graph[i];
+		for (u16 j = 0; j < graph_size; ++j) {
+			if (bip_graph_arr[i*9 + j])
+				neighbors_i.push_back(j);
+		}
+	}
+
+	return hopcroft_karp_num_matches(bip_graph);
+}
+}
+
+// Checks if there's a matching that matches all nodes in a given bipartite graph.
+// bip_graph has graph_size nodes on each side.
+// See https://en.wikipedia.org/w/index.php?title=Hopcroft-Karp_algorithm for
+// details.
+static bool hopcroft_karp_can_match_all(const std::vector<std::vector<u16>> &bip_graph)
+{
+	return hopcroft_karp_num_matches(bip_graph) == bip_graph.size();
 }
 
 bool CraftDefinitionShapeless::check(const CraftInput &input, IGameDef *gamedef) const
