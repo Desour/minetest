@@ -1,3 +1,6 @@
+
+extern "C" {
+
 /* crypto/sha/sha256.c */
 /* ====================================================================
  * Copyright (c) 2004 The OpenSSL Project.  All rights reserved
@@ -397,3 +400,5 @@ static void sha256_block_data_order(SHA256_CTX *ctx, const void *in,
 
 #  endif
 # endif                         /* SHA256_ASM */
+
+} // extern "C"

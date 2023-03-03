@@ -482,6 +482,57 @@ set(server_SRCS
 )
 list(SORT server_SRCS)
 
+# List of stdlib headers that we include (may be outdated). Used for precompiled
+# headers.
+set(INCLUDED_STDLIB_HEADERS
+	<algorithm>
+	<array>
+	<atomic>
+	<bitset>
+	<cassert>
+	<cctype>
+	<cerrno>
+	<cmath>
+	<condition_variable>
+	<cstdarg>
+	<cstddef>
+	<cstdint>
+	<cstdio>
+	<cstdlib>
+	<cstring>
+	<ctgmath>
+	<ctime>
+	<deque>
+	<exception>
+	<fstream>
+	<functional>
+	<iomanip>
+	<ios>
+	<iostream>
+	<istream>
+	<iterator>
+	<limits>
+	<list>
+	<map>
+	<memory>
+	<mutex>
+	<ostream>
+	<queue>
+	<random>
+	<set>
+	<sstream>
+	<stack>
+	<stdexcept>
+	<string>
+	<thread>
+	<type_traits>
+	<typeinfo>
+	<unordered_map>
+	<unordered_set>
+	<utility>
+	<vector>
+)
+
 # Avoid source_group on broken CMake version.
 # see issue #7074 #7075
 if (CMAKE_VERSION VERSION_GREATER 3.8.1)
@@ -529,6 +580,7 @@ endif()
 
 if(BUILD_CLIENT)
 	add_executable(${PROJECT_NAME} ${client_SRCS} ${extra_windows_SRCS})
+	set_source_files_properties(${client_SRCS} ${extra_windows_SRCS} PROPERTIES LANGUAGE CXX)
 	add_dependencies(${PROJECT_NAME} GenerateVersion)
 	target_link_libraries(
 		${PROJECT_NAME}
@@ -592,6 +644,12 @@ if(BUILD_CLIENT)
 	if(BUILD_BENCHMARKS)
 		target_link_libraries(${PROJECT_NAME} catch2)
 	endif()
+
+	if(1)
+		target_precompile_headers(${PROJECT_NAME} PRIVATE
+			${INCLUDED_STDLIB_HEADERS}
+		)
+	endif()
 endif(BUILD_CLIENT)
 
 
@@ -653,6 +711,12 @@ if(BUILD_SERVER)
 	endif()
 	if(BUILD_BENCHMARKS)
 		target_link_libraries(${PROJECT_NAME}server catch2)
+	endif()
+
+	if(1)
+		target_precompile_headers(${PROJECT_NAME}server PRIVATE
+			${INCLUDED_STDLIB_HEADERS}
+		)
 	endif()
 endif(BUILD_SERVER)
 

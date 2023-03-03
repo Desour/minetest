@@ -8,7 +8,9 @@ else()
 endif()
 
 # This can be read from ${PROJECT_NAME} after project() is called
-project(minetest)
+project(minetest
+	LANGUAGES CXX
+)
 set(PROJECT_NAME_CAPITALIZED "Minetest")
 
 set(CMAKE_CXX_STANDARD 14)
