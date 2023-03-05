@@ -5866,9 +5866,11 @@ Inventory
     * Creates a detached inventory. If it already exists, it is cleared.
 * `minetest.remove_detached_inventory(name)`
     * Returns a `boolean` indicating whether the removal succeeded.
-* `minetest.do_item_eat(hp_change, replace_with_item, itemstack, user, pointed_thing)`:
+* `minetest.do_item_eat(hp_change, replace_with_item, itemstack, user, pointed_thing, listname, listindex)`:
   returns leftover ItemStack or nil to indicate no inventory change
     * See `minetest.item_eat` and `minetest.register_on_item_eat`
+    * `listname` and `listindex` may be omitted if `itemdef.assume_use_from_wield`
+      is true. However, doing so is deprecated.
 
 Formspec
 --------
@@ -8215,12 +8217,28 @@ Used by `minetest.register_node`, `minetest.register_craftitem`, and
             -- When item is used with the 'punch/mine' key pointing at nothing (air)
         },
 
-        on_place = function(itemstack, placer, pointed_thing),
+        assume_use_from_wield = true,
+        -- If true, callbacks where the item comes from an inventory may assume
+        -- that the item is wielded. If the item is not wielded, these callbacks
+        -- will not be executed.
+        -- Default is true.
+        -- Not setting this explicitly is deprecated.
+
+        can_be_used_for_dual_wielding = false,
+        -- Requires assume_use_from_wield to be false.
+        -- If true, the item can be used as offhand item.
+
+        on_place = function(itemstack, placer, pointed_thing, listname, listindex),
         -- When the 'place' key was pressed with the item in hand
         -- and a node was pointed at.
         -- Shall place item and return the leftover itemstack
         -- or nil to not modify the inventory.
         -- The placer may be any ObjectRef or nil.
+        -- itemstack holds the item that is used for this action.
+        -- listname and listindex is where itemstack came from.
+        -- If itemdef.assume_use_from_wield is true, listname and listindex are
+        -- always the slot of the wielded item.
+        -- TODO: the same applies for on_secondary_use, on_drop, on_use and after_use
         -- default: minetest.item_place
 
         on_secondary_use = function(itemstack, user, pointed_thing),
@@ -8641,12 +8659,16 @@ Used by `minetest.register_node`.
         -- Called when puncher (an ObjectRef) punches the node at pos.
         -- By default calls minetest.register_on_punchnode callbacks.
 
-        on_rightclick = function(pos, node, clicker, itemstack, pointed_thing),
+        on_rightclick = function(pos, node, clicker, itemstack, pointed_thing,
+                listname, listindex),
         -- default: nil
         -- Called when clicker (an ObjectRef) used the 'place/build' key
         -- (not necessarily an actual rightclick)
         -- while pointing at the node at pos with 'node' being the node table.
-        -- itemstack will hold clicker's wielded item.
+        -- itemstack holds the item that is used for this action.
+        -- listname and listindex is where itemstack came from.
+        -- If itemdef.assume_use_from_wield is true, listname and listindex are
+        -- always the slot of the wielded item.
         -- Shall return the leftover itemstack.
         -- Note: pointed_thing can be nil, if a mod calls this function.
         -- This function does not get triggered by clients <=0.4.16 if the

@@ -368,7 +368,8 @@ function core.item_pickup(itemstack, picker, pointed_thing, ...)
 	return itemstack
 end
 
-function core.do_item_eat(hp_change, replace_with_item, itemstack, user, pointed_thing)
+function core.do_item_eat(hp_change, replace_with_item, itemstack, user,
+		pointed_thing, listname, listindex)
 	for _, callback in ipairs(core.registered_on_item_eats) do
 		local result = callback(hp_change, replace_with_item, itemstack, user, pointed_thing)
 		if result then
@@ -405,7 +406,13 @@ function core.do_item_eat(hp_change, replace_with_item, itemstack, user, pointed
 			end
 		end
 	end
-	user:set_wielded_item(itemstack)
+	if listname then
+		local inv = user:get_inventory()
+		inv:set_stack(listname, listindex, itemstack)
+	else
+		assert(def.assume_use_from_wield)
+		user:set_wielded_item(itemstack)
+	end
 
 	user:set_hp(user:get_hp() + hp_change)
 
