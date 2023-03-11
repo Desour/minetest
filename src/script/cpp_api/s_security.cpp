@@ -436,22 +436,15 @@ bool ScriptApiSecurity::safeLoadString(lua_State *L, const std::string &code, co
 
 bool ScriptApiSecurity::safeLoadFile(lua_State *L, const char *path, const char *display_name)
 {
-	FILE *fp;
-	char *chunk_name;
+	assert(path);
 	if (!display_name)
 		display_name = path;
-	if (!path) {
-		fp = stdin;
-		chunk_name = const_cast<char *>("=stdin");
-	} else {
-		fp = fopen(path, "rb");
-		if (!fp) {
-			lua_pushfstring(L, "%s: %s", path, strerror(errno));
-			return false;
-		}
-		size_t len = strlen(display_name) + 2;
-		chunk_name = new char[len];
-		snprintf(chunk_name, len, "@%s", display_name);
+	std::string chunk_name = std::string("@") + display_name;
+
+	FILE *fp = fopen(path, "rb");
+	if (!fp) {
+		lua_pushfstring(L, "%s: %s", path, strerror(errno));
+		return false;
 	}
 
 	size_t start = 0;
@@ -468,10 +461,7 @@ bool ScriptApiSecurity::safeLoadFile(lua_State *L, const char *path, const char 
 	int ret = std::fseek(fp, 0, SEEK_END);
 	if (ret) {
 		lua_pushfstring(L, "%s: %s", path, strerror(errno));
-		if (path) {
-			std::fclose(fp);
-			delete [] chunk_name;
-		}
+		std::fclose(fp);
 		return false;
 	}
 
@@ -480,26 +470,18 @@ bool ScriptApiSecurity::safeLoadFile(lua_State *L, const char *path, const char 
 	ret = std::fseek(fp, start, SEEK_SET);
 	if (ret) {
 		lua_pushfstring(L, "%s: %s", path, strerror(errno));
-		if (path) {
-			std::fclose(fp);
-			delete [] chunk_name;
-		}
+		std::fclose(fp);
 		return false;
 	}
 
 	size_t num_read = std::fread(&code[0], 1, size, fp);
-	if (path)
-		std::fclose(fp);
+	std::fclose(fp);
 	if (num_read != size) {
 		lua_pushliteral(L, "Error reading file to load.");
-		if (path)
-			delete [] chunk_name;
 		return false;
 	}
 
-	bool result = safeLoadString(L, code, chunk_name);
-	if (path)
-		delete [] chunk_name;
+	bool result = safeLoadString(L, code, chunk_name.c_str());
 	return result;
 }
 
@@ -738,11 +720,9 @@ int ScriptApiSecurity::sl_g_loadfile(lua_State *L)
 #endif
 
 	// Server implementation
-	const char *path = NULL;
-	if (lua_isstring(L, 1)) {
-		path = lua_tostring(L, 1);
-		CHECK_SECURE_PATH_INTERNAL(L, path, false, NULL);
-	}
+	// Note: Loading from stdin is not supported.
+	const char *path = luaL_checkstring(L, 1);
+	CHECK_SECURE_PATH_INTERNAL(L, path, false, nullptr);
 
 	if (!safeLoadFile(L, path)) {
 		lua_pushnil(L);
