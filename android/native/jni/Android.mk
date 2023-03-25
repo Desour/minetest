@@ -136,6 +136,7 @@ LOCAL_C_INCLUDES := \
 	../../src/script                             \
 	../../lib/gmp                                \
 	../../lib/jsoncpp                            \
+	../../lib/sha256                             \
 	deps/$(APP_ABI)/Curl/include                       \
 	deps/$(APP_ABI)/Freetype/include/freetype2         \
 	deps/$(APP_ABI)/Irrlicht/include                   \
@@ -276,6 +277,9 @@ LOCAL_SRC_FILES += ../../lib/gmp/mini-gmp.c
 
 # JSONCPP
 LOCAL_SRC_FILES += ../../lib/jsoncpp/jsoncpp.cpp
+
+# sha256
+LOCAL_SRC_FILES += ../../lib/sha256/sha256.c
 
 LOCAL_STATIC_LIBRARIES += \
 	Curl libmbedcrypto libmbedtls libmbedx509 \

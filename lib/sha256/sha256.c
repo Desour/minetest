@@ -7,7 +7,7 @@
 # include <stdlib.h>
 # include <string.h>
 
-# include <util/sha2.h>
+# include "sha256/sha2.h"
 
 #  define OPENSSL_VERSION_TEXT    "OpenSSL 1.0.2a 19 Mar 2015"
 # define OPENSSL_VERSION_PTEXT   " part of " OPENSSL_VERSION_TEXT
