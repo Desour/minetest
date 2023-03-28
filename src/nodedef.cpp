@@ -42,6 +42,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <algorithm>
 #include <cmath>
 
+#include <tracy/Tracy.hpp>
+
 /*
 	NodeBox
 */
@@ -61,6 +63,8 @@ void NodeBox::reset()
 
 void NodeBox::serialize(std::ostream &os, u16 protocol_version) const
 {
+	ZoneScoped;
+
 	writeU8(os, 6); // version. Protocol >= 36
 
 	switch (type) {
@@ -121,6 +125,8 @@ void NodeBox::serialize(std::ostream &os, u16 protocol_version) const
 
 void NodeBox::deSerialize(std::istream &is)
 {
+	ZoneScoped;
+
 	if (readU8(is) < 6)
 		throw SerializationError("unsupported NodeBox version");
 
@@ -193,6 +199,8 @@ void NodeBox::deSerialize(std::istream &is)
 
 void TileDef::serialize(std::ostream &os, u16 protocol_version) const
 {
+	ZoneScoped;
+
 	// protocol_version >= 36
 	u8 version = 6;
 	writeU8(os, version);
@@ -248,6 +256,8 @@ void TileDef::serialize(std::ostream &os, u16 protocol_version) const
 
 void TileDef::deSerialize(std::istream &is, NodeDrawType drawtype, u16 protocol_version)
 {
+	ZoneScoped;
+
 	if (readU8(is) < 6)
 		throw SerializationError("unsupported TileDef version");
 
@@ -274,6 +284,8 @@ void TileDef::deSerialize(std::istream &is, NodeDrawType drawtype, u16 protocol_
 
 void TextureSettings::readSettings()
 {
+	ZoneScoped;
+
 	connected_glass                = g_settings->getBool("connected_glass");
 	opaque_water                   = g_settings->getBool("opaque_water");
 	bool smooth_lighting           = g_settings->getBool("smooth_lighting");
@@ -319,11 +331,15 @@ void TextureSettings::readSettings()
 
 ContentFeatures::ContentFeatures()
 {
+	ZoneScoped;
+
 	reset();
 }
 
 ContentFeatures::~ContentFeatures()
 {
+	ZoneScoped;
+
 #ifndef SERVER
 	for (u16 j = 0; j < 6; j++) {
 		delete tiles[j].layers[0].frames;
@@ -336,6 +352,8 @@ ContentFeatures::~ContentFeatures()
 
 void ContentFeatures::reset()
 {
+	ZoneScoped;
+
 	/*
 		Cached stuff
 	*/
@@ -444,6 +462,8 @@ u8 ContentFeatures::getAlphaForLegacy() const
 
 void ContentFeatures::serialize(std::ostream &os, u16 protocol_version) const
 {
+	ZoneScoped;
+
 	writeU8(os, CONTENTFEATURES_VERSION);
 
 	// general
@@ -547,6 +567,8 @@ void ContentFeatures::serialize(std::ostream &os, u16 protocol_version) const
 
 void ContentFeatures::deSerialize(std::istream &is, u16 protocol_version)
 {
+	ZoneScoped;
+
 	if (readU8(is) < CONTENTFEATURES_VERSION)
 		throw SerializationError("unsupported ContentFeatures version");
 
@@ -665,6 +687,9 @@ static void fillTileAttribs(ITextureSource *tsrc, TileLayer *layer,
 		u8 material_type, u32 shader_id, bool backface_culling,
 		const TextureSettings &tsettings)
 {
+	ZoneScoped;
+	ZoneText(tiledef.name.c_str(), tiledef.name.size());
+
 	layer->shader_id     = shader_id;
 	layer->texture       = tsrc->getTextureForMesh(tiledef.name, &layer->texture_id);
 	layer->material_type = material_type;
@@ -744,6 +769,8 @@ static void fillTileAttribs(ITextureSource *tsrc, TileLayer *layer,
 
 bool ContentFeatures::textureAlphaCheck(ITextureSource *tsrc, const TileDef *tiles, int length)
 {
+	ZoneScoped;
+
 	video::IVideoDriver *driver = RenderingEngine::get_video_driver();
 	static thread_local bool long_warning_printed = false;
 	std::set<std::string> seen;
@@ -809,6 +836,8 @@ bool isWorldAligned(AlignStyle style, WorldAlignMode mode, NodeDrawType drawtype
 void ContentFeatures::updateTextures(ITextureSource *tsrc, IShaderSource *shdsrc,
 	scene::IMeshManipulator *meshmanip, Client *client, const TextureSettings &tsettings)
 {
+	ZoneScoped;
+
 	// minimap pixel color - the average color of a texture
 	if (tsettings.enable_minimap && !tiledef[0].name.empty())
 		minimap_color = tsrc->getTextureAverageColor(tiledef[0].name);
@@ -1054,6 +1083,8 @@ void ContentFeatures::updateTextures(ITextureSource *tsrc, IShaderSource *shdsrc
 
 NodeDefManager::NodeDefManager()
 {
+	ZoneScoped;
+
 	clear();
 }
 
@@ -1073,6 +1104,8 @@ NodeDefManager::~NodeDefManager()
 
 void NodeDefManager::clear()
 {
+	ZoneScoped;
+
 	m_content_features.clear();
 	m_name_id_mapping.clear();
 	m_name_id_mapping_with_aliases.clear();
@@ -1244,6 +1277,8 @@ void boxVectorUnion(const std::vector<aabb3f> &boxes, aabb3f *box_union)
 void getNodeBoxUnion(const NodeBox &nodebox, const ContentFeatures &features,
 	aabb3f *box_union)
 {
+	ZoneScoped;
+
 	switch(nodebox.type) {
 		case NODEBOX_FIXED:
 		case NODEBOX_LEVELED: {
@@ -1370,6 +1405,8 @@ void NodeDefManager::eraseIdFromGroups(content_t id)
 // IWritableNodeDefManager
 content_t NodeDefManager::set(const std::string &name, const ContentFeatures &def)
 {
+	ZoneScoped;
+
 	// Pre-conditions
 	assert(!name.empty());
 	assert(name != "ignore");
@@ -1438,6 +1475,8 @@ void NodeDefManager::removeNode(const std::string &name)
 
 void NodeDefManager::updateAliases(IItemDefManager *idef)
 {
+	ZoneScoped;
+
 	std::set<std::string> all;
 	idef->getAll(all);
 	m_name_id_mapping_with_aliases.clear();
@@ -1453,6 +1492,8 @@ void NodeDefManager::updateAliases(IItemDefManager *idef)
 
 void NodeDefManager::applyTextureOverrides(const std::vector<TextureOverride> &overrides)
 {
+	ZoneScoped;
+
 	infostream << "NodeDefManager::applyTextureOverrides(): Applying "
 		"overrides to textures" << std::endl;
 
@@ -1514,6 +1555,8 @@ void NodeDefManager::applyTextureOverrides(const std::vector<TextureOverride> &o
 
 void NodeDefManager::updateTextures(IGameDef *gamedef, void *progress_callback_args)
 {
+	ZoneScoped;
+
 #ifndef SERVER
 	infostream << "NodeDefManager::updateTextures(): Updating "
 		"textures in node definitions" << std::endl;
@@ -1538,6 +1581,8 @@ void NodeDefManager::updateTextures(IGameDef *gamedef, void *progress_callback_a
 
 void NodeDefManager::serialize(std::ostream &os, u16 protocol_version) const
 {
+	ZoneScoped;
+
 	writeU8(os, 1); // version
 	u16 count = 0;
 	std::ostringstream os2(std::ios::binary);
@@ -1567,6 +1612,8 @@ void NodeDefManager::serialize(std::ostream &os, u16 protocol_version) const
 
 void NodeDefManager::deSerialize(std::istream &is, u16 protocol_version)
 {
+	ZoneScoped;
+
 	clear();
 
 	if (readU8(is) < 1)
@@ -1707,6 +1754,8 @@ void NodeDefManager::resolveCrossrefs()
 bool NodeDefManager::nodeboxConnects(MapNode from, MapNode to,
 	u8 connect_face) const
 {
+	ZoneScoped;
+
 	const ContentFeatures &f1 = get(from);
 
 	if ((f1.drawtype != NDT_NODEBOX) || (f1.node_box.type != NODEBOX_CONNECTED))
@@ -1802,6 +1851,8 @@ void NodeResolver::nodeResolveInternal()
 bool NodeResolver::getIdFromNrBacklog(content_t *result_out,
 	const std::string &node_alt, content_t c_fallback, bool error_on_fallback)
 {
+	ZoneScoped;
+
 	if (m_nodenames_idx == m_nodenames.size()) {
 		*result_out = c_fallback;
 		errorstream << "NodeResolver: no more nodes in list" << std::endl;
@@ -1832,6 +1883,8 @@ bool NodeResolver::getIdFromNrBacklog(content_t *result_out,
 bool NodeResolver::getIdsFromNrBacklog(std::vector<content_t> *result_out,
 	bool all_required, content_t c_fallback)
 {
+	ZoneScoped;
+
 	bool success = true;
 
 	if (m_nnlistsizes_idx == m_nnlistsizes.size()) {

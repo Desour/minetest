@@ -78,6 +78,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #else
 	#include "client/sound.h"
 #endif
+
+#include <tracy/Tracy.hpp>
+
 /*
 	Text input system
 */
@@ -1029,6 +1032,8 @@ Game::Game() :
 	m_chat_log_buf(g_logger),
 	m_game_ui(new GameUI())
 {
+	ZoneScoped;
+
 	g_settings->registerChangedCallback("doubletap_jump",
 		&settingChangedCallback, this);
 	g_settings->registerChangedCallback("enable_clouds",
@@ -1125,6 +1130,7 @@ bool Game::startup(bool *kill,
 		bool *reconnect,
 		ChatBackend *chat_backend)
 {
+	ZoneScoped;
 
 	// "cache"
 	m_rendering_engine        = rendering_engine;
@@ -1172,8 +1178,12 @@ bool Game::startup(bool *kill,
 }
 
 
+const char *framename_game = "game-frame";
+
 void Game::run()
 {
+	ZoneScoped;
+
 	ProfilerGraph graph;
 	RunStats stats = {};
 	CameraOrientation cam_view_target = {};
@@ -1197,14 +1207,21 @@ void Game::run()
 	core::dimension2du previous_screen_size(g_settings->getU16("screen_w"),
 			g_settings->getU16("screen_h"));
 
+	FrameMarkStart(framename_game);
+
 	while (m_rendering_engine->run()
 			&& !(*kill || g_gamecallback->shutdown_requested
 			|| (server && server->isShutdownRequested()))) {
+
+
+		FrameMarkEnd(framename_game);
 
 		// Calculate dtime =
 		//    m_rendering_engine->run() from this iteration
 		//  + Sleep time until the wanted FPS are reached
 		draw_times.limit(device, &dtime);
+
+		FrameMarkStart(framename_game);
 
 		const auto current_dynamic_info = getCurrentDynamicInfo();
 		if (!current_dynamic_info.equal(client_display_info)) {
@@ -1286,11 +1303,15 @@ void Game::run()
 			showPauseMenu();
 		}
 	}
+
+	FrameMarkEnd(framename_game);
 }
 
 
 void Game::shutdown()
 {
+	ZoneScoped;
+
 	auto formspec = m_game_ui->getFormspecGUI();
 	if (formspec)
 		formspec->quitMenu();
@@ -1347,6 +1368,8 @@ bool Game::init(
 		u16 port,
 		const SubgameSpec &gamespec)
 {
+	ZoneScoped;
+
 	texture_src = createTextureSource();
 
 	showOverlayMessage(N_("Loading..."), 0, 0);
@@ -1405,6 +1428,8 @@ bool Game::initSound()
 bool Game::createSingleplayerServer(const std::string &map_dir,
 		const SubgameSpec &gamespec, u16 port)
 {
+	ZoneScoped;
+
 	showOverlayMessage(N_("Creating server..."), 0, 5);
 
 	std::string bind_str = g_settings->get("bind_address");
@@ -1438,6 +1463,8 @@ bool Game::createSingleplayerServer(const std::string &map_dir,
 
 bool Game::createClient(const GameStartData &start_data)
 {
+	ZoneScoped;
+
 	showOverlayMessage(N_("Creating client..."), 0, 10);
 
 	draw_control = new MapDrawControl();
@@ -1553,6 +1580,8 @@ bool Game::createClient(const GameStartData &start_data)
 
 bool Game::initGui()
 {
+	ZoneScoped;
+
 	m_game_ui->init();
 
 	// Remove stale "recent" chat messages from previous connections
@@ -1575,9 +1604,13 @@ bool Game::initGui()
 	return true;
 }
 
+const char *framename_game_connectToServer = "Game::connectToServer()-frame";
+
 bool Game::connectToServer(const GameStartData &start_data,
 		bool *connect_ok, bool *connection_aborted)
 {
+	ZoneScoped;
+
 	*connect_ok = false;	// Let's not be overly optimistic
 	*connection_aborted = false;
 	bool local_server_mode = false;
@@ -1648,9 +1681,13 @@ bool Game::connectToServer(const GameStartData &start_data,
 
 		fps_control.reset();
 
+		FrameMarkStart(framename_game_connectToServer);
+
 		while (m_rendering_engine->run()) {
 
+			FrameMarkEnd(framename_game_connectToServer);
 			fps_control.limit(device, &dtime);
+			FrameMarkStart(framename_game_connectToServer);
 
 			// Update client and server
 			client->step(dtime);
@@ -1698,11 +1735,17 @@ bool Game::connectToServer(const GameStartData &start_data,
 		return false;
 	}
 
+	FrameMarkEnd(framename_game_connectToServer);
+
 	return true;
 }
 
+const char *framename_game_getServerContent = "Game::getServerContent()-frame";
+
 bool Game::getServerContent(bool *aborted)
 {
+	ZoneScoped;
+
 	input->clear();
 
 	FpsControl fps_control;
@@ -1710,9 +1753,12 @@ bool Game::getServerContent(bool *aborted)
 
 	fps_control.reset();
 
+	FrameMarkStart(framename_game_getServerContent);
 	while (m_rendering_engine->run()) {
 
+		FrameMarkEnd(framename_game_getServerContent);
 		fps_control.limit(device, &dtime);
+		FrameMarkStart(framename_game_getServerContent);
 
 		// Update client and server
 		client->step(dtime);
@@ -1747,12 +1793,14 @@ bool Game::getServerContent(bool *aborted)
 
 		if (!client->itemdefReceived()) {
 			const wchar_t *text = wgettext("Item definitions...");
+			TracyMessageL("Item definitions...");
 			progress = 25;
 			m_rendering_engine->draw_load_screen(text, guienv, texture_src,
 				dtime, progress);
 			delete[] text;
 		} else if (!client->nodedefReceived()) {
 			const wchar_t *text = wgettext("Node definitions...");
+			TracyMessageL("Node definitions...");
 			progress = 30;
 			m_rendering_engine->draw_load_screen(text, guienv, texture_src,
 				dtime, progress);
@@ -1763,6 +1811,7 @@ bool Game::getServerContent(bool *aborted)
 			message.precision(0);
 			float receive = client->mediaReceiveProgress() * 100;
 			message << gettext("Media...");
+			TracyMessageL("Media...");
 			if (receive > 0)
 				message << " " << receive << "%";
 			message.precision(2);
@@ -1785,6 +1834,7 @@ bool Game::getServerContent(bool *aborted)
 				texture_src, dtime, progress);
 		}
 	}
+	FrameMarkEnd(framename_game_getServerContent);
 
 	return true;
 }
@@ -1812,6 +1862,8 @@ inline void Game::updateInteractTimers(f32 dtime)
  */
 inline bool Game::checkConnection()
 {
+	ZoneScoped;
+
 	if (client->accessDenied()) {
 		*error_message = fmtgettext("Access denied. Reason: %s", client->accessDeniedReason().c_str());
 		*reconnect_requested = client->reconnectRequested();
@@ -1827,6 +1879,8 @@ inline bool Game::checkConnection()
  */
 inline bool Game::handleCallbacks()
 {
+	ZoneScoped;
+
 	if (g_gamecallback->disconnect_requested) {
 		g_gamecallback->disconnect_requested = false;
 		return false;
@@ -1861,6 +1915,8 @@ inline bool Game::handleCallbacks()
 
 void Game::processQueues()
 {
+	ZoneScoped;
+
 	texture_src->processQueue();
 	itemdef_manager->processQueue(client);
 	shader_src->processQueue();
@@ -1977,6 +2033,8 @@ void Game::updateStats(RunStats *stats, const FpsControl &draw_times,
 
 void Game::processUserInput(f32 dtime)
 {
+	ZoneScoped;
+
 	// Reset input if window not active or some menu is active
 	if (!device->isWindowActive() || isMenuActive() || guienv->hasFocus(gui_chat_console)) {
 		input->clear();
@@ -2702,6 +2760,8 @@ void Game::updatePlayerControl(const CameraOrientation &cam)
 
 inline void Game::step(f32 dtime)
 {
+	ZoneScoped;
+
 	if (server)
 		server->step(dtime);
 
@@ -3067,6 +3127,8 @@ void Game::handleClientEvent_CloudParams(ClientEvent *event, CameraOrientation *
 
 void Game::processClientEvents(CameraOrientation *cam)
 {
+	ZoneScoped;
+
 	while (client->hasClientEvents()) {
 		std::unique_ptr<ClientEvent> event(client->getClientEvent());
 		FATAL_ERROR_IF(event->type >= CLIENTEVENT_MAX, "Invalid clientevent type");
@@ -3077,6 +3139,8 @@ void Game::processClientEvents(CameraOrientation *cam)
 
 void Game::updateChat(f32 dtime)
 {
+	ZoneScoped;
+
 	// Get new messages from error log buffer
 	while (!m_chat_log_buf.empty())
 		chat_backend->addMessage(L"", utf8_to_wide(m_chat_log_buf.get()));
@@ -3173,6 +3237,8 @@ void Game::updateCamera(f32 dtime)
 
 void Game::updateSound(f32 dtime)
 {
+	ZoneScoped;
+
 	// Update sound listener
 	v3s16 camera_offset = camera->getOffset();
 	sound->updateListener(camera->getCameraNode()->getPosition() + intToFloat(camera_offset, BS),
@@ -3211,6 +3277,8 @@ void Game::updateSound(f32 dtime)
 
 void Game::processPlayerInteraction(f32 dtime, bool show_hud)
 {
+	ZoneScoped;
+
 	LocalPlayer *player = client->getEnv().getLocalPlayer();
 
 	const v3f camera_direction = camera->getDirection();
@@ -3914,6 +3982,8 @@ void Game::handleDigging(const PointedThing &pointed, const v3s16 &nodepos,
 void Game::updateFrame(ProfilerGraph *graph, RunStats *stats, f32 dtime,
 		const CameraOrientation &cam)
 {
+	ZoneScoped;
+
 	TimeTaker tt_update("Game::updateFrame()");
 	LocalPlayer *player = client->getEnv().getLocalPlayer();
 
@@ -4184,8 +4254,10 @@ void Game::updateFrame(ProfilerGraph *graph, RunStats *stats, f32 dtime,
 	/*
 		==================== End scene ====================
 	*/
-
-	driver->endScene();
+	{
+		ZoneScopedN("driver->endScene()");
+		driver->endScene();
+	}
 
 	stats->drawtime = tt_draw.stop(true);
 	g_profiler->graphAdd("Draw scene [us]", stats->drawtime);
@@ -4205,6 +4277,8 @@ inline void Game::updateProfilerGraphs(ProfilerGraph *graph)
  *****************************************************************************/
 void Game::updateShadows()
 {
+	ZoneScoped;
+
 	ShadowRenderer *shadow = RenderingEngine::get_shadow_renderer();
 	if (!shadow)
 		return;
@@ -4499,6 +4573,8 @@ void the_game(bool *kill,
 		ChatBackend &chat_backend,
 		bool *reconnect_requested) // Used for local game
 {
+	ZoneScoped;
+
 	Game game;
 
 	/* Make a copy of the server address because if a local singleplayer server

@@ -32,6 +32,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <queue>
 
+#include <tracy/Tracy.hpp>
+
 // struct MeshBufListList
 void MeshBufListList::clear()
 {
@@ -252,6 +254,8 @@ private:
 
 void ClientMap::updateDrawList()
 {
+	ZoneScoped;
+
 	ScopeProfiler sp(g_profiler, "CM::updateDrawList()", SPT_AVG);
 
 	m_needs_update_drawlist = false;
@@ -662,6 +666,8 @@ void ClientMap::touchMapBlocks()
 
 void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 {
+	ZoneScoped;
+
 	bool is_transparent_pass = pass == scene::ESNRP_TRANSPARENT;
 
 	std::string prefix;

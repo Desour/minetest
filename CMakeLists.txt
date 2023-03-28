@@ -40,6 +40,19 @@ endif()
 message(STATUS "*** Will build version ${VERSION_STRING} ***")
 
 
+include(FetchContent)
+
+FetchContent_Declare(
+	tracy
+	GIT_REPOSITORY https://github.com/wolfpld/tracy.git
+	GIT_TAG v0.9.1
+	GIT_SHALLOW TRUE
+	GIT_PROGRESS TRUE
+)
+FetchContent_MakeAvailable(tracy)
+set(TRACY_EXTRA_SRC "${CMAKE_BINARY_DIR}/_deps/tracy-src/public/TracyClient.cpp")
+
+
 # Configuration options
 set(DEFAULT_RUN_IN_PLACE FALSE)
 if(WIN32)

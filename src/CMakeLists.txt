@@ -528,7 +528,7 @@ if(NOT CMAKE_CROSSCOMPILING)
 endif()
 
 if(BUILD_CLIENT)
-	add_executable(${PROJECT_NAME} ${client_SRCS} ${extra_windows_SRCS})
+	add_executable(${PROJECT_NAME} ${client_SRCS} ${extra_windows_SRCS} ${TRACY_EXTRA_SRC})
 	add_dependencies(${PROJECT_NAME} GenerateVersion)
 	target_link_libraries(
 		${PROJECT_NAME}
@@ -544,6 +544,7 @@ if(BUILD_CLIENT)
 		${LUA_BIT_LIBRARY}
 		${FREETYPE_LIBRARY}
 		${PLATFORM_LIBS}
+		Tracy::TracyClient
 	)
 	if(NOT USE_LUAJIT)
 		set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -596,7 +597,7 @@ endif(BUILD_CLIENT)
 
 
 if(BUILD_SERVER)
-	add_executable(${PROJECT_NAME}server ${server_SRCS} ${extra_windows_SRCS})
+	add_executable(${PROJECT_NAME}server ${server_SRCS} ${extra_windows_SRCS} ${TRACY_EXTRA_SRC})
 	add_dependencies(${PROJECT_NAME}server GenerateVersion)
 
 	get_target_property(
@@ -613,6 +614,7 @@ if(BUILD_SERVER)
 		${LUA_BIT_LIBRARY}
 		${GMP_LIBRARY}
 		${PLATFORM_LIBS}
+		Tracy::TracyClient
 	)
 	set_target_properties(${PROJECT_NAME}server PROPERTIES
 		COMPILE_DEFINITIONS "SERVER")

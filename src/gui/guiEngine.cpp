@@ -43,6 +43,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "client/tile.h"
 #endif
 
+#include <tracy/Tracy.hpp>
 
 /******************************************************************************/
 void TextDestGuiEngine::gotText(const StringMap &fields)
@@ -237,9 +238,13 @@ bool GUIEngine::loadMainMenuScript()
 	return false;
 }
 
+const char *framename_guiEngine = "guiEngine-frame";
+
 /******************************************************************************/
 void GUIEngine::run()
 {
+	ZoneScoped;
+
 	// Always create clouds because they may or may not be
 	// needed based on the game selected
 	video::IVideoDriver *driver = m_rendering_engine->get_video_driver();
@@ -268,6 +273,8 @@ void GUIEngine::run()
 		driver->setFog(sky_color, fog_type, fog_start, fog_end, fog_density,
 				fog_pixelfog, fog_rangefog);
 	}
+
+	FrameMarkStart(framename_guiEngine);
 
 	while (m_rendering_engine->run() && (!m_startgame) && (!m_kill)) {
 
@@ -307,6 +314,8 @@ void GUIEngine::run()
 
 		driver->endScene();
 
+		FrameMarkEnd(framename_guiEngine);
+
 		IrrlichtDevice *device = m_rendering_engine->get_raw_device();
 		u32 frametime_min = 1000 / (device->isWindowFocused()
 			? g_settings->getFloat("fps_max")
@@ -316,12 +325,16 @@ void GUIEngine::run()
 		else
 			sleep_ms(frametime_min);
 
+		FrameMarkStart(framename_guiEngine);
+
 		m_script->step();
 
 #ifdef __ANDROID__
 		m_menu->getAndroidUIInput();
 #endif
 	}
+
+	FrameMarkEnd(framename_guiEngine);
 }
 
 /******************************************************************************/

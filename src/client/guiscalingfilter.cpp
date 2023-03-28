@@ -24,6 +24,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <cstdio>
 #include "client/renderingengine.h"
 
+#include <tracy/Tracy.hpp>
+
 /* Maintain a static cache to store the images that correspond to textures
  * in a format that's manipulable by code.  Some platforms exhibit issues
  * converting textures back into images repeatedly, and some don't even
@@ -41,6 +43,8 @@ std::map<io::path, video::ITexture *> g_txrCache;
  */
 void guiScalingCache(const io::path &key, video::IVideoDriver *driver, video::IImage *value)
 {
+	ZoneScoped;
+
 	if (!g_settings->getBool("gui_scaling_filter"))
 		return;
 

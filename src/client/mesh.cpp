@@ -26,6 +26,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <SAnimatedMesh.h>
 #include <IAnimatedMeshSceneNode.h>
 
+#include <tracy/Tracy.hpp>
+
 inline static void applyShadeFactor(video::SColor& color, float factor)
 {
 	color.setRed(core::clamp(core::round32(color.getRed()*factor), 0, 255));
@@ -114,6 +116,8 @@ scene::IAnimatedMesh* createCubeMesh(v3f scale)
 
 void scaleMesh(scene::IMesh *mesh, v3f scale)
 {
+	ZoneScoped;
+
 	if (mesh == NULL)
 		return;
 
@@ -297,6 +301,8 @@ void rotateMeshYZby(scene::IMesh *mesh, f64 degrees)
 
 void rotateMeshBy6dFacedir(scene::IMesh *mesh, int facedir)
 {
+	ZoneScoped;
+
 	int axisdir = facedir >> 2;
 	facedir &= 0x03;
 	switch (facedir) {
@@ -315,6 +321,8 @@ void rotateMeshBy6dFacedir(scene::IMesh *mesh, int facedir)
 
 void recalculateBoundingBox(scene::IMesh *src_mesh)
 {
+	ZoneScoped;
+
 	aabb3f bbox;
 	bbox.reset(0,0,0);
 	for (u16 j = 0; j < src_mesh->getMeshBufferCount(); j++) {

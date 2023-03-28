@@ -42,6 +42,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <mt_opengl.h>
 
+#include <tracy/Tracy.hpp>
+
 /*
 	A cache from shader name to shader path
 */
@@ -450,6 +452,8 @@ ShaderSource::ShaderSource()
 u32 ShaderSource::getShader(const std::string &name,
 		MaterialType material_type, NodeDrawType drawtype)
 {
+	ZoneScoped;
+
 	/*
 		Get shader
 	*/

@@ -35,6 +35,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "renderingengine.h"
 #include "network/networkexceptions.h"
 
+#include <tracy/Tracy.hpp>
+
 #if USE_SOUND
 	#include "sound_openal.h"
 #endif
@@ -84,9 +86,12 @@ ClientLauncher::~ClientLauncher()
 #endif
 }
 
+const char *framename_ClientLauncher_run = "ClientLauncher::run()-frame";
 
 bool ClientLauncher::run(GameStartData &start_data, const Settings &cmd_args)
 {
+	ZoneScoped;
+
 	/* This function is called when a client must be started.
 	 * Covered cases:
 	 *   - Singleplayer (address but map provided)
@@ -207,6 +212,8 @@ bool ClientLauncher::run(GameStartData &start_data, const Settings &cmd_args)
 
 	while (m_rendering_engine->run() && !*kill &&
 		!g_gamecallback->shutdown_requested) {
+		FrameMarkStart(framename_ClientLauncher_run);
+
 		// Set the window caption
 		const wchar_t *text = wgettext("Main Menu");
 		m_rendering_engine->get_raw_device()->
@@ -302,6 +309,8 @@ bool ClientLauncher::run(GameStartData &start_data, const Settings &cmd_args)
 			}
 			break;
 		}
+
+		FrameMarkEnd(framename_ClientLauncher_run);
 	} // Menu-game loop
 
 	g_menuclouds->drop();
@@ -335,6 +344,8 @@ void ClientLauncher::init_args(GameStartData &start_data, const Settings &cmd_ar
 
 bool ClientLauncher::init_engine()
 {
+	ZoneScoped;
+
 	receiver = new MyEventReceiver();
 	m_rendering_engine = new RenderingEngine(receiver);
 	return m_rendering_engine->get_raw_device() != nullptr;
@@ -371,6 +382,8 @@ bool ClientLauncher::launch_game(std::string &error_message,
 		bool reconnect_requested, GameStartData &start_data,
 		const Settings &cmd_args)
 {
+	ZoneScoped;
+
 	// Prepare and check the start data to launch a game
 	std::string error_message_lua = error_message;
 	error_message.clear();
@@ -531,10 +544,16 @@ bool ClientLauncher::launch_game(std::string &error_message,
 	return true;
 }
 
+const char *framename_ClientLauncher_main_menu = "ClientLauncher::main_menu()-frame";
+
 void ClientLauncher::main_menu(MainMenuData *menudata)
 {
+	ZoneScoped;
+
 	bool *kill = porting::signal_handler_killstatus();
 	video::IVideoDriver *driver = m_rendering_engine->get_video_driver();
+
+	FrameMarkStart(framename_ClientLauncher_main_menu);
 
 	infostream << "Waiting for other menus" << std::endl;
 	while (m_rendering_engine->run() && !*kill) {
@@ -543,9 +562,12 @@ void ClientLauncher::main_menu(MainMenuData *menudata)
 		driver->beginScene(true, true, video::SColor(255, 128, 128, 128));
 		m_rendering_engine->get_gui_env()->drawAll();
 		driver->endScene();
+		FrameMarkEnd(framename_ClientLauncher_main_menu);
 		// On some computers framerate doesn't seem to be automatically limited
 		sleep_ms(25);
+		FrameMarkStart(framename_ClientLauncher_main_menu);
 	}
+	FrameMarkEnd(framename_ClientLauncher_main_menu);
 	infostream << "Waited for other menus" << std::endl;
 
 #ifndef ANDROID

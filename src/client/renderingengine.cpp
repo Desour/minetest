@@ -55,6 +55,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "filesys.h"
 #endif
 
+#include <tracy/Tracy.hpp>
+
 RenderingEngine *RenderingEngine::s_singleton = nullptr;
 const float RenderingEngine::BASE_BLOOM_STRENGTH = 1.0f;
 
@@ -432,6 +434,8 @@ void RenderingEngine::draw_load_screen(const std::wstring &text,
 		gui::IGUIEnvironment *guienv, ITextureSource *tsrc, float dtime,
 		int percent, bool clouds)
 {
+	ZoneScoped;
+
 	v2u32 screensize = getWindowSize();
 
 	v2s32 textsize(g_fontengine->getTextWidth(text), g_fontengine->getLineHeight());
@@ -539,6 +543,8 @@ std::vector<irr::video::E_DRIVER_TYPE> RenderingEngine::getSupportedVideoDrivers
 
 void RenderingEngine::initialize(Client *client, Hud *hud)
 {
+	ZoneScoped;
+
 	const std::string &draw_mode = g_settings->get("3d_mode");
 	core.reset(createRenderingCore(draw_mode, m_device, client, hud));
 }
@@ -551,6 +557,7 @@ void RenderingEngine::finalize()
 void RenderingEngine::draw_scene(video::SColor skycolor, bool show_hud,
 		bool show_minimap, bool draw_wield_tool, bool draw_crosshair)
 {
+	ZoneScoped;
 	core->draw(skycolor, show_hud, show_minimap, draw_wield_tool, draw_crosshair);
 }
 

@@ -61,6 +61,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "translation.h"
 #include "content/mod_configuration.h"
 
+#include <tracy/Tracy.hpp>
+
 extern gui::IGUIEnvironment* guienv;
 
 /*
@@ -339,7 +341,7 @@ Client::~Client()
 
 	m_mesh_update_manager.stop();
 	m_mesh_update_manager.wait();
-	
+
 	MeshUpdateResult r;
 	while (m_mesh_update_manager.getNextResult(r)) {
 		for (auto block : r.map_blocks)
@@ -373,6 +375,8 @@ Client::~Client()
 
 void Client::connect(Address address, bool is_local_server)
 {
+	ZoneScoped;
+
 	initLocalMapSaving(address, m_address_name, is_local_server);
 
 	// Since we use TryReceive() a timeout here would be ineffective anyway
@@ -382,6 +386,8 @@ void Client::connect(Address address, bool is_local_server)
 
 void Client::step(float dtime)
 {
+	ZoneScoped;
+
 	// Limit a bit
 	if (dtime > 2.0)
 		dtime = 2.0;
@@ -753,6 +759,9 @@ void Client::step(float dtime)
 bool Client::loadMedia(const std::string &data, const std::string &filename,
 	bool from_media_push)
 {
+	ZoneScoped;
+	ZoneText(filename.c_str(), filename.size());
+
 	std::string name;
 
 	const char *image_ext[] = {
@@ -916,6 +925,8 @@ void Client::initLocalMapSaving(const Address &address,
 
 void Client::ReceiveAll()
 {
+	ZoneScoped;
+
 	NetworkPacket pkt;
 	u64 start_ms = porting::getTimeMs();
 	const u64 budget = 10;
@@ -943,6 +954,8 @@ void Client::ReceiveAll()
 
 inline void Client::handleCommand(NetworkPacket* pkt)
 {
+	ZoneScoped;
+
 	const ToClientCommandHandler& opHandle = toClientCommandTable[pkt->getCommand()];
 	(this->*opHandle.handler)(pkt);
 }
@@ -952,6 +965,8 @@ inline void Client::handleCommand(NetworkPacket* pkt)
 */
 void Client::ProcessData(NetworkPacket *pkt)
 {
+	ZoneScoped;
+
 	ToClientCommand command = (ToClientCommand) pkt->getCommand();
 	u32 sender_peer_id = pkt->getPeerId();
 
@@ -1112,6 +1127,8 @@ AuthMechanism Client::choseAuthMech(const u32 mechs)
 
 void Client::sendInit(const std::string &playerName)
 {
+	ZoneScoped;
+
 	NetworkPacket pkt(TOSERVER_INIT, 1 + 2 + 2 + (1 + playerName.size()));
 
 	// we don't support network compression yet
@@ -1519,6 +1536,8 @@ void Client::setPlayerItem(u16 item)
 // has been updated from the server.
 bool Client::updateWieldedItem()
 {
+	ZoneScoped;
+
 	if (!m_update_wielded_item)
 		return false;
 
@@ -1741,6 +1760,8 @@ const Address Client::getServerAddress()
 
 float Client::mediaReceiveProgress()
 {
+	ZoneScoped;
+
 	if (m_media_downloader)
 		return m_media_downloader->getProgress();
 
@@ -1781,7 +1802,10 @@ void Client::showUpdateProgressTexture(void *args, u32 progress, u32 max_progres
 
 void Client::afterContentReceived()
 {
+	ZoneScoped;
+
 	infostream<<"Client::afterContentReceived() started"<<std::endl;
+	TracyMessageL("Client::afterContentReceived() started");
 	assert(m_itemdef_received); // pre-condition
 	assert(m_nodedef_received); // pre-condition
 	assert(mediaReceived()); // pre-condition
@@ -1795,12 +1819,14 @@ void Client::afterContentReceived()
 
 	// Rebuild inherited images and recreate textures
 	infostream<<"- Rebuilding images and textures"<<std::endl;
+	TracyMessageL("- Rebuilding images and textures");
 	m_rendering_engine->draw_load_screen(text, guienv, m_tsrc, 0, 70);
 	m_tsrc->rebuildImagesAndTextures();
 	delete[] text;
 
 	// Rebuild shaders
 	infostream<<"- Rebuilding shaders"<<std::endl;
+	TracyMessageL("- Rebuilding shaders (Rebuilding shaders...)");
 	text = wgettext("Rebuilding shaders...");
 	m_rendering_engine->draw_load_screen(text, guienv, m_tsrc, 0, 71);
 	m_shsrc->rebuildShaders();
@@ -1808,6 +1834,7 @@ void Client::afterContentReceived()
 
 	// Update node aliases
 	infostream<<"- Updating node aliases"<<std::endl;
+	TracyMessageL("- Updating node aliases (Initializing nodes...)");
 	text = wgettext("Initializing nodes...");
 	m_rendering_engine->draw_load_screen(text, guienv, m_tsrc, 0, 72);
 	m_nodedef->updateAliases(m_itemdef);
@@ -1822,6 +1849,7 @@ void Client::afterContentReceived()
 
 	// Update node textures and assign shaders to each tile
 	infostream<<"- Updating node textures"<<std::endl;
+	TracyMessageL("- Updating node textures (Initializing nodes)");
 	TextureUpdateArgs tu_args;
 	tu_args.guienv = guienv;
 	tu_args.last_time_ms = porting::getTimeMs();
@@ -1833,6 +1861,7 @@ void Client::afterContentReceived()
 
 	// Start mesh update thread after setting up content definitions
 	infostream<<"- Starting mesh update thread"<<std::endl;
+	TracyMessageL("- Starting mesh update thread");
 	m_mesh_update_manager.start();
 
 	m_state = LC_Ready;
@@ -1844,6 +1873,7 @@ void Client::afterContentReceived()
 	text = wgettext("Done!");
 	m_rendering_engine->draw_load_screen(text, guienv, m_tsrc, 0, 100);
 	infostream<<"Client::afterContentReceived() done"<<std::endl;
+	TracyMessageL("Client::afterContentReceived() done");
 	delete[] text;
 }
 
@@ -1991,6 +2021,8 @@ ParticleManager* Client::getParticleManager()
 
 scene::IAnimatedMesh* Client::getMesh(const std::string &filename, bool cache)
 {
+	ZoneScoped;
+
 	StringMap::const_iterator it = m_mesh_data.find(filename);
 	if (it == m_mesh_data.end()) {
 		errorstream << "Client::getMesh(): Mesh not found: \"" << filename

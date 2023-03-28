@@ -62,6 +62,8 @@ extern "C" {
 #endif
 }
 
+#include <tracy/Tracy.hpp>
+
 #if !defined(__cpp_rtti) || !defined(__cpp_exceptions)
 #error Minetest cannot be built without exceptions or RTTI
 #endif
@@ -135,6 +137,7 @@ static OptionList allowed_options;
 
 int main(int argc, char *argv[])
 {
+	ZoneScoped;
 	int retval;
 	debug_set_exception_handler();
 

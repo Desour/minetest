@@ -34,6 +34,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "renderingengine.h"
 #include "util/base64.h"
 
+#include <tracy/Tracy.hpp>
+
 /*
 	A cache from texture name to texture path
 */
@@ -250,6 +252,8 @@ public:
 	// Primarily fetches from cache, secondarily tries to read from filesystem
 	video::IImage *getOrLoad(const std::string &name)
 	{
+		ZoneScoped;
+
 		std::map<std::string, video::IImage*>::iterator n;
 		n = m_images.find(name);
 		if (n != m_images.end()){
@@ -483,6 +487,8 @@ TextureSource::~TextureSource()
 
 u32 TextureSource::getTextureId(const std::string &name)
 {
+	ZoneScoped;
+
 	//infostream<<"getTextureId(): \""<<name<<"\""<<std::endl;
 
 	{
@@ -516,6 +522,7 @@ u32 TextureSource::getTextureId(const std::string &name)
 
 	try {
 		while(true) {
+			ZoneScopedN("waiting for tex queue result");
 			// Wait for result for up to 1 seconds (empirical value)
 			GetResult<std::string, u32, std::thread::id, u8>
 				result = result_queue.pop_front(1000);
@@ -578,6 +585,9 @@ void imageTransform(u32 transform, video::IImage *src, video::IImage *dst);
 */
 u32 TextureSource::generateTexture(const std::string &name)
 {
+	ZoneScoped;
+	ZoneText(name.c_str(), name.size());
+
 	//infostream << "generateTexture(): name=\"" << name << "\"" << std::endl;
 
 	// Empty name means texture 0
@@ -657,6 +667,8 @@ std::string TextureSource::getTextureName(u32 id)
 
 video::ITexture* TextureSource::getTexture(u32 id)
 {
+	ZoneScoped;
+
 	MutexAutoLock lock(m_textureinfo_cache_mutex);
 
 	if (id >= m_textureinfo_cache.size())
@@ -667,6 +679,8 @@ video::ITexture* TextureSource::getTexture(u32 id)
 
 video::ITexture* TextureSource::getTexture(const std::string &name, u32 *id)
 {
+	ZoneScoped;
+
 	u32 actual_id = getTextureId(name);
 	if (id){
 		*id = actual_id;
@@ -676,6 +690,8 @@ video::ITexture* TextureSource::getTexture(const std::string &name, u32 *id)
 
 video::ITexture* TextureSource::getTextureForMesh(const std::string &name, u32 *id)
 {
+	ZoneScoped;
+
 	static thread_local bool filter_needed =
 		g_settings->getBool("texture_clean_transparent") || m_setting_mipmap ||
 		((m_setting_trilinear_filter || m_setting_bilinear_filter) &&
@@ -688,6 +704,8 @@ video::ITexture* TextureSource::getTextureForMesh(const std::string &name, u32 *
 
 Palette* TextureSource::getPalette(const std::string &name)
 {
+	ZoneScoped;
+
 	// Only the main thread may load images
 	sanity_check(std::this_thread::get_id() == m_main_thread);
 
@@ -794,6 +812,8 @@ void TextureSource::insertSourceImage(const std::string &name, video::IImage *im
 
 void TextureSource::rebuildImagesAndTextures()
 {
+	ZoneScoped;
+
 	MutexAutoLock lock(m_textureinfo_cache_mutex);
 
 	video::IVideoDriver *driver = RenderingEngine::get_video_driver();
@@ -812,6 +832,9 @@ void TextureSource::rebuildImagesAndTextures()
 
 void TextureSource::rebuildTexture(video::IVideoDriver *driver, TextureInfo &ti)
 {
+	ZoneScoped;
+	ZoneText(ti.name.c_str(), ti.name.size());
+
 	if (ti.name.empty())
 		return; // this shouldn't happen, just a precaution
 
@@ -955,6 +978,9 @@ static video::IImage *createInventoryCubeImage(
 
 video::IImage* TextureSource::generateImage(const std::string &name, std::set<std::string> &source_image_names)
 {
+	ZoneScoped;
+	ZoneText(name.c_str(), name.size());
+
 	// Get the base image
 
 	const char separator = '^';
@@ -1066,6 +1092,8 @@ video::IImage* TextureSource::generateImage(const std::string &name, std::set<st
 video::IImage *Align2Npot2(video::IImage *image,
 		video::IVideoDriver *driver)
 {
+	ZoneScoped;
+
 	if (image == NULL)
 		return image;
 
@@ -1115,6 +1143,8 @@ static std::string unescape_string(const std::string &str, const char esc = '\\'
 
 void blitBaseImage(video::IImage* &src, video::IImage* &dst)
 {
+	ZoneScoped;
+
 	//infostream<<"Blitting "<<part_of_name<<" on base"<<std::endl;
 	// Size of the copied area
 	core::dimension2d<u32> dim = src->getDimension();
@@ -1155,6 +1185,9 @@ void blitBaseImage(video::IImage* &src, video::IImage* &dst)
 bool TextureSource::generateImagePart(std::string part_of_name,
 		video::IImage *& baseimg, std::set<std::string> &source_image_names)
 {
+	ZoneScoped;
+	ZoneText(part_of_name.c_str(), part_of_name.size());
+
 	const char escape = '\\'; // same as in generateImage()
 	video::IVideoDriver *driver = RenderingEngine::get_video_driver();
 	sanity_check(driver);
@@ -1903,6 +1936,8 @@ bool TextureSource::generateImagePart(std::string part_of_name,
 */
 static inline video::SColor blitPixel(const video::SColor &src_c, const video::SColor &dst_c)
 {
+	//~ ZoneScoped;
+
 	u32 ratio = src_c.getAlpha();
 
 	if (ratio == 255)
@@ -1910,6 +1945,7 @@ static inline video::SColor blitPixel(const video::SColor &src_c, const video::S
 	if (ratio == 0)
 		return dst_c;
 	{
+		//~ ZoneScopedN("alpha interpol");
 		video::SColor out_c = src_c.getInterpolated(dst_c, (float)ratio / 255.0f);
 		out_c.setAlpha(dst_c.getAlpha() + (255 - dst_c.getAlpha()) *
 			src_c.getAlpha() * ratio / (255 * 255));
@@ -1936,13 +1972,22 @@ static inline video::SColor blitPixel(const video::SColor &src_c, const video::S
 static void blit_with_alpha(video::IImage *src, video::IImage *dst,
 		v2s32 src_pos, v2s32 dst_pos, v2u32 size)
 {
+	ZoneScoped;
+
 	video::ECOLOR_FORMAT src_format = src->getColorFormat();
 	video::ECOLOR_FORMAT dst_format = dst->getColorFormat();
+
+	std::string msg = "src format: "+std::to_string(src_format);
+	ZoneText(msg.c_str(), msg.size());
+	msg = "dst format: "+std::to_string(dst_format);
+	ZoneText(msg.c_str(), msg.size());
 
 	thread_local bool can_choose_direct = true;
 	//~ can_choose_direct = !can_choose_direct;
 
 	if (can_choose_direct && src_format == video::ECF_A8R8G8B8 && dst_format == video::ECF_A8R8G8B8) {
+		ZoneText("chose direct", 12);
+
 		u8 *src_data = (u8 *)src->getData();
 		u8 *dst_data = (u8 *)dst->getData();
 		u32 src_pitch = src->getPitch();
@@ -1973,6 +2018,8 @@ static void blit_with_alpha(video::IImage *src, video::IImage *dst,
 		}
 
 	} else {
+		ZoneText("chose indirect", 14);
+
 		for (u32 y0=0; y0<size.Y; y0++)
 		for (u32 x0=0; x0<size.X; x0++)
 		{
@@ -2319,6 +2366,8 @@ void imageTransform(u32 transform, video::IImage *src, video::IImage *dst)
 
 video::ITexture* TextureSource::getNormalTexture(const std::string &name)
 {
+	ZoneScoped;
+
 	if (isKnownSourceImage("override_normal.png"))
 		return getTexture("override_normal.png");
 	std::string fname_base = name;
@@ -2382,6 +2431,9 @@ namespace {
 
 video::SColor TextureSource::getTextureAverageColor(const std::string &name)
 {
+	ZoneScoped;
+	ZoneText(name.c_str(), name.size());
+
 	video::IVideoDriver *driver = RenderingEngine::get_video_driver();
 	video::SColor c(0, 0, 0, 0);
 	video::ITexture *texture = getTexture(name);
@@ -2393,33 +2445,39 @@ video::SColor TextureSource::getTextureAverageColor(const std::string &name)
 	if (!image)
 		return c;
 
-	u32 total = 0;
-	v3f col_acc(0, 0, 0);
-	core::dimension2d<u32> dim = image->getDimension();
-	u16 step = 1;
-	if (dim.Width > 16)
-		step = dim.Width / 16;
-	for (u16 x = 0; x < dim.Width; x += step) {
-		for (u16 y = 0; y < dim.Width; y += step) {
-			c = image->getPixel(x,y);
-			if (c.getAlpha() > 0) {
-				total++;
-				col_acc += srgb_to_linear(c);
+	{
+		ZoneScopedN("after tex load");
+
+		u32 total = 0;
+		v3f col_acc(0, 0, 0);
+		core::dimension2d<u32> dim = image->getDimension();
+		u16 step = 1;
+		if (dim.Width > 16)
+			step = dim.Width / 16;
+		for (u16 x = 0; x < dim.Width; x += step) {
+			for (u16 y = 0; y < dim.Width; y += step) {
+				c = image->getPixel(x,y);
+				if (c.getAlpha() > 0) {
+					total++;
+					col_acc += srgb_to_linear(c);
+				}
 			}
 		}
+		image->drop();
+		if (total > 0) {
+			col_acc /= total;
+			c = linear_to_srgb(col_acc);
+		}
+		c.setAlpha(255);
 	}
-	image->drop();
-	if (total > 0) {
-		col_acc /= total;
-		c = linear_to_srgb(col_acc);
-	}
-	c.setAlpha(255);
 	return c;
 }
 
 
 video::ITexture *TextureSource::getShaderFlagsTexture(bool normalmap_present)
 {
+	ZoneScoped;
+
 	std::string tname = "__shaderFlagsTexture";
 	tname += normalmap_present ? "1" : "0";
 

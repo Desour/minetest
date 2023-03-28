@@ -33,6 +33,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "settings.h"
 #include "camera.h" // CameraModes
 
+#include <tracy/Tracy.hpp>
+
 using namespace irr::core;
 
 static video::SMaterial baseMaterial()
@@ -332,6 +334,8 @@ void Sky::update(float time_of_day, float time_brightness,
 	float direct_brightness, bool sunlight_seen,
 	CameraMode cam_mode, float yaw, float pitch)
 {
+	ZoneScoped;
+
 	// Stabilize initial brightness and color values by flooding updates
 	if (m_first_update) {
 		/*dstream<<"First update with time_of_day="<<time_of_day
