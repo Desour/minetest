@@ -74,6 +74,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "database/database-dummy.h"
 #include "gameparams.h"
 
+
+#include <tracy/Tracy.hpp>
+
 class ClientNotFoundException : public BaseException
 {
 public:
@@ -97,8 +100,15 @@ private:
 	Server *m_server;
 };
 
+
+const char *framename_server_run = "server-run-frame";
+const char *framename_server_run_astep = "server-run-AsyncRunStep-frame";
+const char *framename_server_run_receive = "server-run-Receive-frame";
+
 void *ServerThread::run()
 {
+	ZoneScoped;
+
 	BEGIN_DEBUG_EXCEPTION_HANDLER
 
 	/*
@@ -110,19 +120,30 @@ void *ServerThread::run()
 	 * doesn't busy wait) and will process any remaining packets.
 	 */
 
+	FrameMarkStart(framename_server_run);
+
 	try {
+		FrameMarkStart(framename_server_run_astep);
 		m_server->AsyncRunStep(true);
+		FrameMarkEnd(framename_server_run_astep);
 	} catch (con::ConnectionBindFailed &e) {
 		m_server->setAsyncFatalError(e.what());
 	} catch (LuaError &e) {
 		m_server->setAsyncFatalError(e);
 	}
+	FrameMarkEnd(framename_server_run);
 
 	while (!stopRequested()) {
-		try {
-			m_server->AsyncRunStep();
+		FrameMarkStart(framename_server_run);
 
+		try {
+			FrameMarkStart(framename_server_run_astep);
+			m_server->AsyncRunStep();
+			FrameMarkEnd(framename_server_run_astep);
+
+			FrameMarkStart(framename_server_run_receive);
 			m_server->Receive();
+			FrameMarkEnd(framename_server_run_receive);
 
 		} catch (con::PeerNotFoundException &e) {
 			infostream<<"Server: PeerNotFoundException"<<std::endl;
@@ -132,6 +153,8 @@ void *ServerThread::run()
 		} catch (LuaError &e) {
 			m_server->setAsyncFatalError(e);
 		}
+
+		FrameMarkEnd(framename_server_run);
 	}
 
 	END_DEBUG_EXCEPTION_HANDLER
@@ -590,6 +613,7 @@ void Server::step(float dtime)
 
 void Server::AsyncRunStep(bool initial_step)
 {
+	ZoneScoped;
 
 	float dtime;
 	{
@@ -1043,6 +1067,8 @@ void Server::AsyncRunStep(bool initial_step)
 
 void Server::Receive()
 {
+	ZoneScoped;
+
 	NetworkPacket pkt;
 	session_t peer_id;
 	bool first = true;
@@ -2713,6 +2739,8 @@ void Server::sendRequestedMedia(session_t peer_id,
 
 void Server::stepPendingDynMediaCallbacks(float dtime)
 {
+	ZoneScoped;
+
 	MutexAutoLock lock(m_env_mutex);
 
 	for (auto it = m_pending_dyn_media.begin(); it != m_pending_dyn_media.end();) {
@@ -3891,6 +3919,8 @@ PlayerSAO* Server::emergePlayer(const char *name, session_t peer_id, u16 proto_v
 
 void dedicated_server_loop(Server &server, bool &kill)
 {
+	ZoneScoped;
+
 	verbosestream<<"dedicated_server_loop()"<<std::endl;
 
 	IntervalLimiter m_profiler_interval;
