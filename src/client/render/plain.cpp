@@ -27,9 +27,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "client/minimap.h"
 #include "client/shadows/dynamicshadowsrender.h"
 
+#include <tracy/Tracy.hpp>
+
 /// Draw3D pipeline step
 void Draw3D::run(PipelineContext &context)
 {
+	ZoneScoped;
+
 	if (m_target)
 		m_target->activate(context);
 
@@ -43,6 +47,8 @@ void Draw3D::run(PipelineContext &context)
 
 void DrawWield::run(PipelineContext &context)
 {
+	ZoneScoped;
+
 	if (m_target)
 		m_target->activate(context);
 
@@ -52,6 +58,8 @@ void DrawWield::run(PipelineContext &context)
 
 void DrawHUD::run(PipelineContext &context)
 {
+	ZoneScoped;
+
 	if (context.show_hud) {
 		if (context.shadow_renderer)
 			context.shadow_renderer->drawDebug();
@@ -79,6 +87,8 @@ void MapPostFxStep::setRenderTarget(RenderTarget * _target)
 
 void MapPostFxStep::run(PipelineContext &context)
 {
+	ZoneScoped;
+
 	if (target)
 		target->activate(context);
 
@@ -87,6 +97,8 @@ void MapPostFxStep::run(PipelineContext &context)
 
 void RenderShadowMapStep::run(PipelineContext &context)
 {
+	ZoneScoped;
+
 	// This is necessary to render shadows for animations correctly
 	context.device->getSceneManager()->getRootSceneNode()->OnAnimate(context.device->getTimer()->getTime());
 	context.shadow_renderer->update();
@@ -96,6 +108,8 @@ void RenderShadowMapStep::run(PipelineContext &context)
 
 void UpscaleStep::run(PipelineContext &context)
 {
+	ZoneScoped;
+
 	video::ITexture *lowres = m_source->getTexture(0);
 	m_target->activate(context);
 	context.device->getVideoDriver()->draw2DImage(lowres,

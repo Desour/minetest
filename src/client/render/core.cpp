@@ -23,9 +23,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "client/shadows/dynamicshadowsrender.h"
 #include "settings.h"
 
-RenderingCore::RenderingCore(IrrlichtDevice *_device, Client *_client, Hud *_hud, 
+#include <tracy/Tracy.hpp>
+
+RenderingCore::RenderingCore(IrrlichtDevice *_device, Client *_client, Hud *_hud,
 		ShadowRenderer *_shadow_renderer, RenderPipeline *_pipeline, v2f _virtual_size_scale)
-	: device(_device), client(_client), hud(_hud), shadow_renderer(_shadow_renderer), 
+	: device(_device), client(_client), hud(_hud), shadow_renderer(_shadow_renderer),
 	pipeline(_pipeline), virtual_size_scale(_virtual_size_scale)
 {
 }
@@ -39,6 +41,8 @@ RenderingCore::~RenderingCore()
 void RenderingCore::draw(video::SColor _skycolor, bool _show_hud, bool _show_minimap,
 		bool _draw_wield_tool, bool _draw_crosshair)
 {
+	ZoneScoped;
+
 	v2u32 screensize = device->getVideoDriver()->getScreenSize();
 	virtual_size = v2u32(screensize.X * virtual_size_scale.X, screensize.Y * virtual_size_scale.Y);
 

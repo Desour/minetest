@@ -27,6 +27,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "client/renderingengine.h"
 #include "gettext.h"
 
+#include <tracy/Tracy.hpp>
 ////
 //// MinimapUpdateThread
 ////
@@ -586,6 +587,8 @@ void Minimap::drawMinimap()
 }
 
 void Minimap::drawMinimap(core::rect<s32> rect) {
+
+	ZoneScoped;
 
 	video::ITexture *minimap_texture = getMinimapTexture();
 	if (!minimap_texture)

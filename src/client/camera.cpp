@@ -40,6 +40,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "gettext.h"
 #include <SViewFrustum.h>
 
+#include <tracy/Tracy.hpp>
+
 #define CAMERA_OFFSET_STEP 200
 #define WIELDMESH_OFFSET_X 55.0f
 #define WIELDMESH_OFFSET_Y -35.0f
@@ -662,6 +664,8 @@ void Camera::drawWieldedTool(irr::core::matrix4* translation)
 
 void Camera::drawNametags()
 {
+	ZoneScoped;
+
 	core::matrix4 trans = m_cameranode->getProjectionMatrix();
 	trans *= m_cameranode->getViewMatrix();
 
