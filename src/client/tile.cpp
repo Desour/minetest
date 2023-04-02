@@ -1934,32 +1934,16 @@ bool TextureSource::generateImagePart(std::string part_of_name,
 	pixel with alpha=64 drawn atop a pixel with alpha=128 should yield a
 	pixel with alpha=160, while getInterpolated would yield alpha=96.
 */
-static inline video::SColor blitPixel(const video::SColor &src_c, const video::SColor &dst_c)
+static inline video::SColor blitPixel(const video::SColor &src_c, const video::SColor &dst_c, u32 ratio)
 {
 	//~ ZoneScoped;
 
-	u32 ratio = src_c.getAlpha();
-
-	if (ratio == 255)
+	if (dst_c.getAlpha() == 0)
 		return src_c;
-	if (ratio == 0)
-		return dst_c;
-	{
-		//~ ZoneScopedN("alpha interpol");
-		video::SColor out_c = src_c.getInterpolated(dst_c, (float)ratio / 255.0f);
-		out_c.setAlpha(dst_c.getAlpha() + (255 - dst_c.getAlpha()) *
-			src_c.getAlpha() * ratio / (255 * 255));
-		return out_c;
-
-
-		const u32 inv = 255 - ratio;
-
-		out_c.setRed(  (dst_c.getRed()   * inv + src_c.getRed()   * ratio) / 255);
-		out_c.setGreen((dst_c.getGreen() * inv + src_c.getGreen() * ratio) / 255);
-		out_c.setBlue( (dst_c.getBlue()  * inv + src_c.getBlue()  * ratio) / 255);
-		out_c.setAlpha(dst_c.getAlpha() + (255 - dst_c.getAlpha()) * ratio * ratio / (255 * 255));
-		return out_c;
-	}
+	video::SColor out_c = src_c.getInterpolated(dst_c, (float)ratio / 255.0f);
+	out_c.setAlpha(dst_c.getAlpha() + (255 - dst_c.getAlpha()) *
+		src_c.getAlpha() * ratio / (255 * 255));
+	return out_c;
 }
 
 /*
@@ -1982,56 +1966,17 @@ static void blit_with_alpha(video::IImage *src, video::IImage *dst,
 	msg = "dst format: "+std::to_string(dst_format);
 	ZoneText(msg.c_str(), msg.size());
 
-	thread_local bool can_choose_direct = true;
-	//~ can_choose_direct = !can_choose_direct;
-
-	if (can_choose_direct && src_format == video::ECF_A8R8G8B8 && dst_format == video::ECF_A8R8G8B8) {
-		ZoneText("chose direct", 12);
-
-		u8 *src_data = (u8 *)src->getData();
-		u8 *dst_data = (u8 *)dst->getData();
-		u32 src_pitch = src->getPitch();
-		u32 dst_pitch = dst->getPitch();
-		u32 src_bpp = src->getBytesPerPixel();
-		u32 dst_bpp = dst->getBytesPerPixel();
-
-		size.X = (u32)std::max(0, std::min(
-				std::min((s32)size.X, (s32)src->getDimension().Width  - src_pos.X),
-				std::min((s32)size.X, (s32)dst->getDimension().Width  - dst_pos.X))
-			);
-		size.Y = (u32)std::max(0, std::min(
-				std::min((s32)size.Y, (s32)src->getDimension().Height - src_pos.Y),
-				std::min((s32)size.Y, (s32)dst->getDimension().Height - dst_pos.Y))
-			);
-
-		for (u32 y0 = 0; y0 < size.Y; ++y0) {
-			u8 *src_row = src_data + (y0+src_pos.Y)*src_pitch + src_pos.X*src_bpp;
-			u8 *dst_row = dst_data + (y0+dst_pos.Y)*dst_pitch + dst_pos.X*dst_bpp;
-			for (u32 x0 = 0; x0 < size.X; ++x0) {
-				video::SColor src_c;
-				src_c.setData(src_row + src_bpp*x0, src_format);
-				video::SColor dst_c;
-				dst_c.setData(dst_row + dst_bpp*x0, dst_format);
-				video::SColor res_c = blitPixel(src_c, dst_c);
-				res_c.getData(dst_row + dst_bpp*x0, dst_format);
-			}
-		}
-
-	} else {
-		ZoneText("chose indirect", 14);
-
-		for (u32 y0=0; y0<size.Y; y0++)
-		for (u32 x0=0; x0<size.X; x0++)
-		{
-			s32 src_x = src_pos.X + x0;
-			s32 src_y = src_pos.Y + y0;
-			s32 dst_x = dst_pos.X + x0;
-			s32 dst_y = dst_pos.Y + y0;
-			video::SColor src_c = src->getPixel(src_x, src_y);
-			video::SColor dst_c = dst->getPixel(dst_x, dst_y);
-			dst_c = blitPixel(src_c, dst_c);
-			dst->setPixel(dst_x, dst_y, dst_c);
-		}
+	for (u32 y0=0; y0<size.Y; y0++)
+	for (u32 x0=0; x0<size.X; x0++)
+	{
+		s32 src_x = src_pos.X + x0;
+		s32 src_y = src_pos.Y + y0;
+		s32 dst_x = dst_pos.X + x0;
+		s32 dst_y = dst_pos.Y + y0;
+		video::SColor src_c = src->getPixel(src_x, src_y);
+		video::SColor dst_c = dst->getPixel(dst_x, dst_y);
+		dst_c = blitPixel(src_c, dst_c, src_c.getAlpha());
+		dst->setPixel(dst_x, dst_y, dst_c);
 	}
 }
 
@@ -2053,7 +1998,7 @@ static void blit_with_alpha_overlay(video::IImage *src, video::IImage *dst,
 		video::SColor dst_c = dst->getPixel(dst_x, dst_y);
 		if (dst_c.getAlpha() == 255 && src_c.getAlpha() != 0)
 		{
-			dst_c = blitPixel(src_c, dst_c);
+			dst_c = blitPixel(src_c, dst_c, src_c.getAlpha());
 			dst->setPixel(dst_x, dst_y, dst_c);
 		}
 	}
