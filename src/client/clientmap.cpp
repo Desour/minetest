@@ -32,6 +32,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <queue>
 
+//TODO:remove
+#include "util/quicktune.h"
+
 // struct MeshBufListList
 void MeshBufListList::clear()
 {
@@ -1090,7 +1093,8 @@ void ClientMap::PrintInfo(std::ostream &out)
 }
 
 void ClientMap::renderMapShadows(video::IVideoDriver *driver,
-		const video::SMaterial &material, s32 pass, int frame, int total_frames)
+		const video::SMaterial &material, s32 pass, int frame, int total_frames,
+		v3f shadow_light_dir)
 {
 	bool is_transparent_pass = pass != scene::ESNRP_SOLID;
 	std::string prefix;
@@ -1116,6 +1120,27 @@ void ClientMap::renderMapShadows(video::IVideoDriver *driver,
 		return;
 	}
 
+	auto is_frustum_culled = [&] {
+		auto all_frustum_planes =
+				m_client->getCamera()->getFrustumCullPlanes();
+		// clip by the view frustum planes that are directed away from the sun
+		std::vector<core::plane3d<f32>> shadow_frustum_planes;
+		std::copy_if(all_frustum_planes.begin(), all_frustum_planes.end(),
+				std::back_inserter(shadow_frustum_planes),
+				[&](const core::plane3d<f32> &plane) {
+					return plane.Normal.dotProduct(shadow_light_dir) > 0.0f;
+				});
+		return [
+					planes = std::move(shadow_frustum_planes),
+					cam_offset = intToFloat(m_camera_offset, BS)
+				](v3f pos, f32 radius) {
+			return !is_in_polytope(planes.begin(), planes.end(), pos - cam_offset, radius);
+		};
+	}();
+	float do_shadow_frustum_cull_ren_f = 0.0f;
+	QUICKTUNE_AUTONAME(QVT_FLOAT, do_shadow_frustum_cull_ren_f, 0, 100);
+	bool do_shadow_frustum_cull = do_shadow_frustum_cull_ren_f > 0.5f;
+
 	const MeshGrid mesh_grid = m_client->getMeshGrid();
 	for (const auto &i : m_drawlist_shadow) {
 		// only process specific part of the list & break early
@@ -1131,6 +1156,15 @@ void ClientMap::renderMapShadows(video::IVideoDriver *driver,
 		// If the mesh of the block happened to get deleted, ignore it
 		if (!block->mesh)
 			continue;
+
+		if (do_shadow_frustum_cull &&
+				is_frustum_culled(
+						intToFloat(block->getPos() * MAP_BLOCKSIZE, BS)
+								+ block->mesh->getBoundingSphereCenter(),
+						block->mesh->getBoundingRadius()
+				)) {
+			continue;
+		}
 
 		/*
 			Get the meshbuffers of the block
@@ -1225,8 +1259,6 @@ void ClientMap::renderMapShadows(video::IVideoDriver *driver,
 	g_profiler->avg(prefix + "material swaps [#]", material_swaps);
 }
 
-#include "util/quicktune.h"
-
 /*
 	Custom update draw list for the pov of shadow light.
 */
@@ -1268,6 +1300,9 @@ void ClientMap::updateDrawListShadow(v3f shadow_light_pos, v3f shadow_light_dir,
 			return !is_in_polytope(planes.begin(), planes.end(), pos - cam_offset, radius);
 		};
 	}();
+	float do_shadow_frustum_cull_upd_f = 0.0f;
+	QUICKTUNE_AUTONAME(QVT_FLOAT, do_shadow_frustum_cull_upd_f, 0, 100);
+	bool do_shadow_frustum_cull = do_shadow_frustum_cull_upd_f > 0.5f;
 
 	for (auto &sector_it : m_sectors) {
 		MapSector *sector = sector_it.second;
@@ -1293,10 +1328,6 @@ void ClientMap::updateDrawListShadow(v3f shadow_light_pos, v3f shadow_light_dir,
 			v3f projection = shadow_light_pos + shadow_light_dir * shadow_light_dir.dotProduct(block_pos - shadow_light_pos);
 			if (projection.getDistanceFrom(block_pos) > radius + mesh_sphere_radius)
 				continue;
-
-			float do_shadow_frustum_cull_f = 0.0f;
-			QUICKTUNE_AUTONAME(QVT_FLOAT, do_shadow_frustum_cull_f, 0, 100);
-			bool do_shadow_frustum_cull = do_shadow_frustum_cull_f > 0.5f;
 
 			constexpr float frustum_cull_extra_radius = 300.0f;
 			if (do_shadow_frustum_cull && is_frustum_culled(block_pos,

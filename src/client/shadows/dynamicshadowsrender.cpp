@@ -453,7 +453,8 @@ void ShadowRenderer::renderShadowMap(video::ITexture *target,
 	int frame = m_force_update_shadow_map ? 0 : m_current_frame;
 	int total_frames = m_force_update_shadow_map ? 1 : m_map_shadow_update_frames;
 
-	map_node.renderMapShadows(m_driver, material, pass, frame, total_frames);
+	map_node.renderMapShadows(m_driver, material, pass, frame, total_frames,
+			light.getDirection());
 }
 
 void ShadowRenderer::renderShadowObjects(
