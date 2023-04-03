@@ -135,22 +135,8 @@ public:
 		return MYMAX(m_fov_x, m_fov_y);
 	}
 
-	// Returns a lambda that when called with an object's position and bounding-sphere
-	// radius (both in BS space) returns true if, and only if the object should be
-	// frustum-culled.
-	auto getFrustumCuller() const
-	{
-		return [planes = getFrustumCullPlanes(),
-				camera_offset = intToFloat(m_camera_offset, BS)
-				](v3f position, f32 radius) {
-			v3f pos_camspace = position - camera_offset;
-			for (auto &plane : planes) {
-				if (plane.getDistanceTo(pos_camspace) > radius)
-					return true;
-			}
-			return false;
-		};
-	}
+	// Returns the side-planes of the frustum in camera-offset-BS-space.
+	std::array<core::plane3d<f32>, 4> getFrustumCullPlanes() const;
 
 	// Notify about new server-sent FOV and initialize smooth FOV transition
 	void notifyFovChange();
@@ -209,10 +195,6 @@ public:
 	inline void addArmInertia(f32 player_yaw);
 
 private:
-	// Use getFrustumCuller().
-	// This helper just exists to decrease the header's number of includes.
-	std::array<core::plane3d<f32>, 4> getFrustumCullPlanes() const;
-
 	// Nodes
 	scene::ISceneNode *m_playernode = nullptr;
 	scene::ISceneNode *m_headnode = nullptr;

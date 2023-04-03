@@ -145,6 +145,17 @@ inline v3s16 componentwise_max(const v3s16 &a, const v3s16 &b)
 	return v3s16(MYMAX(a.X, b.X), MYMAX(a.Y, b.Y), MYMAX(a.Z, b.Z));
 }
 
+// `It` is an iterator-type over planes (core::plane3d<f32>).
+template <typename It>
+inline bool is_in_polytope(It begin, It end, v3f pos, f32 radius)
+{
+	for (auto it = begin; it != end; ++it) {
+		if (it->getDistanceTo(pos) > radius)
+			return false;
+	}
+	return true;
+}
+
 /// @brief Describes a grid with given step, oirginating at (0,0,0)
 struct MeshGrid {
 	u16 cell_size;
@@ -174,7 +185,7 @@ struct MeshGrid {
 	{
 		return v3s16(getMeshPos(p.X), getMeshPos(p.Y), getMeshPos(p.Z));
 	}
-	
+
 	/// @brief Returns true if p is an origin of a cell in the grid.
 	bool isMeshPos(v3s16 &p) const
 	{

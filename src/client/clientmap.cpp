@@ -293,7 +293,12 @@ void ClientMap::updateDrawList()
 	const v3s16 camera_block = getContainerPos(cam_pos_nodes, MAP_BLOCKSIZE);
 	m_drawlist = std::map<v3s16, MapBlock*, MapBlockComparer>(MapBlockComparer(camera_block));
 
-	auto is_frustum_culled = m_client->getCamera()->getFrustumCuller();
+	auto is_frustum_culled = [
+				planes = m_client->getCamera()->getFrustumCullPlanes(),
+				cam_offset = intToFloat(m_camera_offset, BS)
+			](v3f pos, f32 radius) {
+		return !is_in_polytope(planes.begin(), planes.end(), pos - cam_offset, radius);
+	};
 
 	// Uncomment to debug occluded blocks in the wireframe mode
 	// TODO: Include this as a flag for an extended debugging setting
@@ -736,7 +741,12 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 	std::vector<DrawDescriptor> draw_order;
 	video::SMaterial previous_material;
 
-	auto is_frustum_culled = m_client->getCamera()->getFrustumCuller();
+	auto is_frustum_culled = [
+				planes = m_client->getCamera()->getFrustumCullPlanes(),
+				cam_offset = intToFloat(m_camera_offset, BS)
+			](v3f pos, f32 radius) {
+		return !is_in_polytope(planes.begin(), planes.end(), pos - cam_offset, radius);
+	};
 
 	const MeshGrid mesh_grid = m_client->getMeshGrid();
 	for (auto &i : m_drawlist) {
@@ -1238,6 +1248,24 @@ void ClientMap::updateDrawListShadow(v3f shadow_light_pos, v3f shadow_light_dir,
 	// Number of blocks with mesh in rendering range
 	u32 blocks_in_range_with_mesh = 0;
 
+	auto is_frustum_culled = [&] {
+		auto all_frustum_planes =
+				m_client->getCamera()->getFrustumCullPlanes();
+		// clip by the view frustum planes that are directed away from the sun
+		std::vector<core::plane3d<f32>> shadow_frustum_planes;
+		std::copy_if(all_frustum_planes.begin(), all_frustum_planes.end(),
+				std::back_inserter(shadow_frustum_planes),
+				[&](const core::plane3d<f32> &plane) {
+					return plane.Normal.dotProduct(shadow_light_dir) > 0.0f;
+				});
+		return [
+					planes = std::move(shadow_frustum_planes),
+					cam_offset = intToFloat(m_camera_offset, BS)
+				](v3f pos, f32 radius) {
+			return !is_in_polytope(planes.begin(), planes.end(), pos - cam_offset, radius);
+		};
+	}();
+
 	for (auto &sector_it : m_sectors) {
 		MapSector *sector = sector_it.second;
 		if (!sector)
@@ -1258,9 +1286,16 @@ void ClientMap::updateDrawListShadow(v3f shadow_light_pos, v3f shadow_light_dir,
 			}
 
 			v3f block_pos = intToFloat(block->getPos() * MAP_BLOCKSIZE, BS) + mesh->getBoundingSphereCenter();
+			f32 mesh_sphere_radius = mesh->getBoundingRadius();
 			v3f projection = shadow_light_pos + shadow_light_dir * shadow_light_dir.dotProduct(block_pos - shadow_light_pos);
-			if (projection.getDistanceFrom(block_pos) > (radius + mesh->getBoundingRadius()))
+			if (projection.getDistanceFrom(block_pos) > radius + mesh_sphere_radius)
 				continue;
+
+			constexpr float frustum_cull_extra_radius = 300.0f;
+			if (is_frustum_culled(block_pos,
+					mesh_sphere_radius + frustum_cull_extra_radius)) {
+				continue;
+			}
 
 			blocks_in_range_with_mesh++;
 
