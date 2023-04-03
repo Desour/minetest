@@ -1225,6 +1225,8 @@ void ClientMap::renderMapShadows(video::IVideoDriver *driver,
 	g_profiler->avg(prefix + "material swaps [#]", material_swaps);
 }
 
+#include "util/quicktune.h"
+
 /*
 	Custom update draw list for the pov of shadow light.
 */
@@ -1247,6 +1249,7 @@ void ClientMap::updateDrawListShadow(v3f shadow_light_pos, v3f shadow_light_dir,
 	u32 blocks_loaded = 0;
 	// Number of blocks with mesh in rendering range
 	u32 blocks_in_range_with_mesh = 0;
+	u32 blocks_frustum_culled = 0;
 
 	auto is_frustum_culled = [&] {
 		auto all_frustum_planes =
@@ -1291,9 +1294,14 @@ void ClientMap::updateDrawListShadow(v3f shadow_light_pos, v3f shadow_light_dir,
 			if (projection.getDistanceFrom(block_pos) > radius + mesh_sphere_radius)
 				continue;
 
+			float do_shadow_frustum_cull_f = 0.0f;
+			QUICKTUNE_AUTONAME(QVT_FLOAT, do_shadow_frustum_cull_f, 0, 100);
+			bool do_shadow_frustum_cull = do_shadow_frustum_cull_f > 0.5f;
+
 			constexpr float frustum_cull_extra_radius = 300.0f;
-			if (is_frustum_culled(block_pos,
+			if (do_shadow_frustum_cull && is_frustum_culled(block_pos,
 					mesh_sphere_radius + frustum_cull_extra_radius)) {
+				blocks_frustum_culled += 1;
 				continue;
 			}
 
@@ -1310,6 +1318,7 @@ void ClientMap::updateDrawListShadow(v3f shadow_light_pos, v3f shadow_light_dir,
 	}
 
 	g_profiler->avg("SHADOW MapBlock meshes in range [#]", blocks_in_range_with_mesh);
+	g_profiler->avg("SHADOW MapBlock meshes frustum culled [#]", blocks_frustum_culled);
 	g_profiler->avg("SHADOW MapBlocks drawn [#]", m_drawlist_shadow.size());
 	g_profiler->avg("SHADOW MapBlocks loaded [#]", blocks_loaded);
 }
