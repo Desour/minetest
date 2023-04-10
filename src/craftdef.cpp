@@ -493,22 +493,25 @@ std::string CraftDefinitionShapeless::getName() const
 	return "shapeless";
 }
 
+constexpr u16 SHAPELESS_GROUPS_MAX = 30000;
+
 // Checks if there's a matching that matches all nodes in a given bipartite graph.
-// bip_graph has graph_size nodes on each side.
+// bip_graph has graph_size nodes on each side. It is stored as list of lists of
+// neighbors from one side.
 // See https://en.wikipedia.org/w/index.php?title=Hopcroft-Karp_algorithm for
 // details.
-static bool hopcroft_karp_can_match_all(const std::array<std::array<bool, 9>, 9> &bip_graph,
-		u8 graph_size)
+static bool hopcroft_karp_can_match_all(const std::vector<std::vector<u16>> &bip_graph)
 {
-	assert(graph_size <= 9);
-	constexpr u8 nil = 9; // nil / dummy index
-	constexpr u8 inf = 255; // bigger than any path length
+	assert(bip_graph.size() <= SHAPELESS_GROUPS_MAX);
+	u16 graph_size = bip_graph.size();
+	const u16 nil = graph_size; // nil / dummy index
+	constexpr u16 inf = UINT16_MAX; // bigger than any path length (> SHAPELESS_GROUPS_MAX * 2)
 
-	std::array<u8, 10> pair_u;
-	std::array<u8, 10> pair_v;
-	std::array<u8, 10> dist;
-	u8 num_matched;
-	std::queue<u8> queue{};
+	auto pair_u = std::make_unique<u16[]>(graph_size + 1); // for each u (or nil) the matched v (or nil)
+	auto pair_v = std::make_unique<u16[]>(graph_size + 1); // for each v (or nil) the matched u (or nil)
+	auto dist = std::make_unique<u16[]>(graph_size + 1); // for each u (or nil) the bfs distance
+	u16 num_matched;
+	std::queue<u16> queue{};
 
 	// calculates distances from unmatched nodes for augmentation paths until
 	// dummy is reached
@@ -518,7 +521,7 @@ static bool hopcroft_karp_can_match_all(const std::array<std::array<bool, 9>, 9>
 		assert(queue.empty());
 
 		// enqueue all unmatched, give inf dist to the rest
-		for (u8 u = 0; u < graph_size; ++u) {
+		for (u16 u = 0; u < graph_size; ++u) {
 			if (pair_u[u] == nil) {
 				dist[u] = 0;
 				queue.push(u);
@@ -529,15 +532,12 @@ static bool hopcroft_karp_can_match_all(const std::array<std::array<bool, 9>, 9>
 		dist[nil] = inf;
 
 		while (!queue.empty()) {
-			u8 u = queue.front();
+			u16 u = queue.front();
 			queue.pop();
 
 			if (dist[u] < dist[nil]) { // if dummy not yet reached
-				for (u8 v = 0; v < graph_size; ++v) { // for all adjanced of u
-					if (!bip_graph[u][v])
-						continue;
-
-					u8 u_back = pair_v[v];
+				for (u16 v : bip_graph[u]) { // for all adjanced of u
+					u16 u_back = pair_v[v];
 					// if u_back unvisited, go there
 					if (dist[u_back] == inf) {
 						dist[u_back] = dist[u] + 1;
@@ -553,15 +553,12 @@ static bool hopcroft_karp_can_match_all(const std::array<std::array<bool, 9>, 9>
 	// tries to find an augmenting path from u to the dummy
 	// if successful, swaps all edges along path and returns true
 	// otherwise returns false
-	auto do_dfs_raw = [&](u8 u, auto &&recurse) -> bool {
+	auto do_dfs_raw = [&](u16 u, auto &&recurse) -> bool {
 		if (u == nil) // dummy => dest reached
 			return true;
 
-		for (u8 v = 0; v < graph_size; ++v) { // for all adjanced of u
-			if (!bip_graph[u][v])
-				continue;
-
-			u8 u_back = pair_v[v];
+		for (u16 v : bip_graph[u]) { // for all adjanced of u
+			u16 u_back = pair_v[v];
 			// only walk according to bfs dists
 			if (dist[u_back] != dist[u] + 1)
 				continue;
@@ -579,19 +576,19 @@ static bool hopcroft_karp_can_match_all(const std::array<std::array<bool, 9>, 9>
 		return false;
 	};
 
-	auto do_dfs = [&](u8 u) {
+	auto do_dfs = [&](u16 u) {
 		return do_dfs_raw(u, do_dfs_raw);
 	};
 
 	// everyone starts as matched to dummy
-	pair_u.fill(nil);
-	pair_v.fill(nil);
+	std::fill_n(&pair_u[0], graph_size + 1, nil);
+	std::fill_n(&pair_v[0], graph_size + 1, nil);
 
 	num_matched = 0;
 
 	while (do_bfs()) {
 		// try to match unmatched u nodes
-		for (u8 u = 0; u < graph_size; ++u) {
+		for (u16 u = 0; u < graph_size; ++u) {
 			if (pair_u[u] == nil) {
 				if (do_dfs(u)) {
 					num_matched += 1;
@@ -656,20 +653,28 @@ bool CraftDefinitionShapeless::check(const CraftInput &input, IGameDef *gamedef)
 
 	// Find out which recipe slots each input item satisfies. This creates a
 	// bipartite graph
-	SANITY_CHECK(recipe_onlygroup.size() <= 9);
 	assert(recipe_onlygroup.size() == input_for_group.size());
-	u8 graph_size = recipe_onlygroup.size();
-	// bip_graph[i][j] is true iff input_for_group[i] can satisfy recipe_onlygroup[j]
-	std::array<std::array<bool, 9>, 9> bip_graph;
-	for (u8 i = 0; i < graph_size; ++i) {
-		for (u8 j = 0; j < graph_size; ++j) {
-			bip_graph[i][j] = inputItemMatchesRecipe(input_for_group[i],
-					recipe_onlygroup[j], gamedef->idef());
+	if (recipe_onlygroup.size() > SHAPELESS_GROUPS_MAX) {
+		// SHAPELESS_GROUPS_MAX is large enough that this should never happen by
+		// accident
+		errorstream << "Too many groups in shapless craft." << std::endl;
+		return false;
+	}
+	u16 graph_size = recipe_onlygroup.size();
+	// bip_graph[i] are the group-slots that item i can satisfy
+	std::vector<std::vector<u16>> bip_graph;
+	bip_graph.resize(graph_size);
+	for (u16 i = 0; i < graph_size; ++i) {
+		std::vector<u16> &neighbors_i = bip_graph[i];
+		for (u16 j = 0; j < graph_size; ++j) {
+			if (inputItemMatchesRecipe(input_for_group[i], recipe_onlygroup[j],
+					gamedef->idef()))
+				neighbors_i.push_back(j);
 		}
 	}
 
 	// Check if the maximum cardinality matching of bip_graph matches all items
-	return hopcroft_karp_can_match_all(bip_graph, graph_size);
+	return hopcroft_karp_can_match_all(bip_graph);
 }
 
 CraftOutput CraftDefinitionShapeless::getOutput(const CraftInput &input, IGameDef *gamedef) const
