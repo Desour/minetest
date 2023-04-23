@@ -27,6 +27,8 @@ namespace server
 
 void ActiveObjectMgr::clear(const std::function<bool(ServerActiveObject *, u16)> &cb)
 {
+	errorstream << "ActiveObjectMgr::clear(): iterating through m_active_objects..." << std::endl;
+
 	std::vector<u16> objects_to_remove;
 	for (auto &it : m_active_objects) {
 		if (cb(it.second, it.first)) {
@@ -39,6 +41,8 @@ void ActiveObjectMgr::clear(const std::function<bool(ServerActiveObject *, u16)>
 	for (u16 i : objects_to_remove) {
 		m_active_objects.erase(i);
 	}
+
+	errorstream << "ActiveObjectMgr::clear(): done." << std::endl;
 }
 
 void ActiveObjectMgr::step(
@@ -87,6 +91,7 @@ bool ActiveObjectMgr::registerObject(ServerActiveObject *obj)
 		return false;
 	}
 
+	errorstream << "ActiveObjectMgr::clear(): modifying m_active_objects" << std::endl;
 	m_active_objects[obj->getId()] = obj;
 
 	verbosestream << "Server::ActiveObjectMgr::addActiveObjectRaw(): "
