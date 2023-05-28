@@ -166,7 +166,7 @@ void Clouds::render()
 
 	// Set our own fog
 	driver->setFog(fog_color, fog_type, cloud_full_radius * 0.5,
-			cloud_full_radius*1.2, fog_density, fog_pixelfog, fog_rangefog);
+			cloud_full_radius*1.2, fog_density, fog_pixelfog, fog_rangefog); //TODO: add both fogs?
 
 	// Read noise
 

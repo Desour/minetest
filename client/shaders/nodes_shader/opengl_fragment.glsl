@@ -3,7 +3,7 @@ uniform sampler2D baseTexture;
 uniform vec3 dayLight;
 uniform vec4 skyBgColor;
 uniform float fogDistance;
-uniform float fogShadingParameter;
+uniform float fogDensity;
 uniform vec3 eyePosition;
 
 // The cameraOffset is the current center of the visible world.
@@ -437,18 +437,9 @@ void main(void)
 	}
 #endif
 
-	// Due to a bug in some (older ?) graphics stacks (possibly in the glsl compiler ?),
-	// the fog will only be rendered correctly if the last operation before the
-	// clamp() is an addition. Else, the clamp() seems to be ignored.
-	// E.g. the following won't work:
-	//      float clarity = clamp(fogShadingParameter
-	//		* (fogDistance - length(eyeVec)) / fogDistance), 0.0, 1.0);
-	// As additions usually come for free following a multiplication, the new formula
-	// should be more efficient as well.
-	// Note: clarity = (1 - fogginess)
-	float clarity = clamp(fogShadingParameter
-		- fogShadingParameter * length(eyeVec) / fogDistance, 0.0, 1.0);
-	col = mix(skyBgColor, col, clarity);
+	float fog_clarity = exp2(-pow(fogDensity * length(eyeVec) / fogDistance, 2.0));
+	fog_clarity = clamp(fog_clarity, 0.0, 1.0);
+	col = mix(skyBgColor, col, fog_clarity);
 	col = vec4(col.rgb, base.a);
 
 	gl_FragData[0] = col;

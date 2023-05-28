@@ -414,7 +414,7 @@ class GameGlobalShaderConstantSetter : public IShaderConstantSetter
 	bool m_fog_enabled;
 	CachedPixelShaderSetting<float, 4> m_sky_bg_color;
 	CachedPixelShaderSetting<float> m_fog_distance;
-	CachedPixelShaderSetting<float> m_fog_shading_parameter;
+	CachedPixelShaderSetting<float> m_fog_density;
 	CachedVertexShaderSetting<float> m_animation_timer_vertex;
 	CachedPixelShaderSetting<float> m_animation_timer_pixel;
 	CachedVertexShaderSetting<float> m_animation_timer_delta_vertex;
@@ -473,7 +473,7 @@ public:
 		m_fog_range(fog_range),
 		m_sky_bg_color("skyBgColor"),
 		m_fog_distance("fogDistance"),
-		m_fog_shading_parameter("fogShadingParameter"),
+		m_fog_density("fogDensity"),
 		m_animation_timer_vertex("animationTimer"),
 		m_animation_timer_pixel("animationTimer"),
 		m_animation_timer_delta_vertex("animationTimerDelta"),
@@ -538,10 +538,12 @@ public:
 		if (m_fog_enabled && !*m_force_fog_off)
 			fog_distance = *m_fog_range;
 
-		float fog_shading_parameter = 1.0 / ( 1.0 - m_sky->getFogStart());
+		//~ float fog_shading_parameter = 1.0 / ( 1.0 - m_sky->getFogStart());
+		//~ float fog_density = 1.0f - fog_shading_parameter * 2.0f;
+		float fog_density = m_sky->getFogDensity();
 
 		m_fog_distance.set(&fog_distance, services);
-		m_fog_shading_parameter.set(&fog_shading_parameter, services);
+		m_fog_density.set(&fog_density, services);
 
 		u32 daynight_ratio = (float)m_client->getEnv().getDayNightRatio();
 		video::SColorf sunlight;
@@ -3017,10 +3019,10 @@ void Game::handleClientEvent_SetSky(ClientEvent *event, CameraOrientation *cam)
 	// do not override a potentially smaller client setting.
 	sky->setFogDistance(event->set_sky->fog_distance);
 
-	if (event->set_sky->fog_start >= 0)
-		sky->setFogStart(rangelim(event->set_sky->fog_start, 0.0f, 0.99f));
+	if (event->set_sky->fog_density >= 0)
+		sky->setFogDensity(MYMAX(event->set_sky->fog_density, 0.0f));
 	else
-		sky->setFogStart(g_settings->getFloat("fog_start"));
+		sky->setFogDensity(0.66f); //TODO: maybe make it depend on fog_distance here only?
 
 
 	delete event->set_sky;
@@ -4039,10 +4041,10 @@ void Game::updateFrame(ProfilerGraph *graph, RunStats *stats, f32 dtime,
 	if (m_cache_enable_fog) {
 		driver->setFog(
 				sky->getBgColor(),
-				video::EFT_FOG_LINEAR,
-				runData.fog_range * sky->getFogStart(),
-				runData.fog_range * 1.0,
-				0.01,
+				video::EFT_FOG_EXP2,
+				0.0f, // (unused by exp2)
+				runData.fog_range * 1.0f, // (unused by exp2)
+				sky->getFogDensity(),
 				false, // pixel fog
 				true // range fog
 		);

@@ -117,8 +117,8 @@ public:
 	void setFogDistance(s16 fog_distance) { m_sky_params.fog_distance = fog_distance; }
 	s16 getFogDistance() const { return m_sky_params.fog_distance; }
 
-	void setFogStart(float fog_start) { m_sky_params.fog_start = fog_start; }
-	float getFogStart() const { return m_sky_params.fog_start; }
+	void setFogDensity(float fog_density) { m_sky_params.fog_density = fog_density; }
+	float getFogDensity() const { return m_sky_params.fog_density; }
 
 private:
 	aabb3f m_box;

@@ -1383,7 +1383,7 @@ void Client::handleCommand_HudSetSky(NetworkPacket* pkt)
 		}
 
 		if (pkt->getRemainingBytes() >= 6) {
-			*pkt >> skybox.fog_distance >> skybox.fog_start;
+			*pkt >> skybox.fog_distance >> skybox.fog_density;
 		}
 
 		ClientEvent *event = new ClientEvent();

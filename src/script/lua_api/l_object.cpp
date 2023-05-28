@@ -1806,7 +1806,7 @@ int ObjectRef::l_set_sky(lua_State *L)
 		lua_getfield(L, 2, "fog");
 		if (lua_istable(L, -1)) {
 			sky_params.fog_distance = getfloatfield_default(L, -1,  "fog_distance", sky_params.fog_distance);
-			sky_params.fog_start = getfloatfield_default(L, -1,  "fog_start", sky_params.fog_start);
+			sky_params.fog_density = getfloatfield_default(L, -1,  "fog_density", sky_params.fog_density);
 		}
 	} else {
 		// Handle old set_sky calls, and log deprecated:
@@ -1946,9 +1946,9 @@ int ObjectRef::l_get_sky(lua_State *L)
 		lua_pushinteger(L, skybox_params.fog_distance);
 		lua_setfield(L, -2, "fog_distance");
 	}
-	if (skybox_params.fog_start >= 0) {
-		lua_pushnumber(L, skybox_params.fog_start);
-		lua_setfield(L, -2, "fog_start");
+	if (skybox_params.fog_density >= 0) {
+		lua_pushnumber(L, skybox_params.fog_density);
+		lua_setfield(L, -2, "fog_density");
 	}
 	lua_setfield(L, -2, "fog");
 

@@ -293,9 +293,6 @@ enable_fog (Fog) bool true
 #    Make fog and sky colors depend on daytime (dawn/sunset) and view direction.
 directional_colored_fog (Colored fog) bool true
 
-#    Fraction of the visible distance at which fog starts to be rendered
-fog_start (Fog start) float 0.4 0.0 0.99
-
 [**Clouds]
 
 #    Clouds are a client side effect.
