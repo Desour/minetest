@@ -67,8 +67,6 @@ bool CSMController::start()
 	std::string client_path = porting::path_user + DIR_DELIM "client";
 
 #if defined(_WIN32)
-	char exe_path[MAX_PATH];
-
 	PROCESS_INFORMATION process_info;
 
 	STARTUPINFOA startup_info = {
@@ -130,6 +128,7 @@ bool CSMController::start()
 			client_path.c_str(), env_tz ? env_tz : "", (unsigned long long)m_ipc_shm,
 			(unsigned long long)m_ipc_sem_a, (unsigned long long)m_ipc_sem_b);
 
+	char exe_path[MAX_PATH];
 	if (!porting::getCurrentExecPath(exe_path, sizeof(exe_path)))
 		goto error_exe_path;
 
@@ -153,23 +152,8 @@ error_sem_b:
 error_sem_a:
 	CloseHandle(m_ipc_shm);
 error_shm:
-#else
-#if !defined(__ANDROID__)
-	char exe_path[PATH_MAX];
-#endif
 
-	std::string shm_str;
-
-	const char *env_tz = getenv("TZ");
-	const char *env_tzdir = getenv("TZDIR");
-	const char *argv[] = {
-		"minetest", "--csm", client_path.c_str(), env_tz ? env_tz : "",
-		env_tzdir ? env_tzdir : "", nullptr, nullptr
-	};
-#if !defined(__ANDROID__)
-	char *const envp[] = {nullptr};
-#endif
-
+#else // defined(_WIN32)
 	int shm = -1;
 
 #if defined(__ANDROID__)
@@ -186,12 +170,19 @@ error_shm:
 #endif
 	if (shm == -1)
 		goto error_shm;
+	std::string shm_str;
 #if defined(__ANDROID__)
 	shm_str = std::to_string(SELF_EXEC_SPAWN_FD);
 #else
 	shm_str = std::to_string(shm);
 #endif
-	argv[5] = shm_str.c_str();
+
+	const char *env_tz = getenv("TZ");
+	const char *env_tzdir = getenv("TZDIR");
+	const char *argv[] = {
+		"minetest", "--csm", client_path.c_str(), env_tz ? env_tz : "",
+		env_tzdir ? env_tzdir : "", shm_str.c_str(), nullptr
+	};
 
 	{
 		int flags = fcntl(shm, F_GETFD);
@@ -202,41 +193,50 @@ error_shm:
 	if (ftruncate(shm, sizeof(IPCChannelShared)) != 0)
 		goto error_ftruncate;
 
-	m_ipc_shared = (IPCChannelShared *)mmap(nullptr, sizeof(IPCChannelShared),
+	void *shared_mem = mmap(nullptr, sizeof(IPCChannelShared), //TODO: align size?
 			PROT_READ | PROT_WRITE, MAP_SHARED, shm, 0);
-	if (m_ipc_shared == MAP_FAILED)
+	if (shared_mem == MAP_FAILED)
 		goto error_mmap;
 
+	struct SharedMemDeleter {
+		void operator()(IPCChannelShared *p) {
+			p->~IPCChannelShared();
+			munmap(p, sizeof(IPCChannelShared)); //TODO: align size?
+		}
+	};
+
 	try {
-		new (m_ipc_shared) IPCChannelShared;
+		m_ipc_shared = std::unique_ptr<IPCChannelShared, SharedMemDeleter>(new(shared_mem) IPCChannelShared);
 		m_ipc = IPCChannelEnd::makeA(m_ipc_shared);
 	} catch (...) {
 		goto error_make_ipc;
 	}
 
-#if !defined(__ANDROID__)
-	if (!porting::getCurrentExecPath(exe_path, sizeof(exe_path)))
-		goto error_exe_path;
-#endif
-
+	// Spawn the process
 #if defined(__ANDROID__)
 	m_script_pid = porting::selfExecSpawn(argv, shm);
+#else
+	m_script_pid = [&] {
+		char exe_path[PATH_MAX];
+		if (!porting::getCurrentExecPath(exe_path, sizeof(exe_path)))
+			return -1;
+
+		pid_t pid;
+		char *const envp[] = {nullptr};
+		if (posix_spawn(&pid, exe_path,
+				nullptr, nullptr, (char *const *)argv, envp) != 0)
+			return -1;
+		return pid;
+	}();
+#endif
 	if (m_script_pid < 0)
 		goto error_spawn;
-#else
-	if (posix_spawn(&m_script_pid, exe_path,
-			nullptr, nullptr, (char *const *)argv, envp) != 0)
-		goto error_spawn;
-#endif
 
 	close(shm);
 	return true;
 
 error_spawn:
 	m_script_pid = 0;
-#if !defined(__ANDROID__)
-error_exe_path:
-#endif
 error_make_ipc:
 	m_ipc_shared->~IPCChannelShared();
 	munmap(m_ipc_shared, sizeof(IPCChannelShared));
