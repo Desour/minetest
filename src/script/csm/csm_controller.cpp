@@ -59,6 +59,79 @@ CSMController::~CSMController()
 	stop();
 }
 
+struct IPCChannelStuffMultiProcess final : public IPCChannelStuff
+{
+	struct Shared {
+		std::atomic<u32> refcount{1};
+		IPCChannelShared shared{};
+	};
+
+	static constexpr size_t sharedmem_size = sizeof(Shared); // TODO: align?
+
+	struct Unmapper {
+		void operator()(void *p) { munmap(p, sharedmem_size); }
+	};
+
+	std::unique_ptr<Shared, Unmapper> shared;
+#if defined(IPC_CHANNEL_IMPLEMENTATION_WIN32)
+	HANDLE sem_a;
+	HANDLE sem_b;
+#endif
+
+private:
+#if defined(IPC_CHANNEL_IMPLEMENTATION_WIN32)
+	IPCChannelStuffMultiProcess(std::unique_ptr<Shared, Unmapper> shared,
+			HANDLE sem_a, HANDLE sem_b) :
+		shared(std::move(shared)), sem_a(sem_a), sem_b(sem_b) {}
+#else
+	IPCChannelStuffMultiProcess(std::unique_ptr<Shared, Unmapper> shared) :
+		shared(std::move(shared)) {}
+#endif
+
+public:
+	std::unique_ptr<IPCChannelStuffMultiProcess> makeFirst(
+			std::unique_ptr<void, Unmapper> shared_mem) noexcept
+	{
+		auto shared = std::unique_ptr<Shared, Unmapper>(
+				new(shared_mem.release()) Shared());
+		return std::make_unique<IPCChannelStuffMultiProcess>(std::move(shared));
+	}
+
+	std::unique_ptr<IPCChannelStuffMultiProcess> makeSecond(
+			std::unique_ptr<void, Unmapper> shared_mem) noexcept
+	{
+		auto shared = std::unique_ptr<Shared, Unmapper>(
+				reinterpret_cast<Shared *>(shared_mem.release()));
+		if (shared->refcount++ == 0) {
+			// other end already dead
+			return nullptr;
+		}
+		return std::make_unique<IPCChannelStuffMultiProcess>(std::move(shared));
+	}
+
+	DISABLE_CLASS_COPY(IPCChannelStuffMultiProcess);
+
+	~IPCChannelStuffMultiProcess() override
+	{
+		SANITY_CHECK(shared);
+
+		if (--shared->refcount == 0)
+			shared->~IPCChannelShared();
+
+#ifdef IPC_CHANNEL_IMPLEMENTATION_WIN32
+		// TODO: idk how often these should be closed
+		CloseHandle(sem_b);
+		CloseHandle(sem_a);
+#endif
+	}
+
+	IPCChannelShared *getShared() override { return &shared->shared; }
+#if defined(IPC_CHANNEL_IMPLEMENTATION_WIN32)
+	HANDLE getSemA() override { return sem_a; }
+	HANDLE getSemB() override { return sem_b; }
+#endif
+};
+
 bool CSMController::start()
 {
 	if (isStarted())
@@ -190,24 +263,21 @@ error_shm:
 			goto error_fcntl;
 	}
 
-	if (ftruncate(shm, sizeof(IPCChannelShared)) != 0)
+	if (ftruncate(shm, IPCChannelStuffMultiProcess::sharedmem_size) != 0)
 		goto error_ftruncate;
 
-	void *shared_mem = mmap(nullptr, sizeof(IPCChannelShared), //TODO: align size?
-			PROT_READ | PROT_WRITE, MAP_SHARED, shm, 0);
-	if (shared_mem == MAP_FAILED)
+	auto shared_mem = std::unique_ptr<void, IPCChannelStuffMultiProcess::Unmapper>(
+			[&] {
+				void *p = mmap(nullptr, IPCChannelStuffMultiProcess::sharedmem_size,
+						PROT_READ | PROT_WRITE, MAP_SHARED, shm, 0);
+				return p == MAP_FAILED ? nullptr : p;
+			}()
+		);
+	if (!shared_mem)
 		goto error_mmap;
 
-	struct SharedMemDeleter {
-		void operator()(IPCChannelShared *p) {
-			p->~IPCChannelShared();
-			munmap(p, sizeof(IPCChannelShared)); //TODO: align size?
-		}
-	};
-
 	try {
-		m_ipc_shared = std::unique_ptr<IPCChannelShared, SharedMemDeleter>(new(shared_mem) IPCChannelShared);
-		m_ipc = IPCChannelEnd::makeA(m_ipc_shared);
+		m_ipc = IPCChannelEnd::makeA(IPCChannelStuffMultiProcess::makeFirst(std::move(shared_mem)));
 	} catch (...) {
 		goto error_make_ipc;
 	}
@@ -238,8 +308,6 @@ error_shm:
 error_spawn:
 	m_script_pid = 0;
 error_make_ipc:
-	m_ipc_shared->~IPCChannelShared();
-	munmap(m_ipc_shared, sizeof(IPCChannelShared));
 error_mmap:
 error_ftruncate:
 error_fcntl:
