@@ -66,7 +66,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "content/mod_configuration.h"
 #include "mapnode.h"
 
-extern gui::IGUIEnvironment* guienv;
+extern gui::IGUIEnvironment *guienv;
 
 /*
 	Utility classes
@@ -300,13 +300,13 @@ const std::string &Client::getClientModsLuaPath()
 	return clientmods_dir;
 }
 
-const std::vector<ModSpec>& Client::getMods() const
+const std::vector<ModSpec> &Client::getMods() const
 {
 	static std::vector<ModSpec> client_modspec_temp;
 	return client_modspec_temp;
 }
 
-const ModSpec* Client::getModSpec(const std::string &modname) const
+const ModSpec *Client::getModSpec(const std::string &modname) const
 {
 	return NULL;
 }
@@ -973,7 +973,7 @@ void Client::ReceiveAll()
 	}
 }
 
-inline void Client::handleCommand(NetworkPacket* pkt)
+inline void Client::handleCommand(NetworkPacket *pkt)
 {
 	const ToClientCommandHandler& opHandle = toClientCommandTable[pkt->getCommand()];
 	(this->*opHandle.handler)(pkt);
@@ -1027,7 +1027,7 @@ void Client::ProcessData(NetworkPacket *pkt)
 	handleCommand(pkt);
 }
 
-void Client::Send(NetworkPacket* pkt)
+void Client::Send(NetworkPacket *pkt)
 {
 	auto &scf = serverCommandFactoryTable[pkt->getCommand()];
 	FATAL_ERROR_IF(!scf.name, "packet type missing in table");
@@ -1066,7 +1066,7 @@ void writePlayerPos(LocalPlayer *myplayer, ClientMap *clientMap, NetworkPacket *
 	*pkt << camera_inverted;
 }
 
-void Client::interact(InteractAction action, const PointedThing& pointed)
+void Client::interact(InteractAction action, const PointedThing &pointed)
 {
 	if(m_state != LC_Ready) {
 		errorstream << "Client::interact() "
@@ -1441,7 +1441,7 @@ void Client::sendHaveMedia(const std::vector<u32> &tokens)
 	Send(&pkt);
 }
 
-void Client::sendUpdateClientInfo(const ClientDynamicInfo& info)
+void Client::sendUpdateClientInfo(const ClientDynamicInfo &info)
 {
 	NetworkPacket pkt(TOSERVER_UPDATE_CLIENT_INFO, 4*2 + 4 + 4 + 4*2);
 	pkt << (u32)info.render_target_size.X << (u32)info.render_target_size.Y;
@@ -1798,8 +1798,8 @@ struct TextureUpdateArgs {
 
 void Client::showUpdateProgressTexture(void *args, u32 progress, u32 max_progress)
 {
-		TextureUpdateArgs* targs = (TextureUpdateArgs*) args;
-		u16 cur_percent = std::ceil(progress / max_progress * 100.f);
+		TextureUpdateArgs *targs = (TextureUpdateArgs *)args;
+		u16 cur_percent = std::ceil(progress / max_progress * 100.0f);
 
 		// update the loading menu -- if necessary
 		bool do_draw = false;
@@ -1897,7 +1897,7 @@ float Client::getCurRate()
 void Client::makeScreenshot()
 {
 	irr::video::IVideoDriver *driver = m_rendering_engine->get_video_driver();
-	irr::video::IImage* const raw_image = driver->createScreenShot();
+	irr::video::IImage *const raw_image = driver->createScreenShot();
 
 	if (!raw_image)
 		return;
@@ -1942,7 +1942,7 @@ void Client::makeScreenshot()
 	if (serial == SCREENSHOT_MAX_SERIAL_TRIES) {
 		infostream << "Could not find suitable filename for screenshot" << std::endl;
 	} else {
-		irr::video::IImage* const image =
+		irr::video::IImage *const image =
 				driver->createImage(video::ECF_R8G8B8, raw_image->getDimension());
 
 		if (image) {
@@ -1971,24 +1971,24 @@ void Client::pushToEventQueue(ClientEvent *event)
 
 // IGameDef interface
 // Under envlock
-IItemDefManager* Client::getItemDefManager()
+IItemDefManager *Client::getItemDefManager()
 {
 	return m_itemdef;
 }
-const NodeDefManager* Client::getNodeDefManager()
+const NodeDefManager *Client::getNodeDefManager()
 {
 	return m_nodedef;
 }
-ICraftDefManager* Client::getCraftDefManager()
+ICraftDefManager *Client::getCraftDefManager()
 {
 	return NULL;
 	//return m_craftdef;
 }
-ITextureSource* Client::getTextureSource()
+ITextureSource *Client::getTextureSource()
 {
 	return m_tsrc;
 }
-IWritableShaderSource* Client::getShaderSource()
+IWritableShaderSource *Client::getShaderSource()
 {
 	return m_shsrc;
 }
@@ -2001,21 +2001,21 @@ u16 Client::allocateUnknownNodeId(const std::string &name)
 
 	return CONTENT_IGNORE;
 }
-ISoundManager* Client::getSoundManager()
+ISoundManager *Client::getSoundManager()
 {
 	return m_sound;
 }
-MtEventManager* Client::getEventManager()
+MtEventManager *Client::getEventManager()
 {
 	return m_event;
 }
 
-ParticleManager* Client::getParticleManager()
+ParticleManager *Client::getParticleManager()
 {
 	return m_particle_manager.get();
 }
 
-scene::IAnimatedMesh* Client::getMesh(const std::string &filename, bool cache)
+scene::IAnimatedMesh *Client::getMesh(const std::string &filename, bool cache)
 {
 	StringMap::const_iterator it = m_mesh_data.find(filename);
 	if (it == m_mesh_data.end()) {
@@ -2041,7 +2041,7 @@ scene::IAnimatedMesh* Client::getMesh(const std::string &filename, bool cache)
 	return mesh;
 }
 
-const std::string* Client::getModFile(std::string filename)
+const std::string *Client::getModFile(std::string filename)
 {
 	// strip dir delimiter from beginning of path
 	auto pos = filename.find_first_of(':');
@@ -2107,7 +2107,7 @@ bool Client::sendModChannelMessage(const std::string &channel, const std::string
 	return true;
 }
 
-ModChannel* Client::getModChannel(const std::string &channel)
+ModChannel *Client::getModChannel(const std::string &channel)
 {
 	return m_modchannel_mgr->getModChannel(channel);
 }

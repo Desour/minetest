@@ -48,14 +48,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "particles.h"
 #include <memory>
 
-void Client::handleCommand_Deprecated(NetworkPacket* pkt)
+void Client::handleCommand_Deprecated(NetworkPacket *pkt)
 {
 	infostream << "Got deprecated command "
 			<< toClientCommandTable[pkt->getCommand()].name << " from peer "
 			<< pkt->getPeerId() << "!" << std::endl;
 }
 
-void Client::handleCommand_Hello(NetworkPacket* pkt)
+void Client::handleCommand_Hello(NetworkPacket *pkt)
 {
 	if (pkt->getSize() < 1)
 		return;
@@ -130,7 +130,7 @@ void Client::handleCommand_Hello(NetworkPacket* pkt)
 
 }
 
-void Client::handleCommand_AuthAccept(NetworkPacket* pkt)
+void Client::handleCommand_AuthAccept(NetworkPacket *pkt)
 {
 	deleteAuthData();
 
@@ -164,7 +164,7 @@ void Client::handleCommand_AuthAccept(NetworkPacket* pkt)
 	m_state = LC_Init;
 }
 
-void Client::handleCommand_AcceptSudoMode(NetworkPacket* pkt)
+void Client::handleCommand_AcceptSudoMode(NetworkPacket *pkt)
 {
 	deleteAuthData();
 
@@ -178,7 +178,7 @@ void Client::handleCommand_AcceptSudoMode(NetworkPacket* pkt)
 	// reset again
 	m_chosen_auth_mech = AUTH_MECHANISM_NONE;
 }
-void Client::handleCommand_DenySudoMode(NetworkPacket* pkt)
+void Client::handleCommand_DenySudoMode(NetworkPacket *pkt)
 {
 	ChatMessage *chatMessage = new ChatMessage(CHATMESSAGE_TYPE_SYSTEM,
 			L"Password change denied. Password NOT changed.");
@@ -187,7 +187,7 @@ void Client::handleCommand_DenySudoMode(NetworkPacket* pkt)
 	deleteAuthData();
 }
 
-void Client::handleCommand_AccessDenied(NetworkPacket* pkt)
+void Client::handleCommand_AccessDenied(NetworkPacket *pkt)
 {
 	// The server didn't like our password. Note, this needs
 	// to be processed even if the serialization format has
@@ -238,7 +238,7 @@ void Client::handleCommand_AccessDenied(NetworkPacket* pkt)
 	}
 }
 
-void Client::handleCommand_RemoveNode(NetworkPacket* pkt)
+void Client::handleCommand_RemoveNode(NetworkPacket *pkt)
 {
 	if (pkt->getSize() < 6)
 		return;
@@ -248,7 +248,7 @@ void Client::handleCommand_RemoveNode(NetworkPacket* pkt)
 	removeNode(p);
 }
 
-void Client::handleCommand_AddNode(NetworkPacket* pkt)
+void Client::handleCommand_AddNode(NetworkPacket *pkt)
 {
 	if (pkt->getSize() < 6 + MapNode::serializedLength(m_server_ser_ver))
 		return;
@@ -294,7 +294,7 @@ void Client::handleCommand_NodemetaChanged(NetworkPacket *pkt)
 	}
 }
 
-void Client::handleCommand_BlockData(NetworkPacket* pkt)
+void Client::handleCommand_BlockData(NetworkPacket *pkt)
 {
 	// Ignore too small packet
 	if (pkt->getSize() < 6)
@@ -341,7 +341,7 @@ void Client::handleCommand_BlockData(NetworkPacket* pkt)
 	addUpdateMeshTaskWithEdge(p, true);
 }
 
-void Client::handleCommand_Inventory(NetworkPacket* pkt)
+void Client::handleCommand_Inventory(NetworkPacket *pkt)
 {
 	if (pkt->getSize() < 1)
 		return;
@@ -360,7 +360,7 @@ void Client::handleCommand_Inventory(NetworkPacket* pkt)
 	m_inventory_from_server_age = 0.0;
 }
 
-void Client::handleCommand_TimeOfDay(NetworkPacket* pkt)
+void Client::handleCommand_TimeOfDay(NetworkPacket *pkt)
 {
 	if (pkt->getSize() < 2)
 		return;
@@ -444,7 +444,7 @@ void Client::handleCommand_ChatMessage(NetworkPacket *pkt)
 	}
 }
 
-void Client::handleCommand_ActiveObjectRemoveAdd(NetworkPacket* pkt)
+void Client::handleCommand_ActiveObjectRemoveAdd(NetworkPacket *pkt)
 {
 	/*
 		u16 count of removed objects
@@ -489,7 +489,7 @@ void Client::handleCommand_ActiveObjectRemoveAdd(NetworkPacket* pkt)
 	m_activeobjects_received = true;
 }
 
-void Client::handleCommand_ActiveObjectMessages(NetworkPacket* pkt)
+void Client::handleCommand_ActiveObjectMessages(NetworkPacket *pkt)
 {
 	/*
 		for all objects
@@ -519,7 +519,7 @@ void Client::handleCommand_ActiveObjectMessages(NetworkPacket* pkt)
 	}
 }
 
-void Client::handleCommand_Movement(NetworkPacket* pkt)
+void Client::handleCommand_Movement(NetworkPacket *pkt)
 {
 	LocalPlayer *player = m_env.getLocalPlayer();
 	assert(player != NULL);
@@ -592,7 +592,7 @@ void Client::handleCommand_HP(NetworkPacket *pkt)
 	}
 }
 
-void Client::handleCommand_Breath(NetworkPacket* pkt)
+void Client::handleCommand_Breath(NetworkPacket *pkt)
 {
 	LocalPlayer *player = m_env.getLocalPlayer();
 	assert(player != NULL);
@@ -604,7 +604,7 @@ void Client::handleCommand_Breath(NetworkPacket* pkt)
 	player->setBreath(breath);
 }
 
-void Client::handleCommand_MovePlayer(NetworkPacket* pkt)
+void Client::handleCommand_MovePlayer(NetworkPacket *pkt)
 {
 	LocalPlayer *player = m_env.getLocalPlayer();
 	assert(player != NULL);
@@ -646,7 +646,7 @@ void Client::handleCommand_MovePlayerRel(NetworkPacket *pkt)
 	player->addPosition(added_pos);
 }
 
-void Client::handleCommand_DeathScreen(NetworkPacket* pkt)
+void Client::handleCommand_DeathScreen(NetworkPacket *pkt)
 {
 	bool set_camera_point_target;
 	v3f camera_point_target;
@@ -663,7 +663,7 @@ void Client::handleCommand_DeathScreen(NetworkPacket* pkt)
 	m_client_event_queue.push(event);
 }
 
-void Client::handleCommand_AnnounceMedia(NetworkPacket* pkt)
+void Client::handleCommand_AnnounceMedia(NetworkPacket *pkt)
 {
 	u16 num_files;
 
@@ -714,7 +714,7 @@ void Client::handleCommand_AnnounceMedia(NetworkPacket* pkt)
 	m_media_downloader->step(this);
 }
 
-void Client::handleCommand_Media(NetworkPacket* pkt)
+void Client::handleCommand_Media(NetworkPacket *pkt)
 {
 	/*
 		u16 command
@@ -776,7 +776,7 @@ void Client::handleCommand_Media(NetworkPacket* pkt)
 	}
 }
 
-void Client::handleCommand_NodeDef(NetworkPacket* pkt)
+void Client::handleCommand_NodeDef(NetworkPacket *pkt)
 {
 	infostream << "Client: Received node definitions: packet size: "
 			<< pkt->getSize() << std::endl;
@@ -795,7 +795,7 @@ void Client::handleCommand_NodeDef(NetworkPacket* pkt)
 	m_nodedef_received = true;
 }
 
-void Client::handleCommand_ItemDef(NetworkPacket* pkt)
+void Client::handleCommand_ItemDef(NetworkPacket *pkt)
 {
 	infostream << "Client: Received item definitions: packet size: "
 			<< pkt->getSize() << std::endl;
@@ -814,7 +814,7 @@ void Client::handleCommand_ItemDef(NetworkPacket* pkt)
 	m_itemdef_received = true;
 }
 
-void Client::handleCommand_PlaySound(NetworkPacket* pkt)
+void Client::handleCommand_PlaySound(NetworkPacket *pkt)
 {
 	/*
 		[0] s32 server_id
@@ -893,7 +893,7 @@ void Client::handleCommand_PlaySound(NetworkPacket* pkt)
 	}
 }
 
-void Client::handleCommand_StopSound(NetworkPacket* pkt)
+void Client::handleCommand_StopSound(NetworkPacket *pkt)
 {
 	s32 server_id;
 
@@ -921,7 +921,7 @@ void Client::handleCommand_FadeSound(NetworkPacket *pkt)
 		m_sound->fadeSound(i->second, step, gain);
 }
 
-void Client::handleCommand_Privileges(NetworkPacket* pkt)
+void Client::handleCommand_Privileges(NetworkPacket *pkt)
 {
 	m_privileges.clear();
 	infostream << "Client: Privileges updated: ";
@@ -940,7 +940,7 @@ void Client::handleCommand_Privileges(NetworkPacket* pkt)
 	infostream << std::endl;
 }
 
-void Client::handleCommand_InventoryFormSpec(NetworkPacket* pkt)
+void Client::handleCommand_InventoryFormSpec(NetworkPacket *pkt)
 {
 	LocalPlayer *player = m_env.getLocalPlayer();
 	assert(player != NULL);
@@ -949,7 +949,7 @@ void Client::handleCommand_InventoryFormSpec(NetworkPacket* pkt)
 	player->inventory_formspec = pkt->readLongString();
 }
 
-void Client::handleCommand_DetachedInventory(NetworkPacket* pkt)
+void Client::handleCommand_DetachedInventory(NetworkPacket *pkt)
 {
 	std::string name;
 	bool keep_inv = true;
@@ -981,7 +981,7 @@ void Client::handleCommand_DetachedInventory(NetworkPacket* pkt)
 	inv->deSerialize(is);
 }
 
-void Client::handleCommand_ShowFormSpec(NetworkPacket* pkt)
+void Client::handleCommand_ShowFormSpec(NetworkPacket *pkt)
 {
 	std::string formspec = pkt->readLongString();
 	std::string formname;
@@ -997,7 +997,7 @@ void Client::handleCommand_ShowFormSpec(NetworkPacket* pkt)
 	m_client_event_queue.push(event);
 }
 
-void Client::handleCommand_SpawnParticle(NetworkPacket* pkt)
+void Client::handleCommand_SpawnParticle(NetworkPacket *pkt)
 {
 	std::string datastring(pkt->getString(0), pkt->getSize());
 	std::istringstream is(datastring, std::ios_base::binary);
@@ -1012,7 +1012,7 @@ void Client::handleCommand_SpawnParticle(NetworkPacket* pkt)
 	m_client_event_queue.push(event);
 }
 
-void Client::handleCommand_AddParticleSpawner(NetworkPacket* pkt)
+void Client::handleCommand_AddParticleSpawner(NetworkPacket *pkt)
 {
 	std::string datastring(pkt->getString(0), pkt->getSize());
 	std::istringstream is(datastring, std::ios_base::binary);
@@ -1141,7 +1141,7 @@ void Client::handleCommand_AddParticleSpawner(NetworkPacket* pkt)
 }
 
 
-void Client::handleCommand_DeleteParticleSpawner(NetworkPacket* pkt)
+void Client::handleCommand_DeleteParticleSpawner(NetworkPacket *pkt)
 {
 	u32 server_id;
 	*pkt >> server_id;
@@ -1153,7 +1153,7 @@ void Client::handleCommand_DeleteParticleSpawner(NetworkPacket* pkt)
 	m_client_event_queue.push(event);
 }
 
-void Client::handleCommand_HudAdd(NetworkPacket* pkt)
+void Client::handleCommand_HudAdd(NetworkPacket *pkt)
 {
 	u32 server_id;
 	u8 type;
@@ -1204,7 +1204,7 @@ void Client::handleCommand_HudAdd(NetworkPacket* pkt)
 	m_client_event_queue.push(event);
 }
 
-void Client::handleCommand_HudRemove(NetworkPacket* pkt)
+void Client::handleCommand_HudRemove(NetworkPacket *pkt)
 {
 	u32 server_id;
 
@@ -1216,7 +1216,7 @@ void Client::handleCommand_HudRemove(NetworkPacket* pkt)
 	m_client_event_queue.push(event);
 }
 
-void Client::handleCommand_HudChange(NetworkPacket* pkt)
+void Client::handleCommand_HudChange(NetworkPacket *pkt)
 {
 	std::string sdata;
 	v2f v2fdata;
@@ -1270,7 +1270,7 @@ void Client::handleCommand_HudChange(NetworkPacket* pkt)
 	m_client_event_queue.push(event);
 }
 
-void Client::handleCommand_HudSetFlags(NetworkPacket* pkt)
+void Client::handleCommand_HudSetFlags(NetworkPacket *pkt)
 {
 	u32 flags, mask;
 
@@ -1299,7 +1299,7 @@ void Client::handleCommand_HudSetFlags(NetworkPacket* pkt)
 	// End of 'not so satifying code'
 }
 
-void Client::handleCommand_HudSetParam(NetworkPacket* pkt)
+void Client::handleCommand_HudSetParam(NetworkPacket *pkt)
 {
 	u16 param; std::string value;
 
@@ -1321,7 +1321,7 @@ void Client::handleCommand_HudSetParam(NetworkPacket* pkt)
 	}
 }
 
-void Client::handleCommand_HudSetSky(NetworkPacket* pkt)
+void Client::handleCommand_HudSetSky(NetworkPacket *pkt)
 {
 	if (m_proto_ver < 39) {
 		// Handle Protocol 38 and below servers with old set_sky,
@@ -1463,7 +1463,7 @@ void Client::handleCommand_HudSetStars(NetworkPacket *pkt)
 	m_client_event_queue.push(event);
 }
 
-void Client::handleCommand_CloudParams(NetworkPacket* pkt)
+void Client::handleCommand_CloudParams(NetworkPacket *pkt)
 {
 	f32 density;
 	video::SColor color_bright;
@@ -1491,7 +1491,7 @@ void Client::handleCommand_CloudParams(NetworkPacket* pkt)
 	m_client_event_queue.push(event);
 }
 
-void Client::handleCommand_OverrideDayNightRatio(NetworkPacket* pkt)
+void Client::handleCommand_OverrideDayNightRatio(NetworkPacket *pkt)
 {
 	bool do_override;
 	u16 day_night_ratio_u;
@@ -1507,7 +1507,7 @@ void Client::handleCommand_OverrideDayNightRatio(NetworkPacket* pkt)
 	m_client_event_queue.push(event);
 }
 
-void Client::handleCommand_LocalPlayerAnimations(NetworkPacket* pkt)
+void Client::handleCommand_LocalPlayerAnimations(NetworkPacket *pkt)
 {
 	LocalPlayer *player = m_env.getLocalPlayer();
 	assert(player != NULL);
@@ -1521,7 +1521,7 @@ void Client::handleCommand_LocalPlayerAnimations(NetworkPacket* pkt)
 	player->last_animation = LocalPlayerAnimation::NO_ANIM;
 }
 
-void Client::handleCommand_EyeOffset(NetworkPacket* pkt)
+void Client::handleCommand_EyeOffset(NetworkPacket *pkt)
 {
 	LocalPlayer *player = m_env.getLocalPlayer();
 	assert(player != NULL);
@@ -1534,7 +1534,7 @@ void Client::handleCommand_EyeOffset(NetworkPacket* pkt)
 	};
 }
 
-void Client::handleCommand_UpdatePlayerList(NetworkPacket* pkt)
+void Client::handleCommand_UpdatePlayerList(NetworkPacket *pkt)
 {
 	u8 type;
 	u16 num_players;
@@ -1556,7 +1556,7 @@ void Client::handleCommand_UpdatePlayerList(NetworkPacket* pkt)
 	}
 }
 
-void Client::handleCommand_SrpBytesSandB(NetworkPacket* pkt)
+void Client::handleCommand_SrpBytesSandB(NetworkPacket *pkt)
 {
 	if (m_chosen_auth_mech != AUTH_MECHANISM_SRP &&
 			m_chosen_auth_mech != AUTH_MECHANISM_LEGACY_PASSWORD) {
@@ -1797,7 +1797,7 @@ void Client::handleCommand_MinimapModes(NetworkPacket *pkt)
 
 void Client::handleCommand_SetLighting(NetworkPacket *pkt)
 {
-	Lighting& lighting = m_env.getLocalPlayer()->getLighting();
+	Lighting &lighting = m_env.getLocalPlayer()->getLighting();
 
 	if (pkt->getRemainingBytes() >= 4)
 		*pkt >> lighting.shadow_intensity;

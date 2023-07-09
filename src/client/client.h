@@ -252,7 +252,7 @@ public:
 	void sendHaveMedia(const std::vector<u32> &tokens);
 	void sendUpdateClientInfo(const ClientDynamicInfo &info);
 
-	ClientEnvironment& getEnv() { return m_env; }
+	ClientEnvironment &getEnv() { return m_env; }
 	ITextureSource *tsrc() { return getTextureSource(); }
 	ISoundManager *sound() { return getSoundManager(); }
 	static const std::string &getBuiltinLuaPath();
@@ -304,7 +304,7 @@ public:
 	{ return m_privileges; }
 
 	bool getChatMessage(std::wstring &message);
-	void typeChatMessage(const std::wstring& message);
+	void typeChatMessage(const std::wstring &message);
 
 	u64 getMapSeed(){ return m_map_seed; }
 
