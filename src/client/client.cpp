@@ -142,7 +142,7 @@ Client::Client(
 	m_mod_storage_database->beginSave();
 
 	if (g_settings->getBool("enable_minimap")) {
-		m_minimap = new Minimap(this);
+		m_minimap = std::make_unique<Minimap>(this);
 	}
 
 	m_cache_save_interval = g_settings->getU16("server_map_save_interval");
@@ -254,7 +254,7 @@ void Client::loadMods()
 	if (m_camera)
 		m_script->on_camera_ready(m_camera);
 	if (m_minimap)
-		m_script->on_minimap_ready(m_minimap);
+		m_script->on_minimap_ready(m_minimap.get());
 }
 
 void Client::scanModSubfolder(const std::string &mod_name, const std::string &mod_path,
@@ -361,8 +361,7 @@ Client::~Client()
 
 	guiScalingCacheClear();
 
-	delete m_minimap;
-	m_minimap = nullptr;
+	m_minimap.reset();
 
 	delete m_media_downloader;
 
