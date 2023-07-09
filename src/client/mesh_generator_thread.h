@@ -95,7 +95,7 @@ private:
 struct MeshUpdateResult
 {
 	v3s16 p = v3s16(-1338, -1338, -1338);
-	MapBlockMesh *mesh = nullptr;
+	std::unique_ptr<MapBlockMesh> mesh;
 	u8 solid_sides;
 	std::vector<v3s16> ack_list;
 	bool urgent = false;
@@ -133,7 +133,7 @@ public:
 	// update for the block at p
 	void updateBlock(Map *map, v3s16 p, bool ack_block_to_server, bool urgent,
 			bool update_neighbors = false);
-	void putResult(const MeshUpdateResult &r);
+	void putResult(MeshUpdateResult &&r);
 	bool getNextResult(MeshUpdateResult &r);
 
 

@@ -227,19 +227,17 @@ void MeshUpdateWorkerThread::doUpdate()
 			sleep_ms(m_generation_interval);
 		ScopeProfiler sp(g_profiler, "Client: Mesh making (sum)");
 
-		MapBlockMesh *mesh_new = new MapBlockMesh(m_client, q->data, *m_camera_offset);
-
-
+		auto mesh_new = std::make_unique<MapBlockMesh>(m_client, q->data, *m_camera_offset);
 
 		MeshUpdateResult r;
 		r.p = q->p;
-		r.mesh = mesh_new;
+		r.mesh = std::move(mesh_new);
 		r.solid_sides = get_solid_sides(q->data);
 		r.ack_list = std::move(q->ack_list);
 		r.urgent = q->urgent;
 		r.map_blocks = q->map_blocks;
 
-		m_manager->putResult(r);
+		m_manager->putResult(std::move(r));
 		m_queue_in->done(q->p);
 		delete q;
 	}
@@ -289,12 +287,12 @@ void MeshUpdateManager::updateBlock(Map *map, v3s16 p, bool ack_block_to_server,
 	deferUpdate();
 }
 
-void MeshUpdateManager::putResult(const MeshUpdateResult &result)
+void MeshUpdateManager::putResult(MeshUpdateResult &&result)
 {
 	if (result.urgent)
-		m_queue_out_urgent.push_back(result);
+		m_queue_out_urgent.push_back(std::move(result));
 	else
-		m_queue_out.push_back(result);
+		m_queue_out.push_back(std::move(result));
 }
 
 bool MeshUpdateManager::getNextResult(MeshUpdateResult &r)

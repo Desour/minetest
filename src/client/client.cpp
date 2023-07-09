@@ -349,7 +349,7 @@ Client::~Client()
 		for (auto block : r.map_blocks)
 			if (block)
 				block->refDrop();
-		delete r.mesh;
+		r.mesh.reset();
 	}
 
 	delete m_inventory_from_server;
@@ -613,18 +613,15 @@ void Client::step(float dtime)
 						if (r.mesh->getMesh(l)->getMeshBufferCount() != 0)
 							is_empty = false;
 
-					if (is_empty)
-						delete r.mesh;
-					else {
+					if (!is_empty) {
 						// Replace with the new mesh
-						block->mesh.reset(r.mesh);
+						block->mesh = std::move(r.mesh);
 						if (r.urgent)
 							force_update_shadows = true;
 					}
 				}
-			} else {
-				delete r.mesh;
 			}
+			r.mesh.reset();
 
 			if (m_minimap && do_mapper_update) {
 				v3s16 ofs;
