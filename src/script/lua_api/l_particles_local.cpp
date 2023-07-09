@@ -92,10 +92,10 @@ int ModApiParticlesLocal::l_add_particle(lua_State *L)
 
 	p.node_tile = getintfield_default(L, 1, "node_tile", p.node_tile);
 
-	ClientEvent *event = new ClientEvent();
+	auto event = std::make_unique<ClientEvent>();
 	event->type           = CE_SPAWN_PARTICLE;
 	event->spawn_particle = new ParticleParameters(p);
-	getClient(L)->pushToEventQueue(event);
+	getClient(L)->pushToEventQueue(std::move(event));
 
 	return 0;
 }
@@ -192,13 +192,13 @@ int ModApiParticlesLocal::l_add_particlespawner(lua_State *L)
 
 	u64 id = getClient(L)->getParticleManager()->generateSpawnerId();
 
-	auto event = new ClientEvent();
+	auto event = std::make_unique<ClientEvent>();
 	event->type                            = CE_ADD_PARTICLESPAWNER;
 	event->add_particlespawner.p           = new ParticleSpawnerParameters(p);
 	event->add_particlespawner.attached_id = 0;
 	event->add_particlespawner.id          = id;
 
-	getClient(L)->pushToEventQueue(event);
+	getClient(L)->pushToEventQueue(std::move(event));
 	lua_pushnumber(L, id);
 
 	return 1;
@@ -209,11 +209,11 @@ int ModApiParticlesLocal::l_delete_particlespawner(lua_State *L)
 	// Get parameters
 	u32 id = luaL_checknumber(L, 1);
 
-	ClientEvent *event = new ClientEvent();
+	auto event = std::make_unique<ClientEvent>();
 	event->type                      = CE_DELETE_PARTICLESPAWNER;
 	event->delete_particlespawner.id = id;
 
-	getClient(L)->pushToEventQueue(event);
+	getClient(L)->pushToEventQueue(std::move(event));
 	return 0;
 }
 

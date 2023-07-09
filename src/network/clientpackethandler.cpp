@@ -580,11 +580,11 @@ void Client::handleCommand_HP(NetworkPacket *pkt)
 
 	if (hp < oldhp) {
 		// Add to ClientEvent queue
-		ClientEvent *event = new ClientEvent();
+		auto event = std::make_unique<ClientEvent>();
 		event->type = CE_PLAYER_DAMAGE;
 		event->player_damage.amount = oldhp - hp;
 		event->player_damage.effect = damage_effect;
-		m_client_event_queue.push(event);
+		pushToEventQueue(std::move(event));
 	}
 }
 
@@ -624,11 +624,11 @@ void Client::handleCommand_MovePlayer(NetworkPacket *pkt)
 		it would just force the pitch and yaw values to whatever
 		the camera points to.
 	*/
-	ClientEvent *event = new ClientEvent();
+	auto event = std::make_unique<ClientEvent>();
 	event->type = CE_PLAYER_FORCE_MOVE;
 	event->player_force_move.pitch = pitch;
 	event->player_force_move.yaw = yaw;
-	m_client_event_queue.push(event);
+	pushToEventQueue(std::move(event));
 }
 
 void Client::handleCommand_MovePlayerRel(NetworkPacket *pkt)
@@ -650,13 +650,13 @@ void Client::handleCommand_DeathScreen(NetworkPacket *pkt)
 	*pkt >> set_camera_point_target;
 	*pkt >> camera_point_target;
 
-	ClientEvent *event = new ClientEvent();
+	auto event = std::make_unique<ClientEvent>();
 	event->type                                = CE_DEATHSCREEN;
 	event->deathscreen.set_camera_point_target = set_camera_point_target;
 	event->deathscreen.camera_point_target_x   = camera_point_target.X;
 	event->deathscreen.camera_point_target_y   = camera_point_target.Y;
 	event->deathscreen.camera_point_target_z   = camera_point_target.Z;
-	m_client_event_queue.push(event);
+	pushToEventQueue(std::move(event));
 }
 
 void Client::handleCommand_AnnounceMedia(NetworkPacket *pkt)
@@ -984,13 +984,13 @@ void Client::handleCommand_ShowFormSpec(NetworkPacket *pkt)
 
 	*pkt >> formname;
 
-	ClientEvent *event = new ClientEvent();
+	auto event = std::make_unique<ClientEvent>();
 	event->type = CE_SHOW_FORMSPEC;
 	// pointer is required as event is a struct only!
 	// adding a std:string to a struct isn't possible
 	event->show_formspec.formspec = new std::string(formspec);
 	event->show_formspec.formname = new std::string(formname);
-	m_client_event_queue.push(event);
+	pushToEventQueue(std::move(event));
 }
 
 void Client::handleCommand_SpawnParticle(NetworkPacket *pkt)
@@ -1001,11 +1001,11 @@ void Client::handleCommand_SpawnParticle(NetworkPacket *pkt)
 	ParticleParameters p;
 	p.deSerialize(is, m_proto_ver);
 
-	ClientEvent *event = new ClientEvent();
+	auto event = std::make_unique<ClientEvent>();
 	event->type           = CE_SPAWN_PARTICLE;
 	event->spawn_particle = new ParticleParameters(p);
 
-	m_client_event_queue.push(event);
+	pushToEventQueue(std::move(event));
 }
 
 void Client::handleCommand_AddParticleSpawner(NetworkPacket *pkt)
@@ -1127,13 +1127,13 @@ void Client::handleCommand_AddParticleSpawner(NetworkPacket *pkt)
 		p.size.end = p.size.start;
 	}
 
-	auto event = new ClientEvent();
+	auto event = std::make_unique<ClientEvent>();
 	event->type                            = CE_ADD_PARTICLESPAWNER;
 	event->add_particlespawner.p           = new ParticleSpawnerParameters(p);
 	event->add_particlespawner.attached_id = attached_id;
 	event->add_particlespawner.id          = server_id;
 
-	m_client_event_queue.push(event);
+	pushToEventQueue(std::move(event));
 }
 
 
@@ -1142,11 +1142,11 @@ void Client::handleCommand_DeleteParticleSpawner(NetworkPacket *pkt)
 	u32 server_id;
 	*pkt >> server_id;
 
-	ClientEvent *event = new ClientEvent();
+	auto event = std::make_unique<ClientEvent>();
 	event->type = CE_DELETE_PARTICLESPAWNER;
 	event->delete_particlespawner.id = server_id;
 
-	m_client_event_queue.push(event);
+	pushToEventQueue(std::move(event));
 }
 
 void Client::handleCommand_HudAdd(NetworkPacket *pkt)
@@ -1178,7 +1178,7 @@ void Client::handleCommand_HudAdd(NetworkPacket *pkt)
 		*pkt >> style;
 	} catch(PacketError &e) {};
 
-	ClientEvent *event = new ClientEvent();
+	auto event = std::make_unique<ClientEvent>();
 	event->type              = CE_HUDADD;
 	event->hudadd            = new ClientEventHudAdd();
 	event->hudadd->server_id = server_id;
@@ -1197,7 +1197,7 @@ void Client::handleCommand_HudAdd(NetworkPacket *pkt)
 	event->hudadd->z_index   = z_index;
 	event->hudadd->text2     = text2;
 	event->hudadd->style     = style;
-	m_client_event_queue.push(event);
+	pushToEventQueue(std::move(event));
 }
 
 void Client::handleCommand_HudRemove(NetworkPacket *pkt)
@@ -1206,10 +1206,10 @@ void Client::handleCommand_HudRemove(NetworkPacket *pkt)
 
 	*pkt >> server_id;
 
-	ClientEvent *event = new ClientEvent();
+	auto event = std::make_unique<ClientEvent>();
 	event->type     = CE_HUDRM;
 	event->hudrm.id = server_id;
-	m_client_event_queue.push(event);
+	pushToEventQueue(std::move(event));
 }
 
 void Client::handleCommand_HudChange(NetworkPacket *pkt)
@@ -1253,7 +1253,7 @@ void Client::handleCommand_HudChange(NetworkPacket *pkt)
 			break;
 	}
 
-	ClientEvent *event = new ClientEvent();
+	auto event = std::make_unique<ClientEvent>();
 	event->type                 = CE_HUDCHANGE;
 	event->hudchange            = new ClientEventHudChange();
 	event->hudchange->id        = server_id;
@@ -1263,7 +1263,7 @@ void Client::handleCommand_HudChange(NetworkPacket *pkt)
 	event->hudchange->sdata     = sdata;
 	event->hudchange->data      = intdata;
 	event->hudchange->v2s32data = v2s32data;
-	m_client_event_queue.push(event);
+	pushToEventQueue(std::move(event));
 }
 
 void Client::handleCommand_HudSetFlags(NetworkPacket *pkt)
@@ -1357,25 +1357,25 @@ void Client::handleCommand_HudSetSky(NetworkPacket *pkt)
 		}
 
 		// Skybox, sun, moon and stars ClientEvents:
-		ClientEvent *sky_event = new ClientEvent();
+		auto sky_event = std::make_unique<ClientEvent>();
 		sky_event->type = CE_SET_SKY;
 		sky_event->set_sky = new SkyboxParams(skybox);
-		m_client_event_queue.push(sky_event);
+		m_client_event_queue.push(std::move(sky_event));
 
-		ClientEvent *sun_event = new ClientEvent();
+		auto sun_event = std::make_unique<ClientEvent>();
 		sun_event->type = CE_SET_SUN;
 		sun_event->sun_params = new SunParams(sun);
-		m_client_event_queue.push(sun_event);
+		m_client_event_queue.push(std::move(sun_event));
 
-		ClientEvent *moon_event = new ClientEvent();
+		auto moon_event = std::make_unique<ClientEvent>();
 		moon_event->type = CE_SET_MOON;
 		moon_event->moon_params = new MoonParams(moon);
-		m_client_event_queue.push(moon_event);
+		m_client_event_queue.push(std::move(moon_event));
 
-		ClientEvent *star_event = new ClientEvent();
+		auto star_event = std::make_unique<ClientEvent>();
 		star_event->type = CE_SET_STARS;
 		star_event->star_params = new StarParams(stars);
-		m_client_event_queue.push(star_event);
+		m_client_event_queue.push(std::move(star_event));
 		return;
 	}
 
@@ -1410,10 +1410,10 @@ void Client::handleCommand_HudSetSky(NetworkPacket *pkt)
 		*pkt >> skybox.fog_color;
 	}
 
-	ClientEvent *event = new ClientEvent();
+	auto event = std::make_unique<ClientEvent>();
 	event->type = CE_SET_SKY;
 	event->set_sky = new SkyboxParams(skybox);
-	m_client_event_queue.push(event);
+	m_client_event_queue.push(std::move(event));
 }
 
 void Client::handleCommand_HudSetSun(NetworkPacket *pkt)
@@ -1423,10 +1423,10 @@ void Client::handleCommand_HudSetSun(NetworkPacket *pkt)
 	*pkt >> sun.visible >> sun.texture>> sun.tonemap
 		>> sun.sunrise >> sun.sunrise_visible >> sun.scale;
 
-	ClientEvent *event = new ClientEvent();
+	auto event = std::make_unique<ClientEvent>();
 	event->type        = CE_SET_SUN;
 	event->sun_params  = new SunParams(sun);
-	m_client_event_queue.push(event);
+	pushToEventQueue(std::move(event));
 }
 
 void Client::handleCommand_HudSetMoon(NetworkPacket *pkt)
@@ -1436,10 +1436,10 @@ void Client::handleCommand_HudSetMoon(NetworkPacket *pkt)
 	*pkt >> moon.visible >> moon.texture
 		>> moon.tonemap >> moon.scale;
 
-	ClientEvent *event = new ClientEvent();
+	auto event = std::make_unique<ClientEvent>();
 	event->type        = CE_SET_MOON;
 	event->moon_params = new MoonParams(moon);
-	m_client_event_queue.push(event);
+	pushToEventQueue(std::move(event));
 }
 
 void Client::handleCommand_HudSetStars(NetworkPacket *pkt)
@@ -1452,11 +1452,11 @@ void Client::handleCommand_HudSetStars(NetworkPacket *pkt)
 		*pkt >> stars.day_opacity;
 	} catch (PacketError &e) {};
 
-	ClientEvent *event = new ClientEvent();
+	auto event = std::make_unique<ClientEvent>();
 	event->type        = CE_SET_STARS;
 	event->star_params = new StarParams(stars);
 
-	m_client_event_queue.push(event);
+	pushToEventQueue(std::move(event));
 }
 
 void Client::handleCommand_CloudParams(NetworkPacket *pkt)
@@ -1471,7 +1471,7 @@ void Client::handleCommand_CloudParams(NetworkPacket *pkt)
 	*pkt >> density >> color_bright >> color_ambient
 			>> height >> thickness >> speed;
 
-	ClientEvent *event = new ClientEvent();
+	auto event = std::make_unique<ClientEvent>();
 	event->type                       = CE_CLOUD_PARAMS;
 	event->cloud_params.density       = density;
 	// use the underlying u32 representation, because we can't
@@ -1484,7 +1484,7 @@ void Client::handleCommand_CloudParams(NetworkPacket *pkt)
 	// same here: deconstruct to skip constructor
 	event->cloud_params.speed_x       = speed.X;
 	event->cloud_params.speed_y       = speed.Y;
-	m_client_event_queue.push(event);
+	pushToEventQueue(std::move(event));
 }
 
 void Client::handleCommand_OverrideDayNightRatio(NetworkPacket *pkt)
@@ -1496,11 +1496,11 @@ void Client::handleCommand_OverrideDayNightRatio(NetworkPacket *pkt)
 
 	float day_night_ratio_f = (float)day_night_ratio_u / 65536;
 
-	ClientEvent *event = new ClientEvent();
+	auto event = std::make_unique<ClientEvent>();
 	event->type                                 = CE_OVERRIDE_DAY_NIGHT_RATIO;
 	event->override_day_night_ratio.do_override = do_override;
 	event->override_day_night_ratio.ratio_f     = day_night_ratio_f;
-	m_client_event_queue.push(event);
+	pushToEventQueue(std::move(event));
 }
 
 void Client::handleCommand_LocalPlayerAnimations(NetworkPacket *pkt)

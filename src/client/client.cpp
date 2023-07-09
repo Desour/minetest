@@ -374,6 +374,12 @@ Client::~Client()
 	for (auto &csp : m_sounds_client_to_server)
 		m_sound->freeId(csp.first);
 	m_sounds_client_to_server.clear();
+
+	if (!m_client_event_queue.empty()) {
+		// if this happens, there's a memory leak
+		// FIXME: use std::variant for ClientEvent instead of tagged union
+		warningstream << "~Client: m_client_event_queue is not empty" << std::endl;
+	}
 }
 
 void Client::connect(const Address &address, const std::string &address_name,
@@ -536,11 +542,11 @@ void Client::step(float dtime)
 				sendDamage(damage);
 
 			// Add to ClientEvent queue
-			ClientEvent *event = new ClientEvent();
+			auto event = std::make_unique<ClientEvent>();
 			event->type = CE_PLAYER_DAMAGE;
 			event->player_damage.amount = damage;
 			event->player_damage.effect = true;
-			m_client_event_queue.push(event);
+			pushToEventQueue(std::move(event));
 		}
 	}
 
@@ -1760,12 +1766,12 @@ void Client::updateCameraOffset(v3s16 camera_offset)
 	m_mesh_update_manager->m_camera_offset = camera_offset;
 }
 
-ClientEvent *Client::getClientEvent()
+std::unique_ptr<ClientEvent> Client::getClientEvent()
 {
 	FATAL_ERROR_IF(m_client_event_queue.empty(),
 			"Cannot getClientEvent, queue is empty.");
 
-	ClientEvent *event = m_client_event_queue.front();
+	auto event = std::move(m_client_event_queue.front());
 	m_client_event_queue.pop();
 	return event;
 }
@@ -1957,11 +1963,6 @@ void Client::makeScreenshot()
 	}
 
 	raw_image->drop();
-}
-
-void Client::pushToEventQueue(ClientEvent *event)
-{
-	m_client_event_queue.push(event);
 }
 
 // IGameDef interface

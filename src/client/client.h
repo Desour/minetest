@@ -317,7 +317,7 @@ public:
 
 	bool hasClientEvents() const { return !m_client_event_queue.empty(); }
 	// Get event from queue. If queue is empty, it triggers an assertion failure.
-	ClientEvent *getClientEvent();
+	std::unique_ptr<ClientEvent> getClientEvent();
 
 	bool accessDenied() const { return m_access_denied; }
 
@@ -408,7 +408,10 @@ public:
 	ClientScripting *getScript() { return m_script.get(); }
 	bool modsLoaded() const { return m_mods_loaded; }
 
-	void pushToEventQueue(ClientEvent *event);
+	void pushToEventQueue(std::unique_ptr<ClientEvent> event)
+	{
+		m_client_event_queue.push(std::move(event));
+	}
 
 	// IP and port we're connected to
 	const Address getServerAddress();
@@ -539,7 +542,7 @@ private:
 	bool m_access_denied = false;
 	bool m_access_denied_reconnect = false;
 	std::string m_access_denied_reason = "";
-	std::queue<ClientEvent *> m_client_event_queue;
+	std::queue<std::unique_ptr<ClientEvent>> m_client_event_queue;
 	bool m_itemdef_received = false;
 	bool m_nodedef_received = false;
 	bool m_activeobjects_received = false;

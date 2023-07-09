@@ -3088,9 +3088,9 @@ void Game::handleClientEvent_CloudParams(ClientEvent *event, CameraOrientation *
 void Game::processClientEvents(CameraOrientation *cam)
 {
 	while (client->hasClientEvents()) {
-		std::unique_ptr<ClientEvent> event(client->getClientEvent());
+		std::unique_ptr<ClientEvent> event = client->getClientEvent();
 		FATAL_ERROR_IF(event->type >= CLIENTEVENT_MAX, "Invalid clientevent type");
-		const ClientEventHandler& evHandler = clientEventHandler[event->type];
+		const ClientEventHandler &evHandler = clientEventHandler[event->type];
 		(this->*evHandler.handler)(event.get(), cam);
 	}
 }
