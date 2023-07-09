@@ -36,14 +36,6 @@ public:
 	}
 
 } block_placeholder;
-/*
-	QueuedMeshUpdate
-*/
-
-QueuedMeshUpdate::~QueuedMeshUpdate()
-{
-	delete data;
-}
 
 /*
 	MeshUpdateQueue
@@ -190,8 +182,9 @@ void MeshUpdateQueue::done(v3s16 pos)
 void MeshUpdateQueue::fillDataFromMapBlocks(QueuedMeshUpdate *q)
 {
 	auto mesh_grid = m_client->getMeshGrid();
-	MeshMakeData *data = new MeshMakeData(m_client->ndef(), MAP_BLOCKSIZE * mesh_grid.cell_size, m_cache_enable_shaders);
-	q->data = data;
+	q->data = std::make_unique<MeshMakeData>(m_client->ndef(),
+			MAP_BLOCKSIZE * mesh_grid.cell_size, m_cache_enable_shaders);
+	MeshMakeData *data = q->data.get();
 
 	data->fillBlockDataBegin(q->p);
 
@@ -227,12 +220,12 @@ void MeshUpdateWorkerThread::doUpdate()
 			sleep_ms(m_generation_interval);
 		ScopeProfiler sp(g_profiler, "Client: Mesh making (sum)");
 
-		auto mesh_new = std::make_unique<MapBlockMesh>(m_client, q->data, *m_camera_offset);
+		auto mesh_new = std::make_unique<MapBlockMesh>(m_client, q->data.get(), *m_camera_offset);
 
 		MeshUpdateResult r;
 		r.p = q->p;
 		r.mesh = std::move(mesh_new);
-		r.solid_sides = get_solid_sides(q->data);
+		r.solid_sides = get_solid_sides(q->data.get());
 		r.ack_list = std::move(q->ack_list);
 		r.urgent = q->urgent;
 		r.map_blocks = q->map_blocks;

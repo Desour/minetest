@@ -36,12 +36,9 @@ struct QueuedMeshUpdate
 	std::vector<v3s16> ack_list;
 	int crack_level = -1;
 	v3s16 crack_pos;
-	MeshMakeData *data = nullptr; // This is generated in MeshUpdateQueue::pop()
+	std::unique_ptr<MeshMakeData> data; // This is generated in MeshUpdateQueue::pop()
 	std::vector<MapBlock *> map_blocks;
 	bool urgent = false;
-
-	QueuedMeshUpdate() = default;
-	~QueuedMeshUpdate();
 };
 
 /*
@@ -100,8 +97,6 @@ struct MeshUpdateResult
 	std::vector<v3s16> ack_list;
 	bool urgent = false;
 	std::vector<MapBlock *> map_blocks;
-
-	MeshUpdateResult() = default;
 };
 
 class MeshUpdateManager;
