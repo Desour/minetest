@@ -342,7 +342,7 @@ void ClientMap::updateDrawList()
 			// Loop through blocks in sector
 			for (const auto &entry : sector->getBlocks()) {
 				MapBlock *block = entry.second.get();
-				MapBlockMesh *mesh = block->mesh;
+				MapBlockMesh *mesh = block->mesh.get();
 
 				// Calculate the coordinates for range and frustum culling
 				v3f mesh_sphere_center;
@@ -446,7 +446,7 @@ void ClientMap::updateDrawList()
 
 			MapBlock *block = sector ? sector->getBlockNoCreateNoEx(block_coord.Y) : nullptr;
 
-			MapBlockMesh *mesh = block ? block->mesh : nullptr;
+			MapBlockMesh *mesh = block ? block->mesh.get() : nullptr;
 
 			// Calculate the coordinates for range and frustum culling
 			v3f mesh_sphere_center;
@@ -663,7 +663,7 @@ void ClientMap::touchMapBlocks()
 
 		for (const auto &entry : sector->getBlocks()) {
 			MapBlock *block = entry.second.get();
-			MapBlockMesh *mesh = block->mesh;
+			MapBlockMesh *mesh = block->mesh.get();
 
 			// Calculate the coordinates for range and frustum culling
 			v3f mesh_sphere_center;
@@ -753,7 +753,7 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 	for (auto &i : m_drawlist) {
 		v3s16 block_pos = i.first;
 		MapBlock *block = i.second;
-		MapBlockMesh *block_mesh = block->mesh;
+		MapBlockMesh *block_mesh = block->mesh.get();
 
 		// If the mesh of the block happened to get deleted, ignore it
 		if (!block_mesh)
@@ -1151,8 +1151,7 @@ void ClientMap::renderMapShadows(video::IVideoDriver *driver,
 		else {
 			// otherwise, group buffers across meshes
 			// using MeshBufListMaps
-			MapBlockMesh *mapBlockMesh = block->mesh;
-			assert(mapBlockMesh);
+			MapBlockMesh *mapBlockMesh = block->mesh.get();
 
 			for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) {
 				scene::IMesh *mesh = mapBlockMesh->getMesh(layer);
@@ -1267,7 +1266,7 @@ void ClientMap::updateDrawListShadow(v3f shadow_light_pos, v3f shadow_light_dir,
 		*/
 		for (const auto &entry : sector->getBlocks()) {
 			MapBlock *block = entry.second.get();
-			MapBlockMesh *mesh = block->mesh;
+			MapBlockMesh *mesh = block->mesh.get();
 			if (!mesh) {
 				// Ignore if mesh doesn't exist
 				continue;

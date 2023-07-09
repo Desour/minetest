@@ -600,8 +600,7 @@ void Client::step(float dtime)
 
 			if (block) {
 				// Delete the old mesh
-				delete block->mesh;
-				block->mesh = nullptr;
+				block->mesh.reset();
 				block->solid_sides = r.solid_sides;
 
 				if (r.mesh) {
@@ -618,7 +617,7 @@ void Client::step(float dtime)
 						delete r.mesh;
 					else {
 						// Replace with the new mesh
-						block->mesh = r.mesh;
+						block->mesh.reset(r.mesh);
 						if (r.urgent)
 							force_update_shadows = true;
 					}

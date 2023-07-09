@@ -76,13 +76,6 @@ MapBlock::MapBlock(v3s16 pos, IGameDef *gamedef):
 
 MapBlock::~MapBlock()
 {
-#ifndef SERVER
-	{
-		delete mesh;
-		mesh = nullptr;
-	}
-#endif
-
 	delete[] data;
 }
 

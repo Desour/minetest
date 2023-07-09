@@ -461,7 +461,7 @@ private:
 
 public:
 #ifndef SERVER // Only on client
-	MapBlockMesh *mesh = nullptr;
+	std::unique_ptr<MapBlockMesh> mesh;
 
 	// marks the sides which are opaque: 00+Z-Z+Y-Y+X-X
 	u8 solid_sides = 0;
