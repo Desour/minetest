@@ -362,13 +362,13 @@ void MapBlock::serialize(std::ostream &os_compressed, u8 version, bool disk, int
 	const u8 params_width = 2;
  	if(disk)
 	{
-		MapNode *tmp_nodes = new MapNode[nodecount];
-		memcpy(tmp_nodes, data, nodecount * sizeof(MapNode));
-		getBlockNodeIdMapping(&nimap, tmp_nodes, m_gamedef->ndef());
+		auto tmp_nodes = std::unique_ptr<MapNode[]>(new MapNode[nodecount]);
+		memcpy(tmp_nodes.get(), data, nodecount * sizeof(MapNode));
+		getBlockNodeIdMapping(&nimap, tmp_nodes.get(), m_gamedef->ndef());
 
-		buf = MapNode::serializeBulk(version, tmp_nodes, nodecount,
+		buf = MapNode::serializeBulk(version, tmp_nodes.get(), nodecount,
 				content_width, params_width);
-		delete[] tmp_nodes;
+		tmp_nodes.reset();
 
 		// write timestamp and node/id mapping first
 		if (version >= 29) {
