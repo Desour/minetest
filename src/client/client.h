@@ -506,7 +506,7 @@ private:
 	u16 m_proto_ver = 0;
 
 	bool m_update_wielded_item = false;
-	Inventory *m_inventory_from_server = nullptr;
+	std::unique_ptr<Inventory> m_inventory_from_server;
 	float m_inventory_from_server_age = 0.0f;
 	PacketCounter m_packetcounter;
 	// Block mesh animation parameters

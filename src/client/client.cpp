@@ -352,7 +352,7 @@ Client::~Client()
 		r.mesh.reset();
 	}
 
-	delete m_inventory_from_server;
+	m_inventory_from_server.reset();
 
 	// Delete detached inventories
 	for (auto &m_detached_inventorie : m_detached_inventories) {
