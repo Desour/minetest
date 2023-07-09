@@ -574,7 +574,7 @@ private:
 
 	// Detached inventories
 	// key = name
-	std::unordered_map<std::string, Inventory*> m_detached_inventories;
+	std::unordered_map<std::string, std::unique_ptr<Inventory>> m_detached_inventories;
 
 	// Storage for mesh data for creating multiple instances of the same mesh
 	StringMap m_mesh_data;

@@ -958,21 +958,20 @@ void Client::handleCommand_DetachedInventory(NetworkPacket* pkt)
 	infostream << "Client: Detached inventory update: \"" << name
 		<< "\", mode=" << (keep_inv ? "update" : "remove") << std::endl;
 
-	const auto &inv_it = m_detached_inventories.find(name);
+	auto inv_it = m_detached_inventories.find(name);
 	if (!keep_inv) {
-		if (inv_it != m_detached_inventories.end()) {
-			delete inv_it->second;
+		if (inv_it != m_detached_inventories.end())
 			m_detached_inventories.erase(inv_it);
-		}
 		return;
 	}
 	Inventory *inv = nullptr;
 	if (inv_it == m_detached_inventories.end()) {
-		inv = new Inventory(m_itemdef);
-		m_detached_inventories[name] = inv;
-	} else {
-		inv = inv_it->second;
+		auto [it, did_insert] = m_detached_inventories.emplace(name,
+				std::make_unique<Inventory>(m_itemdef));
+		assert(did_insert);
+		inv_it = it;
 	}
+	inv = inv_it->second.get();
 
 	u16 ignore;
 	*pkt >> ignore; // this used to be the length of the following string, ignore it

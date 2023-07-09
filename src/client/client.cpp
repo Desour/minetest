@@ -354,10 +354,7 @@ Client::~Client()
 
 	m_inventory_from_server.reset();
 
-	// Delete detached inventories
-	for (auto &m_detached_inventorie : m_detached_inventories) {
-		delete m_detached_inventorie.second;
-	}
+	m_detached_inventories.clear();
 
 	// cleanup 3d model meshes on client shutdown
 	m_rendering_engine->cleanupMeshCache();
@@ -1570,12 +1567,12 @@ bool Client::updateWieldedItem()
 	return true;
 }
 
-scene::ISceneManager* Client::getSceneManager()
+scene::ISceneManager *Client::getSceneManager()
 {
 	return m_rendering_engine->get_scene_manager();
 }
 
-Inventory* Client::getInventory(const InventoryLocation &loc)
+Inventory *Client::getInventory(const InventoryLocation &loc)
 {
 	switch(loc.type){
 	case InventoryLocation::UNDEFINED:
@@ -1593,30 +1590,31 @@ Inventory* Client::getInventory(const InventoryLocation &loc)
 		// Check if we are working with local player inventory
 		LocalPlayer *player = m_env.getLocalPlayer();
 		if (!player || strcmp(player->getName(), loc.name.c_str()) != 0)
-			return NULL;
+			return nullptr;
 		return &player->inventory;
 	}
 	break;
 	case InventoryLocation::NODEMETA:
 	{
 		NodeMetadata *meta = m_env.getMap().getNodeMetadata(loc.p);
-		if(!meta)
-			return NULL;
+		if (!meta)
+			return nullptr;
 		return meta->getInventory();
 	}
 	break;
 	case InventoryLocation::DETACHED:
 	{
-		if (m_detached_inventories.count(loc.name) == 0)
-			return NULL;
-		return m_detached_inventories[loc.name];
+		auto it = m_detached_inventories.find(loc.name);
+		if (it == m_detached_inventories.end())
+			return nullptr;
+		return it->second.get();
 	}
 	break;
 	default:
 		FATAL_ERROR("Invalid inventory location type.");
 		break;
 	}
-	return NULL;
+	return nullptr;
 }
 
 void Client::inventoryAction(InventoryAction *a)
