@@ -588,7 +588,7 @@ private:
 	GameUI *m_game_ui;
 
 	// Used for saving server map to disk client-side
-	MapDatabase *m_localdb = nullptr;
+	std::unique_ptr<MapDatabase> m_localdb;
 	IntervalLimiter m_localdb_save_interval;
 	u16 m_cache_save_interval;
 

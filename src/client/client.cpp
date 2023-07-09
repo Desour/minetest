@@ -944,7 +944,7 @@ void Client::initLocalMapSaving(const Address &address,
 #undef set_world_path
 	fs::CreateAllDirs(world_path);
 
-	m_localdb = new MapDatabaseSQLite3(world_path);
+	m_localdb = std::make_unique<MapDatabaseSQLite3>(world_path);
 	m_localdb->beginSave();
 	actionstream << "Local map saving started, map will be saved at '" << world_path << "'" << std::endl;
 }
