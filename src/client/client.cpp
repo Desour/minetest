@@ -194,8 +194,8 @@ void Client::loadMods()
 		return;
 	}
 
-	m_script = new ClientScripting(this);
-	m_env.setScript(m_script);
+	m_script = std::make_unique<ClientScripting>(this);
+	m_env.setScript(m_script.get());
 	m_script->setEnv(&m_env);
 
 	// Load builtin
@@ -325,7 +325,7 @@ void Client::Stop()
 	}
 
 	if (m_mods_loaded)
-		delete m_script;
+		m_script.reset();
 }
 
 bool Client::isShutdown()

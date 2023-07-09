@@ -151,7 +151,7 @@ private:
 	LocalPlayer *m_local_player = nullptr;
 	ITextureSource *m_texturesource;
 	Client *m_client;
-	ClientScripting *m_script = nullptr;
+	ClientScripting *m_script = nullptr; // owned by client
 	client::ActiveObjectMgr m_ao_manager;
 	std::vector<ClientSimpleObject*> m_simple_objects;
 	std::queue<ClientEnvEvent> m_client_event_queue;
