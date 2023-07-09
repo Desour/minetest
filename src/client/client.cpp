@@ -138,7 +138,7 @@ Client::Client(
 
 	// Make the mod storage database and begin the save for later
 	m_mod_storage_database =
-			new ModStorageDatabaseSQLite3(porting::path_user + DIR_DELIM + "client");
+			std::make_unique<ModStorageDatabaseSQLite3>(porting::path_user + DIR_DELIM + "client");
 	m_mod_storage_database->beginSave();
 
 	if (g_settings->getBool("enable_minimap")) {
@@ -368,7 +368,7 @@ Client::~Client()
 	// Write the changes and delete
 	if (m_mod_storage_database)
 		m_mod_storage_database->endSave();
-	delete m_mod_storage_database;
+	m_mod_storage_database.reset();
 
 	// Free sound ids
 	for (auto &csp : m_sounds_client_to_server)
