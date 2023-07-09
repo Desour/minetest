@@ -3847,7 +3847,7 @@ void GUIFormSpecMenu::updateSelectedItem()
 					if (!list_to)
 						break;
 
-					IMoveAction *a = new IMoveAction();
+					auto a = std::make_unique<IMoveAction>();
 					a->count = item.count;
 					a->from_inv = s.inventoryloc;
 					a->from_list = s.listname;
@@ -3855,7 +3855,7 @@ void GUIFormSpecMenu::updateSelectedItem()
 					a->to_inv = to_ring.inventoryloc;
 					a->to_list = to_ring.listname;
 					a->move_somewhere = true;
-					m_invmgr->inventoryAction(a);
+					m_invmgr->inventoryAction(std::move(a));
 				} while (0);
 
 				m_shift_move_after_craft = false;
@@ -4451,7 +4451,7 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 						ItemStack item = list_s->getItem(i);
 
 						if (slct.stacksWith(item)) {
-							IMoveAction *a = new IMoveAction();
+							auto a = std::make_unique<IMoveAction>();
 							a->count = item.count;
 							a->from_inv = s.inventoryloc;
 							a->from_list = s.listname;
@@ -4459,7 +4459,7 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 							a->to_inv = to_ring.inventoryloc;
 							a->to_list = to_ring.listname;
 							a->move_somewhere = true;
-							m_invmgr->inventoryAction(a);
+							m_invmgr->inventoryAction(std::move(a));
 						}
 					}
 				} else if (button == BET_LEFT && (empty || matching)) {
@@ -4534,7 +4534,7 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 						ItemStack stack_to = list_to->getItem(ds.first.i);
 						u16 amount = stack_to.count - ds.second.count;
 
-						IMoveAction *a = new IMoveAction();
+						auto a = std::make_unique<IMoveAction>();
 						a->count = amount;
 						a->from_inv = m_selected_item->inventoryloc;
 						a->from_list = m_selected_item->listname;
@@ -4542,7 +4542,7 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 						a->to_inv = ds.first.inventoryloc;
 						a->to_list = ds.first.listname;
 						a->to_i = ds.first.i;
-						m_invmgr->inventoryAction(a);
+						m_invmgr->inventoryAction(std::move(a));
 					}
 
 				} else if (identical) {
@@ -4657,7 +4657,7 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 						}
 
 						if (amount > 0) {
-							IMoveAction *a = new IMoveAction();
+							auto a = std::make_unique<IMoveAction>();
 							a->count = amount;
 							a->from_inv = s.inventoryloc;
 							a->from_list = s.listname;
@@ -4665,7 +4665,7 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 							a->to_inv = s.inventoryloc;
 							a->to_list = s.listname;
 							a->to_i = s.i;
-							m_invmgr->inventoryAction(a);
+							m_invmgr->inventoryAction(std::move(a));
 
 							if (m_selected_item)
 								m_selected_amount += amount;
@@ -4780,7 +4780,7 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 
 			if (move_amount > 0) {
 				infostream << "Handing IAction::Move to manager" << std::endl;
-				IMoveAction *a = new IMoveAction();
+				auto a = std::make_unique<IMoveAction>();
 				a->count = move_amount;
 				a->from_inv = m_selected_item->inventoryloc;
 				a->from_list = m_selected_item->listname;
@@ -4788,7 +4788,7 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 				a->to_inv = s.inventoryloc;
 				a->to_list = s.listname;
 				a->to_i = s.i;
-				m_invmgr->inventoryAction(a);
+				m_invmgr->inventoryAction(std::move(a));
 			}
 		} else if (pickup_amount > 0) {
 			// Send IAction::Move
@@ -4815,7 +4815,7 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 				m_selected_amount += pickup_amount;
 
 				infostream << "Handing IAction::Move to manager" << std::endl;
-				IMoveAction *a = new IMoveAction();
+				auto a = std::make_unique<IMoveAction>();
 				a->count = pickup_amount;
 				a->from_inv = s.inventoryloc;
 				a->from_list = s.listname;
@@ -4823,7 +4823,7 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 				a->to_inv = m_selected_item->inventoryloc;
 				a->to_list = m_selected_item->listname;
 				a->to_i = m_selected_item->i;
-				m_invmgr->inventoryAction(a);
+				m_invmgr->inventoryAction(std::move(a));
 			}
 		} else if (shift_move_amount > 0) {
 			// Try to shift-move the item
@@ -4850,7 +4850,7 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 					break;
 
 				infostream << "Handing IAction::Move to manager" << std::endl;
-				IMoveAction *a = new IMoveAction();
+				auto a = std::make_unique<IMoveAction>();
 				a->count = shift_move_amount;
 				a->from_inv = s.inventoryloc;
 				a->from_list = s.listname;
@@ -4858,7 +4858,7 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 				a->to_inv = to_ring.inventoryloc;
 				a->to_list = to_ring.listname;
 				a->move_somewhere = true;
-				m_invmgr->inventoryAction(a);
+				m_invmgr->inventoryAction(std::move(a));
 			} while (0);
 
 		} else if (drop_amount > 0) {
@@ -4874,12 +4874,12 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 			m_selected_amount -= drop_amount;
 
 			infostream << "Handing IAction::Drop to manager" << std::endl;
-			IDropAction *a = new IDropAction();
+			auto a = std::make_unique<IDropAction>();
 			a->count = drop_amount;
 			a->from_inv = m_selected_item->inventoryloc;
 			a->from_list = m_selected_item->listname;
 			a->from_i = m_selected_item->i;
-			m_invmgr->inventoryAction(a);
+			m_invmgr->inventoryAction(std::move(a));
 
 		} else if (craft_amount > 0) {
 			assert(s.isValid());
@@ -4893,10 +4893,10 @@ bool GUIFormSpecMenu::OnEvent(const SEvent& event)
 
 				// Send IACTION_CRAFT
 				infostream << "Handing IACTION_CRAFT to manager" << std::endl;
-				ICraftAction *a = new ICraftAction();
+				auto a = std::make_unique<ICraftAction>();
 				a->count = craft_amount;
 				a->craft_inv = s.inventoryloc;
-				m_invmgr->inventoryAction(a);
+				m_invmgr->inventoryAction(std::move(a));
 			}
 		}
 

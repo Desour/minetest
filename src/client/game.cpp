@@ -2164,12 +2164,12 @@ void Game::processItemSelection(u16 *new_playeritem)
 
 void Game::dropSelectedItem(bool single_item)
 {
-	IDropAction *a = new IDropAction();
+	auto a = std::make_unique<IDropAction>();
 	a->count = single_item ? 1 : 0;
 	a->from_inv.setCurrentPlayer();
 	a->from_list = "main";
 	a->from_i = client->getEnv().getLocalPlayer()->getWieldIndex();
-	client->inventoryAction(a);
+	client->inventoryAction(std::move(a));
 }
 
 

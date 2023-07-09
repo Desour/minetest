@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "irr_v3d.h"
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -118,7 +119,7 @@ public:
 	// Set modified (will be saved and sent over network; only on server)
 	virtual void setInventoryModified(const InventoryLocation &loc) {}
 	// Send inventory action to server (only on client)
-	virtual void inventoryAction(InventoryAction *a){}
+	virtual void inventoryAction(std::unique_ptr<InventoryAction> a){}
 };
 
 enum class IAction : u16 {

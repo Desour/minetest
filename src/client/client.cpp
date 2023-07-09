@@ -1615,20 +1615,17 @@ Inventory *Client::getInventory(const InventoryLocation &loc)
 	return nullptr;
 }
 
-void Client::inventoryAction(InventoryAction *a)
+void Client::inventoryAction(std::unique_ptr<InventoryAction> a)
 {
 	/*
 		Send it to the server
 	*/
-	sendInventoryAction(a);
+	sendInventoryAction(a.get());
 
 	/*
 		Predict some local inventory changes
 	*/
 	a->clientApply(this, this);
-
-	// Remove it
-	delete a;
 }
 
 float Client::getAnimationTime()

@@ -279,7 +279,7 @@ public:
 
 	/* InventoryManager interface */
 	Inventory *getInventory(const InventoryLocation &loc) override;
-	void inventoryAction(InventoryAction *a) override;
+	void inventoryAction(std::unique_ptr<InventoryAction> a) override;
 
 	// Send the item number 'item' as player item to the server
 	void setPlayerItem(u16 item);
