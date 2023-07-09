@@ -22,6 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "environment.h"
 #include "util/numeric.h" // IntervalLimiter
 #include "activeobjectmgr.h" // client::ActiveObjectMgr
+#include <memory>
 #include <set>
 
 class ClientSimpleObject;
@@ -73,8 +74,8 @@ public:
 
 	void step(f32 dtime);
 
-	virtual void setLocalPlayer(LocalPlayer *player);
-	LocalPlayer *getLocalPlayer() const { return m_local_player; }
+	void setLocalPlayer(std::unique_ptr<LocalPlayer> player);
+	LocalPlayer *getLocalPlayer() const { return m_local_player.get(); }
 
 	/*
 		ClientSimpleObjects
@@ -148,7 +149,7 @@ public:
 
 private:
 	ClientMap *m_map;
-	LocalPlayer *m_local_player = nullptr;
+	std::unique_ptr<LocalPlayer> m_local_player;
 	ITextureSource *m_texturesource;
 	Client *m_client;
 	ClientScripting *m_script = nullptr; // owned by client

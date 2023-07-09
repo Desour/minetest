@@ -63,7 +63,7 @@ ClientEnvironment::~ClientEnvironment()
 	// Drop/delete map
 	m_map->drop();
 
-	delete m_local_player;
+	m_local_player.reset();
 }
 
 Map & ClientEnvironment::getMap()
@@ -76,15 +76,14 @@ ClientMap & ClientEnvironment::getClientMap()
 	return *m_map;
 }
 
-void ClientEnvironment::setLocalPlayer(LocalPlayer *player)
+void ClientEnvironment::setLocalPlayer(std::unique_ptr<LocalPlayer> player)
 {
 	/*
 		It is a failure if already is a local player
 	*/
-	FATAL_ERROR_IF(m_local_player != NULL,
-		"Local player already allocated");
+	FATAL_ERROR_IF(m_local_player, "Local player already allocated");
 
-	m_local_player = player;
+	m_local_player = std::move(player);
 }
 
 void ClientEnvironment::step(float dtime)

@@ -131,10 +131,10 @@ Client::Client(
 	m_media_downloader(std::make_unique<ClientMediaDownloader>()),
 	m_state(LC_Created),
 	m_game_ui(game_ui),
-	m_modchannel_mgr(new ModChannelMgr())
+	m_modchannel_mgr(std::make_unique<ModChannelMgr>())
 {
 	// Add local player
-	m_env.setLocalPlayer(new LocalPlayer(this, playername));
+	m_env.setLocalPlayer(std::make_unique<LocalPlayer>(this, playername));
 
 	// Make the mod storage database and begin the save for later
 	m_mod_storage_database =
