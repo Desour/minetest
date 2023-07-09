@@ -1678,7 +1678,7 @@ bool Client::getChatMessage(std::wstring &res)
 	if (m_chat_queue.empty())
 		return false;
 
-	ChatMessage *chatMessage = m_chat_queue.front();
+	std::unique_ptr<ChatMessage> chatMessage = std::move(m_chat_queue.front());
 	m_chat_queue.pop();
 
 	res = L"";
@@ -1700,7 +1700,6 @@ bool Client::getChatMessage(std::wstring &res)
 			break;
 	}
 
-	delete chatMessage;
 	return true;
 }
 
@@ -1953,7 +1952,7 @@ void Client::makeScreenshot()
 			} else {
 				sstr << "Failed to save screenshot '" << filename << "'";
 			}
-			pushToChatQueue(new ChatMessage(CHATMESSAGE_TYPE_SYSTEM,
+			pushToChatQueue(std::make_unique<ChatMessage>(CHATMESSAGE_TYPE_SYSTEM,
 					utf8_to_wide(sstr.str())));
 			infostream << sstr.str() << std::endl;
 			image->drop();

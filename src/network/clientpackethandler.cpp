@@ -180,9 +180,8 @@ void Client::handleCommand_AcceptSudoMode(NetworkPacket *pkt)
 }
 void Client::handleCommand_DenySudoMode(NetworkPacket *pkt)
 {
-	ChatMessage *chatMessage = new ChatMessage(CHATMESSAGE_TYPE_SYSTEM,
-			L"Password change denied. Password NOT changed.");
-	pushToChatQueue(chatMessage);
+	pushToChatQueue(std::make_unique<ChatMessage>(CHATMESSAGE_TYPE_SYSTEM,
+			L"Password change denied. Password NOT changed."));
 	// reset everything and be sad
 	deleteAuthData();
 }
@@ -419,14 +418,12 @@ void Client::handleCommand_ChatMessage(NetworkPacket *pkt)
 		wstring message
 	 */
 
-	ChatMessage *chatMessage = new ChatMessage();
+	auto chatMessage = std::make_unique<ChatMessage>();
 	u8 version, message_type;
 	*pkt >> version >> message_type;
 
-	if (version != 1 || message_type >= CHATMESSAGE_TYPE_MAX) {
-		delete chatMessage;
+	if (version != 1 || message_type >= CHATMESSAGE_TYPE_MAX)
 		return;
-	}
 
 	u64 timestamp;
 	*pkt >> chatMessage->sender >> chatMessage->message >> timestamp;
@@ -438,9 +435,8 @@ void Client::handleCommand_ChatMessage(NetworkPacket *pkt)
 	if (modsLoaded() && m_script->on_receiving_message(
 			wide_to_utf8(chatMessage->message))) {
 		// Message was consumed by CSM and should not be handled by client
-		delete chatMessage;
 	} else {
-		pushToChatQueue(chatMessage);
+		pushToChatQueue(std::move(chatMessage));
 	}
 }
 
