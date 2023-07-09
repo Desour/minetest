@@ -128,7 +128,7 @@ Client::Client(
 	m_last_chat_message_sent(time(NULL)),
 	m_password(password),
 	m_chosen_auth_mech(AUTH_MECHANISM_NONE),
-	m_media_downloader(new ClientMediaDownloader()),
+	m_media_downloader(std::make_unique<ClientMediaDownloader>()),
 	m_state(LC_Created),
 	m_game_ui(game_ui),
 	m_modchannel_mgr(new ModChannelMgr())
@@ -363,7 +363,7 @@ Client::~Client()
 
 	m_minimap.reset();
 
-	delete m_media_downloader;
+	m_media_downloader.reset();
 
 	// Write the changes and delete
 	if (m_mod_storage_database)
@@ -664,8 +664,7 @@ void Client::step(float dtime)
 	if (m_media_downloader && m_media_downloader->isStarted()) {
 		m_media_downloader->step(this);
 		if (m_media_downloader->isDone()) {
-			delete m_media_downloader;
-			m_media_downloader = NULL;
+			m_media_downloader.reset();
 		}
 	}
 	{

@@ -547,7 +547,7 @@ private:
 
 	std::vector<std::string> m_remote_media_servers;
 	// Media downloader, only exists during init
-	ClientMediaDownloader *m_media_downloader;
+	std::unique_ptr<ClientMediaDownloader> m_media_downloader;
 	// Pending downloads of dynamic media (key: token)
 	std::vector<std::pair<u32, std::shared_ptr<SingleMediaDownloader>>> m_pending_media_downloads;
 
