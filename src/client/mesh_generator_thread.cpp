@@ -52,11 +52,11 @@ MeshUpdateQueue::~MeshUpdateQueue()
 {
 	MutexAutoLock lock(m_mutex);
 
-	for (QueuedMeshUpdate *q : m_queue) {
+	for (auto &q : m_queue) {
 		for (auto block : q->map_blocks)
 			if (block)
 				block->refDrop();
-		delete q;
+		q.reset();
 	}
 }
 
@@ -83,7 +83,7 @@ bool MeshUpdateQueue::addBlock(Map *map, v3s16 p, bool ack_block_to_server, bool
 		Find if block is already in queue.
 		If it is, update the data and quit.
 	*/
-	for (QueuedMeshUpdate *q : m_queue) {
+	for (auto &q : m_queue) {
 		if (q->p == mesh_position) {
 			// NOTE: We are not adding a new position to the queue, thus
 			//       refcount_from_queue stays the same.
@@ -128,46 +128,43 @@ bool MeshUpdateQueue::addBlock(Map *map, v3s16 p, bool ack_block_to_server, bool
 	/*
 		Add the block
 	*/
-	QueuedMeshUpdate *q = new QueuedMeshUpdate;
+	auto q = std::make_unique<QueuedMeshUpdate>();
 	q->p = mesh_position;
-	if(ack_block_to_server)
+	if (ack_block_to_server)
 		q->ack_list.push_back(p);
 	q->crack_level = m_client->getCrackLevel();
 	q->crack_pos = m_client->getCrackPos();
 	q->urgent = urgent;
 	q->map_blocks = std::move(map_blocks);
-	m_queue.push_back(q);
+	m_queue.push_back(std::move(q));
 
 	return true;
 }
 
-// Returned pointer must be deleted
-// Returns NULL if queue is empty
-QueuedMeshUpdate *MeshUpdateQueue::pop()
+std::unique_ptr<QueuedMeshUpdate> MeshUpdateQueue::pop()
 {
-	QueuedMeshUpdate *result = NULL;
+	std::unique_ptr<QueuedMeshUpdate> result;
 	{
 		MutexAutoLock lock(m_mutex);
 
 		bool must_be_urgent = !m_urgents.empty();
-		for (std::vector<QueuedMeshUpdate*>::iterator i = m_queue.begin();
-				i != m_queue.end(); ++i) {
-			QueuedMeshUpdate *q = *i;
+		for (auto it = m_queue.begin(); it != m_queue.end(); ++it) {
+			QueuedMeshUpdate *q = it->get();
 			if (must_be_urgent && m_urgents.count(q->p) == 0)
 				continue;
 			// Make sure no two threads are processing the same mapblock, as that causes racing conditions
 			if (m_inflight_blocks.find(q->p) != m_inflight_blocks.end())
 				continue;
-			m_queue.erase(i);
+			result = std::move(*it);
+			m_queue.erase(it);
 			m_urgents.erase(q->p);
 			m_inflight_blocks.insert(q->p);
-			result = q;
 			break;
 		}
 	}
 
 	if (result)
-		fillDataFromMapBlocks(result);
+		fillDataFromMapBlocks(result.get());
 
 	return result;
 }
@@ -214,7 +211,7 @@ MeshUpdateWorkerThread::MeshUpdateWorkerThread(Client *client, MeshUpdateQueue *
 
 void MeshUpdateWorkerThread::doUpdate()
 {
-	QueuedMeshUpdate *q;
+	std::unique_ptr<QueuedMeshUpdate> q;
 	while ((q = m_queue_in->pop())) {
 		if (m_generation_interval)
 			sleep_ms(m_generation_interval);
@@ -232,7 +229,6 @@ void MeshUpdateWorkerThread::doUpdate()
 
 		m_manager->putResult(std::move(r));
 		m_queue_in->done(q->p);
-		delete q;
 	}
 }
 

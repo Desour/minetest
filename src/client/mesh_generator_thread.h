@@ -61,9 +61,8 @@ public:
 	// update for the block at p
 	bool addBlock(Map *map, v3s16 p, bool ack_block_to_server, bool urgent);
 
-	// Returned pointer must be deleted
 	// Returns NULL if queue is empty
-	QueuedMeshUpdate *pop();
+	std::unique_ptr<QueuedMeshUpdate> pop();
 
 	// Marks a position as finished, unblocking the next update
 	void done(v3s16 pos);
@@ -76,7 +75,7 @@ public:
 
 private:
 	Client *m_client;
-	std::vector<QueuedMeshUpdate *> m_queue;
+	std::vector<std::unique_ptr<QueuedMeshUpdate>> m_queue;
 	std::unordered_set<v3s16> m_urgents;
 	std::unordered_set<v3s16> m_inflight_blocks;
 	std::mutex m_mutex;
