@@ -22,6 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "environment.h"
 #include "util/numeric.h" // IntervalLimiter
 #include "activeobjectmgr.h" // client::ActiveObjectMgr
+#include "irr_ptr.h"
 #include <memory>
 #include <set>
 
@@ -63,7 +64,7 @@ typedef std::unordered_map<u16, ClientActiveObject*> ClientActiveObjectMap;
 class ClientEnvironment : public Environment
 {
 public:
-	ClientEnvironment(ClientMap *map, ITextureSource *texturesource, Client *client);
+	ClientEnvironment(irr_ptr<ClientMap> map, ITextureSource *texturesource, Client *client);
 	~ClientEnvironment();
 
 	Map & getMap();
@@ -148,7 +149,7 @@ public:
 	u64 getFrameTimeDelta() const { return m_frame_dtime; }
 
 private:
-	ClientMap *m_map;
+	irr_ptr<ClientMap> m_map;
 	std::unique_ptr<LocalPlayer> m_local_player;
 	ITextureSource *m_texturesource;
 	Client *m_client;
