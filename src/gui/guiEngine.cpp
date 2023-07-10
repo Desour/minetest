@@ -143,7 +143,7 @@ GUIEngine::GUIEngine(JoystickController *joystick,
 
 	// create shader source
 	// (currently only used by clouds)
-	m_shader_source.reset(createShaderSource());
+	m_shader_source = createShaderSource();
 
 	// create soundmanager
 #if USE_SOUND

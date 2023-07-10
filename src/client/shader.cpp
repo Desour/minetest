@@ -348,9 +348,9 @@ private:
 			MaterialType material_type, NodeDrawType drawtype);
 };
 
-IWritableShaderSource *createShaderSource()
+std::unique_ptr<IWritableShaderSource> createShaderSource()
 {
-	return new ShaderSource();
+	return std::make_unique<ShaderSource>();
 }
 
 ShaderSource::ShaderSource()

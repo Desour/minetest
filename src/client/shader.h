@@ -239,7 +239,7 @@ public:
 	virtual void addShaderConstantSetterFactory(IShaderConstantSetterFactory *setter) = 0;
 };
 
-IWritableShaderSource *createShaderSource();
+std::unique_ptr<IWritableShaderSource> createShaderSource();
 
 void dumpShaderProgram(std::ostream &output_stream,
 	const std::string &program_type, std::string_view program);

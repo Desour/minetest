@@ -869,7 +869,7 @@ private:
 	float dynamic_info_send_timer = 0;
 
 	std::unique_ptr<IWritableTextureSource> texture_src;
-	IWritableShaderSource *shader_src = nullptr;
+	std::unique_ptr<IWritableShaderSource> shader_src;
 
 	// When created, these will be filled with data received from the server
 	std::unique_ptr<IWritableItemDefManager> itemdef_manager;
@@ -1026,7 +1026,7 @@ Game::~Game()
 	quicktune.reset();
 	eventmgr.reset();
 	texture_src.reset();
-	delete shader_src;
+	shader_src.reset();
 	nodedef_manager.reset();
 	itemdef_manager.reset();
 	delete draw_control;
@@ -1435,7 +1435,7 @@ bool Game::createClient(const GameStartData &start_data)
 	shader_src->addShaderConstantSetterFactory(
 		new FogShaderConstantSetterFactory());
 
-	ShadowRenderer::preInit(shader_src);
+	ShadowRenderer::preInit(shader_src.get());
 
 	// Update cached textures, meshes and materials
 	client->afterContentReceived();
@@ -1454,11 +1454,11 @@ bool Game::createClient(const GameStartData &start_data)
 	/* Clouds
 	 */
 	if (m_cache_enable_clouds)
-		clouds = new Clouds(smgr, shader_src, -1, rand());
+		clouds = new Clouds(smgr, shader_src.get(), -1, rand());
 
 	/* Skybox
 	 */
-	sky = new Sky(-1, m_rendering_engine, texture_src.get(), shader_src);
+	sky = new Sky(-1, m_rendering_engine, texture_src.get(), shader_src.get());
 	scsf->setSky(sky);
 
 	/* Pre-calculated values
@@ -1584,7 +1584,7 @@ bool Game::connectToServer(const GameStartData &start_data,
 	try {
 		client = std::make_unique<Client>(start_data.name.c_str(),
 				start_data.password,
-				*draw_control, texture_src.get(), shader_src,
+				*draw_control, texture_src.get(), shader_src.get(),
 				itemdef_manager.get(), nodedef_manager.get(), sound_manager.get(), eventmgr.get(),
 				m_rendering_engine, m_game_ui.get(),
 				start_data.allow_login_or_register);
