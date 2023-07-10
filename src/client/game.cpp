@@ -886,7 +886,7 @@ private:
 
 	std::unique_ptr<GameUI> m_game_ui;
 	GUIChatConsole *gui_chat_console = nullptr; // Free using ->Drop()
-	MapDrawControl *draw_control = nullptr;
+	std::unique_ptr<MapDrawControl> draw_control;
 	std::unique_ptr<Camera> camera;
 	Clouds *clouds = nullptr;	                  // Free using ->Drop()
 	Sky *sky = nullptr;                         // Free using ->Drop()
@@ -1029,7 +1029,7 @@ Game::~Game()
 	shader_src.reset();
 	nodedef_manager.reset();
 	itemdef_manager.reset();
-	delete draw_control;
+	draw_control.reset();
 
 	clearTextureNameCache();
 
@@ -1403,7 +1403,7 @@ bool Game::createClient(const GameStartData &start_data)
 {
 	showOverlayMessage(N_("Creating client..."), 0, 10);
 
-	draw_control = new MapDrawControl();
+	draw_control = std::make_unique<MapDrawControl>();
 	if (!draw_control)
 		return false;
 
@@ -4098,7 +4098,8 @@ void Game::updateFrame(ProfilerGraph *graph, RunStats *stats, f32 dtime,
 		updateShadows();
 	}
 
-	m_game_ui->update(*stats, client.get(), draw_control, cam, runData.pointed_old, gui_chat_console, dtime);
+	m_game_ui->update(*stats, client.get(), draw_control.get(), cam,
+			runData.pointed_old, gui_chat_console, dtime);
 
 	/*
 	   make sure menu is on top
