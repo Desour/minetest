@@ -42,10 +42,10 @@ public:
 		delete m_mod_storage_database;
 		delete m_craftdef;
 		delete m_nodedef;
-		delete m_itemdef;
+		m_itemdef.reset();
 	}
 
-	IItemDefManager *getItemDefManager() override { return m_itemdef; }
+	IItemDefManager *getItemDefManager() override { return m_itemdef.get(); }
 	const NodeDefManager *getNodeDefManager() override { return m_nodedef; }
 	NodeDefManager* getWritableNodeDefManager() { return m_nodedef; }
 	ICraftDefManager *getCraftDefManager() override { return m_craftdef; }
@@ -72,7 +72,7 @@ public:
 	ModChannel *getModChannel(const std::string &channel) override { return nullptr; }
 
 protected:
-	IItemDefManager *m_itemdef = nullptr;
+	std::unique_ptr<IItemDefManager> m_itemdef;
 	NodeDefManager *m_nodedef = nullptr;
 	ICraftDefManager *m_craftdef = nullptr;
 	ModStorageDatabase *m_mod_storage_database = nullptr;

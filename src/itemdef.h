@@ -197,4 +197,4 @@ public:
 	virtual void deSerialize(std::istream &is, u16 protocol_version)=0;
 };
 
-IWritableItemDefManager* createItemDefManager();
+std::unique_ptr<IWritableItemDefManager> createItemDefManager();

@@ -314,7 +314,7 @@ void Server::handleCommand_Init2(NetworkPacket* pkt)
 		std::endl;
 
 	// Send item definitions
-	SendItemDef(peer_id, m_itemdef, protocol_version);
+	SendItemDef(peer_id, m_itemdef.get(), protocol_version);
 
 	// Send node definitions
 	SendNodeDef(peer_id, m_nodedef, protocol_version);
@@ -895,8 +895,8 @@ bool Server::checkInteractDistance(RemotePlayer *player, const f32 d, const std:
 {
 	ItemStack selected_item, hand_item;
 	player->getWieldedItem(&selected_item, &hand_item);
-	f32 max_d = BS * getToolRange(selected_item.getDefinition(m_itemdef),
-			hand_item.getDefinition(m_itemdef));
+	f32 max_d = BS * getToolRange(selected_item.getDefinition(m_itemdef.get()),
+			hand_item.getDefinition(m_itemdef.get()));
 
 	// Cube diagonal * 1.5 for maximal supported node extents:
 	// sqrt(3) * 1.5 ≅ 2.6
@@ -1104,7 +1104,7 @@ void Server::handleCommand_Interact(NetworkPacket *pkt)
 		ItemStack selected_item, hand_item;
 		ItemStack tool_item = playersao->getWieldedItem(&selected_item, &hand_item);
 		ToolCapabilities toolcap =
-				tool_item.getToolCapabilities(m_itemdef);
+				tool_item.getToolCapabilities(m_itemdef.get());
 		v3f dir = (pointed_object->getBasePosition() -
 				(playersao->getBasePosition() + playersao->getEyeOffset())
 					).normalize();
@@ -1116,7 +1116,7 @@ void Server::handleCommand_Interact(NetworkPacket *pkt)
 
 		// Callback may have changed item, so get it again
 		playersao->getWieldedItem(&selected_item);
-		bool changed = selected_item.addWear(wear, m_itemdef);
+		bool changed = selected_item.addWear(wear, m_itemdef.get());
 		if (changed)
 			playersao->setWieldedItem(selected_item);
 
@@ -1165,12 +1165,12 @@ void Server::handleCommand_Interact(NetworkPacket *pkt)
 
 			// Get diggability and expected digging time
 			DigParams params = getDigParams(m_nodedef->get(n).groups,
-					&selected_item.getToolCapabilities(m_itemdef),
+					&selected_item.getToolCapabilities(m_itemdef.get()),
 					selected_item.wear);
 			// If can't dig, try hand
 			if (!params.diggable) {
 				params = getDigParams(m_nodedef->get(n).groups,
-					&hand_item.getToolCapabilities(m_itemdef));
+					&hand_item.getToolCapabilities(m_itemdef.get()));
 			}
 			// If can't dig, ignore dig
 			if (!params.diggable) {
@@ -1233,10 +1233,10 @@ void Server::handleCommand_Interact(NetworkPacket *pkt)
 
 		// Reset build time counter
 		if (pointed.type == POINTEDTHING_NODE &&
-				selected_item->getDefinition(m_itemdef).type == ITEM_NODE)
+				selected_item->getDefinition(m_itemdef.get()).type == ITEM_NODE)
 			getClient(peer_id)->m_time_from_building = 0.0;
 
-		const bool had_prediction = !selected_item->getDefinition(m_itemdef).
+		const bool had_prediction = !selected_item->getDefinition(m_itemdef.get()).
 			node_placement_prediction.empty();
 
 		if (pointed.type == POINTEDTHING_OBJECT) {

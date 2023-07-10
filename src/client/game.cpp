@@ -872,7 +872,7 @@ private:
 	IWritableShaderSource *shader_src = nullptr;
 
 	// When created, these will be filled with data received from the server
-	IWritableItemDefManager *itemdef_manager = nullptr;
+	std::unique_ptr<IWritableItemDefManager> itemdef_manager;
 	NodeDefManager *nodedef_manager = nullptr;
 
 	std::unique_ptr<ISoundManager> sound_manager;
@@ -1028,7 +1028,7 @@ Game::~Game()
 	delete texture_src;
 	delete shader_src;
 	delete nodedef_manager;
-	delete itemdef_manager;
+	itemdef_manager.reset();
 	delete draw_control;
 
 	clearTextureNameCache();
@@ -1585,7 +1585,7 @@ bool Game::connectToServer(const GameStartData &start_data,
 		client = new Client(start_data.name.c_str(),
 				start_data.password,
 				*draw_control, texture_src, shader_src,
-				itemdef_manager, nodedef_manager, sound_manager.get(), eventmgr,
+				itemdef_manager.get(), nodedef_manager, sound_manager.get(), eventmgr,
 				m_rendering_engine, m_game_ui.get(),
 				start_data.allow_login_or_register);
 	} catch (const BaseException &e) {
@@ -3138,7 +3138,7 @@ void Game::updateCamera(f32 dtime)
 	}
 
 	ToolCapabilities playeritem_toolcap =
-		playeritem.getToolCapabilities(itemdef_manager);
+		playeritem.getToolCapabilities(itemdef_manager.get());
 
 	v3s16 old_camera_offset = camera->getOffset();
 
@@ -3231,8 +3231,8 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud)
 	ItemStack selected_item, hand_item;
 	const ItemStack &tool_item = player->getWieldedItem(&selected_item, &hand_item);
 
-	const ItemDefinition &selected_def = selected_item.getDefinition(itemdef_manager);
-	f32 d = getToolRange(selected_def, hand_item.getDefinition(itemdef_manager));
+	const ItemDefinition &selected_def = selected_item.getDefinition(itemdef_manager.get());
+	f32 d = getToolRange(selected_def, hand_item.getDefinition(itemdef_manager.get()));
 
 	core::line3d<f32> shootline;
 
@@ -3526,7 +3526,7 @@ void Game::handlePointingAtNode(const PointedThing &pointed,
 		// make that happen
 		// And also set the sound and send the interact
 		// But first check for meta formspec and rightclickable
-		auto &def = selected_item.getDefinition(itemdef_manager);
+		auto &def = selected_item.getDefinition(itemdef_manager.get());
 		bool placed = nodePlacement(def, selected_item, nodepos, neighborpos,
 			pointed, meta);
 
@@ -3835,13 +3835,13 @@ void Game::handleDigging(const PointedThing &pointed, const v3s16 &nodepos,
 	// cheat detection.
 	// Get digging parameters
 	DigParams params = getDigParams(features.groups,
-			&selected_item.getToolCapabilities(itemdef_manager),
+			&selected_item.getToolCapabilities(itemdef_manager.get()),
 			selected_item.wear);
 
 	// If can't dig, try hand
 	if (!params.diggable) {
 		params = getDigParams(features.groups,
-				&hand_item.getToolCapabilities(itemdef_manager));
+				&hand_item.getToolCapabilities(itemdef_manager.get()));
 	}
 
 	if (!params.diggable) {

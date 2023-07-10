@@ -670,7 +670,7 @@ private:
 #endif
 };
 
-IWritableItemDefManager* createItemDefManager()
+std::unique_ptr<IWritableItemDefManager> createItemDefManager()
 {
-	return new CItemDefManager();
+	return std::make_unique<CItemDefManager>();
 }

@@ -394,7 +394,7 @@ Server::~Server()
 	m_rollback.reset();
 	m_mod_storage_database.reset();
 	m_banmanager.reset();
-	delete m_itemdef;
+	m_itemdef.reset();
 	delete m_nodedef;
 	delete m_craftdef;
 
@@ -477,7 +477,7 @@ void Server::init()
 	fillMediaCache();
 
 	// Apply item aliases in the node definition manager
-	m_nodedef->updateAliases(m_itemdef);
+	m_nodedef->updateAliases(m_itemdef.get());
 
 	// Apply texture overrides from texturepack/override.txt
 	std::vector<std::string> paths;
@@ -3852,7 +3852,7 @@ bool Server::rollbackRevertActions(const std::list<RollbackAction> &actions,
 // Under envlock
 IItemDefManager *Server::getItemDefManager()
 {
-	return m_itemdef;
+	return m_itemdef.get();
 }
 
 const NodeDefManager *Server::getNodeDefManager()
@@ -3872,7 +3872,7 @@ u16 Server::allocateUnknownNodeId(const std::string &name)
 
 IWritableItemDefManager *Server::getWritableItemDefManager()
 {
-	return m_itemdef;
+	return m_itemdef.get();
 }
 
 NodeDefManager *Server::getWritableNodeDefManager()

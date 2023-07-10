@@ -645,7 +645,7 @@ private:
 	ServerScripting *m_script = nullptr;
 
 	// Item definition manager
-	IWritableItemDefManager *m_itemdef;
+	std::unique_ptr<IWritableItemDefManager> m_itemdef;
 
 	// Node definition manager
 	NodeDefManager *m_nodedef;

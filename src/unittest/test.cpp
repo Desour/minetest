@@ -70,7 +70,7 @@ TestGameDef::TestGameDef() :
 
 void TestGameDef::defineSomeNodes()
 {
-	IWritableItemDefManager *idef = (IWritableItemDefManager *)m_itemdef;
+	IWritableItemDefManager *idef = (IWritableItemDefManager *)m_itemdef.get();
 	NodeDefManager *ndef = (NodeDefManager *)m_nodedef;
 
 	ItemDefinition itemdef;

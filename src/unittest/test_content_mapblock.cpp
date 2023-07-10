@@ -35,7 +35,7 @@ namespace {
 class MockGameDef : public DummyGameDef {
 public:
 	IWritableItemDefManager *item_mgr() noexcept {
-		return static_cast<IWritableItemDefManager *>(m_itemdef);
+		return static_cast<IWritableItemDefManager *>(m_itemdef.get());
 	}
 
 	NodeDefManager *node_mgr() noexcept {
