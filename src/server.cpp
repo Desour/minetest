@@ -390,7 +390,7 @@ Server::~Server()
 
 	// Delete things in the reverse order of creation
 	m_emerge.reset();
-	delete m_env;
+	m_env.reset();
 	delete m_rollback;
 	delete m_mod_storage_database;
 	delete m_banmanager;
@@ -502,12 +502,12 @@ void Server::init()
 
 	// Initialize Environment
 	m_startup_server_map = nullptr; // Ownership moved to ServerEnvironment
-	m_env = new ServerEnvironment(servermap, m_script, this,
-		m_path_world, m_metrics_backend.get());
+	m_env = std::make_unique<ServerEnvironment>(servermap, m_script, this,
+			m_path_world, m_metrics_backend.get());
 	m_env->init();
 
-	m_inventory_mgr->setEnv(m_env);
-	m_clients.setEnv(m_env);
+	m_inventory_mgr->setEnv(m_env.get());
+	m_clients.setEnv(m_env.get());
 
 	if (!servermap->settings_mgr.makeMapgenParams())
 		FATAL_ERROR("Couldn't create any mapgen type");
@@ -521,7 +521,7 @@ void Server::init()
 	}
 
 	// Give environment reference to scripting api
-	m_script->initializeEnvironment(m_env);
+	m_script->initializeEnvironment(m_env.get());
 
 	// Do this after regular script init is done
 	m_script->initAsync();
@@ -722,7 +722,7 @@ void Server::AsyncRunStep(float dtime, bool initial_step)
 		ScopeProfiler sp(g_profiler, "Server: liquid transform");
 
 		std::map<v3s16, MapBlock*> modified_blocks;
-		m_env->getServerMap().transformLiquids(modified_blocks, m_env);
+		m_env->getServerMap().transformLiquids(modified_blocks, m_env.get());
 
 		if (!modified_blocks.empty()) {
 			MapEditEvent event;
@@ -2177,7 +2177,7 @@ s32 Server::playSound(ServerPlayingSound &params, bool ephemeral)
 {
 	// Find out initial position of sound
 	bool pos_exists = false;
-	const v3f pos = params.getPos(m_env, &pos_exists);
+	const v3f pos = params.getPos(m_env.get(), &pos_exists);
 	// If position is not found while it should be, cancel sound
 	if(pos_exists != (params.type != SoundLocation::Local))
 		return -1;
@@ -2469,7 +2469,7 @@ void Server::SendBlocks(float dtime)
 
 			total_sending += client->getSendingCount();
 			const auto old_count = queue.size();
-			client->GetNextBlocks(m_env, m_emerge.get(), dtime, queue);
+			client->GetNextBlocks(m_env.get(), m_emerge.get(), dtime, queue);
 			unique_clients += queue.size() > old_count ? 1 : 0;
 		}
 	}
@@ -3251,7 +3251,7 @@ std::string Server::getStatusString()
 		}
 	}
 
-	if (m_env && !((ServerMap*)(&m_env->getMap()))->isSavingEnabled())
+	if (m_env && !static_cast<ServerMap *>(&m_env->getMap())->isSavingEnabled())
 		os << std::endl << "# Server: " << " WARNING: Map saving is disabled.";
 
 	if (!g_settings->get("motd").empty())

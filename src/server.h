@@ -620,7 +620,7 @@ private:
 	IntervalLimiter m_max_lag_decrease;
 
 	// Environment
-	ServerEnvironment *m_env = nullptr;
+	std::unique_ptr<ServerEnvironment> m_env;
 
 	// Reference to the server map until ServerEnvironment is initialized
 	// after that this variable must be a nullptr
