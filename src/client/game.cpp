@@ -887,7 +887,7 @@ private:
 	std::unique_ptr<GameUI> m_game_ui;
 	GUIChatConsole *gui_chat_console = nullptr; // Free using ->Drop()
 	MapDrawControl *draw_control = nullptr;
-	Camera *camera = nullptr;
+	std::unique_ptr<Camera> camera;
 	Clouds *clouds = nullptr;	                  // Free using ->Drop()
 	Sky *sky = nullptr;                         // Free using ->Drop()
 	std::unique_ptr<Hud> hud;
@@ -1022,7 +1022,7 @@ Game::~Game()
 	server.reset(); // deleted first to stop all server threads
 
 	hud.reset();
-	delete camera;
+	camera.reset();
 	delete quicktune;
 	delete eventmgr;
 	delete texture_src;
@@ -1442,10 +1442,10 @@ bool Game::createClient(const GameStartData &start_data)
 
 	/* Camera
 	 */
-	camera = new Camera(*draw_control, client.get(), m_rendering_engine);
+	camera = std::make_unique<Camera>(*draw_control, client.get(), m_rendering_engine);
 	if (client->modsLoaded())
-		client->getScript()->on_camera_ready(camera);
-	client->setCamera(camera);
+		client->getScript()->on_camera_ready(camera.get());
+	client->setCamera(camera.get());
 
 	if (g_touchscreengui) {
 		g_touchscreengui->setUseCrosshair(!isTouchCrosshairDisabled());
@@ -4208,7 +4208,7 @@ void Game::updateShadows()
 	shadow->getDirectionalLight().setDirection(sun_pos);
 	shadow->setTimeOfDay(in_timeofday);
 
-	shadow->getDirectionalLight().update_frustum(camera, client.get(), m_camera_offset_changed);
+	shadow->getDirectionalLight().update_frustum(camera.get(), client.get(), m_camera_offset_changed);
 }
 
 void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
