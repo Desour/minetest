@@ -349,7 +349,7 @@ public:
 	InventoryList * addList(const std::string &name, u32 size);
 	InventoryList * getList(const std::string &name);
 	const InventoryList * getList(const std::string &name) const;
-	const std::vector<InventoryList *> &getLists() const { return m_lists; }
+	const std::vector<std::unique_ptr<InventoryList>> &getLists() const { return m_lists; }
 	bool deleteList(const std::string &name);
 	// A shorthand for adding items. Returns leftover item (possibly empty).
 	ItemStack addItem(const std::string &listname, const ItemStack &newitem)
@@ -385,7 +385,7 @@ private:
 	// -1 if not found
 	s32 getListIndex(const std::string &name) const;
 
-	std::vector<InventoryList*> m_lists;
+	std::vector<std::unique_ptr<InventoryList>> m_lists;
 	IItemDefManager *m_itemdef;
 	bool m_dirty = true;
 };

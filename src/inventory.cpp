@@ -834,9 +834,6 @@ void Inventory::clear()
 		m_list->checkResizeLock();
 	}
 
-	for (auto &m_list : m_lists) {
-		delete m_list;
-	}
 	m_lists.clear();
 	setModified();
 }
@@ -859,8 +856,8 @@ Inventory & Inventory::operator = (const Inventory &other)
 	{
 		clear();
 		m_itemdef = other.m_itemdef;
-		for (InventoryList *list : other.m_lists) {
-			m_lists.push_back(new InventoryList(*list));
+		for (const auto &list : other.m_lists) {
+			m_lists.push_back(std::make_unique<InventoryList>(*list));
 		}
 		setModified();
 	}
@@ -883,7 +880,7 @@ bool Inventory::operator == (const Inventory &other) const
 void Inventory::serialize(std::ostream &os, bool incremental) const
 {
 	//std::cout << "Serialize " << (int)incremental << ", n=" << m_lists.size() << std::endl;
-	for (const InventoryList *list : m_lists) {
+	for (const auto &list : m_lists) {
 		if (!incremental || list->checkModified()) {
 			os << "List " << list->getName() << " " << list->getSize() << "\n";
 			list->serialize(os, incremental);
@@ -912,11 +909,10 @@ void Inventory::deSerialize(std::istream &is)
 		if (name == "EndInventory" || name == "end") {
 			// Remove all lists that were not sent
 			for (auto &list : m_lists) {
-				if (std::find(new_lists.begin(), new_lists.end(), list) != new_lists.end())
+				if (std::find(new_lists.begin(), new_lists.end(), list.get()) != new_lists.end())
 					continue;
 
-				delete list;
-				list = nullptr;
+				list.reset();
 				setModified();
 			}
 			m_lists.erase(std::remove(m_lists.begin(), m_lists.end(),
@@ -932,16 +928,18 @@ void Inventory::deSerialize(std::istream &is)
 			iss>>listsize;
 
 			InventoryList *list = getList(listname);
-			bool create_new = !list;
-			if (create_new)
-				list = new InventoryList(listname, listsize, m_itemdef);
-			else
+			std::unique_ptr<InventoryList> created_list;
+			if (!list) {
+				created_list = std::make_unique<InventoryList>(listname, listsize, m_itemdef);
+				list = created_list.get();
+			} else {
 				list->setSize(listsize);
+			}
 			list->deSerialize(is);
 
 			new_lists.push_back(list);
-			if (create_new)
-				m_lists.push_back(list);
+			if (created_list)
+				m_lists.push_back(std::move(created_list));
 
 		} else if (name == "KeepList") {
 			// Incrementally sent list
@@ -968,7 +966,7 @@ void Inventory::deSerialize(std::istream &is)
 	throw SerializationError(ss.str());
 }
 
-InventoryList * Inventory::addList(const std::string &name, u32 size)
+InventoryList *Inventory::addList(const std::string &name, u32 size)
 {
 	setModified();
 
@@ -978,7 +976,7 @@ InventoryList * Inventory::addList(const std::string &name, u32 size)
 	// also include the neccessary resize lock checks.
 	s32 i = getListIndex(name);
 	if (i != -1) {
-		InventoryList *list = m_lists[i];
+		InventoryList *list = m_lists[i].get();
 		list->setSize(size);
 		list->clearItems();
 		return list;
@@ -988,40 +986,41 @@ InventoryList * Inventory::addList(const std::string &name, u32 size)
 	if (name.find(' ') != std::string::npos)
 		return nullptr;
 
-	InventoryList *list = new InventoryList(name, size, m_itemdef);
+	auto list_up = std::make_unique<InventoryList>(name, size, m_itemdef);
+	InventoryList *list = list_up.get();
 	list->setModified();
-	m_lists.push_back(list);
+	m_lists.push_back(std::move(list_up));
 	return list;
 }
 
-InventoryList * Inventory::getList(const std::string &name)
+InventoryList *Inventory::getList(const std::string &name)
 {
 	s32 i = getListIndex(name);
-	if(i == -1)
+	if (i == -1)
 		return nullptr;
-	return m_lists[i];
-}
-
-bool Inventory::deleteList(const std::string &name)
-{
-	s32 i = getListIndex(name);
-	if(i == -1)
-		return false;
-
-	m_lists[i]->checkResizeLock();
-
-	setModified();
-	delete m_lists[i];
-	m_lists.erase(m_lists.begin() + i);
-	return true;
+	return m_lists[i].get();
 }
 
 const InventoryList *Inventory::getList(const std::string &name) const
 {
 	s32 i = getListIndex(name);
-	if(i == -1)
+	if (i == -1)
 		return nullptr;
-	return m_lists[i];
+	return m_lists[i].get();
+}
+
+bool Inventory::deleteList(const std::string &name)
+{
+	s32 i = getListIndex(name);
+	if (i == -1)
+		return false;
+
+	m_lists[i]->checkResizeLock();
+
+	setModified();
+	m_lists[i].reset();
+	m_lists.erase(m_lists.begin() + i);
+	return true;
 }
 
 s32 Inventory::getListIndex(const std::string &name) const
