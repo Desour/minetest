@@ -863,7 +863,7 @@ private:
 	InputHandler *input = nullptr;
 
 	std::unique_ptr<Client> client;
-	Server *server = nullptr;
+	std::unique_ptr<Server> server;
 
 	ClientDynamicInfo client_display_info{};
 	float dynamic_info_send_timer = 0;
@@ -1019,7 +1019,7 @@ Game::~Game()
 	soundmaker.reset();
 	sound_manager.reset();
 
-	delete server; // deleted first to stop all server threads
+	server.reset(); // deleted first to stop all server threads
 
 	delete hud;
 	delete camera;
@@ -1370,8 +1370,8 @@ bool Game::createSingleplayerServer(const std::string &map_dir,
 		return false;
 	}
 
-	server = new Server(map_dir, gamespec, simple_singleplayer_mode, bind_addr,
-			false, nullptr, error_message);
+	server = std::make_unique<Server>(map_dir, gamespec, simple_singleplayer_mode,
+			bind_addr, false, nullptr, error_message);
 	server->start();
 
 	copyServerClientCache();
