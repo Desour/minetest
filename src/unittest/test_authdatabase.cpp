@@ -45,8 +45,8 @@ class FixedProvider : public AuthDatabaseProvider
 {
 public:
 	FixedProvider(AuthDatabase *auth_db) : auth_db(auth_db){};
-	virtual ~FixedProvider(){};
-	virtual AuthDatabase *getAuthDatabase() { return auth_db; };
+	~FixedProvider() override {};
+	AuthDatabase *getAuthDatabase() override { return auth_db; };
 
 private:
 	AuthDatabase *auth_db;
@@ -56,34 +56,34 @@ class FilesProvider : public AuthDatabaseProvider
 {
 public:
 	FilesProvider(const std::string &dir) : dir(dir){};
-	virtual ~FilesProvider() { delete auth_db; };
-	virtual AuthDatabase *getAuthDatabase()
+	~FilesProvider() override = default;
+	AuthDatabase *getAuthDatabase() override
 	{
-		delete auth_db;
-		auth_db = new AuthDatabaseFiles(dir);
-		return auth_db;
+		auth_db.reset();
+		auth_db = std::make_unique<AuthDatabaseFiles>(dir);
+		return auth_db.get();
 	};
 
 private:
 	std::string dir;
-	AuthDatabase *auth_db = nullptr;
+	std::unique_ptr<AuthDatabase> auth_db;
 };
 
 class SQLite3Provider : public AuthDatabaseProvider
 {
 public:
 	SQLite3Provider(const std::string &dir) : dir(dir){};
-	virtual ~SQLite3Provider() { delete auth_db; };
-	virtual AuthDatabase *getAuthDatabase()
+	~SQLite3Provider() override = default;
+	AuthDatabase *getAuthDatabase() override
 	{
-		delete auth_db;
-		auth_db = new AuthDatabaseSQLite3(dir);
-		return auth_db;
+		auth_db.reset();
+		auth_db = std::make_unique<AuthDatabaseSQLite3>(dir);
+		return auth_db.get();
 	};
 
 private:
 	std::string dir;
-	AuthDatabase *auth_db = nullptr;
+	std::unique_ptr<AuthDatabase> auth_db;
 };
 }
 
@@ -107,7 +107,7 @@ public:
 	void testDelete();
 
 private:
-	AuthDatabaseProvider *auth_provider;
+	std::unique_ptr<AuthDatabaseProvider> auth_provider;
 };
 
 static TestAuthDatabase g_test_instance;
@@ -122,47 +122,49 @@ void TestAuthDatabase::runTests(IGameDef *gamedef)
 	// and one where we create a new AuthDatabase object for each call
 	// (to test actual persistence).
 
+	std::unique_ptr<AuthDatabase> auth_db;
+
 	rawstream << "-------- Files database (same object)" << std::endl;
 
-	AuthDatabase *auth_db = new AuthDatabaseFiles(test_dir);
-	auth_provider = new FixedProvider(auth_db);
+	auth_db = std::make_unique<AuthDatabaseFiles>(test_dir);
+	auth_provider = std::make_unique<FixedProvider>(auth_db.get());
 
 	runTestsForCurrentDB();
 
-	delete auth_db;
-	delete auth_provider;
+	auth_provider.reset();
+	auth_db.reset();
 
 	// reset database
 	fs::DeleteSingleFileOrEmptyDirectory(test_dir + DIR_DELIM + "auth.txt");
 
 	rawstream << "-------- Files database (new objects)" << std::endl;
 
-	auth_provider = new FilesProvider(test_dir);
+	auth_provider = std::make_unique<FilesProvider>(test_dir);
 
 	runTestsForCurrentDB();
 
-	delete auth_provider;
+	auth_provider.reset();
 
 	rawstream << "-------- SQLite3 database (same object)" << std::endl;
 
-	auth_db = new AuthDatabaseSQLite3(test_dir);
-	auth_provider = new FixedProvider(auth_db);
+	auth_db = std::make_unique<AuthDatabaseSQLite3>(test_dir);
+	auth_provider = std::make_unique<FixedProvider>(auth_db.get());
 
 	runTestsForCurrentDB();
 
-	delete auth_db;
-	delete auth_provider;
+	auth_provider.reset();
+	auth_db.reset();
 
 	// reset database
 	fs::DeleteSingleFileOrEmptyDirectory(test_dir + DIR_DELIM + "auth.sqlite");
 
 	rawstream << "-------- SQLite3 database (new objects)" << std::endl;
 
-	auth_provider = new SQLite3Provider(test_dir);
+	auth_provider = std::make_unique<SQLite3Provider>(test_dir);
 
 	runTestsForCurrentDB();
 
-	delete auth_provider;
+	auth_provider.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

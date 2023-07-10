@@ -72,22 +72,21 @@ public:
 	{
 		if (m_db)
 			m_db->endSave();
-		delete m_db;
 	}
 
 	ModStorageDatabase *getModStorageDatabase() override
 	{
 		if (m_db)
 			m_db->endSave();
-		delete m_db;
-		m_db = new ModStorageDatabaseFiles(m_dir);
+		m_db.reset();
+		m_db = std::make_unique<ModStorageDatabaseFiles>(m_dir);
 		m_db->beginSave();
-		return m_db;
+		return m_db.get();
 	}
 
 private:
 	std::string m_dir;
-	ModStorageDatabase *m_db = nullptr;
+	std::unique_ptr<ModStorageDatabase> m_db;
 };
 
 class SQLite3Provider : public ModStorageDatabaseProvider
@@ -99,22 +98,21 @@ public:
 	{
 		if (m_db)
 			m_db->endSave();
-		delete m_db;
 	}
 
 	ModStorageDatabase *getModStorageDatabase() override
 	{
 		if (m_db)
 			m_db->endSave();
-		delete m_db;
-		m_db = new ModStorageDatabaseSQLite3(m_dir);
+		m_db.reset();
+		m_db = std::make_unique<ModStorageDatabaseSQLite3>(m_dir);
 		m_db->beginSave();
-		return m_db;
+		return m_db.get();
 	}
 
 private:
 	std::string m_dir;
-	ModStorageDatabase *m_db = nullptr;
+	std::unique_ptr<ModStorageDatabase> m_db;
 };
 
 #if USE_POSTGRESQL
@@ -138,22 +136,21 @@ public:
 	{
 		if (m_db)
 			m_db->endSave();
-		delete m_db;
 	}
 
 	ModStorageDatabase *getModStorageDatabase() override
 	{
 		if (m_db)
 			m_db->endSave();
-		delete m_db;
-		m_db = new ModStorageDatabasePostgreSQL(m_connect_string);
+		m_db.reset();
+		m_db = std::make_unique<ModStorageDatabasePostgreSQL>(m_connect_string);
 		m_db->beginSave();
-		return m_db;
+		return m_db.get();
 	};
 
 private:
 	std::string m_connect_string;
-	ModStorageDatabase *m_db = nullptr;
+	std::unique_ptr<ModStorageDatabase> m_db;
 };
 #endif // USE_POSTGRESQL
 }
@@ -176,7 +173,7 @@ public:
 	void testRemove();
 
 private:
-	ModStorageDatabaseProvider *mod_storage_provider;
+	std::unique_ptr<ModStorageDatabaseProvider> mod_storage_provider;
 };
 
 static TestModStorageDatabase g_test_instance;
@@ -192,59 +189,59 @@ void TestModStorageDatabase::runTests(IGameDef *gamedef)
 	// (to test actual persistence).
 	// Since the dummy database is only in-memory, it has no persistence to test.
 
-	ModStorageDatabase *mod_storage_db;
+	std::unique_ptr<ModStorageDatabase> mod_storage_db;
 
 	rawstream << "-------- Dummy database (same object only)" << std::endl;
 
-	mod_storage_db = new Database_Dummy();
-	mod_storage_provider = new FixedProvider(mod_storage_db);
+	mod_storage_db = std::make_unique<Database_Dummy>();
+	mod_storage_provider = std::make_unique<FixedProvider>(mod_storage_db.get());
 
 	runTestsForCurrentDB();
 
-	delete mod_storage_db;
-	delete mod_storage_provider;
+	mod_storage_provider.reset();
+	mod_storage_db.reset();
 
 	rawstream << "-------- Files database (same object)" << std::endl;
 
-	mod_storage_db = new ModStorageDatabaseFiles(test_dir);
-	mod_storage_provider = new FixedProvider(mod_storage_db);
+	mod_storage_db = std::make_unique<ModStorageDatabaseFiles>(test_dir);
+	mod_storage_provider = std::make_unique<FixedProvider>(mod_storage_db.get());
 
 	runTestsForCurrentDB();
 
-	delete mod_storage_db;
-	delete mod_storage_provider;
+	mod_storage_provider.reset();
+	mod_storage_db.reset();
 
 	// reset database
 	fs::RecursiveDelete(test_dir + DIR_DELIM + "mod_storage");
 
 	rawstream << "-------- Files database (new objects)" << std::endl;
 
-	mod_storage_provider = new FilesProvider(test_dir);
+	mod_storage_provider = std::make_unique<FilesProvider>(test_dir);
 
 	runTestsForCurrentDB();
 
-	delete mod_storage_provider;
+	mod_storage_provider.reset();
 
 	rawstream << "-------- SQLite3 database (same object)" << std::endl;
 
-	mod_storage_db = new ModStorageDatabaseSQLite3(test_dir);
-	mod_storage_provider = new FixedProvider(mod_storage_db);
+	mod_storage_db = std::make_unique<ModStorageDatabaseSQLite3>(test_dir);
+	mod_storage_provider = std::make_unique<FixedProvider>(mod_storage_db.get());
 
 	runTestsForCurrentDB();
 
-	delete mod_storage_db;
-	delete mod_storage_provider;
+	mod_storage_provider.reset();
+	mod_storage_db.reset();
 
 	// reset database
 	fs::DeleteSingleFileOrEmptyDirectory(test_dir + DIR_DELIM + "mod_storage.sqlite");
 
 	rawstream << "-------- SQLite3 database (new objects)" << std::endl;
 
-	mod_storage_provider = new SQLite3Provider(test_dir);
+	mod_storage_provider = std::make_unique<SQLite3Provider>(test_dir);
 
 	runTestsForCurrentDB();
 
-	delete mod_storage_provider;
+	mod_storage_provider.reset();
 
 #if USE_POSTGRESQL
 	const char *env_postgresql_connect_string = getenv("MINETEST_POSTGRESQL_CONNECT_STRING");
@@ -254,22 +251,22 @@ void TestModStorageDatabase::runTests(IGameDef *gamedef)
 		rawstream << "-------- PostgreSQL database (same object)" << std::endl;
 
 		clearPostgreSQLDatabase(connect_string);
-		mod_storage_db = new ModStorageDatabasePostgreSQL(connect_string);
-		mod_storage_provider = new FixedProvider(mod_storage_db);
+		mod_storage_db = std::make_unique<ModStorageDatabasePostgreSQL>(connect_string);
+		mod_storage_provider = std::make_unique<FixedProvider>(mod_storage_db.get());
 
 		runTestsForCurrentDB();
 
-		delete mod_storage_db;
-		delete mod_storage_provider;
+		mod_storage_provider.reset();
+		mod_storage_db.reset();
 
 		rawstream << "-------- PostgreSQL database (new objects)" << std::endl;
 
 		clearPostgreSQLDatabase(connect_string);
-		mod_storage_provider = new PostgreSQLProvider(connect_string);
+		mod_storage_provider = std::make_unique<PostgreSQLProvider>(connect_string);
 
 		runTestsForCurrentDB();
 
-		delete mod_storage_provider;
+		mod_storage_provider.reset();
 	}
 #endif // USE_POSTGRESQL
 }
