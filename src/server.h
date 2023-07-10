@@ -294,7 +294,7 @@ public:
 	virtual u16 allocateUnknownNodeId(const std::string &name);
 	IRollbackManager *getRollbackManager() { return m_rollback.get(); }
 	virtual EmergeManager *getEmergeManager() { return m_emerge.get(); }
-	virtual ModStorageDatabase *getModStorageDatabase() { return m_mod_storage_database; }
+	virtual ModStorageDatabase *getModStorageDatabase() { return m_mod_storage_database.get(); }
 
 	IWritableItemDefManager* getWritableItemDefManager();
 	NodeDefManager* getWritableNodeDefManager();
@@ -406,10 +406,12 @@ public:
 	// map key = binary sha1, map value = file path
 	std::unordered_map<std::string, std::string> getMediaList();
 
-	static ModStorageDatabase *openModStorageDatabase(const std::string &world_path);
+	static std::unique_ptr<ModStorageDatabase> openModStorageDatabase(
+			const std::string &world_path);
 
-	static ModStorageDatabase *openModStorageDatabase(const std::string &backend,
-			const std::string &world_path, const Settings &world_mt);
+	static std::unique_ptr<ModStorageDatabase> openModStorageDatabase(
+			const std::string &backend, const std::string &world_path,
+			const Settings &world_mt);
 
 	static bool migrateModStorageDatabase(const GameParams &game_params,
 			const Settings &cmd_args);
@@ -728,7 +730,7 @@ private:
 	s32 m_playing_sounds_id_last_used = 0; // positive values only
 	s32 nextSoundId();
 
-	ModStorageDatabase *m_mod_storage_database = nullptr;
+	std::unique_ptr<ModStorageDatabase> m_mod_storage_database;
 	float m_mod_storage_save_timer = 10.0f;
 
 	// CSM restrictions byteflag

@@ -392,7 +392,7 @@ Server::~Server()
 	m_emerge.reset();
 	m_env.reset();
 	m_rollback.reset();
-	delete m_mod_storage_database;
+	m_mod_storage_database.reset();
 	delete m_banmanager;
 	delete m_itemdef;
 	delete m_nodedef;
@@ -4234,7 +4234,7 @@ std::unordered_map<std::string, std::string> Server::getMediaList()
 	return ret;
 }
 
-ModStorageDatabase *Server::openModStorageDatabase(const std::string &world_path)
+std::unique_ptr<ModStorageDatabase> Server::openModStorageDatabase(const std::string &world_path)
 {
 	std::string world_mt_path = world_path + DIR_DELIM + "world.mt";
 	Settings world_mt;
@@ -4252,25 +4252,25 @@ ModStorageDatabase *Server::openModStorageDatabase(const std::string &world_path
 	return openModStorageDatabase(backend, world_path, world_mt);
 }
 
-ModStorageDatabase *Server::openModStorageDatabase(const std::string &backend,
+std::unique_ptr<ModStorageDatabase> Server::openModStorageDatabase(const std::string &backend,
 		const std::string &world_path, const Settings &world_mt)
 {
 	if (backend == "sqlite3")
-		return new ModStorageDatabaseSQLite3(world_path);
+		return std::make_unique<ModStorageDatabaseSQLite3>(world_path);
 
 #if USE_POSTGRESQL
 	if (backend == "postgresql") {
 		std::string connect_string;
 		world_mt.getNoEx("pgsql_mod_storage_connection", connect_string);
-		return new ModStorageDatabasePostgreSQL(connect_string);
+		return std::make_unique<ModStorageDatabasePostgreSQL>(connect_string);
 	}
 #endif // USE_POSTGRESQL
 
 	if (backend == "files")
-		return new ModStorageDatabaseFiles(world_path);
+		return std::make_unique<ModStorageDatabaseFiles>(world_path);
 
 	if (backend == "dummy")
-		return new Database_Dummy();
+		return std::make_unique<Database_Dummy>();
 
 	throw BaseException("Mod storage database backend " + backend + " not supported");
 }
@@ -4293,8 +4293,8 @@ bool Server::migrateModStorageDatabase(const GameParams &game_params, const Sett
 		return false;
 	}
 
-	ModStorageDatabase *srcdb = nullptr;
-	ModStorageDatabase *dstdb = nullptr;
+	std::unique_ptr<ModStorageDatabase> srcdb;
+	std::unique_ptr<ModStorageDatabase> dstdb;
 
 	bool succeeded = false;
 
@@ -4330,8 +4330,8 @@ bool Server::migrateModStorageDatabase(const GameParams &game_params, const Sett
 		errorstream << "An error occurred during migration: " << e.what() << std::endl;
 	}
 
-	delete srcdb;
-	delete dstdb;
+	srcdb.reset();
+	dstdb.reset();
 
 	if (succeeded && backend == "files") {
 		// Back up files
