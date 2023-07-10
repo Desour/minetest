@@ -460,4 +460,4 @@ public:
 	virtual void initHashes(IGameDef *gamedef) = 0;
 };
 
-IWritableCraftDefManager* createCraftDefManager();
+std::unique_ptr<IWritableCraftDefManager> createCraftDefManager();

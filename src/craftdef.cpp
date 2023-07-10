@@ -1252,7 +1252,7 @@ private:
 		m_output_craft_definitions;
 };
 
-IWritableCraftDefManager* createCraftDefManager()
+std::unique_ptr<IWritableCraftDefManager> createCraftDefManager()
 {
-	return new CCraftDefManager();
+	return std::make_unique<CCraftDefManager>();
 }

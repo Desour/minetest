@@ -33,14 +33,14 @@ public:
 		m_itemdef(createItemDefManager()),
 		m_nodedef(createNodeDefManager()),
 		m_craftdef(createCraftDefManager()),
-		m_mod_storage_database(new Database_Dummy())
+		m_mod_storage_database(std::make_unique<Database_Dummy>())
 	{
 	}
 
 	~DummyGameDef()
 	{
-		delete m_mod_storage_database;
-		delete m_craftdef;
+		m_mod_storage_database.reset();
+		m_craftdef.reset();
 		m_nodedef.reset();
 		m_itemdef.reset();
 	}
@@ -48,7 +48,7 @@ public:
 	IItemDefManager *getItemDefManager() override { return m_itemdef.get(); }
 	const NodeDefManager *getNodeDefManager() override { return m_nodedef.get(); }
 	NodeDefManager* getWritableNodeDefManager() { return m_nodedef.get(); }
-	ICraftDefManager *getCraftDefManager() override { return m_craftdef; }
+	ICraftDefManager *getCraftDefManager() override { return m_craftdef.get(); }
 
 	u16 allocateUnknownNodeId(const std::string &name) override
 	{
@@ -61,7 +61,7 @@ public:
 		return emptymodspec;
 	}
 	const ModSpec* getModSpec(const std::string &modname) const override { return nullptr; }
-	ModStorageDatabase *getModStorageDatabase() override { return m_mod_storage_database; }
+	ModStorageDatabase *getModStorageDatabase() override { return m_mod_storage_database.get(); }
 
 	bool joinModChannel(const std::string &channel) override { return false; }
 	bool leaveModChannel(const std::string &channel) override { return false; }
@@ -74,6 +74,6 @@ public:
 protected:
 	std::unique_ptr<IItemDefManager> m_itemdef;
 	std::unique_ptr<NodeDefManager> m_nodedef;
-	ICraftDefManager *m_craftdef = nullptr;
-	ModStorageDatabase *m_mod_storage_database = nullptr;
+	std::unique_ptr<ICraftDefManager> m_craftdef;
+	std::unique_ptr<ModStorageDatabase> m_mod_storage_database;
 };

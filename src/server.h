@@ -651,7 +651,7 @@ private:
 	std::unique_ptr<NodeDefManager> m_nodedef;
 
 	// Craft definition manager
-	IWritableCraftDefManager *m_craftdef;
+	std::unique_ptr<IWritableCraftDefManager> m_craftdef;
 
 	// Mods
 	std::unique_ptr<ServerModManager> m_modmgr;

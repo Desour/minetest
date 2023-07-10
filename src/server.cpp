@@ -396,7 +396,7 @@ Server::~Server()
 	m_banmanager.reset();
 	m_itemdef.reset();
 	m_nodedef.reset();
-	delete m_craftdef;
+	m_craftdef.reset();
 
 	// Deinitialize scripting
 	infostream << "Server: Deinitializing scripting" << std::endl;
@@ -3862,7 +3862,7 @@ const NodeDefManager *Server::getNodeDefManager()
 
 ICraftDefManager *Server::getCraftDefManager()
 {
-	return m_craftdef;
+	return m_craftdef.get();
 }
 
 u16 Server::allocateUnknownNodeId(const std::string &name)
@@ -3882,7 +3882,7 @@ NodeDefManager *Server::getWritableNodeDefManager()
 
 IWritableCraftDefManager *Server::getWritableCraftDefManager()
 {
-	return m_craftdef;
+	return m_craftdef.get();
 }
 
 const std::vector<ModSpec> & Server::getMods() const
