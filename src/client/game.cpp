@@ -862,7 +862,7 @@ private:
 
 	InputHandler *input = nullptr;
 
-	Client *client = nullptr;
+	std::unique_ptr<Client> client;
 	Server *server = nullptr;
 
 	ClientDynamicInfo client_display_info{};
@@ -1015,7 +1015,7 @@ Game::Game() :
 
 Game::~Game()
 {
-	delete client;
+	client.reset();
 	delete soundmaker;
 	sound_manager.reset();
 
@@ -1121,7 +1121,7 @@ bool Game::startup(bool *kill,
 	if (!createClient(start_data))
 		return false;
 
-	m_rendering_engine->initialize(client, hud);
+	m_rendering_engine->initialize(client.get(), hud);
 
 	return true;
 }
@@ -1429,7 +1429,7 @@ bool Game::createClient(const GameStartData &start_data)
 		return false;
 	}
 
-	auto *scsf = new GameGlobalShaderConstantSetterFactory(client);
+	auto *scsf = new GameGlobalShaderConstantSetterFactory(client.get());
 	shader_src->addShaderConstantSetterFactory(scsf);
 
 	shader_src->addShaderConstantSetterFactory(
@@ -1442,7 +1442,7 @@ bool Game::createClient(const GameStartData &start_data)
 
 	/* Camera
 	 */
-	camera = new Camera(*draw_control, client, m_rendering_engine);
+	camera = new Camera(*draw_control, client.get(), m_rendering_engine);
 	if (client->modsLoaded())
 		client->getScript()->on_camera_ready(camera);
 	client->setCamera(camera);
@@ -1495,7 +1495,7 @@ bool Game::createClient(const GameStartData &start_data)
 	player->hurt_tilt_timer = 0;
 	player->hurt_tilt_strength = 0;
 
-	hud = new Hud(client, player, &player->inventory);
+	hud = new Hud(client.get(), player, &player->inventory);
 
 	mapper = client->getMinimap();
 
@@ -1517,7 +1517,7 @@ bool Game::initGui()
 
 	// Chat backend and console
 	gui_chat_console = new GUIChatConsole(guienv, guienv->getRootGUIElement(),
-			-1, chat_backend, client, &g_menumgr);
+			-1, chat_backend, client.get(), &g_menumgr);
 
 	if (g_touchscreengui)
 		g_touchscreengui->init(texture_src);
@@ -1582,7 +1582,7 @@ bool Game::connectToServer(const GameStartData &start_data,
 
 
 	try {
-		client = new Client(start_data.name.c_str(),
+		client = std::make_unique<Client>(start_data.name.c_str(),
 				start_data.password,
 				*draw_control, texture_src, shader_src,
 				itemdef_manager.get(), nodedef_manager.get(), sound_manager.get(), eventmgr,
@@ -1798,7 +1798,7 @@ inline bool Game::handleCallbacks()
 
 	if (g_gamecallback->changepassword_requested) {
 		(new GUIPasswordChange(guienv, guiroot, -1,
-				       &g_menumgr, client, texture_src))->drop();
+				       &g_menumgr, client.get(), texture_src))->drop();
 		g_gamecallback->changepassword_requested = false;
 	}
 
@@ -2075,7 +2075,7 @@ void Game::processKeyInput()
 	} else if (wasKeyPressed(KeyType::MINIMAP)) {
 		toggleMinimap(isKeyDown(KeyType::SNEAK));
 	} else if (wasKeyPressed(KeyType::TOGGLE_CHAT)) {
-		m_game_ui->toggleChat(client);
+		m_game_ui->toggleChat(client.get());
 	} else if (wasKeyPressed(KeyType::TOGGLE_FOG)) {
 		toggleFog();
 	} else if (wasKeyDown(KeyType::TOGGLE_UPDATE_CAMERA)) {
@@ -2186,7 +2186,7 @@ void Game::openInventory()
 
 	infostream << "Game: Launching inventory" << std::endl;
 
-	PlayerInventoryFormSource *fs_src = new PlayerInventoryFormSource(client);
+	PlayerInventoryFormSource *fs_src = new PlayerInventoryFormSource(client.get());
 
 	InventoryLocation inventoryloc;
 	inventoryloc.setCurrentPlayer();
@@ -2201,9 +2201,9 @@ void Game::openInventory()
 		return;
 	}
 
-	TextDest *txt_dst = new TextDestPlayerInventory(client);
+	TextDest *txt_dst = new TextDestPlayerInventory(client.get());
 	auto *&formspec = m_game_ui->updateFormspec("");
-	GUIFormSpecMenu::create(formspec, client, m_rendering_engine->get_gui_env(),
+	GUIFormSpecMenu::create(formspec, client.get(), m_rendering_engine->get_gui_env(),
 		&input->joystick, fs_src, txt_dst, client->getFormspecPrepend(),
 		sound_manager.get());
 
@@ -2828,10 +2828,10 @@ void Game::handleClientEvent_ShowFormSpec(ClientEvent *event, CameraOrientation 
 		FormspecFormSource *fs_src =
 			new FormspecFormSource(*(event->show_formspec.formspec));
 		TextDestPlayerInventory *txt_dst =
-			new TextDestPlayerInventory(client, *(event->show_formspec.formname));
+			new TextDestPlayerInventory(client.get(), *(event->show_formspec.formname));
 
 		auto *&formspec = m_game_ui->updateFormspec(*(event->show_formspec.formname));
-		GUIFormSpecMenu::create(formspec, client, m_rendering_engine->get_gui_env(),
+		GUIFormSpecMenu::create(formspec, client.get(), m_rendering_engine->get_gui_env(),
 			&input->joystick, fs_src, txt_dst, client->getFormspecPrepend(),
 			sound_manager.get());
 	}
@@ -2844,8 +2844,8 @@ void Game::handleClientEvent_ShowLocalFormSpec(ClientEvent *event, CameraOrienta
 {
 	FormspecFormSource *fs_src = new FormspecFormSource(*event->show_formspec.formspec);
 	LocalFormspecHandler *txt_dst =
-		new LocalFormspecHandler(*event->show_formspec.formname, client);
-	GUIFormSpecMenu::create(m_game_ui->getFormspecGUI(), client, m_rendering_engine->get_gui_env(),
+		new LocalFormspecHandler(*event->show_formspec.formname, client.get());
+	GUIFormSpecMenu::create(m_game_ui->getFormspecGUI(), client.get(), m_rendering_engine->get_gui_env(),
 			&input->joystick, fs_src, txt_dst, client->getFormspecPrepend(), sound_manager.get());
 
 	delete event->show_formspec.formspec;
@@ -2856,7 +2856,7 @@ void Game::handleClientEvent_HandleParticleEvent(ClientEvent *event,
 		CameraOrientation *cam)
 {
 	LocalPlayer *player = client->getEnv().getLocalPlayer();
-	client->getParticleManager()->handleParticleEvent(event, client, player);
+	client->getParticleManager()->handleParticleEvent(event, client.get(), player);
 }
 
 void Game::handleClientEvent_HudAdd(ClientEvent *event, CameraOrientation *cam)
@@ -3565,10 +3565,10 @@ bool Game::nodePlacement(const ItemDefinition &selected_def,
 
 		NodeMetadataFormSource *fs_src = new NodeMetadataFormSource(
 			&client->getEnv().getClientMap(), nodepos);
-		TextDest *txt_dst = new TextDestNodeMetadata(nodepos, client);
+		TextDest *txt_dst = new TextDestNodeMetadata(nodepos, client.get());
 
 		auto *&formspec = m_game_ui->updateFormspec("");
-		GUIFormSpecMenu::create(formspec, client, m_rendering_engine->get_gui_env(),
+		GUIFormSpecMenu::create(formspec, client.get(), m_rendering_engine->get_gui_env(),
 			&input->joystick, fs_src, txt_dst, client->getFormspecPrepend(),
 			sound_manager.get());
 
@@ -3850,7 +3850,7 @@ void Game::handleDigging(const PointedThing &pointed, const v3s16 &nodepos,
 		runData.dig_time_complete = params.time;
 
 		if (m_cache_enable_particles) {
-			client->getParticleManager()->addNodeParticle(client,
+			client->getParticleManager()->addNodeParticle(client.get(),
 					player, nodepos, n, features);
 		}
 	}
@@ -3932,7 +3932,7 @@ void Game::handleDigging(const PointedThing &pointed, const v3s16 &nodepos,
 		client->interact(INTERACT_DIGGING_COMPLETED, pointed);
 
 		if (m_cache_enable_particles) {
-			client->getParticleManager()->addDiggingParticles(client,
+			client->getParticleManager()->addDiggingParticles(client.get(),
 				player, nodepos, n, features);
 		}
 
@@ -4098,7 +4098,7 @@ void Game::updateFrame(ProfilerGraph *graph, RunStats *stats, f32 dtime,
 		updateShadows();
 	}
 
-	m_game_ui->update(*stats, client, draw_control, cam, runData.pointed_old, gui_chat_console, dtime);
+	m_game_ui->update(*stats, client.get(), draw_control, cam, runData.pointed_old, gui_chat_console, dtime);
 
 	/*
 	   make sure menu is on top
@@ -4208,7 +4208,7 @@ void Game::updateShadows()
 	shadow->getDirectionalLight().setDirection(sun_pos);
 	shadow->setTimeOfDay(in_timeofday);
 
-	shadow->getDirectionalLight().update_frustum(camera, client, m_camera_offset_changed);
+	shadow->getDirectionalLight().update_frustum(camera, client.get(), m_camera_offset_changed);
 }
 
 void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
@@ -4351,10 +4351,10 @@ void Game::showDeathFormspec()
 	/* Note: FormspecFormSource and LocalFormspecHandler  *
 	 * are deleted by guiFormSpecMenu                     */
 	FormspecFormSource *fs_src = new FormspecFormSource(formspec_str);
-	LocalFormspecHandler *txt_dst = new LocalFormspecHandler("MT_DEATH_SCREEN", client);
+	LocalFormspecHandler *txt_dst = new LocalFormspecHandler("MT_DEATH_SCREEN", client.get());
 
 	auto *&formspec = m_game_ui->getFormspecGUI();
-	GUIFormSpecMenu::create(formspec, client, m_rendering_engine->get_gui_env(),
+	GUIFormSpecMenu::create(formspec, client.get(), m_rendering_engine->get_gui_env(),
 		&input->joystick, fs_src, txt_dst, client->getFormspecPrepend(),
 		sound_manager.get());
 	formspec->setFocus("btn_respawn");
@@ -4457,7 +4457,7 @@ void Game::showPauseMenu()
 	LocalFormspecHandler *txt_dst = new LocalFormspecHandler("MT_PAUSE_MENU");
 
 	auto *&formspec = m_game_ui->getFormspecGUI();
-	GUIFormSpecMenu::create(formspec, client, m_rendering_engine->get_gui_env(),
+	GUIFormSpecMenu::create(formspec, client.get(), m_rendering_engine->get_gui_env(),
 			&input->joystick, fs_src, txt_dst, client->getFormspecPrepend(),
 			sound_manager.get());
 	formspec->setFocus("btn_continue");
