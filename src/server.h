@@ -293,7 +293,7 @@ public:
 	virtual ICraftDefManager* getCraftDefManager();
 	virtual u16 allocateUnknownNodeId(const std::string &name);
 	IRollbackManager *getRollbackManager() { return m_rollback; }
-	virtual EmergeManager *getEmergeManager() { return m_emerge; }
+	virtual EmergeManager *getEmergeManager() { return m_emerge.get(); }
 	virtual ModStorageDatabase *getModStorageDatabase() { return m_mod_storage_database; }
 
 	IWritableItemDefManager* getWritableItemDefManager();
@@ -636,7 +636,7 @@ private:
 	IRollbackManager *m_rollback = nullptr;
 
 	// Emerge manager
-	EmergeManager *m_emerge = nullptr;
+	std::unique_ptr<EmergeManager> m_emerge;
 
 	// Scripting
 	// Envlock and conlock should be locked when using Lua

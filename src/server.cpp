@@ -389,7 +389,7 @@ Server::~Server()
 	}
 
 	// Delete things in the reverse order of creation
-	delete m_emerge;
+	m_emerge.reset();
 	delete m_env;
 	delete m_rollback;
 	delete m_mod_storage_database;
@@ -432,7 +432,7 @@ void Server::init()
 	}
 
 	// Create emerge manager
-	m_emerge = new EmergeManager(this, m_metrics_backend.get());
+	m_emerge = std::make_unique<EmergeManager>(this, m_metrics_backend.get());
 
 	// Create ban manager
 	std::string ban_path = m_path_world + DIR_DELIM "ipban.txt";
@@ -454,7 +454,7 @@ void Server::init()
 	MutexAutoLock envlock(m_env_mutex);
 
 	// Create the Map (loads map_meta.txt, overriding configured mapgen params)
-	ServerMap *servermap = new ServerMap(m_path_world, this, m_emerge, m_metrics_backend.get());
+	ServerMap *servermap = new ServerMap(m_path_world, this, m_emerge.get(), m_metrics_backend.get());
 	m_startup_server_map = servermap;
 
 	// Initialize scripting
@@ -2469,7 +2469,7 @@ void Server::SendBlocks(float dtime)
 
 			total_sending += client->getSendingCount();
 			const auto old_count = queue.size();
-			client->GetNextBlocks(m_env,m_emerge, dtime, queue);
+			client->GetNextBlocks(m_env, m_emerge.get(), dtime, queue);
 			unique_clients += queue.size() > old_count ? 1 : 0;
 		}
 	}

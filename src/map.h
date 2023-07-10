@@ -460,6 +460,7 @@ private:
 	friend class ModApiMapgen; // for m_transforming_liquid
 
 	// Emerge manager
+	// owned by Server
 	EmergeManager *m_emerge;
 
 	std::string m_savedir;
