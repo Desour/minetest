@@ -405,7 +405,7 @@ Server::~Server()
 	delete m_game_settings;
 
 	while (!m_unsent_map_edit_queue.empty()) {
-		delete m_unsent_map_edit_queue.front();
+		m_unsent_map_edit_queue.front().reset();
 		m_unsent_map_edit_queue.pop();
 	}
 }
@@ -934,7 +934,7 @@ void Server::AsyncRunStep(float dtime, bool initial_step)
 		std::unordered_set<v3s16> node_meta_updates;
 
 		while (!m_unsent_map_edit_queue.empty()) {
-			MapEditEvent* event = m_unsent_map_edit_queue.front();
+			std::unique_ptr<MapEditEvent> event = std::move(m_unsent_map_edit_queue.front());
 			m_unsent_map_edit_queue.pop();
 
 			// Players far away from the change are stored here.
@@ -986,8 +986,6 @@ void Server::AsyncRunStep(float dtime, bool initial_step)
 				if (RemoteClient *client = getClient(far_player))
 					client->SetBlocksNotSent(event->modified_blocks);
 			}
-
-			delete event;
 		}
 
 		if (event_count >= 5) {
@@ -1243,7 +1241,7 @@ void Server::onMapEditEvent(const MapEditEvent &event)
 	if (m_ignore_map_edit_events_area.contains(event.getArea()))
 		return;
 
-	m_unsent_map_edit_queue.push(new MapEditEvent(event));
+	m_unsent_map_edit_queue.push(std::make_unique<MapEditEvent>(event));
 }
 
 void Server::peerAdded(con::Peer *peer)

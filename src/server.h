@@ -222,7 +222,7 @@ public:
 		This is accessed by the map, which is inside the environment,
 		so it shouldn't be a problem.
 	*/
-	void onMapEditEvent(const MapEditEvent &event);
+	void onMapEditEvent(const MapEditEvent &event) override;
 
 	// Connection must be locked when called
 	std::string getStatusString();
@@ -706,7 +706,7 @@ private:
 		Queue of map edits from the environment for sending to the clients
 		This is behind m_env_mutex
 	*/
-	std::queue<MapEditEvent*> m_unsent_map_edit_queue;
+	std::queue<std::unique_ptr<MapEditEvent>> m_unsent_map_edit_queue;
 	/*
 		If a non-empty area, map edit events contained within are left
 		unsent. Done at map generation time to speed up editing of the
