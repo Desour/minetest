@@ -173,7 +173,7 @@ public:
 			ISimpleTextureSource *tsrc,
 			ISoundManager *sound_manager,
 			std::unique_ptr<IFormSource> fs_src,
-			TextDest* txt_dst,
+			std::unique_ptr<TextDest> txt_dst,
 			const std::string &formspecPrepend,
 			bool remap_dbl_click = true);
 
@@ -181,7 +181,7 @@ public:
 
 	static void create(GUIFormSpecMenu *&cur_formspec, Client *client,
 		gui::IGUIEnvironment *guienv, JoystickController *joystick,
-		std::unique_ptr<IFormSource> fs_src, TextDest *txt_dest,
+		std::unique_ptr<IFormSource> fs_src, std::unique_ptr<TextDest> txt_dest,
 		const std::string &formspecPrepend, ISoundManager *sound_manager);
 
 	void setFormSpec(const std::string &formspec_string,
@@ -210,10 +210,9 @@ public:
 	}
 
 	// text_dst is deleted by this GUIFormSpecMenu
-	void setTextDest(TextDest *text_dst)
+	void setTextDest(std::unique_ptr<TextDest> text_dst)
 	{
-		delete m_text_dst;
-		m_text_dst = text_dst;
+		m_text_dst = std::move(text_dst);
 	}
 
 	void allowClose(bool value)
@@ -379,7 +378,7 @@ protected:
 
 private:
 	std::unique_ptr<IFormSource> m_form_src;
-	TextDest                    *m_text_dst;
+	std::unique_ptr<TextDest>    m_text_dst;
 	std::string                  m_last_formname;
 	u16                          m_formspec_version = 1;
 	std::optional<std::string>   m_focused_element = std::nullopt;

@@ -104,8 +104,9 @@ inline u32 clamp_u8(s32 value)
 GUIFormSpecMenu::GUIFormSpecMenu(JoystickController *joystick,
 		gui::IGUIElement *parent, s32 id, IMenuManager *menumgr,
 		Client *client, gui::IGUIEnvironment *guienv, ISimpleTextureSource *tsrc,
-		ISoundManager *sound_manager, std::unique_ptr<IFormSource> fsrc, TextDest *tdst,
-		const std::string &formspecPrepend, bool remap_dbl_click):
+		ISoundManager *sound_manager, std::unique_ptr<IFormSource> fsrc,
+		std::unique_ptr<TextDest> tdst, const std::string &formspecPrepend,
+		bool remap_dbl_click) :
 	GUIModalMenu(guienv, parent, id, menumgr, remap_dbl_click),
 	m_invmgr(client),
 	m_tsrc(tsrc),
@@ -113,7 +114,7 @@ GUIFormSpecMenu::GUIFormSpecMenu(JoystickController *joystick,
 	m_client(client),
 	m_formspec_prepend(formspecPrepend),
 	m_form_src(std::move(fsrc)),
-	m_text_dst(tdst),
+	m_text_dst(std::move(tdst)),
 	m_joystick(joystick)
 {
 	current_keys_pending.key_down = false;
@@ -131,12 +132,13 @@ GUIFormSpecMenu::~GUIFormSpecMenu()
 
 	m_selected_item.reset();
 	m_form_src.reset();
-	delete m_text_dst;
+	m_text_dst.reset();
 }
 
 void GUIFormSpecMenu::create(GUIFormSpecMenu *&cur_formspec, Client *client,
-	gui::IGUIEnvironment *guienv, JoystickController *joystick, std::unique_ptr<IFormSource> fs_src,
-	TextDest *txt_dest, const std::string &formspecPrepend, ISoundManager *sound_manager)
+		gui::IGUIEnvironment *guienv, JoystickController *joystick,
+		std::unique_ptr<IFormSource> fs_src, std::unique_ptr<TextDest> txt_dest,
+		const std::string &formspecPrepend, ISoundManager *sound_manager)
 {
 	if (cur_formspec && cur_formspec->getReferenceCount() == 1) {
 		/*
@@ -154,7 +156,7 @@ void GUIFormSpecMenu::create(GUIFormSpecMenu *&cur_formspec, Client *client,
 	if (cur_formspec == nullptr) {
 		cur_formspec = new GUIFormSpecMenu(joystick, guiroot, -1, &g_menumgr,
 			client, guienv, client->getTextureSource(), sound_manager, std::move(fs_src),
-			txt_dest, formspecPrepend);
+			std::move(txt_dest), formspecPrepend);
 
 		/*
 			Caution: do not call (*cur_formspec)->drop() here --
@@ -166,7 +168,7 @@ void GUIFormSpecMenu::create(GUIFormSpecMenu *&cur_formspec, Client *client,
 	} else {
 		cur_formspec->setFormspecPrepend(formspecPrepend);
 		cur_formspec->setFormSource(std::move(fs_src));
-		cur_formspec->setTextDest(txt_dest);
+		cur_formspec->setTextDest(std::move(txt_dest));
 	}
 
 	cur_formspec->doPause = false;

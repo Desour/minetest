@@ -85,7 +85,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 	Text input system
 */
 
-struct TextDestNodeMetadata : public TextDest
+struct TextDestNodeMetadata final : public TextDest
 {
 	TextDestNodeMetadata(v3s16 p, Client *client)
 	{
@@ -111,7 +111,7 @@ struct TextDestNodeMetadata : public TextDest
 	Client *m_client;
 };
 
-struct TextDestPlayerInventory : public TextDest
+struct TextDestPlayerInventory final : public TextDest
 {
 	TextDestPlayerInventory(Client *client)
 	{
@@ -131,7 +131,7 @@ struct TextDestPlayerInventory : public TextDest
 	Client *m_client;
 };
 
-struct LocalFormspecHandler : public TextDest
+struct LocalFormspecHandler final : public TextDest
 {
 	LocalFormspecHandler(const std::string &formname)
 	{
@@ -2198,11 +2198,18 @@ void Game::openInventory()
 		return;
 
 	auto fs_src_ref = fs_src.get();
-	TextDest *txt_dst = new TextDestPlayerInventory(client.get());
+	auto txt_dst = std::make_unique<TextDestPlayerInventory>(client.get());
 	auto *&formspec = m_game_ui->updateFormspec("");
-	GUIFormSpecMenu::create(formspec, client.get(), m_rendering_engine->get_gui_env(),
-		&input->joystick, std::move(fs_src), txt_dst, client->getFormspecPrepend(),
-		sound_manager.get());
+	GUIFormSpecMenu::create(
+			formspec,
+			client.get(),
+			m_rendering_engine->get_gui_env(),
+			&input->joystick,
+			std::move(fs_src),
+			std::move(txt_dst),
+			client->getFormspecPrepend(),
+			sound_manager.get()
+		);
 
 	formspec->setFormSpec(fs_src_ref->getForm(), inventoryloc);
 }
@@ -2823,8 +2830,8 @@ void Game::handleClientEvent_ShowFormSpec(ClientEvent *event, CameraOrientation 
 		}
 	} else {
 		auto fs_src = std::make_unique<FormspecFormSource>(*event->show_formspec.formspec);
-		TextDestPlayerInventory *txt_dst =
-			new TextDestPlayerInventory(client.get(), *event->show_formspec.formname);
+		auto txt_dst = std::make_unique<TextDestPlayerInventory>(
+				client.get(), *event->show_formspec.formname);
 
 		auto *&formspec = m_game_ui->updateFormspec(*event->show_formspec.formname);
 		GUIFormSpecMenu::create(
@@ -2833,7 +2840,7 @@ void Game::handleClientEvent_ShowFormSpec(ClientEvent *event, CameraOrientation 
 				m_rendering_engine->get_gui_env(),
 				&input->joystick,
 				std::move(fs_src),
-				txt_dst,
+				std::move(txt_dst),
 				client->getFormspecPrepend(),
 				sound_manager.get()
 			);
@@ -2846,15 +2853,15 @@ void Game::handleClientEvent_ShowFormSpec(ClientEvent *event, CameraOrientation 
 void Game::handleClientEvent_ShowLocalFormSpec(ClientEvent *event, CameraOrientation *cam)
 {
 	auto fs_src = std::make_unique<FormspecFormSource>(*event->show_formspec.formspec);
-	LocalFormspecHandler *txt_dst =
-		new LocalFormspecHandler(*event->show_formspec.formname, client.get());
+	auto txt_dst = std::make_unique<LocalFormspecHandler>(
+			*event->show_formspec.formname, client.get());
 	GUIFormSpecMenu::create(
 			m_game_ui->getFormspecGUI(),
 			client.get(),
 			m_rendering_engine->get_gui_env(),
 			&input->joystick,
 			std::move(fs_src),
-			txt_dst,
+			std::move(txt_dst),
 			client->getFormspecPrepend(),
 			sound_manager.get()
 		);
@@ -3576,7 +3583,7 @@ bool Game::nodePlacement(const ItemDefinition &selected_def,
 
 		auto fs_src = std::make_unique<NodeMetadataFormSource>(
 				&client->getEnv().getClientMap(), nodepos);
-		TextDest *txt_dst = new TextDestNodeMetadata(nodepos, client.get());
+		auto txt_dst = std::make_unique<TextDestNodeMetadata>(nodepos, client.get());
 
 		auto *&formspec = m_game_ui->updateFormspec("");
 		GUIFormSpecMenu::create(
@@ -3585,7 +3592,7 @@ bool Game::nodePlacement(const ItemDefinition &selected_def,
 				m_rendering_engine->get_gui_env(),
 				&input->joystick,
 				std::move(fs_src),
-				txt_dst,
+				std::move(txt_dst),
 				client->getFormspecPrepend(),
 				sound_manager.get()
 			);
@@ -4367,7 +4374,7 @@ void Game::showDeathFormspec()
 		;
 
 	auto fs_src = std::make_unique<FormspecFormSource>(formspec_str);
-	LocalFormspecHandler *txt_dst = new LocalFormspecHandler("MT_DEATH_SCREEN", client.get());
+	auto txt_dst = std::make_unique<LocalFormspecHandler>("MT_DEATH_SCREEN", client.get());
 
 	auto *&formspec = m_game_ui->getFormspecGUI();
 	GUIFormSpecMenu::create(
@@ -4376,7 +4383,7 @@ void Game::showDeathFormspec()
 			m_rendering_engine->get_gui_env(),
 			&input->joystick,
 			std::move(fs_src),
-			txt_dst,
+			std::move(txt_dst),
 			client->getFormspecPrepend(),
 			sound_manager.get()
 		);
@@ -4474,7 +4481,7 @@ void Game::showPauseMenu()
 	os << ";]";
 
 	auto fs_src = std::make_unique<FormspecFormSource>(os.str());
-	LocalFormspecHandler *txt_dst = new LocalFormspecHandler("MT_PAUSE_MENU");
+	auto txt_dst = std::make_unique<LocalFormspecHandler>("MT_PAUSE_MENU");
 
 	auto *&formspec = m_game_ui->getFormspecGUI();
 	GUIFormSpecMenu::create(
@@ -4483,7 +4490,7 @@ void Game::showPauseMenu()
 			m_rendering_engine->get_gui_env(),
 			&input->joystick,
 			std::move(fs_src),
-			txt_dst,
+			std::move(txt_dst),
 			client->getFormspecPrepend(),
 			sound_manager.get()
 		);

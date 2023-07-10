@@ -180,7 +180,7 @@ GUIEngine::GUIEngine(JoystickController *joystick,
 			m_texture_source.get(),
 			m_sound_manager.get(),
 			std::move(formspecgui),
-			buttonhandler.release(),
+			std::move(buttonhandler),
 			"",
 			false);
 

@@ -61,7 +61,7 @@ struct MainMenuData;
 /******************************************************************************/
 
 /** GUIEngine specific implementation of TextDest used within guiFormSpecMenu */
-class TextDestGuiEngine : public TextDest
+class TextDestGuiEngine final : public TextDest
 {
 public:
 	/**
