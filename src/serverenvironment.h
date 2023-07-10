@@ -221,7 +221,7 @@ enum ClearObjectsMode {
 class ServerEnvironment final : public Environment
 {
 public:
-	ServerEnvironment(ServerMap *map, ServerScripting *script_iface,
+	ServerEnvironment(std::unique_ptr<ServerMap> map, ServerScripting *script_iface,
 		Server *server, const std::string &path_world, MetricsBackend *mb);
 	~ServerEnvironment();
 

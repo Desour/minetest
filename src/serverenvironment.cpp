@@ -439,11 +439,11 @@ void OnMapblocksChangedReceiver::onMapEditEvent(const MapEditEvent &event)
 // Random device to seed pseudo random generators.
 static std::random_device seed;
 
-ServerEnvironment::ServerEnvironment(ServerMap *map,
+ServerEnvironment::ServerEnvironment(std::unique_ptr<ServerMap> map,
 	ServerScripting *script_iface, Server *server,
 	const std::string &path_world, MetricsBackend *mb):
 	Environment(server),
-	m_map(map),
+	m_map(map.release()),
 	m_script(script_iface),
 	m_server(server),
 	m_path_world(path_world),

@@ -624,9 +624,8 @@ private:
 	// Environment
 	std::unique_ptr<ServerEnvironment> m_env;
 
-	// Reference to the server map until ServerEnvironment is initialized
-	// after that this variable must be a nullptr
-	ServerMap *m_startup_server_map = nullptr;
+	// Holds the server map until ServerEnvironment is initialized, afterwards is null
+	std::unique_ptr<ServerMap> m_startup_server_map;
 
 	// server connection
 	std::shared_ptr<con::Connection> m_con;

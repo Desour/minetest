@@ -401,7 +401,7 @@ Server::~Server()
 	// Deinitialize scripting
 	infostream << "Server: Deinitializing scripting" << std::endl;
 	m_script.reset();
-	delete m_startup_server_map; // if available
+	m_startup_server_map.reset(); // if available
 	delete m_game_settings;
 
 	while (!m_unsent_map_edit_queue.empty()) {
@@ -454,8 +454,8 @@ void Server::init()
 	MutexAutoLock envlock(m_env_mutex);
 
 	// Create the Map (loads map_meta.txt, overriding configured mapgen params)
-	ServerMap *servermap = new ServerMap(m_path_world, this, m_emerge.get(), m_metrics_backend.get());
-	m_startup_server_map = servermap;
+	m_startup_server_map = std::make_unique<ServerMap>(m_path_world, this, m_emerge.get(), m_metrics_backend.get());
+	ServerMap *servermap = m_startup_server_map.get();
 
 	// Initialize scripting
 	infostream << "Server: Initializing Lua" << std::endl;
@@ -501,9 +501,8 @@ void Server::init()
 	m_craftdef->initHashes(this);
 
 	// Initialize Environment
-	m_startup_server_map = nullptr; // Ownership moved to ServerEnvironment
-	m_env = std::make_unique<ServerEnvironment>(servermap, m_script.get(), this,
-			m_path_world, m_metrics_backend.get());
+	m_env = std::make_unique<ServerEnvironment>(std::move(m_startup_server_map),
+			m_script.get(), this, m_path_world, m_metrics_backend.get());
 	m_env->init();
 
 	m_inventory_mgr->setEnv(m_env.get());
