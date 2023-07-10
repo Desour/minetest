@@ -2871,7 +2871,7 @@ void Game::handleClientEvent_HudAdd(ClientEvent *event, CameraOrientation *cam)
 		return;
 	}
 
-	HudElement *e = new HudElement;
+	std::unique_ptr<HudElement> e(new HudElement);
 	e->type   = static_cast<HudElementType>(event->hudadd->type);
 	e->pos    = event->hudadd->pos;
 	e->name   = event->hudadd->name;
@@ -2887,7 +2887,7 @@ void Game::handleClientEvent_HudAdd(ClientEvent *event, CameraOrientation *cam)
 	e->z_index   = event->hudadd->z_index;
 	e->text2     = event->hudadd->text2;
 	e->style     = event->hudadd->style;
-	m_hud_server_to_client[server_id] = player->addHud(e);
+	m_hud_server_to_client[server_id] = player->addHud(std::move(e));
 
 	delete event->hudadd;
 }
@@ -2898,8 +2898,7 @@ void Game::handleClientEvent_HudRemove(ClientEvent *event, CameraOrientation *ca
 
 	auto i = m_hud_server_to_client.find(event->hudrm.id);
 	if (i != m_hud_server_to_client.end()) {
-		HudElement *e = player->removeHud(i->second);
-		delete e;
+		player->removeHud(i->second);
 		m_hud_server_to_client.erase(i);
 	}
 

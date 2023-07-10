@@ -105,56 +105,65 @@ ItemStack &Player::getWieldedItem(ItemStack *selected, ItemStack *hand) const
 	return (hand && selected->name.empty()) ? *hand : *selected;
 }
 
-u32 Player::addHud(HudElement *toadd)
+u32 Player::getFreeHudID()
+{
+	size_t size = m_hud.size();
+	for (size_t i = 0; i != size; i++) {
+		if (!m_hud[i])
+			return i;
+	}
+	if (size >= U32_MAX)
+		throw BaseException("Player::getFreeHudID(): Max hud elements exceeded.");
+	return size;
+}
+
+u32 Player::addHud(std::unique_ptr<HudElement> toadd)
 {
 	MutexAutoLock lock(m_mutex);
 
 	u32 id = getFreeHudID();
 
-	if (id < hud.size())
-		hud[id] = toadd;
+	if (id < m_hud.size())
+		m_hud[id] = std::move(toadd);
 	else
-		hud.push_back(toadd);
+		m_hud.push_back(std::move(toadd));
 
 	return id;
 }
 
-HudElement* Player::getHud(u32 id)
+HudElement *Player::getHud(u32 id)
 {
 	MutexAutoLock lock(m_mutex);
 
-	if (id < hud.size())
-		return hud[id];
+	if (id < m_hud.size())
+		return m_hud[id].get();
 
-	return NULL;
+	return nullptr;
 }
 
-void Player::hudApply(std::function<void(const std::vector<HudElement*>&)> f)
+void Player::hudApply(std::function<void(u32, HudElement *)> f)
 {
 	MutexAutoLock lock(m_mutex);
-	f(hud);
-}
-
-HudElement* Player::removeHud(u32 id)
-{
-	MutexAutoLock lock(m_mutex);
-
-	HudElement* retval = NULL;
-	if (id < hud.size()) {
-		retval = hud[id];
-		hud[id] = NULL;
+	for (u32 id = 0; id < m_hud.size(); ++id) {
+		HudElement *elem = m_hud[id].get();
+		f(id, elem);
 	}
-	return retval;
+}
+
+std::unique_ptr<HudElement> Player::removeHud(u32 id)
+{
+	MutexAutoLock lock(m_mutex);
+
+	if (id < m_hud.size())
+		return std::move(m_hud[id]);
+	return nullptr;
 }
 
 void Player::clearHud()
 {
 	MutexAutoLock lock(m_mutex);
 
-	while(!hud.empty()) {
-		delete hud.back();
-		hud.pop_back();
-	}
+	m_hud.clear();
 }
 
 #ifndef SERVER

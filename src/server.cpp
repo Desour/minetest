@@ -3364,14 +3364,15 @@ bool Server::showFormspec(const char *playername, const std::string &formspec,
 	return true;
 }
 
-u32 Server::hudAdd(RemotePlayer *player, HudElement *form)
+u32 Server::hudAdd(RemotePlayer *player, std::unique_ptr<HudElement> element)
 {
 	if (!player)
 		return -1;
 
-	u32 id = player->addHud(form);
+	auto element_ref = element.get();
+	u32 id = player->addHud(std::move(element));
 
-	SendHUDAdd(player->getPeerId(), id, form);
+	SendHUDAdd(player->getPeerId(), id, element_ref);
 
 	return id;
 }
@@ -3380,12 +3381,10 @@ bool Server::hudRemove(RemotePlayer *player, u32 id) {
 	if (!player)
 		return false;
 
-	HudElement* todel = player->removeHud(id);
+	bool did_exit = !!player->removeHud(id);
 
-	if (!todel)
+	if (!did_exit)
 		return false;
-
-	delete todel;
 
 	SendHUDRemove(player->getPeerId(), id);
 	return true;

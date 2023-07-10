@@ -177,15 +177,7 @@ public:
 
 	const char *getName() const { return m_name; }
 
-	u32 getFreeHudID()
-	{
-		size_t size = hud.size();
-		for (size_t i = 0; i != size; i++) {
-			if (!hud[i])
-				return i;
-		}
-		return size;
-	}
+	u32 getFreeHudID();
 
 	v3f eye_offset_first;
 	v3f eye_offset_third;
@@ -235,11 +227,12 @@ public:
 		return m_fov_override_spec;
 	}
 
-	HudElement* getHud(u32 id);
-	void        hudApply(std::function<void(const std::vector<HudElement*>&)> f);
-	u32         addHud(HudElement* hud);
-	HudElement* removeHud(u32 id);
-	void        clearHud();
+	HudElement                 *getHud(u32 id);
+	void                        hudApply(std::function<void(u32, HudElement *)> f);
+	u32                         addHud(std::unique_ptr<HudElement> toadd);
+	std::unique_ptr<HudElement> removeHud(u32 id);
+	void                        clearHud();
+	u32                         maxHudId() const { return m_hud.size(); }
 
 	u32 hud_flags;
 	s32 hud_hotbar_itemcount;
@@ -250,11 +243,11 @@ protected:
 	u16 m_wield_index = 0;
 	PlayerFovSpec m_fov_override_spec = { 0.0f, false, 0.0f };
 
-	std::vector<HudElement *> hud;
-
 private:
+	std::vector<std::unique_ptr<HudElement>> m_hud;
+
 	// Protect some critical areas
-	// hud for example can be modified by EmergeThread
+	// m_hud for example can be modified by EmergeThread
 	// and ServerThread
 	// FIXME: ^ this sounds like nonsense. should be checked.
 	std::mutex m_mutex;
