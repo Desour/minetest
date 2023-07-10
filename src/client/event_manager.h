@@ -46,16 +46,15 @@ class EventManager : public MtEventManager
 public:
 	~EventManager() override = default;
 
-	void put(MtEvent *e) override
+	void put(std::unique_ptr<MtEvent> e) override
 	{
-		std::map<MtEvent::Type, Dest>::iterator i = m_dest.find(e->getType());
-		if (i != m_dest.end()) {
-			std::list<FuncSpec> &funcs = i->second.funcs;
+		auto it = m_dest.find(e->getType());
+		if (it != m_dest.end()) {
+			std::list<FuncSpec> &funcs = it->second.funcs;
 			for (FuncSpec &func : funcs) {
-				(*(func.f))(e, func.d);
+				(*func.f)(e.get(), func.d);
 			}
 		}
-		delete e;
 	}
 	void reg(MtEvent::Type type, event_receive_func f, void *data) override
 	{

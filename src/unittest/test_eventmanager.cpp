@@ -86,7 +86,7 @@ void TestEventManager::testRealEvent()
 	ev.reg(MtEvent::PLAYER_REGAIN_GROUND, EventManagerTest::eventTest, emt.get());
 
 	// Put event & verify event value
-	ev.put(new SimpleTriggerEvent(MtEvent::PLAYER_REGAIN_GROUND));
+	ev.put(std::make_unique<SimpleTriggerEvent>(MtEvent::PLAYER_REGAIN_GROUND));
 	UASSERT(emt->getTestValue() == MtEvent::PLAYER_REGAIN_GROUND);
 }
 
@@ -97,7 +97,7 @@ void TestEventManager::testRealEventAfterDereg()
 	ev.reg(MtEvent::PLAYER_REGAIN_GROUND, EventManagerTest::eventTest, emt.get());
 
 	// Put event & verify event value
-	ev.put(new SimpleTriggerEvent(MtEvent::PLAYER_REGAIN_GROUND));
+	ev.put(std::make_unique<SimpleTriggerEvent>(MtEvent::PLAYER_REGAIN_GROUND));
 	UASSERT(emt->getTestValue() == MtEvent::PLAYER_REGAIN_GROUND);
 
 	// Reset internal value
@@ -107,6 +107,6 @@ void TestEventManager::testRealEventAfterDereg()
 	ev.dereg(MtEvent::PLAYER_REGAIN_GROUND, EventManagerTest::eventTest, emt.get());
 
 	// Push the new event & ensure we target the default value
-	ev.put(new SimpleTriggerEvent(MtEvent::PLAYER_REGAIN_GROUND));
+	ev.put(std::make_unique<SimpleTriggerEvent>(MtEvent::PLAYER_REGAIN_GROUND));
 	UASSERT(emt->getTestValue() == 0);
 }

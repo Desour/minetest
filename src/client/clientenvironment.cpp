@@ -238,7 +238,7 @@ void ClientEnvironment::step(float dtime)
 			if (damage != 0) {
 				damageLocalPlayer(damage, true);
 				m_client->getEventManager()->put(
-					new SimpleTriggerEvent(MtEvent::PLAYER_FALLING_DAMAGE));
+						std::make_unique<SimpleTriggerEvent>(MtEvent::PLAYER_FALLING_DAMAGE));
 			}
 		}
 	}

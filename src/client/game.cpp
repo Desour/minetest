@@ -606,7 +606,7 @@ public:
 		created_nosky.clear();
 	}
 
-	virtual IShaderConstantSetter* create()
+	IShaderConstantSetter *create() override
 	{
 		auto *scs = new GameGlobalShaderConstantSetter(m_sky, m_client);
 		if (!m_sky)
@@ -2795,7 +2795,7 @@ void Game::handleClientEvent_PlayerDamage(ClientEvent *event, CameraOrientation 
 	}
 
 	// Play damage sound
-	client->getEventManager()->put(new SimpleTriggerEvent(MtEvent::PLAYER_DAMAGE));
+	client->getEventManager()->put(std::make_unique<SimpleTriggerEvent>(MtEvent::PLAYER_DAMAGE));
 }
 
 void Game::handleClientEvent_PlayerForceMove(ClientEvent *event, CameraOrientation *cam)
@@ -3963,7 +3963,7 @@ void Game::handleDigging(const PointedThing &pointed, const v3s16 &nodepos,
 
 
 		// Send event to trigger sound
-		client->getEventManager()->put(new NodeDugEvent(nodepos, n));
+		client->getEventManager()->put(std::make_unique<NodeDugEvent>(nodepos, n));
 	}
 
 	if (runData.dig_time_complete < 100000.0) {
