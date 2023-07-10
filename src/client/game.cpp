@@ -890,7 +890,7 @@ private:
 	Camera *camera = nullptr;
 	Clouds *clouds = nullptr;	                  // Free using ->Drop()
 	Sky *sky = nullptr;                         // Free using ->Drop()
-	Hud *hud = nullptr;
+	std::unique_ptr<Hud> hud;
 	Minimap *mapper = nullptr;
 
 	// Map server hud ids to client hud ids
@@ -1021,7 +1021,7 @@ Game::~Game()
 
 	server.reset(); // deleted first to stop all server threads
 
-	delete hud;
+	hud.reset();
 	delete camera;
 	delete quicktune;
 	delete eventmgr;
@@ -1121,7 +1121,7 @@ bool Game::startup(bool *kill,
 	if (!createClient(start_data))
 		return false;
 
-	m_rendering_engine->initialize(client.get(), hud);
+	m_rendering_engine->initialize(client.get(), hud.get());
 
 	return true;
 }
@@ -1495,7 +1495,7 @@ bool Game::createClient(const GameStartData &start_data)
 	player->hurt_tilt_timer = 0;
 	player->hurt_tilt_strength = 0;
 
-	hud = new Hud(client.get(), player, &player->inventory);
+	hud = std::make_unique<Hud>(client.get(), player, &player->inventory);
 
 	mapper = client->getMinimap();
 
