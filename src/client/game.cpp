@@ -882,7 +882,7 @@ private:
 	LogOutputBuffer m_chat_log_buf;
 
 	EventManager *eventmgr = nullptr;
-	QuicktuneShortcutter *quicktune = nullptr;
+	std::unique_ptr<QuicktuneShortcutter> quicktune;
 
 	std::unique_ptr<GameUI> m_game_ui;
 	GUIChatConsole *gui_chat_console = nullptr; // Free using ->Drop()
@@ -1023,7 +1023,7 @@ Game::~Game()
 
 	hud.reset();
 	camera.reset();
-	delete quicktune;
+	quicktune.reset();
 	delete eventmgr;
 	delete texture_src;
 	delete shader_src;
@@ -1292,7 +1292,7 @@ bool Game::init(
 	nodedef_manager = createNodeDefManager();
 
 	eventmgr = new EventManager();
-	quicktune = new QuicktuneShortcutter();
+	quicktune = std::make_unique<QuicktuneShortcutter>();
 
 	if (!(texture_src && shader_src && itemdef_manager && nodedef_manager
 			&& eventmgr && quicktune))
