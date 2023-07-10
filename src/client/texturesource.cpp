@@ -309,9 +309,9 @@ private:
 	bool m_setting_anisotropic_filter;
 };
 
-IWritableTextureSource *createTextureSource()
+std::unique_ptr<IWritableTextureSource> createTextureSource()
 {
-	return new TextureSource();
+	return std::make_unique<TextureSource>();
 }
 
 TextureSource::TextureSource()

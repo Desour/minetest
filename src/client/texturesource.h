@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "irrlichttypes.h"
 #include <ITexture.h>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -90,4 +91,4 @@ public:
 	virtual video::ITexture *getShaderFlagsTexture(bool normalmap_present)=0;
 };
 
-IWritableTextureSource *createTextureSource();
+std::unique_ptr<IWritableTextureSource> createTextureSource();

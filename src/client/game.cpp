@@ -868,7 +868,7 @@ private:
 	ClientDynamicInfo client_display_info{};
 	float dynamic_info_send_timer = 0;
 
-	IWritableTextureSource *texture_src = nullptr;
+	std::unique_ptr<IWritableTextureSource> texture_src;
 	IWritableShaderSource *shader_src = nullptr;
 
 	// When created, these will be filled with data received from the server
@@ -1025,7 +1025,7 @@ Game::~Game()
 	camera.reset();
 	quicktune.reset();
 	eventmgr.reset();
-	delete texture_src;
+	texture_src.reset();
 	delete shader_src;
 	nodedef_manager.reset();
 	itemdef_manager.reset();
@@ -1260,8 +1260,8 @@ void Game::shutdown()
 	if (client) {
 		client->Stop();
 		while (!client->isShutdown()) {
-			assert(texture_src != NULL);
-			assert(shader_src != NULL);
+			assert(texture_src);
+			assert(shader_src);
 			texture_src->processQueue();
 			shader_src->processQueue();
 			sleep_ms(100);
@@ -1458,7 +1458,7 @@ bool Game::createClient(const GameStartData &start_data)
 
 	/* Skybox
 	 */
-	sky = new Sky(-1, m_rendering_engine, texture_src, shader_src);
+	sky = new Sky(-1, m_rendering_engine, texture_src.get(), shader_src);
 	scsf->setSky(sky);
 
 	/* Pre-calculated values
@@ -1520,7 +1520,7 @@ bool Game::initGui()
 			-1, chat_backend, client.get(), &g_menumgr);
 
 	if (g_touchscreengui)
-		g_touchscreengui->init(texture_src);
+		g_touchscreengui->init(texture_src.get());
 
 	return true;
 }
@@ -1584,7 +1584,7 @@ bool Game::connectToServer(const GameStartData &start_data,
 	try {
 		client = std::make_unique<Client>(start_data.name.c_str(),
 				start_data.password,
-				*draw_control, texture_src, shader_src,
+				*draw_control, texture_src.get(), shader_src,
 				itemdef_manager.get(), nodedef_manager.get(), sound_manager.get(), eventmgr.get(),
 				m_rendering_engine, m_game_ui.get(),
 				start_data.allow_login_or_register);
@@ -1714,11 +1714,11 @@ bool Game::getServerContent(bool *aborted)
 		if (!client->itemdefReceived()) {
 			progress = 25;
 			m_rendering_engine->draw_load_screen(wstrgettext("Item definitions..."),
-					guienv, texture_src, dtime, progress);
+					guienv, texture_src.get(), dtime, progress);
 		} else if (!client->nodedefReceived()) {
 			progress = 30;
 			m_rendering_engine->draw_load_screen(wstrgettext("Node definitions..."),
-					guienv, texture_src, dtime, progress);
+					guienv, texture_src.get(), dtime, progress);
 		} else {
 			std::ostringstream message;
 			std::fixed(message);
@@ -1744,7 +1744,7 @@ bool Game::getServerContent(bool *aborted)
 
 			progress = 30 + client->mediaReceiveProgress() * 35 + 0.5;
 			m_rendering_engine->draw_load_screen(utf8_to_wide(message.str()), guienv,
-				texture_src, dtime, progress);
+				texture_src.get(), dtime, progress);
 		}
 	}
 
@@ -1798,19 +1798,19 @@ inline bool Game::handleCallbacks()
 
 	if (g_gamecallback->changepassword_requested) {
 		(new GUIPasswordChange(guienv, guiroot, -1,
-				       &g_menumgr, client.get(), texture_src))->drop();
+				       &g_menumgr, client.get(), texture_src.get()))->drop();
 		g_gamecallback->changepassword_requested = false;
 	}
 
 	if (g_gamecallback->changevolume_requested) {
 		(new GUIVolumeChange(guienv, guiroot, -1,
-				     &g_menumgr, texture_src))->drop();
+				     &g_menumgr, texture_src.get()))->drop();
 		g_gamecallback->changevolume_requested = false;
 	}
 
 	if (g_gamecallback->keyconfig_requested) {
 		(new GUIKeyChangeMenu(guienv, guiroot, -1,
-				      &g_menumgr, texture_src))->drop();
+				      &g_menumgr, texture_src.get()))->drop();
 		g_gamecallback->keyconfig_requested = false;
 	}
 
@@ -2996,7 +2996,7 @@ void Game::handleClientEvent_SetSky(ClientEvent *event, CameraOrientation *cam)
 		);
 		// Add textures to skybox.
 		for (int i = 0; i < 6; i++)
-			sky->addTextureToSkybox(event->set_sky->textures[i], i, texture_src);
+			sky->addTextureToSkybox(event->set_sky->textures[i], i, texture_src.get());
 	} else {
 		// Handle everything else as plain color.
 		if (event->set_sky->type != "plain")
@@ -3037,10 +3037,10 @@ void Game::handleClientEvent_SetSun(ClientEvent *event, CameraOrientation *cam)
 {
 	sky->setSunVisible(event->sun_params->visible);
 	sky->setSunTexture(event->sun_params->texture,
-		event->sun_params->tonemap, texture_src);
+		event->sun_params->tonemap, texture_src.get());
 	sky->setSunScale(event->sun_params->scale);
 	sky->setSunriseVisible(event->sun_params->sunrise_visible);
-	sky->setSunriseTexture(event->sun_params->sunrise, texture_src);
+	sky->setSunriseTexture(event->sun_params->sunrise, texture_src.get());
 	delete event->sun_params;
 }
 
@@ -3048,7 +3048,7 @@ void Game::handleClientEvent_SetMoon(ClientEvent *event, CameraOrientation *cam)
 {
 	sky->setMoonVisible(event->moon_params->visible);
 	sky->setMoonTexture(event->moon_params->texture,
-		event->moon_params->tonemap, texture_src);
+		event->moon_params->tonemap, texture_src.get());
 	sky->setMoonScale(event->moon_params->scale);
 	delete event->moon_params;
 }
@@ -4292,7 +4292,7 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
 
 void Game::showOverlayMessage(const char *msg, float dtime, int percent, bool draw_sky)
 {
-	m_rendering_engine->draw_load_screen(wstrgettext(msg), guienv, texture_src,
+	m_rendering_engine->draw_load_screen(wstrgettext(msg), guienv, texture_src.get(),
 			dtime, percent, draw_sky);
 }
 
