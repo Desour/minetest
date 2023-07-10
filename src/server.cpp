@@ -393,7 +393,7 @@ Server::~Server()
 	m_env.reset();
 	m_rollback.reset();
 	m_mod_storage_database.reset();
-	delete m_banmanager;
+	m_banmanager.reset();
 	delete m_itemdef;
 	delete m_nodedef;
 	delete m_craftdef;
@@ -436,7 +436,7 @@ void Server::init()
 
 	// Create ban manager
 	std::string ban_path = m_path_world + DIR_DELIM "ipban.txt";
-	m_banmanager = new BanManager(ban_path);
+	m_banmanager = std::make_unique<BanManager>(ban_path);
 
 	// Create mod storage database and begin a save for later
 	m_mod_storage_database = openModStorageDatabase(m_path_world);

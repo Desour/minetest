@@ -632,7 +632,7 @@ private:
 	std::shared_ptr<con::Connection> m_con;
 
 	// Ban checking
-	BanManager *m_banmanager = nullptr;
+	std::unique_ptr<BanManager> m_banmanager;
 
 	// Rollback manager (behind m_env_mutex)
 	std::unique_ptr<IRollbackManager> m_rollback;
