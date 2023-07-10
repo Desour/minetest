@@ -315,9 +315,9 @@ public:
 	// Shall be called from the main thread.
 	void rebuildShaders() override;
 
-	void addShaderConstantSetterFactory(IShaderConstantSetterFactory *setter) override
+	void addShaderConstantSetterFactory(std::unique_ptr<IShaderConstantSetterFactory> setter) override
 	{
-		m_setter_factories.emplace_back(setter);
+		m_setter_factories.push_back(std::move(setter));
 	}
 
 private:
@@ -361,7 +361,7 @@ ShaderSource::ShaderSource()
 	m_shaderinfo_cache.emplace_back();
 
 	// Add main global constant setter
-	addShaderConstantSetterFactory(new MainShaderConstantSetterFactory());
+	addShaderConstantSetterFactory(std::make_unique<MainShaderConstantSetterFactory>());
 }
 
 ShaderSource::~ShaderSource()

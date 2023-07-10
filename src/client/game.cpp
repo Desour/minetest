@@ -965,7 +965,7 @@ private:
 
 Game::Game() :
 	m_chat_log_buf(g_logger),
-	m_game_ui(new GameUI())
+	m_game_ui(std::make_unique<GameUI>())
 {
 	g_settings->registerChangedCallback("doubletap_jump",
 		&settingChangedCallback, this);
@@ -1429,11 +1429,12 @@ bool Game::createClient(const GameStartData &start_data)
 		return false;
 	}
 
-	auto *scsf = new GameGlobalShaderConstantSetterFactory(client.get());
-	shader_src->addShaderConstantSetterFactory(scsf);
+	auto scsf_up = std::make_unique<GameGlobalShaderConstantSetterFactory>(client.get());
+	auto *scsf = scsf_up.get();
+	shader_src->addShaderConstantSetterFactory(std::move(scsf_up));
 
 	shader_src->addShaderConstantSetterFactory(
-		new FogShaderConstantSetterFactory());
+			std::make_unique<FogShaderConstantSetterFactory>());
 
 	ShadowRenderer::preInit(shader_src.get());
 

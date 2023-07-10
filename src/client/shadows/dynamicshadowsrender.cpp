@@ -122,7 +122,7 @@ void ShadowRenderer::preInit(IWritableShaderSource *shsrc)
 {
 	if (g_settings->getBool("enable_shaders") &&
 			g_settings->getBool("enable_dynamic_shadows")) {
-		shsrc->addShaderConstantSetterFactory(new ShadowConstantSetterFactory());
+		shsrc->addShaderConstantSetterFactory(std::make_unique<ShadowConstantSetterFactory>());
 	}
 }
 
@@ -140,7 +140,7 @@ void ShadowRenderer::initialize()
 	}
 
 	createShaders();
-	
+
 
 	m_texture_format = m_shadow_map_texture_32bit
 					   ? video::ECOLOR_FORMAT::ECF_R32F

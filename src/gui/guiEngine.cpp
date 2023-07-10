@@ -396,7 +396,7 @@ GUIEngine::~GUIEngine()
 void GUIEngine::cloudInit()
 {
 	m_shader_source->addShaderConstantSetterFactory(
-		new FogShaderConstantSetterFactory());
+		std::make_unique<FogShaderConstantSetterFactory>());
 
 	m_cloud.clouds = make_irr<Clouds>(m_smgr, m_shader_source.get(), -1, rand());
 	m_cloud.clouds->setHeight(100.0f);
