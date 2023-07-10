@@ -172,7 +172,7 @@ public:
 			gui::IGUIEnvironment *guienv,
 			ISimpleTextureSource *tsrc,
 			ISoundManager *sound_manager,
-			IFormSource* fs_src,
+			std::unique_ptr<IFormSource> fs_src,
 			TextDest* txt_dst,
 			const std::string &formspecPrepend,
 			bool remap_dbl_click = true);
@@ -180,9 +180,9 @@ public:
 	~GUIFormSpecMenu();
 
 	static void create(GUIFormSpecMenu *&cur_formspec, Client *client,
-		gui::IGUIEnvironment *guienv, JoystickController *joystick, IFormSource *fs_src,
-		TextDest *txt_dest, const std::string &formspecPrepend,
-		ISoundManager *sound_manager);
+		gui::IGUIEnvironment *guienv, JoystickController *joystick,
+		std::unique_ptr<IFormSource> fs_src, TextDest *txt_dest,
+		const std::string &formspecPrepend, ISoundManager *sound_manager);
 
 	void setFormSpec(const std::string &formspec_string,
 			const InventoryLocation &current_inventory_location)
@@ -204,10 +204,9 @@ public:
 	}
 
 	// form_src is deleted by this GUIFormSpecMenu
-	void setFormSource(IFormSource *form_src)
+	void setFormSource(std::unique_ptr<IFormSource> form_src)
 	{
-		delete m_form_src;
-		m_form_src = form_src;
+		m_form_src = std::move(form_src);
 	}
 
 	// text_dst is deleted by this GUIFormSpecMenu
@@ -379,13 +378,13 @@ protected:
 	video::SColor m_default_tooltip_color;
 
 private:
-	IFormSource               *m_form_src;
-	TextDest                  *m_text_dst;
-	std::string                m_last_formname;
-	u16                        m_formspec_version = 1;
-	std::optional<std::string> m_focused_element = std::nullopt;
-	JoystickController        *m_joystick;
-	bool                       m_show_debug = false;
+	std::unique_ptr<IFormSource> m_form_src;
+	TextDest                    *m_text_dst;
+	std::string                  m_last_formname;
+	u16                          m_formspec_version = 1;
+	std::optional<std::string>   m_focused_element = std::nullopt;
+	JoystickController          *m_joystick;
+	bool                         m_show_debug = false;
 
 	struct parserData {
 		bool explicit_size;
@@ -508,7 +507,7 @@ private:
 	s32 m_tabheader_upper_edge = 0;
 };
 
-class FormspecFormSource: public IFormSource
+class FormspecFormSource final : public IFormSource
 {
 public:
 	FormspecFormSource(const std::string &formspec):
