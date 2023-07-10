@@ -266,7 +266,7 @@ Server::Server(
 	m_clients(m_con),
 	m_admin_chat(iface),
 	m_shutdown_errmsg(shutdown_errmsg),
-	m_modchannel_mgr(new ModChannelMgr())
+	m_modchannel_mgr(std::make_unique<ModChannelMgr>())
 {
 	if (m_path_world.empty())
 		throw ServerError("Supplied empty world path");
@@ -697,13 +697,12 @@ void Server::AsyncRunStep(float dtime, bool initial_step)
 		if (!m_admin_chat->command_queue.empty()) {
 			MutexAutoLock lock(m_env_mutex);
 			while (!m_admin_chat->command_queue.empty()) {
-				ChatEvent *evt = m_admin_chat->command_queue.pop_frontNoEx();
-				handleChatInterfaceEvent(evt);
-				delete evt;
+				std::unique_ptr<ChatEvent> evt = m_admin_chat->command_queue.pop_frontNoEx();
+				handleChatInterfaceEvent(evt.get());
 			}
 		}
 		m_admin_chat->outgoing_queue.push_back(
-			new ChatEventTimeInfo(m_env->getGameTime(), m_env->getTimeOfDay()));
+				std::make_unique<ChatEventTimeInfo>(m_env->getGameTime(), m_env->getTimeOfDay()));
 	}
 
 	/*
@@ -1334,7 +1333,7 @@ void Server::printToConsoleOnly(const std::string &text)
 {
 	if (m_admin_chat) {
 		m_admin_chat->outgoing_queue.push_back(
-			new ChatEventChat("", utf8_to_wide(text)));
+				std::make_unique<ChatEventChat>("", utf8_to_wide(text)));
 	} else {
 		std::cout << text << std::endl;
 	}
@@ -3023,7 +3022,7 @@ void Server::DeleteClient(session_t peer_id, ClientDeletionReason reason)
 						<< " List of players: " << os.str() << std::endl;
 				if (m_admin_chat)
 					m_admin_chat->outgoing_queue.push_back(
-						new ChatEventNick(CET_NICK_REMOVE, name));
+							std::make_unique<ChatEventNick>(CET_NICK_REMOVE, name));
 			}
 		}
 		{
@@ -3181,7 +3180,8 @@ void Server::handleAdminChat(const ChatEventChat *evt)
 
 	// If asked to send answer to sender
 	if (!answer.empty()) {
-		m_admin_chat->outgoing_queue.push_back(new ChatEventChat("", answer));
+		m_admin_chat->outgoing_queue.push_back(
+				std::make_unique<ChatEventChat>("", answer));
 	}
 }
 
@@ -3351,7 +3351,8 @@ void Server::notifyPlayer(const char *name, const std::wstring &msg)
 		return;
 
 	if (m_admin_nick == name && !m_admin_nick.empty()) {
-		m_admin_chat->outgoing_queue.push_back(new ChatEventChat("", msg));
+		m_admin_chat->outgoing_queue.push_back(
+				std::make_unique<ChatEventChat>("", msg));
 	}
 
 	RemotePlayer *player = m_env->getPlayer(name);

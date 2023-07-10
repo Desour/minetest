@@ -98,7 +98,7 @@ void *TerminalChatConsole::run()
 
 	// Inform the server of our nick
 	m_chat_interface->command_queue.push_back(
-		new ChatEventNick(CET_NICK_ADD, m_nick));
+			std::make_unique<ChatEventNick>(CET_NICK_ADD, m_nick));
 
 	{
 		// Ensures that curses is deinitialized even on an exception being thrown
@@ -138,7 +138,7 @@ void TerminalChatConsole::typeChatMessage(const std::wstring &msg)
 
 	// Send to server
 	m_chat_interface->command_queue.push_back(
-		new ChatEventChat(m_nick, msg));
+			std::make_unique<ChatEventChat>(m_nick, msg));
 
 	// Print if its a command (gets eaten by server otherwise)
 	if (msg[0] == L'/') {
@@ -320,26 +320,25 @@ void TerminalChatConsole::step(int ch)
 
 	// empty queues
 	while (!m_chat_interface->outgoing_queue.empty()) {
-		ChatEvent *evt = m_chat_interface->outgoing_queue.pop_frontNoEx();
+		std::unique_ptr<ChatEvent> evt = m_chat_interface->outgoing_queue.pop_frontNoEx();
 		switch (evt->type) {
 			case CET_NICK_REMOVE:
-				m_nicks.erase(((ChatEventNick *)evt)->nick);
+				m_nicks.erase(((ChatEventNick *)evt.get())->nick);
 				break;
 			case CET_NICK_ADD:
-				m_nicks.insert(((ChatEventNick *)evt)->nick);
+				m_nicks.insert(((ChatEventNick *)evt.get())->nick);
 				break;
 			case CET_CHAT:
 				complete_redraw_needed = true;
 				// This is only used for direct replies from commands
 				// or for lua's print() functionality
-				m_chat_backend.addMessage(L"", ((ChatEventChat *)evt)->evt_msg);
+				m_chat_backend.addMessage(L"", ((ChatEventChat *)evt.get())->evt_msg);
 				break;
 			case CET_TIME_INFO:
-				ChatEventTimeInfo *tevt = (ChatEventTimeInfo *)evt;
+				ChatEventTimeInfo *tevt = (ChatEventTimeInfo *)evt.get();
 				m_game_time = tevt->game_time;
 				m_time_of_day = tevt->time;
 		};
-		delete evt;
 	}
 	while (!m_log_output.queue.empty()) {
 		complete_redraw_needed = true;
