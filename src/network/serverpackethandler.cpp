@@ -614,7 +614,7 @@ void Server::handleCommand_InventoryAction(NetworkPacket* pkt)
 	}
 
 	// If something goes wrong, this player is to blame
-	RollbackScopeActor rollback_scope(m_rollback,
+	RollbackScopeActor rollback_scope(m_rollback.get(),
 			std::string("player:")+player->getName());
 
 	/*
@@ -1069,7 +1069,7 @@ void Server::handleCommand_Interact(NetworkPacket *pkt)
 	/*
 		If something goes wrong, this player is to blame
 	*/
-	RollbackScopeActor rollback_scope(m_rollback,
+	RollbackScopeActor rollback_scope(m_rollback.get(),
 			std::string("player:")+player->getName());
 
 	switch (action) {
@@ -1400,7 +1400,7 @@ void Server::handleCommand_NodeMetaFields(NetworkPacket* pkt)
 	}
 
 	// If something goes wrong, this player is to blame
-	RollbackScopeActor rollback_scope(m_rollback,
+	RollbackScopeActor rollback_scope(m_rollback.get(),
 			std::string("player:")+player->getName());
 
 	// Check the target node for rollback data; leave others unnoticed

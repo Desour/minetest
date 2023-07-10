@@ -292,7 +292,7 @@ public:
 	virtual const NodeDefManager* getNodeDefManager();
 	virtual ICraftDefManager* getCraftDefManager();
 	virtual u16 allocateUnknownNodeId(const std::string &name);
-	IRollbackManager *getRollbackManager() { return m_rollback; }
+	IRollbackManager *getRollbackManager() { return m_rollback.get(); }
 	virtual EmergeManager *getEmergeManager() { return m_emerge.get(); }
 	virtual ModStorageDatabase *getModStorageDatabase() { return m_mod_storage_database; }
 
@@ -633,7 +633,7 @@ private:
 	BanManager *m_banmanager = nullptr;
 
 	// Rollback manager (behind m_env_mutex)
-	IRollbackManager *m_rollback = nullptr;
+	std::unique_ptr<IRollbackManager> m_rollback;
 
 	// Emerge manager
 	std::unique_ptr<EmergeManager> m_emerge;

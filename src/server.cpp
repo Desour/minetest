@@ -391,7 +391,7 @@ Server::~Server()
 	// Delete things in the reverse order of creation
 	m_emerge.reset();
 	m_env.reset();
-	delete m_rollback;
+	m_rollback.reset();
 	delete m_mod_storage_database;
 	delete m_banmanager;
 	delete m_itemdef;
@@ -517,7 +517,7 @@ void Server::init()
 
 	if (g_settings->getBool("enable_rollback_recording")) {
 		// Create rollback manager
-		m_rollback = new RollbackManager(m_path_world, this);
+		m_rollback = std::make_unique<RollbackManager>(m_path_world, this);
 	}
 
 	// Give environment reference to scripting api
@@ -3090,7 +3090,7 @@ std::wstring Server::handleChat(const std::string &name,
 	std::wstring wmessage, bool check_shout_priv, RemotePlayer *player)
 {
 	// If something goes wrong, this player is to blame
-	RollbackScopeActor rollback_scope(m_rollback,
+	RollbackScopeActor rollback_scope(m_rollback.get(),
 			std::string("player:") + name);
 
 	if (g_settings->getBool("strip_color_codes"))
