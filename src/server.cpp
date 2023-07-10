@@ -395,7 +395,7 @@ Server::~Server()
 	m_mod_storage_database.reset();
 	m_banmanager.reset();
 	m_itemdef.reset();
-	delete m_nodedef;
+	m_nodedef.reset();
 	delete m_craftdef;
 
 	// Deinitialize scripting
@@ -3857,7 +3857,7 @@ IItemDefManager *Server::getItemDefManager()
 
 const NodeDefManager *Server::getNodeDefManager()
 {
-	return m_nodedef;
+	return m_nodedef.get();
 }
 
 ICraftDefManager *Server::getCraftDefManager()
@@ -3877,7 +3877,7 @@ IWritableItemDefManager *Server::getWritableItemDefManager()
 
 NodeDefManager *Server::getWritableNodeDefManager()
 {
-	return m_nodedef;
+	return m_nodedef.get();
 }
 
 IWritableCraftDefManager *Server::getWritableCraftDefManager()

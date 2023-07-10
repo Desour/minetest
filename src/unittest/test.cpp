@@ -71,7 +71,7 @@ TestGameDef::TestGameDef() :
 void TestGameDef::defineSomeNodes()
 {
 	IWritableItemDefManager *idef = (IWritableItemDefManager *)m_itemdef.get();
-	NodeDefManager *ndef = (NodeDefManager *)m_nodedef;
+	NodeDefManager *ndef = (NodeDefManager *)m_nodedef.get();
 
 	ItemDefinition itemdef;
 	ContentFeatures f;

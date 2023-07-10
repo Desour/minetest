@@ -873,7 +873,7 @@ private:
 
 	// When created, these will be filled with data received from the server
 	std::unique_ptr<IWritableItemDefManager> itemdef_manager;
-	NodeDefManager *nodedef_manager = nullptr;
+	std::unique_ptr<NodeDefManager> nodedef_manager;
 
 	std::unique_ptr<ISoundManager> sound_manager;
 	SoundMaker *soundmaker = nullptr;
@@ -1027,7 +1027,7 @@ Game::~Game()
 	delete eventmgr;
 	delete texture_src;
 	delete shader_src;
-	delete nodedef_manager;
+	nodedef_manager.reset();
 	itemdef_manager.reset();
 	delete draw_control;
 
@@ -1329,7 +1329,7 @@ bool Game::initSound()
 		sound_manager = std::make_unique<DummySoundManager>();
 	}
 
-	soundmaker = new SoundMaker(sound_manager.get(), nodedef_manager);
+	soundmaker = new SoundMaker(sound_manager.get(), nodedef_manager.get());
 	if (!soundmaker)
 		return false;
 
@@ -1585,7 +1585,7 @@ bool Game::connectToServer(const GameStartData &start_data,
 		client = new Client(start_data.name.c_str(),
 				start_data.password,
 				*draw_control, texture_src, shader_src,
-				itemdef_manager.get(), nodedef_manager, sound_manager.get(), eventmgr,
+				itemdef_manager.get(), nodedef_manager.get(), sound_manager.get(), eventmgr,
 				m_rendering_engine, m_game_ui.get(),
 				start_data.allow_login_or_register);
 	} catch (const BaseException &e) {

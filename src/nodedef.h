@@ -846,7 +846,7 @@ private:
 	ContentLightingFlags m_content_lighting_flag_cache[CONTENT_MAX + 1L];
 };
 
-NodeDefManager *createNodeDefManager();
+std::unique_ptr<NodeDefManager> createNodeDefManager();
 
 // NodeResolver: Queue for node names which are then translated
 // to content_t after the NodeDefManager was initialized

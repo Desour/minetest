@@ -39,7 +39,7 @@ public:
 	}
 
 	NodeDefManager *node_mgr() noexcept {
-		return const_cast<NodeDefManager *>(m_nodedef);
+		return const_cast<NodeDefManager *>(m_nodedef.get());
 	}
 
 	content_t registerNode(ItemDefinition itemdef, ContentFeatures nodedef) {

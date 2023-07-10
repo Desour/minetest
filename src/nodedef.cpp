@@ -1601,9 +1601,9 @@ void NodeDefManager::addNameIdMapping(content_t i, const std::string &name)
 }
 
 
-NodeDefManager *createNodeDefManager()
+std::unique_ptr<NodeDefManager> createNodeDefManager()
 {
-	return new NodeDefManager();
+	return std::make_unique<NodeDefManager>();
 }
 
 

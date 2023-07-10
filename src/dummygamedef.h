@@ -41,13 +41,13 @@ public:
 	{
 		delete m_mod_storage_database;
 		delete m_craftdef;
-		delete m_nodedef;
+		m_nodedef.reset();
 		m_itemdef.reset();
 	}
 
 	IItemDefManager *getItemDefManager() override { return m_itemdef.get(); }
-	const NodeDefManager *getNodeDefManager() override { return m_nodedef; }
-	NodeDefManager* getWritableNodeDefManager() { return m_nodedef; }
+	const NodeDefManager *getNodeDefManager() override { return m_nodedef.get(); }
+	NodeDefManager* getWritableNodeDefManager() { return m_nodedef.get(); }
 	ICraftDefManager *getCraftDefManager() override { return m_craftdef; }
 
 	u16 allocateUnknownNodeId(const std::string &name) override
@@ -73,7 +73,7 @@ public:
 
 protected:
 	std::unique_ptr<IItemDefManager> m_itemdef;
-	NodeDefManager *m_nodedef = nullptr;
+	std::unique_ptr<NodeDefManager> m_nodedef;
 	ICraftDefManager *m_craftdef = nullptr;
 	ModStorageDatabase *m_mod_storage_database = nullptr;
 };

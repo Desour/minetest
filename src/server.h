@@ -648,7 +648,7 @@ private:
 	std::unique_ptr<IWritableItemDefManager> m_itemdef;
 
 	// Node definition manager
-	NodeDefManager *m_nodedef;
+	std::unique_ptr<NodeDefManager> m_nodedef;
 
 	// Craft definition manager
 	IWritableCraftDefManager *m_craftdef;
