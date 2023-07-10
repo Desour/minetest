@@ -597,7 +597,8 @@ public:
 		m_client(client)
 	{}
 
-	void setSky(Sky *sky) {
+	void setSky(Sky *sky)
+	{
 		m_sky = sky;
 		for (GameGlobalShaderConstantSetter *ggscs : created_nosky) {
 			ggscs->setSky(m_sky);
@@ -889,7 +890,7 @@ private:
 	std::unique_ptr<MapDrawControl> draw_control;
 	std::unique_ptr<Camera> camera;
 	irr_ptr<Clouds> clouds;
-	Sky *sky = nullptr;                         // Free using ->Drop()
+	irr_ptr<Sky> sky;
 	std::unique_ptr<Hud> hud;
 	Minimap *mapper = nullptr;
 
@@ -1240,8 +1241,7 @@ void Game::shutdown()
 
 	gui_chat_console.reset();
 
-	if (sky)
-		sky->drop();
+	sky.reset();
 
 	/* cleanup menus */
 	while (g_menumgr.menuCount() > 0) {
@@ -1457,8 +1457,8 @@ bool Game::createClient(const GameStartData &start_data)
 
 	/* Skybox
 	 */
-	sky = new Sky(-1, m_rendering_engine, texture_src.get(), shader_src.get());
-	scsf->setSky(sky);
+	sky = make_irr<Sky>(-1, m_rendering_engine, texture_src.get(), shader_src.get());
+	scsf->setSky(sky.get());
 
 	/* Pre-calculated values
 	 */
