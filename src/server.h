@@ -279,7 +279,7 @@ public:
 	void sendDetachedInventory(Inventory *inventory, const std::string &name, session_t peer_id);
 
 	// Envlock and conlock should be locked when using scriptapi
-	ServerScripting *getScriptIface(){ return m_script; }
+	ServerScripting *getScriptIface(){ return m_script.get(); }
 
 	// actions: time-reversed list
 	// Return value: success/failure
@@ -642,7 +642,7 @@ private:
 
 	// Scripting
 	// Envlock and conlock should be locked when using Lua
-	ServerScripting *m_script = nullptr;
+	std::unique_ptr<ServerScripting> m_script;
 
 	// Item definition manager
 	std::unique_ptr<IWritableItemDefManager> m_itemdef;

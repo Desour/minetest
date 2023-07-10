@@ -400,7 +400,7 @@ Server::~Server()
 
 	// Deinitialize scripting
 	infostream << "Server: Deinitializing scripting" << std::endl;
-	delete m_script;
+	m_script.reset();
 	delete m_startup_server_map; // if available
 	delete m_game_settings;
 
@@ -460,7 +460,7 @@ void Server::init()
 	// Initialize scripting
 	infostream << "Server: Initializing Lua" << std::endl;
 
-	m_script = new ServerScripting(this);
+	m_script = std::make_unique<ServerScripting>(this);
 
 	// Must be created before mod loading because we have some inventory creation
 	m_inventory_mgr = std::make_unique<ServerInventoryManager>();
@@ -469,7 +469,7 @@ void Server::init()
 	m_script->checkSetByBuiltin();
 
 	m_gamespec.checkAndLog();
-	m_modmgr->loadMods(m_script);
+	m_modmgr->loadMods(m_script.get());
 
 	m_script->saveGlobals();
 
@@ -502,7 +502,7 @@ void Server::init()
 
 	// Initialize Environment
 	m_startup_server_map = nullptr; // Ownership moved to ServerEnvironment
-	m_env = std::make_unique<ServerEnvironment>(servermap, m_script, this,
+	m_env = std::make_unique<ServerEnvironment>(servermap, m_script.get(), this,
 			m_path_world, m_metrics_backend.get());
 	m_env->init();
 
