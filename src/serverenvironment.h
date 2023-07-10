@@ -30,6 +30,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "server/activeobjectmgr.h"
 #include "util/numeric.h"
 #include "util/metricsbackend.h"
+#include <memory>
 
 class IGameDef;
 struct GameParams;
@@ -395,7 +396,7 @@ public:
 	static bool migratePlayersDatabase(const GameParams &game_params,
 			const Settings &cmd_args);
 
-	AuthDatabase *getAuthDatabase() { return m_auth_database; }
+	AuthDatabase *getAuthDatabase() { return m_auth_database.get(); }
 	static bool migrateAuthDatabase(const GameParams &game_params,
 			const Settings &cmd_args);
 private:
@@ -405,9 +406,9 @@ private:
 	 */
 	void loadDefaultMeta();
 
-	static PlayerDatabase *openPlayerDatabase(const std::string &name,
+	static std::unique_ptr<PlayerDatabase> openPlayerDatabase(const std::string &name,
 			const std::string &savedir, const Settings &conf);
-	static AuthDatabase *openAuthDatabase(const std::string &name,
+	static std::unique_ptr<AuthDatabase> openAuthDatabase(const std::string &name,
 			const std::string &savedir, const Settings &conf);
 	/*
 		Internal ActiveObject interface
@@ -507,8 +508,8 @@ private:
 	// peer_ids in here should be unique, except that there may be many 0s
 	std::vector<RemotePlayer*> m_players;
 
-	PlayerDatabase *m_player_database = nullptr;
-	AuthDatabase *m_auth_database = nullptr;
+	std::unique_ptr<PlayerDatabase> m_player_database;
+	std::unique_ptr<AuthDatabase> m_auth_database;
 
 	// Pseudo random generator for shuffling, etc.
 	std::mt19937 m_rgen;

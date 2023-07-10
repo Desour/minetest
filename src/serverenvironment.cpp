@@ -561,8 +561,8 @@ ServerEnvironment::~ServerEnvironment()
 		delete m_player;
 	}
 
-	delete m_player_database;
-	delete m_auth_database;
+	m_player_database.reset();
+	m_auth_database.reset();
 }
 
 Map & ServerEnvironment::getMap()
@@ -2286,31 +2286,31 @@ void ServerEnvironment::processActiveObjectRemove(ServerActiveObject *obj)
 	m_script->removeObjectReference(obj);
 }
 
-PlayerDatabase *ServerEnvironment::openPlayerDatabase(const std::string &name,
+std::unique_ptr<PlayerDatabase> ServerEnvironment::openPlayerDatabase(const std::string &name,
 		const std::string &savedir, const Settings &conf)
 {
 
 	if (name == "sqlite3")
-		return new PlayerDatabaseSQLite3(savedir);
+		return std::make_unique<PlayerDatabaseSQLite3>(savedir);
 
 	if (name == "dummy")
-		return new Database_Dummy();
+		return std::make_unique<Database_Dummy>();
 
 #if USE_POSTGRESQL
 	if (name == "postgresql") {
 		std::string connect_string;
 		conf.getNoEx("pgsql_player_connection", connect_string);
-		return new PlayerDatabasePostgreSQL(connect_string);
+		return std::make_unique<PlayerDatabasePostgreSQL>(connect_string);
 	}
 #endif
 
 #if USE_LEVELDB
 	if (name == "leveldb")
-		return new PlayerDatabaseLevelDB(savedir);
+		return std::make_unique<PlayerDatabaseLevelDB>(savedir);
 #endif
 
 	if (name == "files")
-		return new PlayerDatabaseFiles(savedir + DIR_DELIM + "players");
+		return std::make_unique<PlayerDatabaseFiles>(savedir + DIR_DELIM + "players");
 
 	throw BaseException(std::string("Database backend ") + name + " not supported.");
 }
@@ -2350,18 +2350,17 @@ bool ServerEnvironment::migratePlayersDatabase(const GameParams &game_params,
 	}
 
 	try {
-		PlayerDatabase *srcdb = ServerEnvironment::openPlayerDatabase(backend,
-			game_params.world_path, world_mt);
-		PlayerDatabase *dstdb = ServerEnvironment::openPlayerDatabase(migrate_to,
-			game_params.world_path, world_mt);
+		std::unique_ptr<PlayerDatabase> srcdb = ServerEnvironment::openPlayerDatabase(
+				backend, game_params.world_path, world_mt);
+		std::unique_ptr<PlayerDatabase> dstdb = ServerEnvironment::openPlayerDatabase(
+				migrate_to, game_params.world_path, world_mt);
 
 		std::vector<std::string> player_list;
 		srcdb->listPlayers(player_list);
-		for (std::vector<std::string>::const_iterator it = player_list.begin();
-			it != player_list.end(); ++it) {
-			actionstream << "Migrating player " << it->c_str() << std::endl;
-			RemotePlayer player(it->c_str(), NULL);
-			PlayerSAO playerSAO(NULL, &player, 15000, false);
+		for (const auto &player_name : player_list) {
+			actionstream << "Migrating player " << player_name << std::endl;
+			RemotePlayer player(player_name.c_str(), nullptr);
+			PlayerSAO playerSAO(nullptr, &player, 15000, false);
 
 			srcdb->loadPlayer(&player, &playerSAO);
 
@@ -2373,8 +2372,8 @@ bool ServerEnvironment::migratePlayersDatabase(const GameParams &game_params,
 			// For files source, move player files to backup dir
 			if (backend == "files") {
 				fs::Rename(
-					game_params.world_path + DIR_DELIM + "players" + DIR_DELIM + (*it),
-					players_backup_path + DIR_DELIM + (*it));
+					game_params.world_path + DIR_DELIM + "players" + DIR_DELIM + player_name,
+					players_backup_path + DIR_DELIM + player_name);
 			}
 		}
 
@@ -2392,9 +2391,6 @@ bool ServerEnvironment::migratePlayersDatabase(const GameParams &game_params,
 				+ "players");
 		}
 
-		delete srcdb;
-		delete dstdb;
-
 	} catch (BaseException &e) {
 		errorstream << "An error occurred during migration: " << e.what() << std::endl;
 		return false;
@@ -2402,26 +2398,26 @@ bool ServerEnvironment::migratePlayersDatabase(const GameParams &game_params,
 	return true;
 }
 
-AuthDatabase *ServerEnvironment::openAuthDatabase(
+std::unique_ptr<AuthDatabase> ServerEnvironment::openAuthDatabase(
 		const std::string &name, const std::string &savedir, const Settings &conf)
 {
 	if (name == "sqlite3")
-		return new AuthDatabaseSQLite3(savedir);
+		return std::make_unique<AuthDatabaseSQLite3>(savedir);
 
 #if USE_POSTGRESQL
 	if (name == "postgresql") {
 		std::string connect_string;
 		conf.getNoEx("pgsql_auth_connection", connect_string);
-		return new AuthDatabasePostgreSQL(connect_string);
+		return std::make_unique<AuthDatabasePostgreSQL>(connect_string);
 	}
 #endif
 
 	if (name == "files")
-		return new AuthDatabaseFiles(savedir);
+		return std::make_unique<AuthDatabaseFiles>(savedir);
 
 #if USE_LEVELDB
 	if (name == "leveldb")
-		return new AuthDatabaseLevelDB(savedir);
+		return std::make_unique<AuthDatabaseLevelDB>(savedir);
 #endif
 
 	throw BaseException(std::string("Database backend ") + name + " not supported.");
