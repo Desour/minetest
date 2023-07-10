@@ -104,21 +104,21 @@ void InventoryLocation::deSerialize(const std::string &s)
 	InventoryAction
 */
 
-InventoryAction *InventoryAction::deSerialize(std::istream &is)
+std::unique_ptr<InventoryAction> InventoryAction::deSerialize(std::istream &is)
 {
 	std::string type;
 	std::getline(is, type, ' ');
 
-	InventoryAction *a = nullptr;
+	std::unique_ptr<InventoryAction> a;
 
 	if (type == "Move") {
-		a = new IMoveAction(is, false);
+		a = std::make_unique<IMoveAction>(is, false);
 	} else if (type == "MoveSomewhere") {
-		a = new IMoveAction(is, true);
+		a = std::make_unique<IMoveAction>(is, true);
 	} else if (type == "Drop") {
-		a = new IDropAction(is);
+		a = std::make_unique<IDropAction>(is);
 	} else if (type == "Craft") {
-		a = new ICraftAction(is);
+		a = std::make_unique<ICraftAction>(is);
 	}
 
 	return a;

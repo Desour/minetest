@@ -107,9 +107,8 @@ static ItemStack parse_itemstack(const char *s)
 static void apply_action(const char *s, InventoryManager *inv, ServerActiveObject *obj, IGameDef *gamedef)
 {
 	std::istringstream str(s);
-	InventoryAction *action = InventoryAction::deSerialize(str);
+	std::unique_ptr<InventoryAction> action = InventoryAction::deSerialize(str);
 	action->apply(inv, obj, gamedef);
-	delete action;
 }
 
 void TestMoveAction::testMove(ServerActiveObject *obj, IGameDef *gamedef)

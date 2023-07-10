@@ -605,7 +605,7 @@ void Server::handleCommand_InventoryAction(NetworkPacket* pkt)
 		<< std::endl;
 	std::istringstream is(datastring, std::ios_base::binary);
 	// Create an action
-	std::unique_ptr<InventoryAction> a(InventoryAction::deSerialize(is));
+	std::unique_ptr<InventoryAction> a = InventoryAction::deSerialize(is);
 	if (!a) {
 		infostream << "TOSERVER_INVENTORY_ACTION: "
 				<< "InventoryAction::deSerialize() returned NULL"

@@ -130,7 +130,8 @@ enum class IAction : u16 {
 
 struct InventoryAction
 {
-	static InventoryAction *deSerialize(std::istream &is);
+	[[nodiscard]]
+	static std::unique_ptr<InventoryAction> deSerialize(std::istream &is);
 
 	virtual IAction getType() const = 0;
 	virtual void serialize(std::ostream &os) const = 0;
