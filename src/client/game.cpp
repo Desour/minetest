@@ -881,7 +881,7 @@ private:
 	ChatBackend *chat_backend = nullptr;
 	LogOutputBuffer m_chat_log_buf;
 
-	EventManager *eventmgr = nullptr;
+	std::unique_ptr<EventManager> eventmgr;
 	std::unique_ptr<QuicktuneShortcutter> quicktune;
 
 	std::unique_ptr<GameUI> m_game_ui;
@@ -1024,7 +1024,7 @@ Game::~Game()
 	hud.reset();
 	camera.reset();
 	quicktune.reset();
-	delete eventmgr;
+	eventmgr.reset();
 	delete texture_src;
 	delete shader_src;
 	nodedef_manager.reset();
@@ -1291,7 +1291,7 @@ bool Game::init(
 	itemdef_manager = createItemDefManager();
 	nodedef_manager = createNodeDefManager();
 
-	eventmgr = new EventManager();
+	eventmgr = std::make_unique<EventManager>();
 	quicktune = std::make_unique<QuicktuneShortcutter>();
 
 	if (!(texture_src && shader_src && itemdef_manager && nodedef_manager
@@ -1333,7 +1333,7 @@ bool Game::initSound()
 	if (!soundmaker)
 		return false;
 
-	soundmaker->registerReceiver(eventmgr);
+	soundmaker->registerReceiver(eventmgr.get());
 
 	return true;
 }
@@ -1585,7 +1585,7 @@ bool Game::connectToServer(const GameStartData &start_data,
 		client = std::make_unique<Client>(start_data.name.c_str(),
 				start_data.password,
 				*draw_control, texture_src, shader_src,
-				itemdef_manager.get(), nodedef_manager.get(), sound_manager.get(), eventmgr,
+				itemdef_manager.get(), nodedef_manager.get(), sound_manager.get(), eventmgr.get(),
 				m_rendering_engine, m_game_ui.get(),
 				start_data.allow_login_or_register);
 	} catch (const BaseException &e) {
