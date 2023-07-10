@@ -820,7 +820,7 @@ void Server::AsyncRunStep(float dtime, bool initial_step)
 
 		// Key = object id
 		// Value = data sent by object
-		std::unordered_map<u16, std::vector<ActiveObjectMessage>*> buffered_messages;
+		std::unordered_map<u16, std::vector<ActiveObjectMessage>> buffered_messages;
 
 		// Get active object messages from environment
 		ActiveObjectMessage aom(0);
@@ -833,15 +833,9 @@ void Server::AsyncRunStep(float dtime, bool initial_step)
 			else
 				count_unreliable++;
 
-			std::vector<ActiveObjectMessage>* message_list = nullptr;
-			auto n = buffered_messages.find(aom.id);
-			if (n == buffered_messages.end()) {
-				message_list = new std::vector<ActiveObjectMessage>;
-				buffered_messages[aom.id] = message_list;
-			} else {
-				message_list = n->second;
-			}
-			message_list->push_back(std::move(aom));
+			auto [msg_list_it, _did_insert_new] =
+					buffered_messages.emplace(aom.id, std::vector<ActiveObjectMessage>{});
+			msg_list_it->second.push_back(std::move(aom));
 		}
 
 		m_aom_buffer_counter[0]->increment(count_reliable);
@@ -865,10 +859,8 @@ void Server::AsyncRunStep(float dtime, bool initial_step)
 					if (!sao || client->m_known_objects.find(id) == client->m_known_objects.end())
 						continue;
 
-					// Get message list of object
-					std::vector<ActiveObjectMessage>* list = buffered_message.second;
-					// Go through every message
-					for (const ActiveObjectMessage &aom : *list) {
+					// Go through every message of object
+					for (const ActiveObjectMessage &aom : buffered_message.second) {
 						// Send position updates to players who do not see the attachment
 						if (aom.datastring[0] == AO_CMD_UPDATE_POSITION) {
 							if (sao->getId() == player->getId())
@@ -904,11 +896,6 @@ void Server::AsyncRunStep(float dtime, bool initial_step)
 					SendActiveObjectMessages(client->peer_id, unreliable_data, false);
 				}
 			}
-		}
-
-		// Clear buffered_messages
-		for (auto &buffered_message : buffered_messages) {
-			delete buffered_message.second;
 		}
 	}
 
