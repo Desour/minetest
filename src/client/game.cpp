@@ -876,7 +876,7 @@ private:
 	std::unique_ptr<NodeDefManager> nodedef_manager;
 
 	std::unique_ptr<ISoundManager> sound_manager;
-	SoundMaker *soundmaker = nullptr;
+	std::unique_ptr<SoundMaker> soundmaker;
 
 	ChatBackend *chat_backend = nullptr;
 	LogOutputBuffer m_chat_log_buf;
@@ -1016,7 +1016,7 @@ Game::Game() :
 Game::~Game()
 {
 	client.reset();
-	delete soundmaker;
+	soundmaker.reset();
 	sound_manager.reset();
 
 	delete server; // deleted first to stop all server threads
@@ -1329,7 +1329,7 @@ bool Game::initSound()
 		sound_manager = std::make_unique<DummySoundManager>();
 	}
 
-	soundmaker = new SoundMaker(sound_manager.get(), nodedef_manager.get());
+	soundmaker = std::make_unique<SoundMaker>(sound_manager.get(), nodedef_manager.get());
 	if (!soundmaker)
 		return false;
 
