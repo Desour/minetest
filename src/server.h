@@ -663,7 +663,7 @@ private:
 	std::atomic<StepSettings> m_step_settings{{0.1f, false}};
 
 	// The server mainly operates in this thread
-	ServerThread *m_thread = nullptr;
+	std::unique_ptr<ServerThread> m_thread;
 
 	/*
 	 	Client interface

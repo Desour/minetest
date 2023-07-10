@@ -262,7 +262,7 @@ Server::Server(
 	m_itemdef(createItemDefManager()),
 	m_nodedef(createNodeDefManager()),
 	m_craftdef(createCraftDefManager()),
-	m_thread(new ServerThread(this)),
+	m_thread(std::make_unique<ServerThread>(this)),
 	m_clients(m_con),
 	m_admin_chat(iface),
 	m_shutdown_errmsg(shutdown_errmsg),
@@ -374,7 +374,7 @@ Server::~Server()
 	// Stop threads
 	if (m_thread) {
 		stop();
-		delete m_thread;
+		m_thread.reset();
 	}
 
 	// Write any changes before deletion.
