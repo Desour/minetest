@@ -399,7 +399,8 @@ public:
 	/*
 		Database functions
 	*/
-	static MapDatabase *createDatabase(const std::string &name, const std::string &savedir, Settings &conf);
+	static std::unique_ptr<MapDatabase> createDatabase(const std::string &name,
+			const std::string &savedir, Settings &conf);
 
 	// Call these before and after saving of blocks
 	void beginSave() override;
@@ -485,8 +486,8 @@ private:
 		This is reset to false when written on disk.
 	*/
 	bool m_map_metadata_changed = true;
-	MapDatabase *dbase = nullptr;
-	MapDatabase *dbase_ro = nullptr;
+	std::unique_ptr<MapDatabase> dbase;
+	std::unique_ptr<MapDatabase> dbase_ro;
 
 	// Map metrics
 	MetricGaugePtr m_loaded_blocks_gauge;

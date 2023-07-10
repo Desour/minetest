@@ -1198,8 +1198,10 @@ static bool migrate_map_database(const GameParams &game_params, const Settings &
 		return false;
 	}
 
-	MapDatabase *old_db = ServerMap::createDatabase(backend, game_params.world_path, world_mt),
-		*new_db = ServerMap::createDatabase(migrate_to, game_params.world_path, world_mt);
+	std::unique_ptr<MapDatabase> old_db = ServerMap::createDatabase(backend,
+			game_params.world_path, world_mt);
+	std::unique_ptr<MapDatabase> new_db = ServerMap::createDatabase(migrate_to,
+			game_params.world_path, world_mt);
 
 	u32 count = 0;
 	time_t last_update_time = 0;
@@ -1228,8 +1230,8 @@ static bool migrate_map_database(const GameParams &game_params, const Settings &
 	}
 	std::cerr << std::endl;
 	new_db->endSave();
-	delete old_db;
-	delete new_db;
+	old_db.reset();
+	new_db.reset();
 
 	actionstream << "Successfully migrated " << count << " blocks" << std::endl;
 	world_mt.set("backend", migrate_to);
@@ -1252,7 +1254,8 @@ static bool recompress_map_database(const GameParams &game_params, const Setting
 	}
 	const std::string &backend = world_mt.get("backend");
 	Server server(game_params.world_path, game_params.game_spec, false, Address(), false);
-	MapDatabase *db = ServerMap::createDatabase(backend, game_params.world_path, world_mt);
+	std::unique_ptr<MapDatabase> db = ServerMap::createDatabase(backend,
+			game_params.world_path, world_mt);
 
 	u32 count = 0;
 	u64 last_update_time = 0;

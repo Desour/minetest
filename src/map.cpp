@@ -1335,8 +1335,8 @@ ServerMap::~ServerMap()
 	/*
 		Close database if it was opened
 	*/
-	delete dbase;
-	delete dbase_ro;
+	dbase.reset();
+	dbase_ro.reset();
 
 	deleteDetachedBlocks();
 }
@@ -1740,28 +1740,28 @@ void ServerMap::listAllLoadedBlocks(std::vector<v3s16> &dst)
 	}
 }
 
-MapDatabase *ServerMap::createDatabase(
+std::unique_ptr<MapDatabase> ServerMap::createDatabase(
 	const std::string &name,
 	const std::string &savedir,
 	Settings &conf)
 {
 	if (name == "sqlite3")
-		return new MapDatabaseSQLite3(savedir);
+		return std::make_unique<MapDatabaseSQLite3>(savedir);
 	if (name == "dummy")
-		return new Database_Dummy();
+		return std::make_unique<Database_Dummy>();
 	#if USE_LEVELDB
 	if (name == "leveldb")
-		return new Database_LevelDB(savedir);
+		return std::make_unique<Database_LevelDB>(savedir);
 	#endif
 	#if USE_REDIS
 	if (name == "redis")
-		return new Database_Redis(conf);
+		return std::make_unique<Database_Redis>(conf);
 	#endif
 	#if USE_POSTGRESQL
 	if (name == "postgresql") {
 		std::string connect_string;
 		conf.getNoEx("pgsql_connection", connect_string);
-		return new MapDatabasePostgreSQL(connect_string);
+		return std::make_unique<MapDatabasePostgreSQL>(connect_string);
 	}
 	#endif
 
@@ -1780,7 +1780,7 @@ void ServerMap::endSave()
 
 bool ServerMap::saveBlock(MapBlock *block)
 {
-	return saveBlock(block, dbase, m_map_compression_level);
+	return saveBlock(block, dbase.get(), m_map_compression_level);
 }
 
 bool ServerMap::saveBlock(MapBlock *block, MapDatabase *db, int compression_level)
