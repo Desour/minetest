@@ -131,6 +131,8 @@ with this program; ifnot, write to the Free Software Foundation, Inc.,
  *
  */
 
+struct SoundExtensions;
+
 // constants
 
 // in seconds
@@ -202,11 +204,31 @@ struct OggVorbisBufferSource {
 struct OggFileDecodeInfo {
 	std::string name_for_logging;
 	bool is_stereo;
-	ALenum format; // AL_FORMAT_MONO16 or AL_FORMAT_STEREO16
-	size_t bytes_per_sample;
 	ALsizei freq;
 	ALuint length_samples = 0;
 	f32 length_seconds = 0.0f;
+#ifdef AL_EXT_float32
+	bool use_float32;
+#endif
+
+	constexpr ALenum getFormat() const
+	{
+#ifdef AL_EXT_float32
+		if (use_float32)
+			return is_stereo ? AL_FORMAT_STEREO_FLOAT32 : AL_FORMAT_MONO_FLOAT32;
+#endif
+		return is_stereo ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
+	}
+
+	constexpr size_t getBytesPerSample() const
+	{
+		size_t per_channel = 2; // s16
+#ifdef AL_EXT_float32
+		if (use_float32)
+			per_channel = 4; // f32
+#endif
+		return is_stereo ? per_channel * 2 : per_channel;
+	}
 };
 
 /**
@@ -228,7 +250,8 @@ struct RAIIOggFile {
 
 	OggVorbis_File *get() { return &m_file; }
 
-	std::optional<OggFileDecodeInfo> getDecodeInfo(const std::string &filename_for_logging);
+	std::optional<OggFileDecodeInfo> getDecodeInfo(const SoundExtensions &exts,
+			const std::string &filename_for_logging);
 
 	/**
 	 * Main function for loading ogg vorbis sounds.
@@ -244,6 +267,14 @@ struct RAIIOggFile {
 			ALuint pcm_end);
 };
 
+/**
+ * Struct for OpenAL extension stuff.
+ */
+struct SoundExtensions {
+#ifdef AL_EXT_float32
+	bool float32;
+#endif
+};
 
 /**
  * Class for the openal device and context
@@ -272,7 +303,8 @@ public:
 	unique_ptr_alcdevice  m_device;
 	unique_ptr_alccontext m_context;
 
-public:
+	SoundExtensions m_exts;
+
 	bool init();
 
 	~SoundManagerSingleton();
@@ -316,7 +348,7 @@ struct ISoundDataOpen
 	virtual std::tuple<ALuint, ALuint, ALuint> getOrLoadBufferAt(ALuint offset) = 0;
 
 	static std::shared_ptr<ISoundDataOpen> fromOggFile(std::unique_ptr<RAIIOggFile> oggfile,
-		const std::string &filename_for_logging);
+			const SoundExtensions &exts, const std::string &filename_for_logging);
 };
 
 /**
@@ -328,7 +360,8 @@ struct ISoundDataUnopen
 
 	// Note: The ISoundDataUnopen is moved (see &&). It is not meant to be kept
 	// after opening.
-	virtual std::shared_ptr<ISoundDataOpen> open(const std::string &sound_name) && = 0;
+	virtual std::shared_ptr<ISoundDataOpen> open(const SoundExtensions &exts,
+			const std::string &sound_name) && = 0;
 };
 
 /**
@@ -340,7 +373,8 @@ struct SoundDataUnopenBuffer final : ISoundDataUnopen
 
 	explicit SoundDataUnopenBuffer(std::string &&buffer) : m_buffer(std::move(buffer)) {}
 
-	std::shared_ptr<ISoundDataOpen> open(const std::string &sound_name) && override;
+	std::shared_ptr<ISoundDataOpen> open(const SoundExtensions &exts,
+			const std::string &sound_name) && override;
 };
 
 /**
@@ -352,7 +386,8 @@ struct SoundDataUnopenFile final : ISoundDataUnopen
 
 	explicit SoundDataUnopenFile(const std::string &path) : m_path(path) {}
 
-	std::shared_ptr<ISoundDataOpen> open(const std::string &sound_name) && override;
+	std::shared_ptr<ISoundDataOpen> open(const SoundExtensions &exts,
+			const std::string &sound_name) && override;
 };
 
 /**
@@ -514,8 +549,7 @@ class OpenALSoundManager final : public ISoundManager
 private:
 	std::unique_ptr<SoundFallbackPathProvider> m_fallback_path_provider;
 
-	ALCdevice *m_device;
-	ALCcontext *m_context;
+	SoundManagerSingleton *m_smg;
 
 	// time in seconds until which removeDeadSounds will be called again
 	f32 m_time_until_dead_removal = REMOVE_DEAD_SOUNDS_INTERVAL;

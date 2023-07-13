@@ -170,7 +170,8 @@ const ov_callbacks OggVorbisBufferSource::s_ov_callbacks = {
  * RAIIOggFile struct
  */
 
-std::optional<OggFileDecodeInfo> RAIIOggFile::getDecodeInfo(const std::string &filename_for_logging)
+std::optional<OggFileDecodeInfo> RAIIOggFile::getDecodeInfo(const SoundExtensions &exts,
+		const std::string &filename_for_logging)
 {
 	OggFileDecodeInfo ret;
 
@@ -182,12 +183,8 @@ std::optional<OggFileDecodeInfo> RAIIOggFile::getDecodeInfo(const std::string &f
 
 	if (pInfo->channels == 1) {
 		ret.is_stereo = false;
-		ret.format = AL_FORMAT_MONO16;
-		ret.bytes_per_sample = 2;
 	} else if (pInfo->channels == 2) {
 		ret.is_stereo = true;
-		ret.format = AL_FORMAT_STEREO16;
-		ret.bytes_per_sample = 4;
 	} else {
 		warningstream << "Audio: Can't decode. Sound is neither mono nor stereo: "
 				<< ret.name_for_logging << std::endl;
@@ -199,16 +196,16 @@ std::optional<OggFileDecodeInfo> RAIIOggFile::getDecodeInfo(const std::string &f
 	ret.length_samples = static_cast<ALuint>(ov_pcm_total(&m_file, -1));
 	ret.length_seconds = static_cast<f32>(ov_time_total(&m_file, -1));
 
+#ifdef AL_EXT_float32
+	ret.use_float32 = exts.float32;
+#endif
+
 	return ret;
 }
 
 RAIIALSoundBuffer RAIIOggFile::loadBuffer(const OggFileDecodeInfo &decode_info,
 		ALuint pcm_start, ALuint pcm_end)
 {
-	constexpr int endian = 0; // 0 for Little-Endian, 1 for Big-Endian
-	constexpr int word_size = 2; // we use s16 samples
-	constexpr int word_signed = 1; // ^
-
 	// seek
 	if (ov_pcm_tell(&m_file) != pcm_start) {
 		if (ov_pcm_seek(&m_file, pcm_start) != 0) {
@@ -218,32 +215,84 @@ RAIIALSoundBuffer RAIIOggFile::loadBuffer(const OggFileDecodeInfo &decode_info,
 		}
 	}
 
-	const size_t size = static_cast<size_t>(pcm_end - pcm_start)
-			* decode_info.bytes_per_sample;
+	const size_t num_samples = pcm_end - pcm_start;
+	const size_t size = static_cast<size_t>(num_samples)
+			* decode_info.getBytesPerSample();
 
-	std::unique_ptr<char[]> snd_buffer(new char[size]);
+	RAIIALSoundBuffer snd_buffer_id = RAIIALSoundBuffer::generate();
 
-	// read size bytes
-	size_t read_count = 0;
-	int bitStream;
-	while (read_count < size) {
-		// Read up to a buffer's worth of decoded sound data
-		long num_bytes = ov_read(&m_file, &snd_buffer[read_count], size - read_count,
-				endian, word_size, word_signed, &bitStream);
+#ifdef AL_EXT_float32
+	if (decode_info.use_float32) {
+		std::unique_ptr<f32[]> snd_buffer(
+				new f32[decode_info.is_stereo ? num_samples * 2 : num_samples]);
 
-		if (num_bytes <= 0) {
-			warningstream << "Audio: Error decoding "
-					<< decode_info.name_for_logging << std::endl;
-			return RAIIALSoundBuffer();
+		// read num_samples samples
+		size_t read_count = 0;
+		int bitstream = 0;
+		f32 **pcm_channels = nullptr;
+
+		while (read_count < num_samples) {
+			long samples_read = ov_read_float(&m_file, &pcm_channels,
+					num_samples - read_count, &bitstream);
+
+			if (samples_read <= 0) {
+				warningstream << "Audio: Error decoding "
+						<< decode_info.name_for_logging << std::endl;
+				return RAIIALSoundBuffer();
+			}
+
+			if (decode_info.is_stereo) {
+				f32 *out_start = snd_buffer.get() + read_count * 2;
+				f32 *left = pcm_channels[0];
+				f32 *right = pcm_channels[1];
+				for (size_t i = 0; i < (size_t)samples_read; ++i) {
+					out_start[i * 2] = left[i];
+					out_start[i * 2 + 1] = right[i];
+				}
+			} else {
+				memcpy(snd_buffer.get() + read_count, pcm_channels[0],
+						samples_read * sizeof(f32));
+			}
+
+			read_count += samples_read;
 		}
 
-		read_count += num_bytes;
-	}
+		// load buffer to openal
+		// Note: AL_EXT_float32 specifies that the f32s are IEEE floats
+		alBufferData(snd_buffer_id.get(), decode_info.getFormat(), &(snd_buffer[0]),
+				size, decode_info.freq);
+	} else
+#endif
+	{
+		errorstream << "nofloat\n";
+		// FIXME: alBufferData requires native order
+		constexpr int endian = 0; // 0 for Little-Endian, 1 for Big-Endian
+		constexpr int word_size = 2; // we use s16 samples
+		constexpr int word_signed = 1; // ^
 
-	// load buffer to openal
-	RAIIALSoundBuffer snd_buffer_id = RAIIALSoundBuffer::generate();
-	alBufferData(snd_buffer_id.get(), decode_info.format, &(snd_buffer[0]), size,
-			decode_info.freq);
+		std::unique_ptr<char[]> snd_buffer(new char[size]);
+
+		// read size bytes
+		size_t read_count = 0;
+		int bitstream = 0;
+
+		while (read_count < size) {
+			long bytes_read = ov_read(&m_file, &snd_buffer[read_count], size - read_count,
+					endian, word_size, word_signed, &bitstream);
+
+			if (bytes_read <= 0) {
+				warningstream << "Audio: Error decoding "
+						<< decode_info.name_for_logging << std::endl;
+				return RAIIALSoundBuffer();
+			}
+
+			read_count += bytes_read;
+		}
+
+		// load buffer to openal
+		alBufferData(snd_buffer_id.get(), decode_info.getFormat(), &(snd_buffer[0]),
+				size, decode_info.freq);
+	}
 
 	ALenum error = alGetError();
 	if (error != AL_NO_ERROR) {
@@ -275,6 +324,10 @@ bool SoundManagerSingleton::init()
 		errorstream << "Audio: Global Initialization: Failed to make current context" << std::endl;
 		return false;
 	}
+
+#ifdef AL_EXT_float32
+	m_exts.float32 = alIsExtensionPresent("AL_EXT_FLOAT32");
+#endif
 
 	alDistanceModel(AL_INVERSE_DISTANCE_CLAMPED);
 
@@ -308,10 +361,10 @@ SoundManagerSingleton::~SoundManagerSingleton()
  */
 
 std::shared_ptr<ISoundDataOpen> ISoundDataOpen::fromOggFile(std::unique_ptr<RAIIOggFile> oggfile,
-		const std::string &filename_for_logging)
+		const SoundExtensions &exts, const std::string &filename_for_logging)
 {
 	// Get some information about the OGG file
-	std::optional<OggFileDecodeInfo> decode_info = oggfile->getDecodeInfo(filename_for_logging);
+	std::optional<OggFileDecodeInfo> decode_info = oggfile->getDecodeInfo(exts, filename_for_logging);
 	if (!decode_info.has_value()) {
 		warningstream << "Audio: Error decoding "
 				<< filename_for_logging << std::endl;
@@ -330,7 +383,8 @@ std::shared_ptr<ISoundDataOpen> ISoundDataOpen::fromOggFile(std::unique_ptr<RAII
  * SoundDataUnopenBuffer struct
  */
 
-std::shared_ptr<ISoundDataOpen> SoundDataUnopenBuffer::open(const std::string &sound_name) &&
+std::shared_ptr<ISoundDataOpen> SoundDataUnopenBuffer::open(const SoundExtensions &exts,
+		const std::string &sound_name) &&
 {
 	// load from m_buffer
 
@@ -347,14 +401,15 @@ std::shared_ptr<ISoundDataOpen> SoundDataUnopenBuffer::open(const std::string &s
 		return nullptr;
 	}
 
-	return ISoundDataOpen::fromOggFile(std::move(oggfile), sound_name);
+	return ISoundDataOpen::fromOggFile(std::move(oggfile), exts, sound_name);
 }
 
 /*
  * SoundDataUnopenFile struct
  */
 
-std::shared_ptr<ISoundDataOpen> SoundDataUnopenFile::open(const std::string &sound_name) &&
+std::shared_ptr<ISoundDataOpen> SoundDataUnopenFile::open(const SoundExtensions &exts,
+		const std::string &sound_name) &&
 {
 	// load from file at m_path
 
@@ -367,7 +422,7 @@ std::shared_ptr<ISoundDataOpen> SoundDataUnopenFile::open(const std::string &sou
 	}
 	oggfile->m_needs_clear = true;
 
-	return ISoundDataOpen::fromOggFile(std::move(oggfile), sound_name);
+	return ISoundDataOpen::fromOggFile(std::move(oggfile), exts, sound_name);
 }
 
 /*
@@ -793,7 +848,8 @@ std::shared_ptr<ISoundDataOpen> OpenALSoundManager::openSingleSound(const std::s
 	m_sound_datas_unopen.erase(it_unopen);
 
 	// open
-	std::shared_ptr<ISoundDataOpen> opn_snd = std::move(*unopn_snd).open(sound_name);
+	std::shared_ptr<ISoundDataOpen> opn_snd = std::move(*unopn_snd)
+			.open(m_smg->m_exts, sound_name);
 	if (!opn_snd)
 		return nullptr;
 	m_sound_datas_open.emplace(sound_name, opn_snd);
@@ -964,8 +1020,7 @@ int OpenALSoundManager::removeDeadSounds()
 OpenALSoundManager::OpenALSoundManager(SoundManagerSingleton *smg,
 		std::unique_ptr<SoundFallbackPathProvider> fallback_path_provider) :
 	m_fallback_path_provider(std::move(fallback_path_provider)),
-	m_device(smg->m_device.get()),
-	m_context(smg->m_context.get())
+	m_smg(smg)
 {
 	SANITY_CHECK(!!m_fallback_path_provider);
 
