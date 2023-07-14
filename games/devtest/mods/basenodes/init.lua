@@ -147,6 +147,7 @@ minetest.register_node("basenodes:water_source", {
 	liquid_alternative_source = "basenodes:water_source",
 	liquid_viscosity = WATER_VISC,
 	post_effect_color = {a = 64, r = 100, g = 100, b = 200},
+	post_effect_color_shaded = true,
 	groups = {water = 3, liquid = 3},
 })
 
