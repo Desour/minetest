@@ -108,7 +108,7 @@ static_assert(
 //// Mapgen
 ////
 
-Mapgen::Mapgen(int mapgenid, MapgenParams *params, EmergeParams *emerge) :
+Mapgen::Mapgen(int mapgenid, MapgenParams *params, std::unique_ptr<EmergeParams> emerge) :
 	gennotify(emerge->createNotifier())
 {
 	id           = mapgenid;
@@ -132,13 +132,8 @@ Mapgen::Mapgen(int mapgenid, MapgenParams *params, EmergeParams *emerge) :
 	*/
 	seed = (s32)params->seed;
 
-	m_emerge  = emerge;
-	ndef      = emerge->ndef;
-}
-
-Mapgen::~Mapgen()
-{
-	delete m_emerge; // this is our responsibility
+	m_emerge  = std::move(emerge);
+	ndef      = m_emerge->ndef;
 }
 
 
@@ -164,25 +159,25 @@ const char *Mapgen::getMapgenName(MapgenType mgtype)
 
 
 Mapgen *Mapgen::createMapgen(MapgenType mgtype, MapgenParams *params,
-	EmergeParams *emerge)
+	std::unique_ptr<EmergeParams> emerge)
 {
 	switch (mgtype) {
 	case MAPGEN_CARPATHIAN:
-		return new MapgenCarpathian((MapgenCarpathianParams *)params, emerge);
+		return new MapgenCarpathian((MapgenCarpathianParams *)params, std::move(emerge));
 	case MAPGEN_FLAT:
-		return new MapgenFlat((MapgenFlatParams *)params, emerge);
+		return new MapgenFlat((MapgenFlatParams *)params, std::move(emerge));
 	case MAPGEN_FRACTAL:
-		return new MapgenFractal((MapgenFractalParams *)params, emerge);
+		return new MapgenFractal((MapgenFractalParams *)params, std::move(emerge));
 	case MAPGEN_SINGLENODE:
-		return new MapgenSinglenode((MapgenSinglenodeParams *)params, emerge);
+		return new MapgenSinglenode((MapgenSinglenodeParams *)params, std::move(emerge));
 	case MAPGEN_V5:
-		return new MapgenV5((MapgenV5Params *)params, emerge);
+		return new MapgenV5((MapgenV5Params *)params, std::move(emerge));
 	case MAPGEN_V6:
-		return new MapgenV6((MapgenV6Params *)params, emerge);
+		return new MapgenV6((MapgenV6Params *)params, std::move(emerge));
 	case MAPGEN_V7:
-		return new MapgenV7((MapgenV7Params *)params, emerge);
+		return new MapgenV7((MapgenV7Params *)params, std::move(emerge));
 	case MAPGEN_VALLEYS:
-		return new MapgenValleys((MapgenValleysParams *)params, emerge);
+		return new MapgenValleys((MapgenValleysParams *)params, std::move(emerge));
 	default:
 		return nullptr;
 	}
@@ -579,10 +574,10 @@ void Mapgen::spreadLight(const v3s16 &nmin, const v3s16 &nmax)
 //// MapgenBasic
 ////
 
-MapgenBasic::MapgenBasic(int mapgenid, MapgenParams *params, EmergeParams *emerge)
-	: Mapgen(mapgenid, params, emerge)
+MapgenBasic::MapgenBasic(int mapgenid, MapgenParams *params, std::unique_ptr<EmergeParams> emerge)
+	: Mapgen(mapgenid, params, std::move(emerge))
 {
-	this->m_bmgr   = emerge->biomemgr;
+	this->m_bmgr   = m_emerge->biomemgr;
 
 	//// Here, 'stride' refers to the number of elements needed to skip to index
 	//// an adjacent element for that coordinate in noise/height/biome maps
@@ -607,7 +602,7 @@ MapgenBasic::MapgenBasic(int mapgenid, MapgenParams *params, EmergeParams *emerg
 	this->heightmap = new s16[csize.X * csize.Z];
 
 	//// Initialize biome generator
-	biomegen = emerge->biomegen;
+	biomegen = m_emerge->biomegen;
 	biomegen->assertChunkSize(csize);
 	biomemap = biomegen->biomemap;
 

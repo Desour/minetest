@@ -177,7 +177,7 @@ public:
 	MMVManip *vm = nullptr;
 	// Note that this contains various things the mapgens *can* use, so biomegen
 	// might be NULL while m_emerge->biomegen is not.
-	EmergeParams *m_emerge = nullptr;
+	std::unique_ptr<EmergeParams> m_emerge;
 	const NodeDefManager *ndef = nullptr;
 
 	u32 blockseed;
@@ -189,8 +189,8 @@ public:
 	GenerateNotifier gennotify;
 
 	Mapgen() = default;
-	Mapgen(int mapgenid, MapgenParams *params, EmergeParams *emerge);
-	virtual ~Mapgen();
+	Mapgen(int mapgenid, MapgenParams *params, std::unique_ptr<EmergeParams> emerge);
+	virtual ~Mapgen() = default;
 	DISABLE_CLASS_COPY(Mapgen);
 
 	virtual MapgenType getType() const { return MAPGEN_INVALID; }
@@ -253,7 +253,7 @@ public:
 	static MapgenType getMapgenType(const std::string &mgname);
 	static const char *getMapgenName(MapgenType mgtype);
 	static Mapgen *createMapgen(MapgenType mgtype, MapgenParams *params,
-		EmergeParams *emerge);
+		std::unique_ptr<EmergeParams> emerge);
 	static MapgenParams *createMapgenParams(MapgenType mgtype);
 	static void getMapgenNames(std::vector<const char *> *mgnames, bool include_hidden);
 	static void setDefaultSettings(Settings *settings);
@@ -293,7 +293,7 @@ private:
 */
 class MapgenBasic : public Mapgen {
 public:
-	MapgenBasic(int mapgenid, MapgenParams *params, EmergeParams *emerge);
+	MapgenBasic(int mapgenid, MapgenParams *params, std::unique_ptr<EmergeParams> emerge);
 	virtual ~MapgenBasic();
 
 	virtual void generateBiomes();

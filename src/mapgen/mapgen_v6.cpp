@@ -55,8 +55,8 @@ FlagDesc flagdesc_mapgen_v6[] = {
 /////////////////////////////////////////////////////////////////////////////
 
 
-MapgenV6::MapgenV6(MapgenV6Params *params, EmergeParams *emerge)
-	: Mapgen(MAPGEN_V6, params, emerge)
+MapgenV6::MapgenV6(MapgenV6Params *params, std::unique_ptr<EmergeParams> emerge)
+	: Mapgen(MAPGEN_V6, params, std::move(emerge))
 {
 	ystride = csize.X;
 
@@ -88,7 +88,7 @@ MapgenV6::MapgenV6(MapgenV6Params *params, EmergeParams *emerge)
 			csize.X + 2 * MAP_BLOCKSIZE, csize.Y + 2 * MAP_BLOCKSIZE);
 
 	//// Resolve nodes to be used
-	const NodeDefManager *ndef = emerge->ndef;
+	const NodeDefManager *ndef = m_emerge->ndef;
 
 	c_stone           = ndef->getId("mapgen_stone");
 	c_dirt            = ndef->getId("mapgen_dirt");

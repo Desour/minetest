@@ -49,8 +49,9 @@ FlagDesc flagdesc_mapgen_carpathian[] = {
 ///////////////////////////////////////////////////////////////////////////////
 
 
-MapgenCarpathian::MapgenCarpathian(MapgenCarpathianParams *params, EmergeParams *emerge)
-	: MapgenBasic(MAPGEN_CARPATHIAN, params, emerge)
+MapgenCarpathian::MapgenCarpathian(MapgenCarpathianParams *params,
+		std::unique_ptr<EmergeParams> emerge)
+	: MapgenBasic(MAPGEN_CARPATHIAN, params, std::move(emerge))
 {
 	base_level       = params->base_level;
 	river_width      = params->river_width;

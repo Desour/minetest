@@ -29,8 +29,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "emerge.h"
 
 
-MapgenSinglenode::MapgenSinglenode(MapgenParams *params, EmergeParams *emerge)
-	: Mapgen(MAPGEN_SINGLENODE, params, emerge)
+MapgenSinglenode::MapgenSinglenode(MapgenParams *params, std::unique_ptr<EmergeParams> emerge)
+	: Mapgen(MAPGEN_SINGLENODE, params, std::move(emerge))
 {
 	c_node = ndef->getId("mapgen_singlenode");
 	if (c_node == CONTENT_IGNORE)

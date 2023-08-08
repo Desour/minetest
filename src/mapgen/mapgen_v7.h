@@ -82,7 +82,7 @@ struct MapgenV7Params : public MapgenParams {
 
 class MapgenV7 : public MapgenBasic {
 public:
-	MapgenV7(MapgenV7Params *params, EmergeParams *emerge);
+	MapgenV7(MapgenV7Params *params, std::unique_ptr<EmergeParams> emerge);
 	~MapgenV7();
 
 	virtual MapgenType getType() const { return MAPGEN_V7; }

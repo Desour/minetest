@@ -64,7 +64,7 @@ struct MapgenV5Params : public MapgenParams
 class MapgenV5 : public MapgenBasic
 {
 public:
-	MapgenV5(MapgenV5Params *params, EmergeParams *emerge);
+	MapgenV5(MapgenV5Params *params, std::unique_ptr<EmergeParams> emerge);
 	~MapgenV5();
 
 	virtual MapgenType getType() const { return MAPGEN_V5; }

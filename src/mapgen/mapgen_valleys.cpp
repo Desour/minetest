@@ -54,8 +54,8 @@ FlagDesc flagdesc_mapgen_valleys[] = {
 };
 
 
-MapgenValleys::MapgenValleys(MapgenValleysParams *params, EmergeParams *emerge)
-	: MapgenBasic(MAPGEN_VALLEYS, params, emerge)
+MapgenValleys::MapgenValleys(MapgenValleysParams *params, std::unique_ptr<EmergeParams> emerge)
+	: MapgenBasic(MAPGEN_VALLEYS, params, std::move(emerge))
 {
 	FATAL_ERROR_IF(biomegen->getType() != BIOMEGEN_ORIGINAL,
 		"MapgenValleys has a hard dependency on BiomeGenOriginal");

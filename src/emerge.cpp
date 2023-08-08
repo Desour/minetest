@@ -196,11 +196,11 @@ void EmergeManager::initMapgens(MapgenParams *params)
 	biomegen = biomemgr->createBiomeGen(BIOMEGEN_ORIGINAL, params->bparams, csize);
 
 	for (u32 i = 0; i != m_threads.size(); i++) {
-		EmergeParams *p = new EmergeParams(this, biomegen,
-			biomemgr, oremgr, decomgr, schemmgr);
-		infostream << "EmergeManager: Created params " << p
+		std::unique_ptr<EmergeParams> p(new EmergeParams(this, biomegen,
+				biomemgr, oremgr, decomgr, schemmgr));
+		infostream << "EmergeManager: Created params " << p.get()
 			<< " for thread " << i << std::endl;
-		m_mapgens.push_back(Mapgen::createMapgen(params->mgtype, params, p));
+		m_mapgens.push_back(Mapgen::createMapgen(params->mgtype, params, std::move(p)));
 	}
 }
 

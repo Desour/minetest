@@ -70,7 +70,7 @@ struct MapgenFlatParams : public MapgenParams
 class MapgenFlat : public MapgenBasic
 {
 public:
-	MapgenFlat(MapgenFlatParams *params, EmergeParams *emerge);
+	MapgenFlat(MapgenFlatParams *params, std::unique_ptr<EmergeParams> emerge);
 	~MapgenFlat();
 
 	virtual MapgenType getType() const { return MAPGEN_FLAT; }

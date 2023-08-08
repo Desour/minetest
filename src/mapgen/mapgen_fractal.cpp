@@ -47,8 +47,9 @@ FlagDesc flagdesc_mapgen_fractal[] = {
 ///////////////////////////////////////////////////////////////////////////////////////
 
 
-MapgenFractal::MapgenFractal(MapgenFractalParams *params, EmergeParams *emerge)
-	: MapgenBasic(MAPGEN_FRACTAL, params, emerge)
+MapgenFractal::MapgenFractal(MapgenFractalParams *params,
+		std::unique_ptr<EmergeParams> emerge)
+	: MapgenBasic(MAPGEN_FRACTAL, params, std::move(emerge))
 {
 	spflags            = params->spflags;
 	cave_width         = params->cave_width;

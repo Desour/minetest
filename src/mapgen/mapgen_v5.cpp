@@ -44,8 +44,8 @@ FlagDesc flagdesc_mapgen_v5[] = {
 };
 
 
-MapgenV5::MapgenV5(MapgenV5Params *params, EmergeParams *emerge)
-	: MapgenBasic(MAPGEN_V5, params, emerge)
+MapgenV5::MapgenV5(MapgenV5Params *params, std::unique_ptr<EmergeParams> emerge)
+	: MapgenBasic(MAPGEN_V5, params, std::move(emerge))
 {
 	spflags            = params->spflags;
 	cave_width         = params->cave_width;
