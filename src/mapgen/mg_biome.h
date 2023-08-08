@@ -132,7 +132,7 @@ public:
 
 	// Result of calcBiomes bulk computation.
 	biome_t *biomemap = nullptr;
-	s16 *biome_transitions = nullptr;
+	std::unique_ptr<s16[]> biome_transitions;
 
 protected:
 	BiomeManager *m_bmgr = nullptr;

@@ -171,20 +171,18 @@ BiomeGenOriginal::BiomeGenOriginal(BiomeManager *biomemgr,
 		}
 	}
 
-	biome_transitions = new s16[out_pos];
-	memcpy(biome_transitions, temp_transition_heights.data(), sizeof(s16) * out_pos);
+	biome_transitions.reset(new s16[out_pos]);
+	memcpy(biome_transitions.get(), temp_transition_heights.data(), sizeof(s16) * out_pos);
 }
 
 BiomeGenOriginal::~BiomeGenOriginal()
 {
 	delete []biomemap;
-
-	delete []biome_transitions;
 }
 
-s16* BiomeGenOriginal::getBiomeTransitions() const
+s16 *BiomeGenOriginal::getBiomeTransitions() const
 {
-	return biome_transitions;
+	return biome_transitions.get();
 }
 
 std::unique_ptr<BiomeGen> BiomeGenOriginal::clone(BiomeManager *biomemgr) const
