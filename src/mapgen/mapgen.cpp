@@ -603,7 +603,7 @@ MapgenBasic::MapgenBasic(int mapgenid, MapgenParams *params, std::unique_ptr<Eme
 	//// Initialize biome generator
 	biomegen = m_emerge->biomegen.get();
 	biomegen->assertChunkSize(csize);
-	biomemap = biomegen->biomemap;
+	biomemap = biomegen->biomemap.get();
 
 	//// Look up some commonly used content
 	c_stone              = ndef->getId("mapgen_stone");

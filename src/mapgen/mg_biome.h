@@ -131,7 +131,7 @@ public:
 	virtual s16 *getBiomeTransitions() const = 0;
 
 	// Result of calcBiomes bulk computation.
-	biome_t *biomemap = nullptr;
+	std::unique_ptr<biome_t[]> biomemap;
 	std::unique_ptr<s16[]> biome_transitions;
 
 protected:
@@ -171,7 +171,6 @@ class BiomeGenOriginal : public BiomeGen {
 public:
 	BiomeGenOriginal(BiomeManager *biomemgr,
 		const BiomeParamsOriginal *params, v3s16 chunksize);
-	~BiomeGenOriginal() override;
 
 	BiomeGenType getType() const override { return BIOMEGEN_ORIGINAL; }
 

@@ -142,11 +142,11 @@ BiomeGenOriginal::BiomeGenOriginal(BiomeManager *biomemgr,
 	heatmap  = noise_heat->result.get();
 	humidmap = noise_humidity->result.get();
 
-	biomemap = new biome_t[m_csize.X * m_csize.Z];
-	// Initialise with the ID of 'BIOME_NONE' so that cavegen can get the
-	// fallback biome when biome generation (which calculates the biomemap IDs)
-	// is disabled.
-	memset(biomemap, 0, sizeof(biome_t) * m_csize.X * m_csize.Z);
+	// Initialise (via value-initialization) with the ID of 'BIOME_NONE' so that
+	// cavegen can get the fallback biome when biome generation (which calculates
+	// the biomemap IDs) is disabled.
+	static_assert(BIOME_NONE == 0);
+	biomemap = std::make_unique<biome_t[]>(m_csize.X * m_csize.Z);
 
 	// Calculating the bounding position of each biome so we know when we might switch
 	// First gathering all heights where we might switch
@@ -173,11 +173,6 @@ BiomeGenOriginal::BiomeGenOriginal(BiomeManager *biomemgr,
 
 	biome_transitions.reset(new s16[out_pos]);
 	memcpy(biome_transitions.get(), temp_transition_heights.data(), sizeof(s16) * out_pos);
-}
-
-BiomeGenOriginal::~BiomeGenOriginal()
-{
-	delete []biomemap;
 }
 
 s16 *BiomeGenOriginal::getBiomeTransitions() const
@@ -237,7 +232,7 @@ biome_t *BiomeGenOriginal::getBiomes(s16 *heightmap, v3s16 pmin)
 		biomemap[i] = biome->index;
 	}
 
-	return biomemap;
+	return biomemap.get();
 }
 
 
