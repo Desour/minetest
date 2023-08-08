@@ -500,7 +500,7 @@ void MapgenV6::makeChunk(BlockMakeData *data)
 	assert(data->nodedef);
 
 	this->generating = true;
-	this->vm   = data->vmanip;
+	this->vm   = data->vmanip.get();
 	this->ndef = data->nodedef;
 
 	// Hack: use minimum block coords for old code that assumes a single block

@@ -215,7 +215,7 @@ void MapgenValleys::makeChunk(BlockMakeData *data)
 	//TimeTaker t("makeChunk");
 
 	this->generating = true;
-	this->vm = data->vmanip;
+	this->vm = data->vmanip.get();
 	this->ndef = data->nodedef;
 
 	v3s16 blockpos_min = data->blockpos_min;

@@ -1424,7 +1424,7 @@ bool ServerMap::initBlockMake(v3s16 blockpos, BlockMakeData *data)
 		neighboring blocks
 	*/
 
-	data->vmanip = new MMVManip(this);
+	data->vmanip = std::make_unique<MMVManip>(this);
 	data->vmanip->initialEmerge(full_bpmin, full_bpmax);
 
 	// Data is ready now.

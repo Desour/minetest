@@ -20,6 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include <map>
+#include <memory>
 #include <mutex>
 #include "network/networkprotocol.h"
 #include "irr_v3d.h"
@@ -49,16 +50,12 @@ class ModApiMapgen;
 
 // Structure containing inputs/outputs for chunk generation
 struct BlockMakeData {
-	MMVManip *vmanip = nullptr;
+	std::unique_ptr<MMVManip> vmanip;
 	u64 seed = 0;
 	v3s16 blockpos_min;
 	v3s16 blockpos_max;
 	UniqueQueue<v3s16> transforming_liquid;
 	const NodeDefManager *nodedef = nullptr;
-
-	BlockMakeData() = default;
-
-	~BlockMakeData() { delete vmanip; }
 };
 
 // Result from processing an item on the emerge queue

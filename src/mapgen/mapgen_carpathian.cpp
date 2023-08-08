@@ -262,7 +262,7 @@ void MapgenCarpathian::makeChunk(BlockMakeData *data)
 	assert(data->nodedef);
 
 	this->generating = true;
-	this->vm = data->vmanip;
+	this->vm = data->vmanip.get();
 	this->ndef = data->nodedef;
 
 	v3s16 blockpos_min = data->blockpos_min;

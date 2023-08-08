@@ -211,7 +211,7 @@ void MapgenFlat::makeChunk(BlockMakeData *data)
 	assert(data->nodedef);
 
 	this->generating = true;
-	this->vm   = data->vmanip;
+	this->vm   = data->vmanip.get();
 	this->ndef = data->nodedef;
 	//TimeTaker t("makeChunk");
 

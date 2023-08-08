@@ -53,7 +53,7 @@ void ScriptApiMapgen::on_generated(BlockMakeData *bmdata)
 	v3s16 maxp = bmdata->blockpos_max * MAP_BLOCKSIZE +
 				 v3s16(1,1,1) * (MAP_BLOCKSIZE - 1);
 
-	LuaVoxelManip::create(L, bmdata->vmanip, true);
+	LuaVoxelManip::create(L, bmdata->vmanip.get(), true);
 	const int vmanip = lua_gettop(L);
 
 	// Store vmanip globally (used by helpers)
