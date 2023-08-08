@@ -1058,10 +1058,10 @@ void GenerateNotifier::clearEvents()
 ////
 
 
-MapgenParams::~MapgenParams()
-{
-	delete bparams;
-}
+MapgenParams::MapgenParams() = default;
+
+
+MapgenParams::~MapgenParams() = default;
 
 
 void MapgenParams::readParams(const Settings *settings)
@@ -1091,7 +1091,7 @@ void MapgenParams::readParams(const Settings *settings)
 
 	chunksize = rangelim(chunksize, 1, 10);
 
-	delete bparams;
+	bparams.reset();
 	bparams = BiomeManager::createBiomeParams(BIOMEGEN_ORIGINAL);
 	if (bparams) {
 		bparams->readParams(settings);

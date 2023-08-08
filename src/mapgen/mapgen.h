@@ -127,7 +127,7 @@ enum MapgenType {
 };
 
 struct MapgenParams {
-	MapgenParams() = default;
+	MapgenParams();
 	virtual ~MapgenParams();
 
 	MapgenType mgtype = MAPGEN_DEFAULT;
@@ -139,7 +139,7 @@ struct MapgenParams {
 	u32 flags = 0;
 	u32 spflags = 0;
 
-	BiomeParams *bparams = nullptr;
+	std::unique_ptr<BiomeParams> bparams;
 
 	s16 mapgen_edge_min = -MAX_MAP_GENERATION_LIMIT;
 	s16 mapgen_edge_max = MAX_MAP_GENERATION_LIMIT;

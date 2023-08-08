@@ -206,9 +206,13 @@ void TestMapSettingsManager::testMapMetaSaveLoad()
 	makeUserConfig();
 	Settings &conf = *Settings::getLayer(SL_GLOBAL);
 
-	// There cannot be two MapSettingsManager
-	// copy the mapgen params to compare them
+	// There cannot be two MapSettingsManager (which owns the MapgenParams)
+	// Copy the mapgen params that we want to compare
 	MapgenParams params1, params2;
+	auto copy_params_to_compare = [](MapgenParams &to, const MapgenParams &from) {
+		to.seed = from.seed;
+		to.water_level = from.water_level;
+	};
 	// Create a set of mapgen params and save them to map meta
 	{
 		conf.set("seed", "12345");
@@ -216,8 +220,7 @@ void TestMapSettingsManager::testMapMetaSaveLoad()
 		MapSettingsManager mgr(path);
 		MapgenParams *params = mgr.makeMapgenParams();
 		UASSERT(params);
-		params1 = *params;
-		params1.bparams = nullptr; // No double-free
+		copy_params_to_compare(params1, *params);
 		UASSERT(mgr.saveMapMeta());
 	}
 
@@ -229,8 +232,7 @@ void TestMapSettingsManager::testMapMetaSaveLoad()
 		UASSERT(mgr.loadMapMeta());
 		MapgenParams *params = mgr.makeMapgenParams();
 		UASSERT(params);
-		params2 = *params;
-		params2.bparams = nullptr; // No double-free
+		copy_params_to_compare(params2, *params);
 	}
 
 	// Check that both results are correct

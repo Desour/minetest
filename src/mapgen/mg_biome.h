@@ -236,13 +236,13 @@ public:
 		}
 	}
 
-	static BiomeParams *createBiomeParams(BiomeGenType type)
+	static std::unique_ptr<BiomeParams> createBiomeParams(BiomeGenType type)
 	{
 		switch (type) {
 		case BIOMEGEN_ORIGINAL:
-			return new BiomeParamsOriginal;
+			return std::make_unique<BiomeParamsOriginal>();
 		default:
-			return NULL;
+			return nullptr;
 		}
 	}
 

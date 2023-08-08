@@ -193,7 +193,7 @@ void EmergeManager::initMapgens(MapgenParams *params)
 	mgparams = params;
 
 	v3s16 csize = v3s16(1, 1, 1) * (params->chunksize * MAP_BLOCKSIZE);
-	biomegen = biomemgr->createBiomeGen(BIOMEGEN_ORIGINAL, params->bparams, csize);
+	biomegen = biomemgr->createBiomeGen(BIOMEGEN_ORIGINAL, params->bparams.get(), csize);
 
 	for (u32 i = 0; i != m_threads.size(); i++) {
 		std::unique_ptr<EmergeParams> p(new EmergeParams(this, biomegen,
