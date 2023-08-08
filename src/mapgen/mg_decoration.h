@@ -136,17 +136,17 @@ public:
 		return "decoration";
 	}
 
-	static Decoration *create(DecorationType type)
+	static std::unique_ptr<Decoration> create(DecorationType type)
 	{
 		switch (type) {
 		case DECO_SIMPLE:
-			return new DecoSimple;
+			return std::make_unique<DecoSimple>();
 		case DECO_SCHEMATIC:
-			return new DecoSchematic;
+			return std::make_unique<DecoSchematic>();
 		case DECO_LSYSTEM:
-			return new DecoLSystem;
+			return std::make_unique<DecoLSystem>();
 		default:
-			return NULL;
+			return nullptr;
 		}
 	}
 

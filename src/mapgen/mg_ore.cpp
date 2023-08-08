@@ -50,7 +50,7 @@ size_t OreManager::placeAllOres(Mapgen *mg, u32 blockseed, v3s16 nmin, v3s16 nma
 	size_t nplaced = 0;
 
 	for (size_t i = 0; i != m_objects.size(); i++) {
-		Ore *ore = (Ore *)m_objects[i];
+		Ore *ore = static_cast<Ore *>(m_objects[i].get());
 		if (!ore)
 			continue;
 
@@ -59,16 +59,6 @@ size_t OreManager::placeAllOres(Mapgen *mg, u32 blockseed, v3s16 nmin, v3s16 nma
 	}
 
 	return nplaced;
-}
-
-
-void OreManager::clear()
-{
-	for (ObjDef *object : m_objects) {
-		Ore *ore = (Ore *) object;
-		delete ore;
-	}
-	m_objects.clear();
 }
 
 

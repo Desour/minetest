@@ -38,7 +38,7 @@ BiomeManager::BiomeManager(Server *server) :
 	m_server = server;
 
 	// Create default biome to be used in case none exist
-	Biome *b = new Biome;
+	auto b = std::make_unique<Biome>();
 
 	b->name            = "default";
 	b->flags           = 0;
@@ -67,9 +67,9 @@ BiomeManager::BiomeManager(Server *server) :
 	b->m_nodenames.emplace_back("ignore");
 	b->m_nodenames.emplace_back("ignore");
 	b->m_nodenames.emplace_back("ignore");
-	m_ndef->pendNodeResolve(b);
+	m_ndef->pendNodeResolve(b.get());
 
-	add(b);
+	add(std::move(b));
 }
 
 
@@ -85,9 +85,6 @@ void BiomeManager::clear()
 	}
 
 	// Don't delete the first biome
-	for (size_t i = 1; i < m_objects.size(); i++)
-		delete (Biome *)m_objects[i];
-
 	m_objects.resize(1);
 }
 

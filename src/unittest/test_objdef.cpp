@@ -51,13 +51,17 @@ void TestObjDef::runTests(IGameDef *gamedef)
 class MyObjDef : public ObjDef
 {
 public:
-	ObjDef *clone() const
+	std::unique_ptr<ObjDef> clone_() const
 	{
-		auto def = new MyObjDef();
-		ObjDef::cloneTo(def);
+		auto def = std::make_unique<MyObjDef>();
+		ObjDef::cloneTo(def.get());
 		def->testvalue = testvalue;
 		return def;
-	};
+	}
+	ObjDef *clone() const
+	{
+		return clone_().release(); //TODO:remove
+	}
 
 	u32 testvalue;
 };
@@ -66,12 +70,12 @@ class MyObjDefManager : public ObjDefManager
 {
 public:
 	MyObjDefManager(ObjDefType type) : ObjDefManager(NULL, type){};
-	MyObjDefManager *clone() const
+	std::unique_ptr<MyObjDefManager> clone() const
 	{
-		auto mgr = new MyObjDefManager();
-		ObjDefManager::cloneTo(mgr);
+		std::unique_ptr<MyObjDefManager> mgr(new MyObjDefManager());
+		ObjDefManager::cloneTo(mgr.get());
 		return mgr;
-	};
+	}
 
 protected:
 	MyObjDefManager(){};
@@ -98,31 +102,36 @@ void TestObjDef::testAddGetSetClear()
 {
 	ObjDefManager testmgr(NULL, OBJDEF_GENERIC);
 	ObjDefHandle hObj0, hObj1, hObj2, hObj3;
+	std::unique_ptr<ObjDef> obj0_up, obj1_up, obj2_up, obj3_up;
 	ObjDef *obj0, *obj1, *obj2, *obj3;
 
 	UASSERTEQ(ObjDefType, testmgr.getType(), OBJDEF_GENERIC);
 
-	obj0 = new MyObjDef;
+	obj0_up = std::make_unique<MyObjDef>();
+	obj0 = obj0_up.get();
 	obj0->name = "foobar";
-	hObj0 = testmgr.add(obj0);
+	hObj0 = testmgr.add(std::move(obj0_up));
 	UASSERT(hObj0 != OBJDEF_INVALID_HANDLE);
 	UASSERTEQ(u32, obj0->index, 0);
 
-	obj1 = new MyObjDef;
+	obj1_up = std::make_unique<MyObjDef>();
+	obj1 = obj1_up.get();
 	obj1->name = "FooBaz";
-	hObj1 = testmgr.add(obj1);
+	hObj1 = testmgr.add(std::move(obj1_up));
 	UASSERT(hObj1 != OBJDEF_INVALID_HANDLE);
 	UASSERTEQ(u32, obj1->index, 1);
 
-	obj2 = new MyObjDef;
+	obj2_up = std::make_unique<MyObjDef>();
+	obj2 = obj2_up.get();
 	obj2->name = "asdf";
-	hObj2 = testmgr.add(obj2);
+	hObj2 = testmgr.add(std::move(obj2_up));
 	UASSERT(hObj2 != OBJDEF_INVALID_HANDLE);
 	UASSERTEQ(u32, obj2->index, 2);
 
-	obj3 = new MyObjDef;
+	obj3_up = std::make_unique<MyObjDef>();
+	obj3 = obj3_up.get();
 	obj3->name = "foobaz";
-	hObj3 = testmgr.add(obj3);
+	hObj3 = testmgr.add(std::move(obj3_up));
 	UASSERT(hObj3 == OBJDEF_INVALID_HANDLE);
 
 	UASSERTEQ(size_t, testmgr.getNumObjects(), 3);
@@ -130,9 +139,10 @@ void TestObjDef::testAddGetSetClear()
 	UASSERT(testmgr.get(hObj0) == obj0);
 	UASSERT(testmgr.getByName("FOOBAZ") == obj1);
 
-	UASSERT(testmgr.set(hObj0, obj3) == obj0);
+	obj0_up = testmgr.set(hObj0, std::move(obj3_up));
+	UASSERT(obj0_up.get() == obj0);
 	UASSERT(testmgr.get(hObj0) == obj3);
-	delete obj0;
+	obj0_up.reset();
 
 	testmgr.clear();
 	UASSERTEQ(size_t, testmgr.getNumObjects(), 0);
@@ -141,14 +151,16 @@ void TestObjDef::testAddGetSetClear()
 void TestObjDef::testClone()
 {
 	MyObjDefManager testmgr(OBJDEF_GENERIC);
-	ObjDefManager *mgrcopy;
+	std::unique_ptr<ObjDefManager> mgrcopy;
 	MyObjDef *obj, *temp2;
+	std::unique_ptr<MyObjDef> obj_up;
 	ObjDef *temp1;
 	ObjDefHandle hObj;
 
-	obj = new MyObjDef;
+	obj_up = std::make_unique<MyObjDef>();
+	obj = obj_up.get();
 	obj->testvalue = 0xee00ff11;
-	hObj = testmgr.add(obj);
+	hObj = testmgr.add(std::move(obj_up));
 	UASSERT(hObj != OBJDEF_INVALID_HANDLE);
 
 	mgrcopy = testmgr.clone();
@@ -170,5 +182,5 @@ void TestObjDef::testClone()
 
 	testmgr.clear();
 	mgrcopy->clear();
-	delete mgrcopy;
+	mgrcopy.reset();
 }

@@ -143,9 +143,9 @@ public:
 		return "schematic";
 	}
 
-	static Schematic *create(SchematicType type)
+	static std::unique_ptr<Schematic> create(SchematicType type)
 	{
-		return new Schematic;
+		return std::make_unique<Schematic>();
 	}
 
 private:

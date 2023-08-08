@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "util/numeric.h"
 #include "log.h"
 #include "gamedef.h"
+#include <utility>
 
 ObjDefManager::ObjDefManager(IGameDef *gamedef, ObjDefType type)
 {
@@ -29,26 +30,20 @@ ObjDefManager::ObjDefManager(IGameDef *gamedef, ObjDefType type)
 }
 
 
-ObjDefManager::~ObjDefManager()
-{
-	for (size_t i = 0; i != m_objects.size(); i++)
-		delete m_objects[i];
-}
-
-
-ObjDefHandle ObjDefManager::add(ObjDef *obj)
+ObjDefHandle ObjDefManager::add(std::unique_ptr<ObjDef> &&obj)
 {
 	assert(obj);
 
 	if (obj->name.length() && getByName(obj->name))
 		return OBJDEF_INVALID_HANDLE;
 
-	u32 index = addRaw(obj);
+	auto obj_p = obj.get();
+	u32 index = addRaw(std::move(obj));
 	if (index == OBJDEF_INVALID_INDEX)
 		return OBJDEF_INVALID_HANDLE;
 
-	obj->handle = createHandle(index, m_objtype, obj->uid);
-	return obj->handle;
+	obj_p->handle = createHandle(index, m_objtype, obj_p->uid);
+	return obj_p->handle;
 }
 
 
@@ -59,27 +54,28 @@ ObjDef *ObjDefManager::get(ObjDefHandle handle) const
 }
 
 
-ObjDef *ObjDefManager::set(ObjDefHandle handle, ObjDef *obj)
+std::unique_ptr<ObjDef> ObjDefManager::set(ObjDefHandle handle, std::unique_ptr<ObjDef> obj)
 {
 	u32 index = validateHandle(handle);
 	if (index == OBJDEF_INVALID_INDEX)
-		return NULL;
+		return nullptr;
 
-	ObjDef *oldobj = setRaw(index, obj);
+	auto obj_p = obj.get();
+	auto oldobj = setRaw(index, std::move(obj));
 
-	obj->uid    = oldobj->uid;
-	obj->index  = oldobj->index;
-	obj->handle = oldobj->handle;
+	obj_p->uid    = oldobj->uid;
+	obj_p->index  = oldobj->index;
+	obj_p->handle = oldobj->handle;
 
 	return oldobj;
 }
 
 
-u32 ObjDefManager::addRaw(ObjDef *obj)
+u32 ObjDefManager::addRaw(std::unique_ptr<ObjDef> &&obj)
 {
 	size_t nobjects = m_objects.size();
 	if (nobjects >= OBJDEF_MAX_ITEMS)
-		return -1;
+		return OBJDEF_INVALID_INDEX;
 
 	obj->index = nobjects;
 
@@ -89,12 +85,13 @@ u32 ObjDefManager::addRaw(ObjDef *obj)
 	if (obj->uid == 0)
 		obj->uid = 1;
 
-	m_objects.push_back(obj);
+	ObjDef *obj_p = obj.get();
+	m_objects.push_back(std::move(obj));
 
 	infostream << "ObjDefManager: added " << getObjectTitle()
-		<< ": name=\"" << obj->name
-		<< "\" index=" << obj->index
-		<< " uid="     << obj->uid
+		<< ": name=\"" << obj_p->name
+		<< "\" index=" << obj_p->index
+		<< " uid="     << obj_p->uid
 		<< std::endl;
 
 	return nobjects;
@@ -103,36 +100,25 @@ u32 ObjDefManager::addRaw(ObjDef *obj)
 
 ObjDef *ObjDefManager::getRaw(u32 index) const
 {
-	return m_objects[index];
+	return m_objects[index].get();
 }
 
 
-ObjDef *ObjDefManager::setRaw(u32 index, ObjDef *obj)
+std::unique_ptr<ObjDef> ObjDefManager::setRaw(u32 index, std::unique_ptr<ObjDef> obj)
 {
-	ObjDef *old_obj = m_objects[index];
-	m_objects[index] = obj;
-	return old_obj;
+	return std::exchange(m_objects[index], std::move(obj));
 }
 
 
 ObjDef *ObjDefManager::getByName(const std::string &name) const
 {
 	for (size_t i = 0; i != m_objects.size(); i++) {
-		ObjDef *obj = m_objects[i];
+		ObjDef *obj = m_objects[i].get();
 		if (obj && !strcasecmp(name.c_str(), obj->name.c_str()))
 			return obj;
 	}
 
-	return NULL;
-}
-
-
-void ObjDefManager::clear()
-{
-	for (size_t i = 0; i != m_objects.size(); i++)
-		delete m_objects[i];
-
-	m_objects.clear();
+	return nullptr;
 }
 
 
@@ -198,6 +184,6 @@ void ObjDefManager::cloneTo(ObjDefManager *mgr) const
 	mgr->m_ndef = m_ndef;
 	mgr->m_objects.reserve(m_objects.size());
 	for (const auto &obj : m_objects)
-		mgr->m_objects.push_back(obj->clone());
+		mgr->m_objects.push_back(obj->clone_());
 	mgr->m_objtype = m_objtype;
 }

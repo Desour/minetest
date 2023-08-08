@@ -57,7 +57,7 @@ size_t DecorationManager::placeAllDecos(Mapgen *mg, u32 blockseed,
 	size_t nplaced = 0;
 
 	for (size_t i = 0; i != m_objects.size(); i++) {
-		Decoration *deco = (Decoration *)m_objects[i];
+		Decoration *deco = static_cast<Decoration *>(m_objects[i].get());
 		if (!deco)
 			continue;
 

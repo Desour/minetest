@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "util/basic_macros.h"
 #include "porting.h"
+#include <memory>
 
 class IGameDef;
 class NodeDefManager;
@@ -49,6 +50,7 @@ public:
 	// Should create new object of its own type, call cloneTo() of parent class
 	// and copy its own instance variables over
 	virtual ObjDef *clone() const = 0;
+	std::unique_ptr<ObjDef> clone_() const { return std::unique_ptr<ObjDef>(clone()); } //TODO:remove
 
 	u32 index;
 	u32 uid;
@@ -67,31 +69,33 @@ protected:
 // added/set to.  Note that ObjDefs managed by ObjDefManager are NOT refcounted,
 // so the same ObjDef instance must not be referenced multiple
 // TODO: const correctness for getter methods
+// WARNING: Do not access the ObjDefManager in an ObjDef's destructor.
 class ObjDefManager {
 public:
 	ObjDefManager(IGameDef *gamedef, ObjDefType type);
-	virtual ~ObjDefManager();
-	DISABLE_CLASS_COPY(ObjDefManager);
+	virtual ~ObjDefManager() = default;
 
 	// T *clone() const; // implemented in child class with correct type
 
 	virtual const char *getObjectTitle() const { return "ObjDef"; }
 
-	virtual void clear();
+	virtual void clear() { m_objects.clear(); }
 	virtual ObjDef *getByName(const std::string &name) const;
 
 	//// Add new/get/set object definitions by handle
-	virtual ObjDefHandle add(ObjDef *obj);
+	// NOTE: If add() fails with OBJDEF_INVALID_HANDLE, obj is not moved.
+	virtual ObjDefHandle add(std::unique_ptr<ObjDef> &&obj);
 	virtual ObjDef *get(ObjDefHandle handle) const;
-	virtual ObjDef *set(ObjDefHandle handle, ObjDef *obj);
+	virtual std::unique_ptr<ObjDef> set(ObjDefHandle handle, std::unique_ptr<ObjDef> obj);
 
 	//// Raw variants that work on indexes
-	virtual u32 addRaw(ObjDef *obj);
+	// NOTE: If addRaw() fails with OBJDEF_INVALID_INDEX, obj is not moved.
+	virtual u32 addRaw(std::unique_ptr<ObjDef> &&obj);
 
 	// It is generally assumed that getRaw() will always return a valid object
 	// This won't be true if people do odd things such as call setRaw() with NULL
 	virtual ObjDef *getRaw(u32 index) const;
-	virtual ObjDef *setRaw(u32 index, ObjDef *obj);
+	virtual std::unique_ptr<ObjDef> setRaw(u32 index, std::unique_ptr<ObjDef> obj);
 
 	size_t getNumObjects() const { return m_objects.size(); }
 	ObjDefType getType() const { return m_objtype; }
@@ -108,6 +112,6 @@ protected:
 	void cloneTo(ObjDefManager *mgr) const;
 
 	const NodeDefManager *m_ndef;
-	std::vector<ObjDef *> m_objects;
+	std::vector<std::unique_ptr<ObjDef>> m_objects;
 	ObjDefType m_objtype;
 };

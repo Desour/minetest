@@ -172,27 +172,25 @@ public:
 		return "ore";
 	}
 
-	static Ore *create(OreType type)
+	static std::unique_ptr<Ore> create(OreType type)
 	{
 		switch (type) {
 		case ORE_SCATTER:
-			return new OreScatter;
+			return std::make_unique<OreScatter>();
 		case ORE_SHEET:
-			return new OreSheet;
+			return std::make_unique<OreSheet>();
 		case ORE_PUFF:
-			return new OrePuff;
+			return std::make_unique<OrePuff>();
 		case ORE_BLOB:
-			return new OreBlob;
+			return std::make_unique<OreBlob>();
 		case ORE_VEIN:
-			return new OreVein;
+			return std::make_unique<OreVein>();
 		case ORE_STRATUM:
-			return new OreStratum;
+			return std::make_unique<OreStratum>();
 		default:
 			return nullptr;
 		}
 	}
-
-	void clear();
 
 	size_t placeAllOres(Mapgen *mg, u32 blockseed, v3s16 nmin, v3s16 nmax);
 

@@ -219,9 +219,9 @@ public:
 		return "biome";
 	}
 
-	static Biome *create(BiomeType type)
+	static std::unique_ptr<Biome> create(BiomeType type)
 	{
-		return new Biome;
+		return std::make_unique<Biome>();
 	}
 
 	std::unique_ptr<BiomeGen> createBiomeGen(BiomeGenType type, BiomeParams *params, v3s16 chunksize)
