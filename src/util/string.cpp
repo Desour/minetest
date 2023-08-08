@@ -88,8 +88,8 @@ std::wstring utf8_to_wide(std::string_view input)
 	// maximum possible size, every character is sizeof(wchar_t) bytes
 	size_t outbuf_size = input.length() * sizeof(wchar_t);
 
-	char *inbuf = new char[inbuf_size]; // intentionally NOT null-terminated
-	memcpy(inbuf, input.data(), inbuf_size);
+	std::unique_ptr<char[]> inbuf(new char[inbuf_size]); // intentionally NOT null-terminated
+	memcpy(inbuf.get(), input.data(), inbuf_size);
 	std::wstring out;
 	out.resize(outbuf_size / sizeof(wchar_t));
 
@@ -98,13 +98,11 @@ std::wstring utf8_to_wide(std::string_view input)
 #endif
 
 	char *outbuf = reinterpret_cast<char*>(&out[0]);
-	if (!convert(DEFAULT_ENCODING, "UTF-8", outbuf, &outbuf_size, inbuf, inbuf_size)) {
+	if (!convert(DEFAULT_ENCODING, "UTF-8", outbuf, &outbuf_size, inbuf.get(), inbuf_size)) {
 		infostream << "Couldn't convert UTF-8 string 0x" << hex_encode(input)
 			<< " into wstring" << std::endl;
-		delete[] inbuf;
 		return L"<invalid UTF-8 string>";
 	}
-	delete[] inbuf;
 
 	out.resize(outbuf_size / sizeof(wchar_t));
 	return out;
@@ -116,18 +114,16 @@ std::string wide_to_utf8(std::wstring_view input)
 	// maximum possible size: utf-8 encodes codepoints using 1 up to 4 bytes
 	size_t outbuf_size = input.length() * 4;
 
-	char *inbuf = new char[inbuf_size]; // intentionally NOT null-terminated
-	memcpy(inbuf, input.data(), inbuf_size);
+	std::unique_ptr<char[]> inbuf(new char[inbuf_size]); // intentionally NOT null-terminated
+	memcpy(inbuf.get(), input.data(), inbuf_size);
 	std::string out;
 	out.resize(outbuf_size);
 
-	if (!convert("UTF-8", DEFAULT_ENCODING, &out[0], &outbuf_size, inbuf, inbuf_size)) {
-		infostream << "Couldn't convert wstring 0x" << hex_encode(inbuf, inbuf_size)
+	if (!convert("UTF-8", DEFAULT_ENCODING, &out[0], &outbuf_size, inbuf.get(), inbuf_size)) {
+		infostream << "Couldn't convert wstring 0x" << hex_encode(inbuf.get(), inbuf_size)
 			<< " into UTF-8 string" << std::endl;
-		delete[] inbuf;
 		return "<invalid wide string>";
 	}
-	delete[] inbuf;
 
 	out.resize(outbuf_size);
 	return out;
@@ -138,24 +134,20 @@ std::string wide_to_utf8(std::wstring_view input)
 std::wstring utf8_to_wide(std::string_view input)
 {
 	size_t outbuf_size = input.size() + 1;
-	wchar_t *outbuf = new wchar_t[outbuf_size];
-	memset(outbuf, 0, outbuf_size * sizeof(wchar_t));
+	auto outbuf = std::make_unique<wchar_t[]>(outbuf_size);
 	MultiByteToWideChar(CP_UTF8, 0, input.data(), input.size(),
-		outbuf, outbuf_size);
-	std::wstring out(outbuf);
-	delete[] outbuf;
+		outbuf.get(), outbuf_size);
+	std::wstring out(outbuf.get());
 	return out;
 }
 
 std::string wide_to_utf8(std::wstring_view input)
 {
 	size_t outbuf_size = (input.size() + 1) * 6;
-	char *outbuf = new char[outbuf_size];
-	memset(outbuf, 0, outbuf_size);
+	auto outbuf = std::make_unique<wchar_t[]>(outbuf_size);
 	WideCharToMultiByte(CP_UTF8, 0, input.data(), input.size(),
-		outbuf, outbuf_size, NULL, NULL);
-	std::string out(outbuf);
-	delete[] outbuf;
+		outbuf.get(), outbuf_size, NULL, NULL);
+	std::string out(outbuf.get());
 	return out;
 }
 
