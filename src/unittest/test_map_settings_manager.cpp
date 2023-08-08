@@ -174,7 +174,7 @@ void TestMapSettingsManager::testMapSettingsManager()
 	UASSERT(mgr.saveMapMeta());
 
 	// Make sure our interface expectations are met
-	UASSERT(mgr.mapgen_params == params);
+	UASSERT(mgr.mapgen_params.get() == params);
 	UASSERT(mgr.makeMapgenParams() == params);
 
 #if 0

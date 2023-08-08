@@ -45,7 +45,7 @@ MapSettingsManager::~MapSettingsManager()
 {
 	delete m_defaults;
 	delete m_map_settings;
-	delete mapgen_params;
+	mapgen_params.reset();
 }
 
 
@@ -145,7 +145,7 @@ bool MapSettingsManager::saveMapMeta()
 MapgenParams *MapSettingsManager::makeMapgenParams()
 {
 	if (mapgen_params)
-		return mapgen_params;
+		return mapgen_params.get();
 
 	assert(m_map_settings);
 	assert(m_defaults);
@@ -163,7 +163,7 @@ MapgenParams *MapSettingsManager::makeMapgenParams()
 	}
 
 	// Create our MapgenParams
-	MapgenParams *params = Mapgen::createMapgenParams(mgtype);
+	auto params = Mapgen::createMapgenParams(mgtype);
 	if (!params)
 		return nullptr;
 
@@ -174,7 +174,7 @@ MapgenParams *MapSettingsManager::makeMapgenParams()
 	params->readParams(m_map_settings);
 
 	// Hold onto our params
-	mapgen_params = params;
+	mapgen_params = std::move(params);
 
-	return params;
+	return mapgen_params.get();
 }

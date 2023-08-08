@@ -1344,8 +1344,8 @@ ServerMap::~ServerMap()
 MapgenParams *ServerMap::getMapgenParams()
 {
 	// getMapgenParams() should only ever be called after Server is initialized
-	assert(settings_mgr.mapgen_params != NULL);
-	return settings_mgr.mapgen_params;
+	assert(!!settings_mgr.mapgen_params);
+	return settings_mgr.mapgen_params.get();
 }
 
 u64 ServerMap::getSeed()

@@ -254,7 +254,7 @@ public:
 	static const char *getMapgenName(MapgenType mgtype);
 	static Mapgen *createMapgen(MapgenType mgtype, MapgenParams *params,
 		std::unique_ptr<EmergeParams> emerge);
-	static MapgenParams *createMapgenParams(MapgenType mgtype);
+	static std::unique_ptr<MapgenParams> createMapgenParams(MapgenType mgtype);
 	static void getMapgenNames(std::vector<const char *> *mgnames, bool include_hidden);
 	static void setDefaultSettings(Settings *settings);
 

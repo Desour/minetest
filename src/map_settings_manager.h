@@ -48,7 +48,7 @@ public:
 	~MapSettingsManager();
 
 	// Finalized map generation parameters
-	MapgenParams *mapgen_params = nullptr;
+	std::unique_ptr<MapgenParams> mapgen_params;
 
 	bool getMapSetting(const std::string &name, std::string *value_out) const;
 

@@ -184,25 +184,25 @@ Mapgen *Mapgen::createMapgen(MapgenType mgtype, MapgenParams *params,
 }
 
 
-MapgenParams *Mapgen::createMapgenParams(MapgenType mgtype)
+std::unique_ptr<MapgenParams> Mapgen::createMapgenParams(MapgenType mgtype)
 {
 	switch (mgtype) {
 	case MAPGEN_CARPATHIAN:
-		return new MapgenCarpathianParams;
+		return std::make_unique<MapgenCarpathianParams>();
 	case MAPGEN_FLAT:
-		return new MapgenFlatParams;
+		return std::make_unique<MapgenFlatParams>();
 	case MAPGEN_FRACTAL:
-		return new MapgenFractalParams;
+		return std::make_unique<MapgenFractalParams>();
 	case MAPGEN_SINGLENODE:
-		return new MapgenSinglenodeParams;
+		return std::make_unique<MapgenSinglenodeParams>();
 	case MAPGEN_V5:
-		return new MapgenV5Params;
+		return std::make_unique<MapgenV5Params>();
 	case MAPGEN_V6:
-		return new MapgenV6Params;
+		return std::make_unique<MapgenV6Params>();
 	case MAPGEN_V7:
-		return new MapgenV7Params;
+		return std::make_unique<MapgenV7Params>();
 	case MAPGEN_VALLEYS:
-		return new MapgenValleysParams;
+		return std::make_unique<MapgenValleysParams>();
 	default:
 		return nullptr;
 	}
@@ -223,9 +223,8 @@ void Mapgen::setDefaultSettings(Settings *settings)
 		 MG_CAVES | MG_DUNGEONS | MG_LIGHT | MG_DECORATIONS | MG_BIOMES | MG_ORES);
 
 	for (int i = 0; i < (int)MAPGEN_INVALID; ++i) {
-		MapgenParams *params = createMapgenParams((MapgenType)i);
+		auto params = createMapgenParams((MapgenType)i);
 		params->setDefaultSettings(settings);
-		delete params;
 	}
 }
 
