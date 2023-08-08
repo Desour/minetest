@@ -48,8 +48,8 @@ EmergeParams::~EmergeParams()
 {
 	infostream << "EmergeParams: destroying " << this << std::endl;
 	// Delete everything that was cloned on creation of EmergeParams
-	delete biomegen;
-	delete biomemgr;
+	biomegen.reset();
+	biomemgr.reset();
 	delete oremgr;
 	delete decomgr;
 	delete schemmgr;
@@ -67,7 +67,7 @@ EmergeParams::EmergeParams(EmergeManager *parent, const BiomeGen *biomegen,
 	biomemgr(biomemgr->clone()), oremgr(oremgr->clone()),
 	decomgr(decomgr->clone()), schemmgr(schemmgr->clone())
 {
-	this->biomegen = biomegen->clone(this->biomemgr);
+	this->biomegen = biomegen->clone(this->biomemgr.get());
 }
 
 ////

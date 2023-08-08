@@ -98,7 +98,7 @@ public:
 	virtual BiomeGenType getType() const = 0;
 
 	// Clone this BiomeGen and set a the new BiomeManager to be used by the copy
-	virtual BiomeGen *clone(BiomeManager *biomemgr) const = 0;
+	virtual std::unique_ptr<BiomeGen> clone(BiomeManager *biomemgr) const = 0;
 
 	// Check that the internal chunk size is what the mapgen expects, just to be sure.
 	inline void assertChunkSize(v3s16 expect) const
@@ -171,25 +171,25 @@ class BiomeGenOriginal : public BiomeGen {
 public:
 	BiomeGenOriginal(BiomeManager *biomemgr,
 		const BiomeParamsOriginal *params, v3s16 chunksize);
-	virtual ~BiomeGenOriginal();
+	~BiomeGenOriginal() override;
 
-	BiomeGenType getType() const { return BIOMEGEN_ORIGINAL; }
+	BiomeGenType getType() const override { return BIOMEGEN_ORIGINAL; }
 
-	BiomeGen *clone(BiomeManager *biomemgr) const;
+	std::unique_ptr<BiomeGen> clone(BiomeManager *biomemgr) const override;
 
 	// Slower, meant for Script API use
 	float calcHeatAtPoint(v3s16 pos) const;
 	float calcHumidityAtPoint(v3s16 pos) const;
-	Biome *calcBiomeAtPoint(v3s16 pos) const;
+	Biome *calcBiomeAtPoint(v3s16 pos) const override;
 
-	void calcBiomeNoise(v3s16 pmin);
+	void calcBiomeNoise(v3s16 pmin) override;
 
-	biome_t *getBiomes(s16 *heightmap, v3s16 pmin);
-	Biome *getBiomeAtPoint(v3s16 pos) const;
-	Biome *getBiomeAtIndex(size_t index, v3s16 pos) const;
+	biome_t *getBiomes(s16 *heightmap, v3s16 pmin) override;
+	Biome *getBiomeAtPoint(v3s16 pos) const override;
+	Biome *getBiomeAtIndex(size_t index, v3s16 pos) const override;
 
 	Biome *calcBiomeFromNoise(float heat, float humidity, v3s16 pos) const;
-	s16 *getBiomeTransitions() const;
+	s16 *getBiomeTransitions() const override;
 
 	float *heatmap;
 	float *humidmap;
@@ -213,7 +213,7 @@ public:
 	BiomeManager(Server *server);
 	virtual ~BiomeManager() = default;
 
-	BiomeManager *clone() const;
+	std::unique_ptr<BiomeManager> clone() const;
 
 	const char *getObjectTitle() const
 	{

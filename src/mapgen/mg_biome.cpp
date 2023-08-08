@@ -92,11 +92,11 @@ void BiomeManager::clear()
 }
 
 
-BiomeManager *BiomeManager::clone() const
+std::unique_ptr<BiomeManager> BiomeManager::clone() const
 {
-	auto mgr = new BiomeManager();
+	std::unique_ptr<BiomeManager> mgr(new BiomeManager());
 	assert(mgr);
-	ObjDefManager::cloneTo(mgr);
+	ObjDefManager::cloneTo(mgr.get());
 	mgr->m_server = m_server;
 	return mgr;
 }
@@ -191,9 +191,9 @@ s16* BiomeGenOriginal::getBiomeTransitions() const
 	return biome_transitions;
 }
 
-BiomeGen *BiomeGenOriginal::clone(BiomeManager *biomemgr) const
+std::unique_ptr<BiomeGen> BiomeGenOriginal::clone(BiomeManager *biomemgr) const
 {
-	return new BiomeGenOriginal(biomemgr, m_params, m_csize);
+	return std::make_unique<BiomeGenOriginal>(biomemgr, m_params, m_csize);
 }
 
 float BiomeGenOriginal::calcHeatAtPoint(v3s16 pos) const

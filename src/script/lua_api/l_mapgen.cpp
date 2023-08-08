@@ -1981,7 +1981,7 @@ const BiomeGen *ModApiMapgen::getBiomeGen(lua_State *L)
 	// path 1: we're in the emerge environment
 	auto emerge = getEmergeThread(L);
 	if (emerge)
-		return emerge->getMapgen()->m_emerge->biomegen;
+		return emerge->getMapgen()->m_emerge->biomegen.get();
 	// path 2: we're in the server environment
 	auto manager = getServer(L)->getEmergeManager();
 	return manager->getBiomeGen();

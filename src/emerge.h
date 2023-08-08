@@ -106,8 +106,8 @@ public:
 	const std::set<u32> *gen_notify_on_deco_ids; // shared
 	const std::set<std::string> *gen_notify_on_custom; // shared
 
-	BiomeGen *biomegen;
-	BiomeManager *biomemgr;
+	std::unique_ptr<BiomeGen> biomegen;
+	std::unique_ptr<BiomeManager> biomemgr;
 	OreManager *oremgr;
 	DecorationManager *decomgr;
 	SchematicManager *schemmgr;

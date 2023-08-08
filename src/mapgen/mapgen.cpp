@@ -576,7 +576,7 @@ void Mapgen::spreadLight(const v3s16 &nmin, const v3s16 &nmax)
 MapgenBasic::MapgenBasic(int mapgenid, MapgenParams *params, std::unique_ptr<EmergeParams> emerge)
 	: Mapgen(mapgenid, params, std::move(emerge))
 {
-	this->m_bmgr   = m_emerge->biomemgr;
+	this->m_bmgr   = m_emerge->biomemgr.get();
 
 	//// Here, 'stride' refers to the number of elements needed to skip to index
 	//// an adjacent element for that coordinate in noise/height/biome maps
@@ -601,7 +601,7 @@ MapgenBasic::MapgenBasic(int mapgenid, MapgenParams *params, std::unique_ptr<Eme
 	this->heightmap.reset(new s16[csize.X * csize.Z]);
 
 	//// Initialize biome generator
-	biomegen = m_emerge->biomegen;
+	biomegen = m_emerge->biomegen.get();
 	biomegen->assertChunkSize(csize);
 	biomemap = biomegen->biomemap;
 
