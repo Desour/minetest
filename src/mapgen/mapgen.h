@@ -181,7 +181,7 @@ public:
 	const NodeDefManager *ndef = nullptr;
 
 	u32 blockseed;
-	s16 *heightmap = nullptr;
+	std::unique_ptr<s16[]> heightmap;
 	biome_t *biomemap = nullptr;
 	v3s16 csize;
 
@@ -294,7 +294,7 @@ private:
 class MapgenBasic : public Mapgen {
 public:
 	MapgenBasic(int mapgenid, MapgenParams *params, std::unique_ptr<EmergeParams> emerge);
-	virtual ~MapgenBasic();
+	~MapgenBasic() override = default;
 
 	virtual void generateBiomes();
 	virtual void dustTopNodes();

@@ -598,7 +598,7 @@ MapgenBasic::MapgenBasic(int mapgenid, MapgenParams *params, std::unique_ptr<Eme
 	this->zstride_1u1d = csize.X * (csize.Y + 2);
 
 	//// Allocate heightmap
-	this->heightmap = new s16[csize.X * csize.Z];
+	this->heightmap.reset(new s16[csize.X * csize.Z]);
 
 	//// Initialize biome generator
 	biomegen = m_emerge->biomegen;
@@ -623,12 +623,6 @@ MapgenBasic::MapgenBasic(int mapgenid, MapgenParams *params, std::unique_ptr<Eme
 		errorstream << "Mapgen: Mapgen alias 'mapgen_water_source' is invalid!" << std::endl;
 	if (c_river_water_source == CONTENT_IGNORE)
 		warningstream << "Mapgen: Mapgen alias 'mapgen_river_water_source' is invalid!" << std::endl;
-}
-
-
-MapgenBasic::~MapgenBasic()
-{
-	delete []heightmap;
 }
 
 
@@ -873,7 +867,7 @@ void MapgenBasic::generateCavesRandomWalk(s16 max_stone_y, s16 large_cave_ymax)
 	for (u32 i = 0; i < num_small_caves; i++) {
 		CavesRandomWalk cave(ndef, &gennotify, seed, water_level,
 			c_water_source, c_lava_source, large_cave_flooded, biomegen);
-		cave.makeCave(vm, node_min, node_max, &ps, false, max_stone_y, heightmap);
+		cave.makeCave(vm, node_min, node_max, &ps, false, max_stone_y, heightmap.get());
 	}
 
 	if (node_max.Y > large_cave_ymax)
@@ -887,7 +881,7 @@ void MapgenBasic::generateCavesRandomWalk(s16 max_stone_y, s16 large_cave_ymax)
 	for (u32 i = 0; i < num_large_caves; i++) {
 		CavesRandomWalk cave(ndef, &gennotify, seed, water_level,
 			c_water_source, c_lava_source, large_cave_flooded, biomegen);
-		cave.makeCave(vm, node_min, node_max, &ps, true, max_stone_y, heightmap);
+		cave.makeCave(vm, node_min, node_max, &ps, true, max_stone_y, heightmap.get());
 	}
 }
 

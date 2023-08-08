@@ -60,7 +60,7 @@ MapgenV6::MapgenV6(MapgenV6Params *params, std::unique_ptr<EmergeParams> emerge)
 {
 	ystride = csize.X;
 
-	heightmap = new s16[csize.X * csize.Z];
+	heightmap.reset(new s16[csize.X * csize.Z]);
 
 	spflags      = params->spflags;
 	freq_desert  = params->freq_desert;
@@ -158,8 +158,6 @@ MapgenV6::~MapgenV6()
 	delete noise_beach;
 	delete noise_biome;
 	delete noise_humidity;
-
-	delete[] heightmap;
 }
 
 
@@ -1112,6 +1110,6 @@ void MapgenV6::generateCaves(int max_stone_y)
 
 		bool large_cave = (i >= caves_count);
 		cave.makeCave(vm, node_min, node_max, &ps, &ps2,
-			large_cave, max_stone_y, heightmap);
+			large_cave, max_stone_y, heightmap.get());
 	}
 }
