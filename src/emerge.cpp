@@ -77,7 +77,7 @@ EmergeParams::EmergeParams(EmergeManager *parent, const BiomeGen *biomegen,
 EmergeManager::EmergeManager(Server *server, MetricsBackend *mb)
 {
 	this->ndef      = server->getNodeDefManager();
-	this->biomemgr  = new BiomeManager(server);
+	this->biomemgr  = std::make_unique<BiomeManager>(server);
 	this->oremgr    = new OreManager(server);
 	this->decomgr   = new DecorationManager(server);
 	this->schemmgr  = new SchematicManager(server);
@@ -149,8 +149,8 @@ EmergeManager::~EmergeManager()
 			delete m_mapgens[i];
 	}
 
-	delete biomegen;
-	delete biomemgr;
+	biomegen.reset();
+	biomemgr.reset();
 	delete oremgr;
 	delete decomgr;
 	delete schemmgr;
@@ -161,7 +161,7 @@ BiomeManager *EmergeManager::getWritableBiomeManager()
 {
 	FATAL_ERROR_IF(!m_mapgens.empty(),
 		"Writable managers can only be returned before mapgen init");
-	return biomemgr;
+	return biomemgr.get();
 }
 
 OreManager *EmergeManager::getWritableOreManager()
@@ -196,8 +196,8 @@ void EmergeManager::initMapgens(MapgenParams *params)
 	biomegen = biomemgr->createBiomeGen(BIOMEGEN_ORIGINAL, params->bparams.get(), csize);
 
 	for (u32 i = 0; i != m_threads.size(); i++) {
-		std::unique_ptr<EmergeParams> p(new EmergeParams(this, biomegen,
-				biomemgr, oremgr, decomgr, schemmgr));
+		std::unique_ptr<EmergeParams> p(new EmergeParams(this, biomegen.get(),
+				biomemgr.get(), oremgr, decomgr, schemmgr));
 		infostream << "EmergeManager: Created params " << p.get()
 			<< " for thread " << i << std::endl;
 		m_mapgens.push_back(Mapgen::createMapgen(params->mgtype, params, std::move(p)));

@@ -225,14 +225,14 @@ public:
 		return new Biome;
 	}
 
-	BiomeGen *createBiomeGen(BiomeGenType type, BiomeParams *params, v3s16 chunksize)
+	std::unique_ptr<BiomeGen> createBiomeGen(BiomeGenType type, BiomeParams *params, v3s16 chunksize)
 	{
 		switch (type) {
 		case BIOMEGEN_ORIGINAL:
-			return new BiomeGenOriginal(this,
-				(BiomeParamsOriginal *)params, chunksize);
+			return std::make_unique<BiomeGenOriginal>(this,
+					static_cast<BiomeParamsOriginal *>(params), chunksize);
 		default:
-			return NULL;
+			return nullptr;
 		}
 	}
 

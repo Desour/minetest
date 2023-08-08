@@ -155,10 +155,10 @@ public:
 	~EmergeManager();
 	DISABLE_CLASS_COPY(EmergeManager);
 
-	const BiomeGen *getBiomeGen() const { return biomegen; }
+	const BiomeGen *getBiomeGen() const { return biomegen.get(); }
 
 	// no usage restrictions
-	const BiomeManager *getBiomeManager() const { return biomemgr; }
+	const BiomeManager *getBiomeManager() const { return biomemgr.get(); }
 	const OreManager *getOreManager() const { return oremgr; }
 	const DecorationManager *getDecorationManager() const { return decomgr; }
 	const SchematicManager *getSchematicManager() const { return schemmgr; }
@@ -215,8 +215,8 @@ private:
 
 	// Managers of various map generation-related components
 	// Note that each Mapgen gets a copy(!) of these to work with
-	BiomeGen *biomegen;
-	BiomeManager *biomemgr;
+	std::unique_ptr<BiomeGen> biomegen;
+	std::unique_ptr<BiomeManager> biomemgr;
 	OreManager *oremgr;
 	DecorationManager *decomgr;
 	SchematicManager *schemmgr;
