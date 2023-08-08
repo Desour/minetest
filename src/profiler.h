@@ -23,6 +23,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <cassert>
 #include <string>
 #include <map>
+#include <memory>
 #include <ostream>
 
 #include "threading/mutex_auto_lock.h"
@@ -106,6 +107,6 @@ public:
 private:
 	Profiler *m_profiler = nullptr;
 	std::string m_name;
-	TimeTaker *m_timer = nullptr;
+	std::unique_ptr<TimeTaker> m_timer;
 	enum ScopeProfilerType m_type;
 };

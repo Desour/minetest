@@ -29,7 +29,7 @@ ScopeProfiler::ScopeProfiler(
 {
 	m_name.append(" [ms]");
 	if (m_profiler)
-		m_timer = new TimeTaker(m_name, nullptr, PRECISION_MILLI);
+		m_timer = std::make_unique<TimeTaker>(m_name, nullptr, PRECISION_MILLI);
 }
 
 ScopeProfiler::~ScopeProfiler()
@@ -55,7 +55,7 @@ ScopeProfiler::~ScopeProfiler()
 			break;
 		}
 	}
-	delete m_timer;
+	m_timer.reset();
 }
 
 Profiler::Profiler()
