@@ -130,14 +130,14 @@ BiomeGenOriginal::BiomeGenOriginal(BiomeManager *biomemgr,
 	m_params = params;
 	m_csize  = chunksize;
 
-	noise_heat           = new Noise(&params->np_heat,
-									params->seed, m_csize.X, m_csize.Z);
-	noise_humidity       = new Noise(&params->np_humidity,
-									params->seed, m_csize.X, m_csize.Z);
-	noise_heat_blend     = new Noise(&params->np_heat_blend,
-									params->seed, m_csize.X, m_csize.Z);
-	noise_humidity_blend = new Noise(&params->np_humidity_blend,
-									params->seed, m_csize.X, m_csize.Z);
+	noise_heat           = std::make_unique<Noise>(&params->np_heat,
+			params->seed, m_csize.X, m_csize.Z);
+	noise_humidity       = std::make_unique<Noise>(&params->np_humidity,
+			params->seed, m_csize.X, m_csize.Z);
+	noise_heat_blend     = std::make_unique<Noise>(&params->np_heat_blend,
+			params->seed, m_csize.X, m_csize.Z);
+	noise_humidity_blend = std::make_unique<Noise>(&params->np_humidity_blend,
+			params->seed, m_csize.X, m_csize.Z);
 
 	heatmap  = noise_heat->result.get();
 	humidmap = noise_humidity->result.get();
@@ -180,10 +180,6 @@ BiomeGenOriginal::~BiomeGenOriginal()
 	delete []biomemap;
 
 	delete []biome_transitions;
-	delete noise_heat;
-	delete noise_humidity;
-	delete noise_heat_blend;
-	delete noise_humidity_blend;
 }
 
 s16* BiomeGenOriginal::getBiomeTransitions() const

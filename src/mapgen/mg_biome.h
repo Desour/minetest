@@ -197,10 +197,10 @@ public:
 private:
 	const BiomeParamsOriginal *m_params;
 
-	Noise *noise_heat;
-	Noise *noise_humidity;
-	Noise *noise_heat_blend;
-	Noise *noise_humidity_blend;
+	std::unique_ptr<Noise> noise_heat;
+	std::unique_ptr<Noise> noise_humidity;
+	std::unique_ptr<Noise> noise_heat_blend;
+	std::unique_ptr<Noise> noise_humidity_blend;
 };
 
 
