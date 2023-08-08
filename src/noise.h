@@ -28,6 +28,7 @@
 #include "irr_v3d.h"
 #include "exceptions.h"
 #include "util/string.h"
+#include <memory>
 
 #if defined(RANDOM_MIN)
 #undef RANDOM_MIN
@@ -150,13 +151,12 @@ public:
 	u32 sx;
 	u32 sy;
 	u32 sz;
-	float *noise_buf = nullptr;
-	float *gradient_buf = nullptr;
-	float *persist_buf = nullptr;
-	float *result = nullptr;
+	std::unique_ptr<float[]> noise_buf;
+	std::unique_ptr<float[]> gradient_buf;
+	std::unique_ptr<float[]> persist_buf;
+	std::unique_ptr<float[]> result;
 
 	Noise(const NoiseParams *np, s32 seed, u32 sx, u32 sy, u32 sz=1);
-	~Noise();
 
 	void setSize(u32 sx, u32 sy, u32 sz=1);
 	void setSpreadFactor(v3f spread);

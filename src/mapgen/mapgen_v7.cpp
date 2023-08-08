@@ -488,7 +488,7 @@ int MapgenV7::generateTerrain()
 
 	//// Calculate noise for terrain generation
 	noise_terrain_persist->perlinMap2D(node_min.X, node_min.Z);
-	float *persistmap = noise_terrain_persist->result;
+	float *persistmap = noise_terrain_persist->result.get();
 
 	noise_terrain_base->perlinMap2D(node_min.X, node_min.Z, persistmap);
 	noise_terrain_alt->perlinMap2D(node_min.X, node_min.Z, persistmap);

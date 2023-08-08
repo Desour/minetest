@@ -371,15 +371,6 @@ Noise::Noise(const NoiseParams *np_, s32 seed, u32 sx, u32 sy, u32 sz)
 }
 
 
-Noise::~Noise()
-{
-	delete[] gradient_buf;
-	delete[] persist_buf;
-	delete[] noise_buf;
-	delete[] result;
-}
-
-
 void Noise::allocBuffers()
 {
 	if (sx < 1)
@@ -392,15 +383,14 @@ void Noise::allocBuffers()
 	this->noise_buf = NULL;
 	resizeNoiseBuf(sz > 1);
 
-	delete[] gradient_buf;
-	delete[] persist_buf;
-	delete[] result;
+	gradient_buf.reset();
+	persist_buf.reset();
+	result.reset();
 
 	try {
 		size_t bufsize = sx * sy * sz;
-		this->persist_buf  = NULL;
-		this->gradient_buf = new float[bufsize];
-		this->result       = new float[bufsize];
+		this->gradient_buf.reset(new float[bufsize]);
+		this->result.reset(new float[bufsize]);
 	} catch (std::bad_alloc &e) {
 		throw InvalidNoiseParamsException();
 	}
@@ -467,9 +457,9 @@ void Noise::resizeNoiseBuf(bool is3d)
 	size_t nly = (size_t)std::ceil(num_noise_points_y) + 3;
 	size_t nlz = is3d ? (size_t)std::ceil(num_noise_points_z) + 3 : 1;
 
-	delete[] noise_buf;
+	noise_buf.reset();
 	try {
-		noise_buf = new float[nlx * nly * nlz];
+		noise_buf.reset(new float[nlx * nly * nlz]);
 	} catch (std::bad_alloc &e) {
 		throw InvalidNoiseParamsException();
 	}
@@ -649,11 +639,11 @@ float *Noise::perlinMap2D(float x, float y, float *persistence_map)
 	x /= np.spread.X;
 	y /= np.spread.Y;
 
-	memset(result, 0, sizeof(float) * bufsize);
+	memset(result.get(), 0, sizeof(float) * bufsize);
 
 	if (persistence_map) {
 		if (!persist_buf)
-			persist_buf = new float[bufsize];
+			persist_buf.reset(new float[bufsize]);
 		for (size_t i = 0; i != bufsize; i++)
 			persist_buf[i] = 1.0;
 	}
@@ -663,7 +653,7 @@ float *Noise::perlinMap2D(float x, float y, float *persistence_map)
 			f / np.spread.X, f / np.spread.Y,
 			seed + np.seed + oct);
 
-		updateResults(g, persist_buf, persistence_map, bufsize);
+		updateResults(g, persist_buf.get(), persistence_map, bufsize);
 
 		f *= np.lacunarity;
 		g *= np.persist;
@@ -674,7 +664,7 @@ float *Noise::perlinMap2D(float x, float y, float *persistence_map)
 			result[i] = result[i] * np.scale + np.offset;
 	}
 
-	return result;
+	return result.get();
 }
 
 
@@ -687,11 +677,11 @@ float *Noise::perlinMap3D(float x, float y, float z, float *persistence_map)
 	y /= np.spread.Y;
 	z /= np.spread.Z;
 
-	memset(result, 0, sizeof(float) * bufsize);
+	memset(result.get(), 0, sizeof(float) * bufsize);
 
 	if (persistence_map) {
 		if (!persist_buf)
-			persist_buf = new float[bufsize];
+			persist_buf.reset(new float[bufsize]);
 		for (size_t i = 0; i != bufsize; i++)
 			persist_buf[i] = 1.0;
 	}
@@ -701,7 +691,7 @@ float *Noise::perlinMap3D(float x, float y, float z, float *persistence_map)
 			f / np.spread.X, f / np.spread.Y, f / np.spread.Z,
 			seed + np.seed + oct);
 
-		updateResults(g, persist_buf, persistence_map, bufsize);
+		updateResults(g, persist_buf.get(), persistence_map, bufsize);
 
 		f *= np.lacunarity;
 		g *= np.persist;
@@ -712,7 +702,7 @@ float *Noise::perlinMap3D(float x, float y, float z, float *persistence_map)
 			result[i] = result[i] * np.scale + np.offset;
 	}
 
-	return result;
+	return result.get();
 }
 
 

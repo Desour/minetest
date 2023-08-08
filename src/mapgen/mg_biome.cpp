@@ -139,8 +139,8 @@ BiomeGenOriginal::BiomeGenOriginal(BiomeManager *biomemgr,
 	noise_humidity_blend = new Noise(&params->np_humidity_blend,
 									params->seed, m_csize.X, m_csize.Z);
 
-	heatmap  = noise_heat->result;
-	humidmap = noise_humidity->result;
+	heatmap  = noise_heat->result.get();
+	humidmap = noise_humidity->result.get();
 
 	biomemap = new biome_t[m_csize.X * m_csize.Z];
 	// Initialise with the ID of 'BIOME_NONE' so that cavegen can get the
