@@ -234,7 +234,7 @@ bool read_schematic_def(lua_State *L, int index,
 	luaL_checktype(L, -1, LUA_TTABLE);
 
 	u32 numnodes = size.X * size.Y * size.Z;
-	schem->schemdata = new MapNode[numnodes];
+	schem->schemdata.reset(new MapNode[numnodes]);
 
 	size_t names_base = names->size();
 	std::unordered_map<std::string, content_t> name_id_map;

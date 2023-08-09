@@ -78,7 +78,6 @@ void SchematicManager::clear()
 
 Schematic::~Schematic()
 {
-	delete []schemdata;
 	delete []slice_probs;
 }
 
@@ -93,8 +92,8 @@ std::unique_ptr<ObjDef> Schematic::clone() const
 	def->size = size;
 	FATAL_ERROR_IF(!schemdata, "Schematic can only be cloned after loading");
 	u32 nodecount = size.X * size.Y * size.Z;
-	def->schemdata = new MapNode[nodecount];
-	memcpy(def->schemdata, schemdata, sizeof(MapNode) * nodecount);
+	def->schemdata.reset(new MapNode[nodecount]);
+	memcpy(def->schemdata.get(), schemdata.get(), sizeof(MapNode) * nodecount);
 	def->slice_probs = new u8[size.Y];
 	memcpy(def->slice_probs, slice_probs, sizeof(u8) * size.Y);
 
@@ -334,13 +333,12 @@ bool Schematic::deserializeFromMts(std::istream *is)
 	//// Read node data
 	size_t nodecount = size.X * size.Y * size.Z;
 
-	delete []schemdata;
-	schemdata = new MapNode[nodecount];
+	schemdata.reset(new MapNode[nodecount]);
 
 	std::stringstream d_ss(std::ios_base::binary | std::ios_base::in | std::ios_base::out);
 	decompress(ss, d_ss, MTSCHEM_MAPNODE_SER_FMT_VER);
-	MapNode::deSerializeBulk(d_ss, MTSCHEM_MAPNODE_SER_FMT_VER, schemdata,
-		nodecount, 2, 2);
+	MapNode::deSerializeBulk(d_ss, MTSCHEM_MAPNODE_SER_FMT_VER, schemdata.get(),
+			nodecount, 2, 2);
 
 	// Fix probability values for nodes that were ignore; removed in v2
 	if (version < 2) {
@@ -385,7 +383,7 @@ bool Schematic::serializeToMts(std::ostream *os) const
 
 	// compressed bulk node data
 	auto buf = MapNode::serializeBulk(MTSCHEM_MAPNODE_SER_FMT_VER,
-		schemdata, size.X * size.Y * size.Z, 2, 2);
+		schemdata.get(), size.X * size.Y * size.Z, 2, 2);
 	compress(buf, ss, MTSCHEM_MAPNODE_SER_FMT_VER);
 
 	return true;
@@ -560,7 +558,7 @@ bool Schematic::getSchematicFromMap(Map *map, v3s16 p1, v3s16 p2)
 	for (s16 y = 0; y != size.Y; y++)
 		slice_probs[y] = MTSCHEM_PROB_ALWAYS;
 
-	schemdata = new MapNode[size.X * size.Y * size.Z];
+	schemdata.reset(new MapNode[size.X * size.Y * size.Z]);
 
 	u32 i = 0;
 	for (s16 z = p1.Z; z <= p2.Z; z++)
