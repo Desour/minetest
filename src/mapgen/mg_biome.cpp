@@ -301,11 +301,11 @@ Biome *BiomeGenOriginal::calcBiomeFromNoise(float heat, float humidity, v3s16 po
 
 ////////////////////////////////////////////////////////////////////////////////
 
-ObjDef *Biome::clone() const
+std::unique_ptr<ObjDef> Biome::clone() const
 {
-	auto obj = new Biome();
-	ObjDef::cloneTo(obj);
-	NodeResolver::cloneTo(obj);
+	auto obj = std::make_unique<Biome>();
+	ObjDef::cloneTo(obj.get());
+	NodeResolver::cloneTo(obj.get());
 
 	obj->flags = flags;
 

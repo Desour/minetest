@@ -127,10 +127,10 @@ void Ore::cloneTo(Ore *def) const
 ///////////////////////////////////////////////////////////////////////////////
 
 
-ObjDef *OreScatter::clone() const
+std::unique_ptr<ObjDef> OreScatter::clone() const
 {
-	auto def = new OreScatter();
-	Ore::cloneTo(def);
+	auto def = std::make_unique<OreScatter>();
+	Ore::cloneTo(def.get());
 	return def;
 }
 
@@ -184,10 +184,10 @@ void OreScatter::generate(MMVManip *vm, int mapseed, u32 blockseed,
 ///////////////////////////////////////////////////////////////////////////////
 
 
-ObjDef *OreSheet::clone() const
+std::unique_ptr<ObjDef> OreSheet::clone() const
 {
-	auto def = new OreSheet();
-	Ore::cloneTo(def);
+	auto def = std::make_unique<OreSheet>();
+	Ore::cloneTo(def.get());
 
 	def->column_height_max = column_height_max;
 	def->column_height_min = column_height_min;
@@ -260,10 +260,10 @@ OrePuff::~OrePuff()
 }
 
 
-ObjDef *OrePuff::clone() const
+std::unique_ptr<ObjDef> OrePuff::clone() const
 {
-	auto def = new OrePuff();
-	Ore::cloneTo(def);
+	auto def = std::make_unique<OrePuff>();
+	Ore::cloneTo(def.get());
 
 	def->np_puff_top = np_puff_top;
 	def->np_puff_bottom = np_puff_bottom;
@@ -347,10 +347,10 @@ void OrePuff::generate(MMVManip *vm, int mapseed, u32 blockseed,
 ///////////////////////////////////////////////////////////////////////////////
 
 
-ObjDef *OreBlob::clone() const
+std::unique_ptr<ObjDef> OreBlob::clone() const
 {
-	auto def = new OreBlob();
-	Ore::cloneTo(def);
+	auto def = std::make_unique<OreBlob>();
+	Ore::cloneTo(def.get());
 	return def;
 }
 
@@ -427,10 +427,10 @@ OreVein::~OreVein()
 }
 
 
-ObjDef *OreVein::clone() const
+std::unique_ptr<ObjDef> OreVein::clone() const
 {
-	auto def = new OreVein();
-	Ore::cloneTo(def);
+	auto def = std::make_unique<OreVein>();
+	Ore::cloneTo(def.get());
 
 	def->random_factor = random_factor;
 	def->noise2 = nullptr; // cannot be shared, on-demand
@@ -512,10 +512,10 @@ OreStratum::~OreStratum()
 }
 
 
-ObjDef *OreStratum::clone() const
+std::unique_ptr<ObjDef> OreStratum::clone() const
 {
-	auto def = new OreStratum();
-	Ore::cloneTo(def);
+	auto def = std::make_unique<OreStratum>();
+	Ore::cloneTo(def.get());
 
 	def->np_stratum_thickness = np_stratum_thickness;
 	def->noise_stratum_thickness = nullptr; // cannot be shared, on-demand

@@ -303,10 +303,10 @@ void Decoration::cloneTo(Decoration *def) const
 ///////////////////////////////////////////////////////////////////////////////
 
 
-ObjDef *DecoSimple::clone() const
+std::unique_ptr<ObjDef> DecoSimple::clone() const
 {
-	auto def = new DecoSimple();
-	Decoration::cloneTo(def);
+	auto def = std::make_unique<DecoSimple>();
+	Decoration::cloneTo(def.get());
 
 	def->c_decos = c_decos;
 	def->deco_height = deco_height;
@@ -404,18 +404,18 @@ DecoSchematic::~DecoSchematic()
 }
 
 
-ObjDef *DecoSchematic::clone() const
+std::unique_ptr<ObjDef> DecoSchematic::clone() const
 {
-	auto def = new DecoSchematic();
-	Decoration::cloneTo(def);
-	NodeResolver::cloneTo(def);
+	auto def = std::make_unique<DecoSchematic>();
+	Decoration::cloneTo(def.get());
+	NodeResolver::cloneTo(def.get());
 
 	def->rotation = rotation;
 	/* FIXME: We do not own this schematic, yet we only have a pointer to it
 	 * and not a handle. We are left with no option but to clone it ourselves.
 	 * This is a waste of memory and should be replaced with an alternative
 	 * approach sometime. */
-	def->schematic = dynamic_cast<Schematic*>(schematic->clone());
+	def->schematic = dynamic_cast<Schematic*>(schematic->clone().release()); //FIXME: use unique_ptr
 	def->was_cloned = true;
 
 	return def;
@@ -475,10 +475,10 @@ size_t DecoSchematic::generate(MMVManip *vm, PcgRandom *pr, v3s16 p, bool ceilin
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-ObjDef *DecoLSystem::clone() const
+std::unique_ptr<ObjDef> DecoLSystem::clone() const
 {
-	auto def = new DecoLSystem();
-	Decoration::cloneTo(def);
+	auto def = std::make_unique<DecoLSystem>();
+	Decoration::cloneTo(def.get());
 
 	def->tree_def = tree_def;
 	return def;

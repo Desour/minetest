@@ -96,7 +96,7 @@ public:
 	Schematic() = default;
 	virtual ~Schematic();
 
-	ObjDef *clone() const;
+	std::unique_ptr<ObjDef> clone() const override;
 
 	virtual void resolveNodeNames();
 

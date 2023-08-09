@@ -49,8 +49,7 @@ public:
 	// Only implemented by child classes (leafs in class hierarchy)
 	// Should create new object of its own type, call cloneTo() of parent class
 	// and copy its own instance variables over
-	virtual ObjDef *clone() const = 0;
-	std::unique_ptr<ObjDef> clone_() const { return std::unique_ptr<ObjDef>(clone()); } //TODO:remove
+	virtual std::unique_ptr<ObjDef> clone() const = 0;
 
 	u32 index;
 	u32 uid;

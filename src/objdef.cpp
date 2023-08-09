@@ -184,6 +184,6 @@ void ObjDefManager::cloneTo(ObjDefManager *mgr) const
 	mgr->m_ndef = m_ndef;
 	mgr->m_objects.reserve(m_objects.size());
 	for (const auto &obj : m_objects)
-		mgr->m_objects.push_back(obj->clone_());
+		mgr->m_objects.push_back(obj->clone());
 	mgr->m_objtype = m_objtype;
 }

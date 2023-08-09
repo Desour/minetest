@@ -42,7 +42,7 @@ enum BiomeType {
 
 class Biome : public ObjDef, public NodeResolver {
 public:
-	ObjDef *clone() const;
+	std::unique_ptr<ObjDef> clone() const override;
 
 	u32 flags;
 

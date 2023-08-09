@@ -82,11 +82,11 @@ Schematic::~Schematic()
 	delete []slice_probs;
 }
 
-ObjDef *Schematic::clone() const
+std::unique_ptr<ObjDef> Schematic::clone() const
 {
-	auto def = new Schematic();
-	ObjDef::cloneTo(def);
-	NodeResolver::cloneTo(def);
+	auto def = std::make_unique<Schematic>();
+	ObjDef::cloneTo(def.get());
+	NodeResolver::cloneTo(def.get());
 
 	def->c_nodes = c_nodes;
 	def->flags = flags;
@@ -529,7 +529,7 @@ bool Schematic::saveSchematicToFile(const std::string &filename,
 		if (!m_ndef)
 			return false;
 
-		schem = (Schematic *)this->clone();
+		schem = (Schematic *)this->clone().release(); //FIXME: use unique_ptr
 		schem->condenseContentIds();
 	}
 

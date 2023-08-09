@@ -85,7 +85,7 @@ protected:
 
 class DecoSimple : public Decoration {
 public:
-	ObjDef *clone() const;
+	std::unique_ptr<ObjDef> clone() const override;
 
 	virtual void resolveNodeNames();
 	virtual size_t generate(MMVManip *vm, PcgRandom *pr, v3s16 p, bool ceiling);
@@ -100,10 +100,10 @@ public:
 
 class DecoSchematic : public Decoration {
 public:
-	ObjDef *clone() const;
+	std::unique_ptr<ObjDef> clone() const override;
 
 	DecoSchematic() = default;
-	virtual ~DecoSchematic();
+	~DecoSchematic() override;
 
 	virtual size_t generate(MMVManip *vm, PcgRandom *pr, v3s16 p, bool ceiling);
 
@@ -115,7 +115,7 @@ public:
 
 class DecoLSystem : public Decoration {
 public:
-	ObjDef *clone() const;
+	std::unique_ptr<ObjDef> clone() const;
 
 	virtual size_t generate(MMVManip *vm, PcgRandom *pr, v3s16 p, bool ceiling);
 

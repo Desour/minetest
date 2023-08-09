@@ -51,16 +51,12 @@ void TestObjDef::runTests(IGameDef *gamedef)
 class MyObjDef : public ObjDef
 {
 public:
-	std::unique_ptr<ObjDef> clone_() const
+	std::unique_ptr<ObjDef> clone() const
 	{
 		auto def = std::make_unique<MyObjDef>();
 		ObjDef::cloneTo(def.get());
 		def->testvalue = testvalue;
 		return def;
-	}
-	ObjDef *clone() const
-	{
-		return clone_().release(); //TODO:remove
 	}
 
 	u32 testvalue;
