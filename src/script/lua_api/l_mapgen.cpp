@@ -286,7 +286,7 @@ bool read_schematic_def(lua_State *L, int index,
 	}
 
 	//// Get Y-slice probability values (if present)
-	schem->slice_probs = new u8[size.Y];
+	schem->slice_probs.reset(new u8[size.Y]);
 	for (i = 0; i != (u32) size.Y; i++)
 		schem->slice_probs[i] = MTSCHEM_PROB_ALWAYS;
 

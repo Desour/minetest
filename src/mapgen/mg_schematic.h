@@ -94,7 +94,6 @@ enum SchematicFormatType {
 class Schematic : public ObjDef, public NodeResolver {
 public:
 	Schematic() = default;
-	virtual ~Schematic();
 
 	std::unique_ptr<ObjDef> clone() const override;
 
@@ -122,7 +121,7 @@ public:
 	u32 flags = 0;
 	v3s16 size;
 	std::unique_ptr<MapNode[]> schemdata;
-	u8 *slice_probs = nullptr;
+	std::unique_ptr<u8[]> slice_probs;
 
 private:
 	// Counterpart to the node resolver: Condense content_t to a sequential "m_nodenames" list

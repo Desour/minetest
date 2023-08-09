@@ -76,11 +76,6 @@ void SchematicManager::clear()
 ///////////////////////////////////////////////////////////////////////////////
 
 
-Schematic::~Schematic()
-{
-	delete []slice_probs;
-}
-
 std::unique_ptr<ObjDef> Schematic::clone() const
 {
 	auto def = std::make_unique<Schematic>();
@@ -94,8 +89,8 @@ std::unique_ptr<ObjDef> Schematic::clone() const
 	u32 nodecount = size.X * size.Y * size.Z;
 	def->schemdata.reset(new MapNode[nodecount]);
 	memcpy(def->schemdata.get(), schemdata.get(), sizeof(MapNode) * nodecount);
-	def->slice_probs = new u8[size.Y];
-	memcpy(def->slice_probs, slice_probs, sizeof(u8) * size.Y);
+	def->slice_probs.reset(new u8[size.Y]);
+	memcpy(def->slice_probs.get(), slice_probs.get(), sizeof(u8) * size.Y);
 
 	return def;
 }
@@ -304,8 +299,7 @@ bool Schematic::deserializeFromMts(std::istream *is)
 	size = readV3S16(ss);
 
 	//// Read Y-slice probability values
-	delete []slice_probs;
-	slice_probs = new u8[size.Y];
+	slice_probs.reset(new u8[size.Y]);
 	for (int y = 0; y != size.Y; y++)
 		slice_probs[y] = (version >= 3) ? readU8(ss) : MTSCHEM_PROB_ALWAYS_OLD;
 
@@ -554,7 +548,7 @@ bool Schematic::getSchematicFromMap(Map *map, v3s16 p1, v3s16 p2)
 
 	size = p2 - p1 + 1;
 
-	slice_probs = new u8[size.Y];
+	slice_probs.reset(new u8[size.Y]);
 	for (s16 y = 0; y != size.Y; y++)
 		slice_probs[y] = MTSCHEM_PROB_ALWAYS;
 
