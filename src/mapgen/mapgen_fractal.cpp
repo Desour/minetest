@@ -73,7 +73,7 @@ MapgenFractal::MapgenFractal(MapgenFractalParams *params,
 
 	//// 2D noise
 	if (spflags & MGFRACTAL_TERRAIN)
-		noise_seabed = new Noise(&params->np_seabed, seed, csize.X, csize.Z);
+		noise_seabed = std::make_unique<Noise>(&params->np_seabed, seed, csize.X, csize.Z);
 
 	noise_filler_depth = std::make_unique<Noise>(&params->np_filler_depth, seed, csize.X, csize.Z);
 
@@ -85,12 +85,6 @@ MapgenFractal::MapgenFractal(MapgenFractalParams *params,
 
 	formula = fractal / 2 + fractal % 2;
 	julia   = fractal % 2 == 0;
-}
-
-
-MapgenFractal::~MapgenFractal()
-{
-	delete noise_seabed;
 }
 
 

@@ -61,7 +61,6 @@ struct MapgenFractalParams : public MapgenParams
 	NoiseParams np_dungeons;
 
 	MapgenFractalParams();
-	~MapgenFractalParams() = default;
 
 	void readParams(const Settings *settings);
 	void writeParams(Settings *settings) const;
@@ -73,7 +72,6 @@ class MapgenFractal : public MapgenBasic
 {
 public:
 	MapgenFractal(MapgenFractalParams *params, std::unique_ptr<EmergeParams> emerge);
-	~MapgenFractal();
 
 	virtual MapgenType getType() const { return MAPGEN_FRACTAL; }
 
@@ -94,5 +92,5 @@ private:
 	float julia_y;
 	float julia_z;
 	float julia_w;
-	Noise *noise_seabed = nullptr;
+	std::unique_ptr<Noise> noise_seabed;
 };
