@@ -46,7 +46,6 @@ public:
 	CavesNoiseIntersection(const NodeDefManager *nodedef,
 		BiomeManager *biomemgr, BiomeGen *biomegen, v3s16 chunksize, NoiseParams *np_cave1,
 		NoiseParams *np_cave2, s32 seed, float cave_width);
-	~CavesNoiseIntersection();
 
 	void generateCaves(MMVManip *vm, v3s16 nmin, v3s16 nmax, biome_t *biomemap);
 
@@ -64,8 +63,8 @@ private:
 	u16 m_ystride;
 	u16 m_zstride_1d;
 
-	Noise *noise_cave1;
-	Noise *noise_cave2;
+	std::unique_ptr<Noise> noise_cave1;
+	std::unique_ptr<Noise> noise_cave2;
 };
 
 /*
@@ -77,7 +76,6 @@ public:
 	CavernsNoise(const NodeDefManager *nodedef, v3s16 chunksize,
 		NoiseParams *np_cavern, s32 seed, float cavern_limit,
 		float cavern_taper, float cavern_threshold);
-	~CavernsNoise();
 
 	bool generateCaverns(MMVManip *vm, v3s16 nmin, v3s16 nmax);
 
@@ -94,7 +92,7 @@ private:
 	u16 m_ystride;
 	u16 m_zstride_1d;
 
-	Noise *noise_cavern;
+	std::unique_ptr<Noise> noise_cavern;
 
 	content_t c_water_source;
 	content_t c_lava_source;

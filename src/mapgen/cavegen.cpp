@@ -58,15 +58,8 @@ CavesNoiseIntersection::CavesNoiseIntersection(
 	// Noises are created using 1-down overgeneration
 	// A Nx-by-1-by-Nz-sized plane is at the bottom of the desired for
 	// re-carving the solid overtop placed for blocking sunlight
-	noise_cave1 = new Noise(np_cave1, seed, m_csize.X, m_csize.Y + 1, m_csize.Z);
-	noise_cave2 = new Noise(np_cave2, seed, m_csize.X, m_csize.Y + 1, m_csize.Z);
-}
-
-
-CavesNoiseIntersection::~CavesNoiseIntersection()
-{
-	delete noise_cave1;
-	delete noise_cave2;
+	noise_cave1 = std::make_unique<Noise>(np_cave1, seed, m_csize.X, m_csize.Y + 1, m_csize.Z);
+	noise_cave2 = std::make_unique<Noise>(np_cave2, seed, m_csize.X, m_csize.Y + 1, m_csize.Z);
 }
 
 
@@ -216,7 +209,7 @@ CavernsNoise::CavernsNoise(
 	// Noise is created using 1-down overgeneration
 	// A Nx-by-1-by-Nz-sized plane is at the bottom of the desired for
 	// re-carving the solid overtop placed for blocking sunlight
-	noise_cavern = new Noise(np_cavern, seed, m_csize.X, m_csize.Y + 1, m_csize.Z);
+	noise_cavern = std::make_unique<Noise>(np_cavern, seed, m_csize.X, m_csize.Y + 1, m_csize.Z);
 
 	c_water_source = m_ndef->getId("mapgen_water_source");
 	if (c_water_source == CONTENT_IGNORE)
@@ -228,12 +221,6 @@ CavernsNoise::CavernsNoise(
 }
 
 
-CavernsNoise::~CavernsNoise()
-{
-	delete noise_cavern;
-}
-
-
 bool CavernsNoise::generateCaverns(MMVManip *vm, v3s16 nmin, v3s16 nmax)
 {
 	assert(vm);
@@ -242,7 +229,7 @@ bool CavernsNoise::generateCaverns(MMVManip *vm, v3s16 nmin, v3s16 nmax)
 	noise_cavern->perlinMap3D(nmin.X, nmin.Y - 1, nmin.Z);
 
 	// Cache cavern_amp values
-	float *cavern_amp = new float[m_csize.Y + 1];
+	std::unique_ptr<float[]> cavern_amp(new float[m_csize.Y + 1]);
 	u8 cavern_amp_index = 0;  // Index zero at column top
 	for (s16 y = nmax.Y; y >= nmin.Y - 1; y--, cavern_amp_index++) {
 		cavern_amp[cavern_amp_index] =
@@ -284,8 +271,6 @@ bool CavernsNoise::generateCaverns(MMVManip *vm, v3s16 nmin, v3s16 nmax)
 			}
 		}
 	}
-
-	delete[] cavern_amp;
 
 	return near_cavern;
 }
