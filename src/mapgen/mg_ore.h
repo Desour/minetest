@@ -65,11 +65,10 @@ public:
 	u32 flags = 0;          // attributes for this ore
 	float nthresh;      // threshold for noise at which an ore is placed
 	NoiseParams np;     // noise for distribution of clusters (NULL for uniform scattering)
-	Noise *noise = nullptr;
+	std::unique_ptr<Noise> noise;
 	std::unordered_set<biome_t> biomes;
 
 	explicit Ore(bool needs_noise): needs_noise(needs_noise) {}
-	~Ore() override;
 
 	virtual void resolveNodeNames();
 
@@ -111,11 +110,10 @@ public:
 
 	NoiseParams np_puff_top;
 	NoiseParams np_puff_bottom;
-	Noise *noise_puff_top = nullptr;
-	Noise *noise_puff_bottom = nullptr;
+	std::unique_ptr<Noise> noise_puff_top;
+	std::unique_ptr<Noise> noise_puff_bottom;
 
 	OrePuff() : Ore(true) {}
-	~OrePuff() override;
 
 	void generate(MMVManip *vm, int mapseed, u32 blockseed,
 			v3s16 nmin, v3s16 nmax, biome_t *biomemap) override;
@@ -135,11 +133,10 @@ public:
 	std::unique_ptr<ObjDef> clone() const override;
 
 	float random_factor;
-	Noise *noise2 = nullptr;
+	std::unique_ptr<Noise> noise2;
 	int sizey_prev = 0;
 
 	OreVein() : Ore(true) {}
-	~OreVein() override;
 
 	void generate(MMVManip *vm, int mapseed, u32 blockseed,
 			v3s16 nmin, v3s16 nmax, biome_t *biomemap) override;
@@ -150,11 +147,10 @@ public:
 	std::unique_ptr<ObjDef> clone() const override;
 
 	NoiseParams np_stratum_thickness;
-	Noise *noise_stratum_thickness = nullptr;
+	std::unique_ptr<Noise> noise_stratum_thickness;
 	u16 stratum_thickness;
 
 	OreStratum() : Ore(false) {}
-	~OreStratum() override;
 
 	void generate(MMVManip *vm, int mapseed, u32 blockseed,
 			v3s16 nmin, v3s16 nmax, biome_t *biomemap) override;
@@ -163,7 +159,6 @@ public:
 class OreManager : public ObjDefManager {
 public:
 	OreManager(IGameDef *gamedef);
-	~OreManager() override = default;
 
 	std::unique_ptr<OreManager> clone() const;
 

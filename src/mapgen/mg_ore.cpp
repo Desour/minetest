@@ -73,12 +73,6 @@ std::unique_ptr<OreManager> OreManager::clone() const
 ///////////////////////////////////////////////////////////////////////////////
 
 
-Ore::~Ore()
-{
-	delete noise;
-}
-
-
 void Ore::resolveNodeNames()
 {
 	getIdFromNrBacklog(&c_ore, "", CONTENT_AIR);
@@ -214,7 +208,7 @@ void OreSheet::generate(MMVManip *vm, int mapseed, u32 blockseed,
 	if (!noise) {
 		int sx = nmax.X - nmin.X + 1;
 		int sz = nmax.Z - nmin.Z + 1;
-		noise = new Noise(&np, 0, sx, sz);
+		noise = std::make_unique<Noise>(&np, 0, sx, sz);
 	}
 	noise->seed = mapseed + y_start;
 	noise->perlinMap2D(nmin.X, nmin.Z);
@@ -253,13 +247,6 @@ void OreSheet::generate(MMVManip *vm, int mapseed, u32 blockseed,
 ///////////////////////////////////////////////////////////////////////////////
 
 
-OrePuff::~OrePuff()
-{
-	delete noise_puff_top;
-	delete noise_puff_bottom;
-}
-
-
 std::unique_ptr<ObjDef> OrePuff::clone() const
 {
 	auto def = std::make_unique<OrePuff>();
@@ -285,9 +272,9 @@ void OrePuff::generate(MMVManip *vm, int mapseed, u32 blockseed,
 	if (!noise) {
 		int sx = nmax.X - nmin.X + 1;
 		int sz = nmax.Z - nmin.Z + 1;
-		noise = new Noise(&np, 0, sx, sz);
-		noise_puff_top = new Noise(&np_puff_top, 0, sx, sz);
-		noise_puff_bottom = new Noise(&np_puff_bottom, 0, sx, sz);
+		noise = std::make_unique<Noise>(&np, 0, sx, sz);
+		noise_puff_top = std::make_unique<Noise>(&np_puff_top, 0, sx, sz);
+		noise_puff_bottom = std::make_unique<Noise>(&np_puff_bottom, 0, sx, sz);
 	}
 
 	noise->seed = mapseed + y_start;
@@ -369,7 +356,7 @@ void OreBlob::generate(MMVManip *vm, int mapseed, u32 blockseed,
 	u32 nblobs = volume / clust_scarcity;
 
 	if (!noise)
-		noise = new Noise(&np, mapseed, csize, csize, csize);
+		noise = std::make_unique<Noise>(&np, mapseed, csize, csize, csize);
 
 	for (u32 i = 0; i != nblobs; i++) {
 		int x0 = pr.range(nmin.X, nmax.X - csize + 1);
@@ -421,12 +408,6 @@ void OreBlob::generate(MMVManip *vm, int mapseed, u32 blockseed,
 ///////////////////////////////////////////////////////////////////////////////
 
 
-OreVein::~OreVein()
-{
-	delete noise2;
-}
-
-
 std::unique_ptr<ObjDef> OreVein::clone() const
 {
 	auto def = std::make_unique<OreVein>();
@@ -451,14 +432,12 @@ void OreVein::generate(MMVManip *vm, int mapseed, u32 blockseed,
 	// Because this ore uses 3D noise the perlinmap Y size can be different in
 	// different mapchunks due to ore Y limits. So recreate the noise objects
 	// if Y size has changed.
-	// Because these noise objects are created multiple times for this ore type
-	// it is necessary to 'delete' them here.
 	if (!noise || sizey != sizey_prev) {
-		delete noise;
-		delete noise2;
+		noise.reset();
+		noise2.reset();
 		int sizez = nmax.Z - nmin.Z + 1;
-		noise  = new Noise(&np, mapseed, sizex, sizey, sizez);
-		noise2 = new Noise(&np, mapseed + 436, sizex, sizey, sizez);
+		noise  = std::make_unique<Noise>(&np, mapseed, sizex, sizey, sizez);
+		noise2 = std::make_unique<Noise>(&np, mapseed + 436, sizex, sizey, sizez);
 		sizey_prev = sizey;
 	}
 
@@ -506,12 +485,6 @@ void OreVein::generate(MMVManip *vm, int mapseed, u32 blockseed,
 ///////////////////////////////////////////////////////////////////////////////
 
 
-OreStratum::~OreStratum()
-{
-	delete noise_stratum_thickness;
-}
-
-
 std::unique_ptr<ObjDef> OreStratum::clone() const
 {
 	auto def = std::make_unique<OreStratum>();
@@ -535,7 +508,7 @@ void OreStratum::generate(MMVManip *vm, int mapseed, u32 blockseed,
 		if (!noise) {
 			int sx = nmax.X - nmin.X + 1;
 			int sz = nmax.Z - nmin.Z + 1;
-			noise = new Noise(&np, 0, sx, sz);
+			noise = std::make_unique<Noise>(&np, 0, sx, sz);
 		}
 		noise->perlinMap2D(nmin.X, nmin.Z);
 	}
@@ -544,7 +517,8 @@ void OreStratum::generate(MMVManip *vm, int mapseed, u32 blockseed,
 		if (!noise_stratum_thickness) {
 			int sx = nmax.X - nmin.X + 1;
 			int sz = nmax.Z - nmin.Z + 1;
-			noise_stratum_thickness = new Noise(&np_stratum_thickness, 0, sx, sz);
+			noise_stratum_thickness =
+					std::make_unique<Noise>(&np_stratum_thickness, 0, sx, sz);
 		}
 		noise_stratum_thickness->perlinMap2D(nmin.X, nmin.Z);
 	}
