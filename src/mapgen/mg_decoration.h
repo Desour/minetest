@@ -102,14 +102,14 @@ class DecoSchematic : public Decoration {
 public:
 	std::unique_ptr<ObjDef> clone() const override;
 
-	DecoSchematic() = default;
+	DecoSchematic();
 	~DecoSchematic() override;
 
 	virtual size_t generate(MMVManip *vm, PcgRandom *pr, v3s16 p, bool ceiling);
 
 	Rotation rotation;
 	Schematic *schematic = nullptr;
-	bool was_cloned = false; // see FIXME inside DecoSchemtic::clone()
+	std::unique_ptr<Schematic> cloned_schematic; // see FIXME inside DecoSchemtic::clone()
 };
 
 

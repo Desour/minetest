@@ -397,11 +397,10 @@ size_t DecoSimple::generate(MMVManip *vm, PcgRandom *pr, v3s16 p, bool ceiling)
 ///////////////////////////////////////////////////////////////////////////////
 
 
-DecoSchematic::~DecoSchematic()
-{
-	if (was_cloned)
-		delete schematic;
-}
+DecoSchematic::DecoSchematic() = default;
+
+
+DecoSchematic::~DecoSchematic() = default;
 
 
 std::unique_ptr<ObjDef> DecoSchematic::clone() const
@@ -415,8 +414,8 @@ std::unique_ptr<ObjDef> DecoSchematic::clone() const
 	 * and not a handle. We are left with no option but to clone it ourselves.
 	 * This is a waste of memory and should be replaced with an alternative
 	 * approach sometime. */
-	def->schematic = dynamic_cast<Schematic*>(schematic->clone().release()); //FIXME: use unique_ptr
-	def->was_cloned = true;
+	def->cloned_schematic.reset(static_cast<Schematic *>(schematic->clone().release()));
+	def->schematic = def->cloned_schematic.get();
 
 	return def;
 }
