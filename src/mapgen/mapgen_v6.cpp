@@ -76,15 +76,15 @@ MapgenV6::MapgenV6(MapgenV6Params *params, std::unique_ptr<EmergeParams> emerge)
 	np_dungeons = NoiseParams(0.9, 0.5, v3f(500.0, 500.0, 500.0), 0, 2, 0.8, 2.0);
 
 	//// Create noise objects
-	noise_terrain_base   = new Noise(&params->np_terrain_base,   seed, csize.X, csize.Y);
-	noise_terrain_higher = new Noise(&params->np_terrain_higher, seed, csize.X, csize.Y);
-	noise_steepness      = new Noise(&params->np_steepness,      seed, csize.X, csize.Y);
-	noise_height_select  = new Noise(&params->np_height_select,  seed, csize.X, csize.Y);
-	noise_mud            = new Noise(&params->np_mud,            seed, csize.X, csize.Y);
-	noise_beach          = new Noise(&params->np_beach,          seed, csize.X, csize.Y);
-	noise_biome          = new Noise(&params->np_biome,          seed,
+	noise_terrain_base   = std::make_unique<Noise>(&params->np_terrain_base,   seed, csize.X, csize.Y);
+	noise_terrain_higher = std::make_unique<Noise>(&params->np_terrain_higher, seed, csize.X, csize.Y);
+	noise_steepness      = std::make_unique<Noise>(&params->np_steepness,      seed, csize.X, csize.Y);
+	noise_height_select  = std::make_unique<Noise>(&params->np_height_select,  seed, csize.X, csize.Y);
+	noise_mud            = std::make_unique<Noise>(&params->np_mud,            seed, csize.X, csize.Y);
+	noise_beach          = std::make_unique<Noise>(&params->np_beach,          seed, csize.X, csize.Y);
+	noise_biome          = std::make_unique<Noise>(&params->np_biome,          seed,
 			csize.X + 2 * MAP_BLOCKSIZE, csize.Y + 2 * MAP_BLOCKSIZE);
-	noise_humidity       = new Noise(&params->np_humidity,       seed,
+	noise_humidity       = std::make_unique<Noise>(&params->np_humidity,       seed,
 			csize.X + 2 * MAP_BLOCKSIZE, csize.Y + 2 * MAP_BLOCKSIZE);
 
 	//// Resolve nodes to be used
@@ -145,19 +145,6 @@ MapgenV6::MapgenV6(MapgenV6Params *params, std::unique_ptr<EmergeParams> emerge)
 		errorstream << "Mapgen v6: Mapgen alias 'mapgen_lava_source' is invalid!" << std::endl;
 	if (c_cobble == CONTENT_IGNORE)
 		errorstream << "Mapgen v6: Mapgen alias 'mapgen_cobble' is invalid!" << std::endl;
-}
-
-
-MapgenV6::~MapgenV6()
-{
-	delete noise_terrain_base;
-	delete noise_terrain_higher;
-	delete noise_steepness;
-	delete noise_height_select;
-	delete noise_mud;
-	delete noise_beach;
-	delete noise_biome;
-	delete noise_humidity;
 }
 
 

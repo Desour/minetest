@@ -74,7 +74,6 @@ struct MapgenV6Params : public MapgenParams {
 	NoiseParams np_apple_trees;
 
 	MapgenV6Params();
-	~MapgenV6Params() = default;
 
 	void readParams(const Settings *settings);
 	void writeParams(Settings *settings) const;
@@ -93,14 +92,14 @@ public:
 	v3s16 full_node_max;
 	v3s16 central_area_size;
 
-	Noise *noise_terrain_base;
-	Noise *noise_terrain_higher;
-	Noise *noise_steepness;
-	Noise *noise_height_select;
-	Noise *noise_mud;
-	Noise *noise_beach;
-	Noise *noise_biome;
-	Noise *noise_humidity;
+	std::unique_ptr<Noise> noise_terrain_base;
+	std::unique_ptr<Noise> noise_terrain_higher;
+	std::unique_ptr<Noise> noise_steepness;
+	std::unique_ptr<Noise> noise_height_select;
+	std::unique_ptr<Noise> noise_mud;
+	std::unique_ptr<Noise> noise_beach;
+	std::unique_ptr<Noise> noise_biome;
+	std::unique_ptr<Noise> noise_humidity;
 	NoiseParams *np_cave;
 	NoiseParams *np_humidity;
 	NoiseParams *np_trees;
@@ -133,7 +132,6 @@ public:
 	content_t c_stair_desert_stone;
 
 	MapgenV6(MapgenV6Params *params, std::unique_ptr<EmergeParams> emerge);
-	~MapgenV6();
 
 	virtual MapgenType getType() const { return MAPGEN_V6; }
 
