@@ -63,25 +63,17 @@ MapgenV5::MapgenV5(MapgenV5Params *params, std::unique_ptr<EmergeParams> emerge)
 
 	// Terrain noise
 	noise_filler_depth = std::make_unique<Noise>(&params->np_filler_depth, seed, csize.X, csize.Z);
-	noise_factor       = new Noise(&params->np_factor,       seed, csize.X, csize.Z);
-	noise_height       = new Noise(&params->np_height,       seed, csize.X, csize.Z);
+	noise_factor       = std::make_unique<Noise>(&params->np_factor,       seed, csize.X, csize.Z);
+	noise_height       = std::make_unique<Noise>(&params->np_height,       seed, csize.X, csize.Z);
 
 	// 3D terrain noise
 	// 1-up 1-down overgeneration
-	noise_ground = new Noise(&params->np_ground, seed, csize.X, csize.Y + 2, csize.Z);
+	noise_ground = std::make_unique<Noise>(&params->np_ground, seed, csize.X, csize.Y + 2, csize.Z);
 	// 1 down overgeneration
 	MapgenBasic::np_cave1    = params->np_cave1;
 	MapgenBasic::np_cave2    = params->np_cave2;
 	MapgenBasic::np_cavern   = params->np_cavern;
 	MapgenBasic::np_dungeons = params->np_dungeons;
-}
-
-
-MapgenV5::~MapgenV5()
-{
-	delete noise_factor;
-	delete noise_height;
-	delete noise_ground;
 }
 
 

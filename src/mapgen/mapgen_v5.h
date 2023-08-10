@@ -54,7 +54,6 @@ struct MapgenV5Params : public MapgenParams
 	NoiseParams np_dungeons;
 
 	MapgenV5Params();
-	~MapgenV5Params() = default;
 
 	void readParams(const Settings *settings);
 	void writeParams(Settings *settings) const;
@@ -65,7 +64,6 @@ class MapgenV5 : public MapgenBasic
 {
 public:
 	MapgenV5(MapgenV5Params *params, std::unique_ptr<EmergeParams> emerge);
-	~MapgenV5();
 
 	virtual MapgenType getType() const { return MAPGEN_V5; }
 
@@ -74,7 +72,7 @@ public:
 	int generateBaseTerrain();
 
 private:
-	Noise *noise_factor;
-	Noise *noise_height;
-	Noise *noise_ground;
+	std::unique_ptr<Noise> noise_factor;
+	std::unique_ptr<Noise> noise_height;
+	std::unique_ptr<Noise> noise_ground;
 };
