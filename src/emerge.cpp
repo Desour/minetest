@@ -125,7 +125,7 @@ EmergeManager::EmergeManager(Server *server, MetricsBackend *mb)
 	m_qlimit_generate = rangelim(m_qlimit_generate, 1, 1000000);
 
 	for (s16 i = 0; i < nthreads; i++)
-		m_threads.push_back(new EmergeThread(server, i));
+		m_threads.push_back(std::make_unique<EmergeThread>(server, i));
 
 	infostream << "EmergeManager: using " << nthreads << " threads" << std::endl;
 }
@@ -134,7 +134,7 @@ EmergeManager::EmergeManager(Server *server, MetricsBackend *mb)
 EmergeManager::~EmergeManager()
 {
 	for (u32 i = 0; i != m_threads.size(); i++) {
-		EmergeThread *thread = m_threads[i];
+		auto thread = std::move(m_threads[i]);
 
 		if (m_threads_active) {
 			thread->stop();
@@ -142,7 +142,7 @@ EmergeManager::~EmergeManager()
 			thread->wait();
 		}
 
-		delete thread;
+		thread.reset();
 
 		// Mapgen init might not be finished if there is an error during startup.
 		if (m_mapgens.size() > i)
@@ -211,7 +211,7 @@ Mapgen *EmergeManager::getCurrentMapgen()
 		return nullptr;
 
 	for (u32 i = 0; i != m_threads.size(); i++) {
-		EmergeThread *t = m_threads[i];
+		EmergeThread *t = m_threads[i].get();
 		if (t->isRunning() && t->isCurrentThread())
 			return t->m_mapgen;
 	}
@@ -433,7 +433,7 @@ EmergeThread *EmergeManager::getOptimalThread()
 		}
 	}
 
-	return m_threads[index];
+	return m_threads[index].get();
 }
 
 void EmergeManager::reportCompletedEmerge(EmergeAction action)

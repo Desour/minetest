@@ -199,7 +199,7 @@ public:
 
 private:
 	std::vector<Mapgen *> m_mapgens;
-	std::vector<EmergeThread *> m_threads;
+	std::vector<std::unique_ptr<EmergeThread>> m_threads;
 	bool m_threads_active = false;
 
 	std::mutex m_queue_mutex;
