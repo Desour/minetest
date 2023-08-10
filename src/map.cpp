@@ -2071,9 +2071,9 @@ void MMVManip::blitBackAll(std::map<v3s16, MapBlock*> *modified_blocks,
 	}
 }
 
-MMVManip *MMVManip::clone() const
+std::unique_ptr<MMVManip> MMVManip::clone() const
 {
-	MMVManip *ret = new MMVManip();
+	std::unique_ptr<MMVManip> ret(new MMVManip());
 
 	const s32 size = m_area.getVolume();
 	ret->m_area = m_area;

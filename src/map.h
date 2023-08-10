@@ -522,7 +522,7 @@ public:
 		Creates a copy of this VManip including contents, the copy will not be
 		associated with a Map.
 	*/
-	MMVManip *clone() const;
+	std::unique_ptr<MMVManip> clone() const;
 
 	// Reassociates a copied VManip to a map
 	void reparent(Map *map);

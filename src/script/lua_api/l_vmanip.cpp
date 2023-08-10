@@ -407,12 +407,12 @@ void *LuaVoxelManip::packIn(lua_State *L, int idx)
 
 	if (o->is_mapgen_vm)
 		throw LuaError("nope");
-	return o->vm->clone();
+	return o->vm->clone().release();
 }
 
 void LuaVoxelManip::packOut(lua_State *L, void *ptr)
 {
-	MMVManip *vm = reinterpret_cast<MMVManip*>(ptr);
+	MMVManip *vm = reinterpret_cast<MMVManip *>(ptr);
 	if (!L) {
 		delete vm;
 		return;
