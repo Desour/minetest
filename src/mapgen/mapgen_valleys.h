@@ -72,7 +72,6 @@ struct MapgenValleysParams : public MapgenParams {
 	NoiseParams np_dungeons;
 
 	MapgenValleysParams();
-	~MapgenValleysParams() = default;
 
 	void readParams(const Settings *settings);
 	void writeParams(Settings *settings) const;
@@ -85,7 +84,6 @@ public:
 
 	MapgenValleys(MapgenValleysParams *params,
 			std::unique_ptr<EmergeParams> emerge);
-	~MapgenValleys();
 
 	virtual MapgenType getType() const { return MAPGEN_VALLEYS; }
 
@@ -99,12 +97,12 @@ private:
 	float river_depth_bed;
 	float river_size_factor;
 
-	Noise *noise_inter_valley_fill;
-	Noise *noise_inter_valley_slope;
-	Noise *noise_rivers;
-	Noise *noise_terrain_height;
-	Noise *noise_valley_depth;
-	Noise *noise_valley_profile;
+	std::unique_ptr<Noise> noise_inter_valley_fill;
+	std::unique_ptr<Noise> noise_inter_valley_slope;
+	std::unique_ptr<Noise> noise_rivers;
+	std::unique_ptr<Noise> noise_terrain_height;
+	std::unique_ptr<Noise> noise_valley_depth;
+	std::unique_ptr<Noise> noise_valley_profile;
 
 	virtual int generateTerrain();
 };

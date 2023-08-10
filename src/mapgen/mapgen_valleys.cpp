@@ -81,32 +81,21 @@ MapgenValleys::MapgenValleys(MapgenValleysParams *params, std::unique_ptr<Emerge
 
 	//// 2D Terrain noise
 	noise_filler_depth       = std::make_unique<Noise>(&params->np_filler_depth,       seed, csize.X, csize.Z);
-	noise_inter_valley_slope = new Noise(&params->np_inter_valley_slope, seed, csize.X, csize.Z);
-	noise_rivers             = new Noise(&params->np_rivers,             seed, csize.X, csize.Z);
-	noise_terrain_height     = new Noise(&params->np_terrain_height,     seed, csize.X, csize.Z);
-	noise_valley_depth       = new Noise(&params->np_valley_depth,       seed, csize.X, csize.Z);
-	noise_valley_profile     = new Noise(&params->np_valley_profile,     seed, csize.X, csize.Z);
+	noise_inter_valley_slope = std::make_unique<Noise>(&params->np_inter_valley_slope, seed, csize.X, csize.Z);
+	noise_rivers             = std::make_unique<Noise>(&params->np_rivers,             seed, csize.X, csize.Z);
+	noise_terrain_height     = std::make_unique<Noise>(&params->np_terrain_height,     seed, csize.X, csize.Z);
+	noise_valley_depth       = std::make_unique<Noise>(&params->np_valley_depth,       seed, csize.X, csize.Z);
+	noise_valley_profile     = std::make_unique<Noise>(&params->np_valley_profile,     seed, csize.X, csize.Z);
 
 	//// 3D Terrain noise
 	// 1-up 1-down overgeneration
-	noise_inter_valley_fill = new Noise(&params->np_inter_valley_fill,
-		seed, csize.X, csize.Y + 2, csize.Z);
+	noise_inter_valley_fill = std::make_unique<Noise>(&params->np_inter_valley_fill,
+			seed, csize.X, csize.Y + 2, csize.Z);
 	// 1-down overgeneraion
 	MapgenBasic::np_cave1    = params->np_cave1;
 	MapgenBasic::np_cave2    = params->np_cave2;
 	MapgenBasic::np_cavern   = params->np_cavern;
 	MapgenBasic::np_dungeons = params->np_dungeons;
-}
-
-
-MapgenValleys::~MapgenValleys()
-{
-	delete noise_inter_valley_fill;
-	delete noise_inter_valley_slope;
-	delete noise_rivers;
-	delete noise_terrain_height;
-	delete noise_valley_depth;
-	delete noise_valley_profile;
 }
 
 
