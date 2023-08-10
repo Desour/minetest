@@ -511,6 +511,7 @@ bool Schematic::saveSchematicToFile(const std::string &filename,
 	const NodeDefManager *ndef)
 {
 	Schematic *schem = this;
+	std::unique_ptr<Schematic> cloned_schem;
 
 	bool needs_condense = isResolveDone();
 
@@ -521,15 +522,15 @@ bool Schematic::saveSchematicToFile(const std::string &filename,
 		if (!m_ndef)
 			return false;
 
-		schem = (Schematic *)this->clone().release(); //FIXME: use unique_ptr
+		cloned_schem.reset(static_cast<Schematic *>(this->clone().release()));
+		schem = cloned_schem.get();
 		schem->condenseContentIds();
 	}
 
 	std::ostringstream os(std::ios_base::binary);
 	bool status = schem->serializeToMts(&os);
 
-	if (needs_condense)
-		delete schem;
+	cloned_schem.reset();
 
 	if (!status)
 		return false;
@@ -540,7 +541,7 @@ bool Schematic::saveSchematicToFile(const std::string &filename,
 
 bool Schematic::getSchematicFromMap(Map *map, v3s16 p1, v3s16 p2)
 {
-	MMVManip *vm = new MMVManip(map);
+	auto vm = std::make_unique<MMVManip>(map);
 
 	v3s16 bp1 = getNodeBlockPos(p1);
 	v3s16 bp2 = getNodeBlockPos(p2);
@@ -564,7 +565,7 @@ bool Schematic::getSchematicFromMap(Map *map, v3s16 p1, v3s16 p2)
 		}
 	}
 
-	delete vm;
+	vm.reset();
 
 	// Reset and mark as complete
 	NodeResolver::reset(true);
