@@ -75,20 +75,13 @@ MapgenFlat::MapgenFlat(MapgenFlatParams *params, std::unique_ptr<EmergeParams> e
 	noise_filler_depth = std::make_unique<Noise>(&params->np_filler_depth, seed, csize.X, csize.Z);
 
 	if ((spflags & MGFLAT_LAKES) || (spflags & MGFLAT_HILLS))
-		noise_terrain = new Noise(&params->np_terrain, seed, csize.X, csize.Z);
+		noise_terrain = std::make_unique<Noise>(&params->np_terrain, seed, csize.X, csize.Z);
 
 	// 3D noise
 	MapgenBasic::np_cave1    = params->np_cave1;
 	MapgenBasic::np_cave2    = params->np_cave2;
 	MapgenBasic::np_cavern   = params->np_cavern;
 	MapgenBasic::np_dungeons = params->np_dungeons;
-}
-
-
-MapgenFlat::~MapgenFlat()
-{
-	if ((spflags & MGFLAT_LAKES) || (spflags & MGFLAT_HILLS))
-		delete noise_terrain;
 }
 
 

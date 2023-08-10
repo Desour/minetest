@@ -60,7 +60,6 @@ struct MapgenFlatParams : public MapgenParams
 	NoiseParams np_dungeons;
 
 	MapgenFlatParams();
-	~MapgenFlatParams() = default;
 
 	void readParams(const Settings *settings);
 	void writeParams(Settings *settings) const;
@@ -71,7 +70,6 @@ class MapgenFlat : public MapgenBasic
 {
 public:
 	MapgenFlat(MapgenFlatParams *params, std::unique_ptr<EmergeParams> emerge);
-	~MapgenFlat();
 
 	virtual MapgenType getType() const { return MAPGEN_FLAT; }
 
@@ -86,5 +84,5 @@ private:
 	float hill_threshold;
 	float hill_steepness;
 
-	Noise *noise_terrain;
+	std::unique_ptr<Noise> noise_terrain;
 };
