@@ -133,7 +133,7 @@ public:
 	SchematicManager(Server *server);
 	virtual ~SchematicManager() = default;
 
-	SchematicManager *clone() const;
+	std::unique_ptr<SchematicManager> clone() const;
 
 	virtual void clear();
 

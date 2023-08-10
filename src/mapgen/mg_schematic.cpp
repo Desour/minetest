@@ -43,11 +43,11 @@ SchematicManager::SchematicManager(Server *server) :
 }
 
 
-SchematicManager *SchematicManager::clone() const
+std::unique_ptr<SchematicManager> SchematicManager::clone() const
 {
-	auto mgr = new SchematicManager();
+	std::unique_ptr<SchematicManager> mgr(new SchematicManager());
 	assert(mgr);
-	ObjDefManager::cloneTo(mgr);
+	ObjDefManager::cloneTo(mgr.get());
 	return mgr;
 }
 

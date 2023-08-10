@@ -163,9 +163,9 @@ public:
 class OreManager : public ObjDefManager {
 public:
 	OreManager(IGameDef *gamedef);
-	virtual ~OreManager() = default;
+	~OreManager() override = default;
 
-	OreManager *clone() const;
+	std::unique_ptr<OreManager> clone() const;
 
 	const char *getObjectTitle() const
 	{

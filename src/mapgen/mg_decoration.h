@@ -127,9 +127,9 @@ public:
 class DecorationManager : public ObjDefManager {
 public:
 	DecorationManager(IGameDef *gamedef);
-	virtual ~DecorationManager() = default;
+	~DecorationManager() override = default;
 
-	DecorationManager *clone() const;
+	std::unique_ptr<DecorationManager> clone() const;
 
 	const char *getObjectTitle() const
 	{

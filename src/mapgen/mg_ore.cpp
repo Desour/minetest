@@ -62,10 +62,10 @@ size_t OreManager::placeAllOres(Mapgen *mg, u32 blockseed, v3s16 nmin, v3s16 nma
 }
 
 
-OreManager *OreManager::clone() const
+std::unique_ptr<OreManager> OreManager::clone() const
 {
-	auto mgr = new OreManager();
-	ObjDefManager::cloneTo(mgr);
+	std::unique_ptr<OreManager> mgr(new OreManager());
+	ObjDefManager::cloneTo(mgr.get());
 	return mgr;
 }
 

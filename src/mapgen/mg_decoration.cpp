@@ -68,10 +68,10 @@ size_t DecorationManager::placeAllDecos(Mapgen *mg, u32 blockseed,
 	return nplaced;
 }
 
-DecorationManager *DecorationManager::clone() const
+std::unique_ptr<DecorationManager> DecorationManager::clone() const
 {
-	auto mgr = new DecorationManager();
-	ObjDefManager::cloneTo(mgr);
+	std::unique_ptr<DecorationManager> mgr(new DecorationManager());
+	ObjDefManager::cloneTo(mgr.get());
 	return mgr;
 }
 

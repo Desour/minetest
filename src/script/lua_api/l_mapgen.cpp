@@ -1540,9 +1540,9 @@ int ModApiMapgen::l_generate_ores(lua_State *L)
 
 	OreManager *oremgr;
 	if (auto mg = getMapgen(L))
-		oremgr = mg->m_emerge->oremgr;
+		oremgr = mg->m_emerge->oremgr.get();
 	else
-		oremgr = emerge->oremgr;
+		oremgr = emerge->oremgr.get();
 
 	Mapgen mg;
 	// Intentionally truncates to s32, see Mapgen::Mapgen()
@@ -1575,9 +1575,9 @@ int ModApiMapgen::l_generate_decorations(lua_State *L)
 
 	DecorationManager *decomgr;
 	if (auto mg = getMapgen(L))
-		decomgr = mg->m_emerge->decomgr;
+		decomgr = mg->m_emerge->decomgr.get();
 	else
-		decomgr = emerge->decomgr;
+		decomgr = emerge->decomgr.get();
 
 	Mapgen mg;
 	// Intentionally truncates to s32, see Mapgen::Mapgen()
@@ -1673,7 +1673,7 @@ int ModApiMapgen::l_place_schematic(lua_State *L)
 	GET_ENV_PTR;
 
 	ServerMap *map = &(env->getServerMap());
-	SchematicManager *schemmgr = getServer(L)->getEmergeManager()->schemmgr;
+	SchematicManager *schemmgr = getServer(L)->getEmergeManager()->schemmgr.get();
 
 	//// Read position
 	v3s16 p = check_v3s16(L, 1);
@@ -1720,9 +1720,9 @@ int ModApiMapgen::l_place_schematic_on_vmanip(lua_State *L)
 
 	SchematicManager *schemmgr;
 	if (auto mg = getMapgen(L))
-		schemmgr = mg->m_emerge->schemmgr;
+		schemmgr = mg->m_emerge->schemmgr.get();
 	else
-		schemmgr = getServer(L)->getEmergeManager()->schemmgr;
+		schemmgr = getServer(L)->getEmergeManager()->schemmgr.get();
 
 	//// Read VoxelManip object
 	MMVManip *vm = checkObject<LuaVoxelManip>(L, 1)->vm;

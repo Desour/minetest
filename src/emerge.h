@@ -108,9 +108,9 @@ public:
 
 	std::unique_ptr<BiomeGen> biomegen;
 	std::unique_ptr<BiomeManager> biomemgr;
-	OreManager *oremgr;
-	DecorationManager *decomgr;
-	SchematicManager *schemmgr;
+	std::unique_ptr<OreManager> oremgr;
+	std::unique_ptr<DecorationManager> decomgr;
+	std::unique_ptr<SchematicManager> schemmgr;
 
 	inline GenerateNotifier createNotifier() const {
 		return GenerateNotifier(gen_notify_on, gen_notify_on_deco_ids,
@@ -159,9 +159,9 @@ public:
 
 	// no usage restrictions
 	const BiomeManager *getBiomeManager() const { return biomemgr.get(); }
-	const OreManager *getOreManager() const { return oremgr; }
-	const DecorationManager *getDecorationManager() const { return decomgr; }
-	const SchematicManager *getSchematicManager() const { return schemmgr; }
+	const OreManager *getOreManager() const { return oremgr.get(); }
+	const DecorationManager *getDecorationManager() const { return decomgr.get(); }
+	const SchematicManager *getSchematicManager() const { return schemmgr.get(); }
 	// only usable before mapgen init
 	BiomeManager *getWritableBiomeManager();
 	OreManager *getWritableOreManager();
@@ -217,9 +217,9 @@ private:
 	// Note that each Mapgen gets a copy(!) of these to work with
 	std::unique_ptr<BiomeGen> biomegen;
 	std::unique_ptr<BiomeManager> biomemgr;
-	OreManager *oremgr;
-	DecorationManager *decomgr;
-	SchematicManager *schemmgr;
+	std::unique_ptr<OreManager> oremgr;
+	std::unique_ptr<DecorationManager> decomgr;
+	std::unique_ptr<SchematicManager> schemmgr;
 
 	// Requires m_queue_mutex held
 	EmergeThread *getOptimalThread();
