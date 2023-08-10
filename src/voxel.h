@@ -381,7 +381,9 @@ class VoxelManipulator
 {
 public:
 	VoxelManipulator() = default;
-	virtual ~VoxelManipulator();
+	virtual ~VoxelManipulator() = default;
+	VoxelManipulator(VoxelManipulator &&) = default;
+	VoxelManipulator &operator=(VoxelManipulator &&) = default;
 
 	/*
 		These are a bit slow and shouldn't be used internally.
@@ -522,12 +524,12 @@ public:
 		nullptr if data size is 0 (extent (0,0,0))
 		Data is stored as [z*h*w + y*h + x]
 	*/
-	MapNode *m_data = nullptr;
+	std::unique_ptr<MapNode[]> m_data;
 
 	/*
 		Flags of all nodes
 	*/
-	u8 *m_flags = nullptr;
+	std::unique_ptr<u8[]> m_flags;
 
 	static const MapNode ContentIgnoreNode;
 };

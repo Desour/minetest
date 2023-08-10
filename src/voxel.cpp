@@ -33,19 +33,12 @@ u64 emerge_time = 0;
 u64 emerge_load_time = 0;
 u64 clearflag_time = 0;
 
-VoxelManipulator::~VoxelManipulator()
-{
-	clear();
-}
-
 void VoxelManipulator::clear()
 {
 	// Reset area to volume=0
 	m_area = VoxelArea();
-	delete[] m_data;
-	m_data = nullptr;
-	delete[] m_flags;
-	m_flags = nullptr;
+	m_data.reset();
+	m_flags.reset();
 }
 
 void VoxelManipulator::print(std::ostream &o, const NodeDefManager *ndef,
@@ -164,11 +157,11 @@ void VoxelManipulator::addArea(const VoxelArea &area)
 	dstream<<std::endl;*/
 
 	// Allocate new data and clear flags
-	MapNode *new_data = new MapNode[new_size];
+	std::unique_ptr<MapNode[]> new_data(new MapNode[new_size]);
 	assert(new_data);
-	u8 *new_flags = new u8[new_size];
+	std::unique_ptr<u8[]> new_flags(new u8[new_size]);
 	assert(new_flags);
-	memset(new_flags, VOXELFLAG_NO_DATA, new_size);
+	memset(new_flags.get(), VOXELFLAG_NO_DATA, new_size);
 
 	// Copy old data
 	s32 old_x_width = m_area.MaxEdge.X - m_area.MinEdge.X + 1;
@@ -187,18 +180,8 @@ void VoxelManipulator::addArea(const VoxelArea &area)
 	// Replace area, data and flags
 
 	m_area = new_area;
-
-	MapNode *old_data = m_data;
-	u8 *old_flags = m_flags;
-
-	/*dstream<<"old_data="<<(int)old_data<<", new_data="<<(int)new_data
-	<<", old_flags="<<(int)m_flags<<", new_flags="<<(int)new_flags<<std::endl;*/
-
-	m_data = new_data;
-	m_flags = new_flags;
-
-	delete[] old_data;
-	delete[] old_flags;
+	m_data = std::move(new_data);
+	m_flags = std::move(new_flags);
 
 	//dstream<<"addArea done"<<std::endl;
 }
@@ -242,7 +225,7 @@ void VoxelManipulator::copyFrom(MapNode *src, const VoxelArea& src_area,
 
 	for (s16 z = 0; z < size.Z; z++) {
 		for (s16 y = 0; y < size.Y; y++) {
-			memcpy(&m_data[i_local], &src[i_src], size.X * sizeof(*m_data));
+			memcpy(&m_data[i_local], &src[i_src], size.X * sizeof(m_data[0]));
 			memset(&m_flags[i_local], 0, size.X);
 			i_src += src_step;
 			i_local += dest_step;

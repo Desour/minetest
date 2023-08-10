@@ -2078,12 +2078,12 @@ MMVManip *MMVManip::clone() const
 	const s32 size = m_area.getVolume();
 	ret->m_area = m_area;
 	if (m_data) {
-		ret->m_data = new MapNode[size];
-		memcpy(ret->m_data, m_data, size * sizeof(MapNode));
+		ret->m_data.reset(new MapNode[size]);
+		memcpy(ret->m_data.get(), m_data.get(), size * sizeof(MapNode));
 	}
 	if (m_flags) {
-		ret->m_flags = new u8[size];
-		memcpy(ret->m_flags, m_flags, size * sizeof(u8));
+		ret->m_flags.reset(new u8[size]);
+		memcpy(ret->m_flags.get(), m_flags.get(), size * sizeof(u8));
 	}
 
 	ret->m_is_dirty = m_is_dirty;
