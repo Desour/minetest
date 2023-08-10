@@ -76,47 +76,28 @@ MapgenCarpathian::MapgenCarpathian(MapgenCarpathianParams *params,
 
 	//// 2D Terrain noise
 	noise_filler_depth  = std::make_unique<Noise>(&params->np_filler_depth,  seed, csize.X, csize.Z);
-	noise_height1       = new Noise(&params->np_height1,       seed, csize.X, csize.Z);
-	noise_height2       = new Noise(&params->np_height2,       seed, csize.X, csize.Z);
-	noise_height3       = new Noise(&params->np_height3,       seed, csize.X, csize.Z);
-	noise_height4       = new Noise(&params->np_height4,       seed, csize.X, csize.Z);
-	noise_hills_terrain = new Noise(&params->np_hills_terrain, seed, csize.X, csize.Z);
-	noise_ridge_terrain = new Noise(&params->np_ridge_terrain, seed, csize.X, csize.Z);
-	noise_step_terrain  = new Noise(&params->np_step_terrain,  seed, csize.X, csize.Z);
-	noise_hills         = new Noise(&params->np_hills,         seed, csize.X, csize.Z);
-	noise_ridge_mnt     = new Noise(&params->np_ridge_mnt,     seed, csize.X, csize.Z);
-	noise_step_mnt      = new Noise(&params->np_step_mnt,      seed, csize.X, csize.Z);
+	noise_height1       = std::make_unique<Noise>(&params->np_height1,       seed, csize.X, csize.Z);
+	noise_height2       = std::make_unique<Noise>(&params->np_height2,       seed, csize.X, csize.Z);
+	noise_height3       = std::make_unique<Noise>(&params->np_height3,       seed, csize.X, csize.Z);
+	noise_height4       = std::make_unique<Noise>(&params->np_height4,       seed, csize.X, csize.Z);
+	noise_hills_terrain = std::make_unique<Noise>(&params->np_hills_terrain, seed, csize.X, csize.Z);
+	noise_ridge_terrain = std::make_unique<Noise>(&params->np_ridge_terrain, seed, csize.X, csize.Z);
+	noise_step_terrain  = std::make_unique<Noise>(&params->np_step_terrain,  seed, csize.X, csize.Z);
+	noise_hills         = std::make_unique<Noise>(&params->np_hills,         seed, csize.X, csize.Z);
+	noise_ridge_mnt     = std::make_unique<Noise>(&params->np_ridge_mnt,     seed, csize.X, csize.Z);
+	noise_step_mnt      = std::make_unique<Noise>(&params->np_step_mnt,      seed, csize.X, csize.Z);
 	if (spflags & MGCARPATHIAN_RIVERS)
-		noise_rivers    = new Noise(&params->np_rivers,        seed, csize.X, csize.Z);
+		noise_rivers    = std::make_unique<Noise>(&params->np_rivers,        seed, csize.X, csize.Z);
 
 	//// 3D terrain noise
 	// 1 up 1 down overgeneration
-	noise_mnt_var = new Noise(&params->np_mnt_var, seed, csize.X, csize.Y + 2, csize.Z);
+	noise_mnt_var = std::make_unique<Noise>(&params->np_mnt_var, seed, csize.X, csize.Y + 2, csize.Z);
 
 	//// Cave noise
 	MapgenBasic::np_cave1  = params->np_cave1;
 	MapgenBasic::np_cave2  = params->np_cave2;
 	MapgenBasic::np_cavern = params->np_cavern;
 	MapgenBasic::np_dungeons = params->np_dungeons;
-}
-
-
-MapgenCarpathian::~MapgenCarpathian()
-{
-	delete noise_height1;
-	delete noise_height2;
-	delete noise_height3;
-	delete noise_height4;
-	delete noise_hills_terrain;
-	delete noise_ridge_terrain;
-	delete noise_step_terrain;
-	delete noise_hills;
-	delete noise_ridge_mnt;
-	delete noise_step_mnt;
-	if (spflags & MGCARPATHIAN_RIVERS)
-		delete noise_rivers;
-
-	delete noise_mnt_var;
 }
 
 

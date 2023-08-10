@@ -69,7 +69,6 @@ struct MapgenCarpathianParams : public MapgenParams
 	NoiseParams np_dungeons;
 
 	MapgenCarpathianParams();
-	~MapgenCarpathianParams() = default;
 
 	void readParams(const Settings *settings);
 	void writeParams(Settings *settings) const;
@@ -80,7 +79,6 @@ class MapgenCarpathian : public MapgenBasic
 {
 public:
 	MapgenCarpathian(MapgenCarpathianParams *params, std::unique_ptr<EmergeParams> emerge);
-	~MapgenCarpathian();
 
 	virtual MapgenType getType() const { return MAPGEN_CARPATHIAN; }
 
@@ -93,18 +91,18 @@ private:
 	float river_depth;
 	float valley_width;
 
-	Noise *noise_height1;
-	Noise *noise_height2;
-	Noise *noise_height3;
-	Noise *noise_height4;
-	Noise *noise_hills_terrain;
-	Noise *noise_ridge_terrain;
-	Noise *noise_step_terrain;
-	Noise *noise_hills;
-	Noise *noise_ridge_mnt;
-	Noise *noise_step_mnt;
-	Noise *noise_rivers = nullptr;
-	Noise *noise_mnt_var;
+	std::unique_ptr<Noise> noise_height1;
+	std::unique_ptr<Noise> noise_height2;
+	std::unique_ptr<Noise> noise_height3;
+	std::unique_ptr<Noise> noise_height4;
+	std::unique_ptr<Noise> noise_hills_terrain;
+	std::unique_ptr<Noise> noise_ridge_terrain;
+	std::unique_ptr<Noise> noise_step_terrain;
+	std::unique_ptr<Noise> noise_hills;
+	std::unique_ptr<Noise> noise_ridge_mnt;
+	std::unique_ptr<Noise> noise_step_mnt;
+	std::unique_ptr<Noise> noise_rivers;
+	std::unique_ptr<Noise> noise_mnt_var;
 
 	s32 grad_wl;
 
