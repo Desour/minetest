@@ -252,7 +252,7 @@ public:
 	// Mapgen management functions
 	static MapgenType getMapgenType(const std::string &mgname);
 	static const char *getMapgenName(MapgenType mgtype);
-	static Mapgen *createMapgen(MapgenType mgtype, MapgenParams *params,
+	static std::unique_ptr<Mapgen> createMapgen(MapgenType mgtype, MapgenParams *params,
 		std::unique_ptr<EmergeParams> emerge);
 	static std::unique_ptr<MapgenParams> createMapgenParams(MapgenType mgtype);
 	static void getMapgenNames(std::vector<const char *> *mgnames, bool include_hidden);

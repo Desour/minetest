@@ -198,7 +198,7 @@ public:
 	static v3s16 getContainingChunk(v3s16 blockpos, s16 chunksize);
 
 private:
-	std::vector<Mapgen *> m_mapgens;
+	std::vector<std::unique_ptr<Mapgen>> m_mapgens;
 	std::vector<std::unique_ptr<EmergeThread>> m_threads;
 	bool m_threads_active = false;
 

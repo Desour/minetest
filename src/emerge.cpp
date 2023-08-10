@@ -146,7 +146,7 @@ EmergeManager::~EmergeManager()
 
 		// Mapgen init might not be finished if there is an error during startup.
 		if (m_mapgens.size() > i)
-			delete m_mapgens[i];
+			m_mapgens[i].reset();
 	}
 
 	biomegen.reset();
@@ -647,7 +647,7 @@ void *EmergeThread::run()
 
 	m_map    = &m_server->m_env->getServerMap();
 	m_emerge = m_server->getEmergeManager();
-	m_mapgen = m_emerge->m_mapgens[id];
+	m_mapgen = m_emerge->m_mapgens[id].get();
 	enable_mapgen_debug_info = m_emerge->enable_mapgen_debug_info;
 
 	if (!initScripting()) {

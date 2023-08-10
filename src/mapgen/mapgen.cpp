@@ -158,26 +158,34 @@ const char *Mapgen::getMapgenName(MapgenType mgtype)
 }
 
 
-Mapgen *Mapgen::createMapgen(MapgenType mgtype, MapgenParams *params,
+std::unique_ptr<Mapgen> Mapgen::createMapgen(MapgenType mgtype, MapgenParams *params,
 	std::unique_ptr<EmergeParams> emerge)
 {
 	switch (mgtype) {
 	case MAPGEN_CARPATHIAN:
-		return new MapgenCarpathian((MapgenCarpathianParams *)params, std::move(emerge));
+		return std::make_unique<MapgenCarpathian>(
+				static_cast<MapgenCarpathianParams *>(params), std::move(emerge));
 	case MAPGEN_FLAT:
-		return new MapgenFlat((MapgenFlatParams *)params, std::move(emerge));
+		return std::make_unique<MapgenFlat>(
+				static_cast<MapgenFlatParams       *>(params), std::move(emerge));
 	case MAPGEN_FRACTAL:
-		return new MapgenFractal((MapgenFractalParams *)params, std::move(emerge));
+		return std::make_unique<MapgenFractal>(
+				static_cast<MapgenFractalParams    *>(params), std::move(emerge));
 	case MAPGEN_SINGLENODE:
-		return new MapgenSinglenode((MapgenSinglenodeParams *)params, std::move(emerge));
+		return std::make_unique<MapgenSinglenode>(
+				static_cast<MapgenSinglenodeParams *>(params), std::move(emerge));
 	case MAPGEN_V5:
-		return new MapgenV5((MapgenV5Params *)params, std::move(emerge));
+		return std::make_unique<MapgenV5>(
+				static_cast<MapgenV5Params         *>(params), std::move(emerge));
 	case MAPGEN_V6:
-		return new MapgenV6((MapgenV6Params *)params, std::move(emerge));
+		return std::make_unique<MapgenV6>(
+				static_cast<MapgenV6Params         *>(params), std::move(emerge));
 	case MAPGEN_V7:
-		return new MapgenV7((MapgenV7Params *)params, std::move(emerge));
+		return std::make_unique<MapgenV7>(
+				static_cast<MapgenV7Params         *>(params), std::move(emerge));
 	case MAPGEN_VALLEYS:
-		return new MapgenValleys((MapgenValleysParams *)params, std::move(emerge));
+		return std::make_unique<MapgenValleys>(
+				static_cast<MapgenValleysParams    *>(params), std::move(emerge));
 	default:
 		return nullptr;
 	}
