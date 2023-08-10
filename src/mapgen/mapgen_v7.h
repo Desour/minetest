@@ -72,7 +72,6 @@ struct MapgenV7Params : public MapgenParams {
 	NoiseParams np_dungeons;
 
 	MapgenV7Params();
-	~MapgenV7Params() = default;
 
 	void readParams(const Settings *settings);
 	void writeParams(Settings *settings) const;
@@ -83,7 +82,6 @@ struct MapgenV7Params : public MapgenParams {
 class MapgenV7 : public MapgenBasic {
 public:
 	MapgenV7(MapgenV7Params *params, std::unique_ptr<EmergeParams> emerge);
-	~MapgenV7();
 
 	virtual MapgenType getType() const { return MAPGEN_V7; }
 
@@ -108,15 +106,15 @@ private:
 	float floatland_density;
 	s16 floatland_ywater;
 
-	float *float_offset_cache = nullptr;
+	std::unique_ptr<float[]> float_offset_cache;
 
-	Noise *noise_terrain_base;
-	Noise *noise_terrain_alt;
-	Noise *noise_terrain_persist;
-	Noise *noise_height_select;
-	Noise *noise_mount_height;
-	Noise *noise_ridge_uwater;
-	Noise *noise_mountain;
-	Noise *noise_ridge;
-	Noise *noise_floatland;
+	std::unique_ptr<Noise> noise_terrain_base;
+	std::unique_ptr<Noise> noise_terrain_alt;
+	std::unique_ptr<Noise> noise_terrain_persist;
+	std::unique_ptr<Noise> noise_height_select;
+	std::unique_ptr<Noise> noise_mount_height;
+	std::unique_ptr<Noise> noise_ridge_uwater;
+	std::unique_ptr<Noise> noise_mountain;
+	std::unique_ptr<Noise> noise_ridge;
+	std::unique_ptr<Noise> noise_floatland;
 };
