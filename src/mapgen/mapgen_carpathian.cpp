@@ -75,7 +75,7 @@ MapgenCarpathian::MapgenCarpathian(MapgenCarpathianParams *params,
 	grad_wl = 1 - water_level;
 
 	//// 2D Terrain noise
-	noise_filler_depth  = new Noise(&params->np_filler_depth,  seed, csize.X, csize.Z);
+	noise_filler_depth  = std::make_unique<Noise>(&params->np_filler_depth,  seed, csize.X, csize.Z);
 	noise_height1       = new Noise(&params->np_height1,       seed, csize.X, csize.Z);
 	noise_height2       = new Noise(&params->np_height2,       seed, csize.X, csize.Z);
 	noise_height3       = new Noise(&params->np_height3,       seed, csize.X, csize.Z);
@@ -103,7 +103,6 @@ MapgenCarpathian::MapgenCarpathian(MapgenCarpathianParams *params,
 
 MapgenCarpathian::~MapgenCarpathian()
 {
-	delete noise_filler_depth;
 	delete noise_height1;
 	delete noise_height2;
 	delete noise_height3;

@@ -306,7 +306,7 @@ public:
 protected:
 	BiomeManager *m_bmgr;
 
-	Noise *noise_filler_depth;
+	std::unique_ptr<Noise> noise_filler_depth;
 
 	v3s16 node_min;
 	v3s16 node_max;

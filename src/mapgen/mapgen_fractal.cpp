@@ -75,7 +75,7 @@ MapgenFractal::MapgenFractal(MapgenFractalParams *params,
 	if (spflags & MGFRACTAL_TERRAIN)
 		noise_seabed = new Noise(&params->np_seabed, seed, csize.X, csize.Z);
 
-	noise_filler_depth = new Noise(&params->np_filler_depth, seed, csize.X, csize.Z);
+	noise_filler_depth = std::make_unique<Noise>(&params->np_filler_depth, seed, csize.X, csize.Z);
 
 	//// 3D noise
 	MapgenBasic::np_dungeons = params->np_dungeons;
@@ -91,7 +91,6 @@ MapgenFractal::MapgenFractal(MapgenFractalParams *params,
 MapgenFractal::~MapgenFractal()
 {
 	delete noise_seabed;
-	delete noise_filler_depth;
 }
 
 

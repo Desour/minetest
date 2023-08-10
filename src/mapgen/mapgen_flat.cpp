@@ -72,7 +72,7 @@ MapgenFlat::MapgenFlat(MapgenFlatParams *params, std::unique_ptr<EmergeParams> e
 	dungeon_ymax       = params->dungeon_ymax;
 
 	// 2D noise
-	noise_filler_depth = new Noise(&params->np_filler_depth, seed, csize.X, csize.Z);
+	noise_filler_depth = std::make_unique<Noise>(&params->np_filler_depth, seed, csize.X, csize.Z);
 
 	if ((spflags & MGFLAT_LAKES) || (spflags & MGFLAT_HILLS))
 		noise_terrain = new Noise(&params->np_terrain, seed, csize.X, csize.Z);
@@ -87,8 +87,6 @@ MapgenFlat::MapgenFlat(MapgenFlatParams *params, std::unique_ptr<EmergeParams> e
 
 MapgenFlat::~MapgenFlat()
 {
-	delete noise_filler_depth;
-
 	if ((spflags & MGFLAT_LAKES) || (spflags & MGFLAT_HILLS))
 		delete noise_terrain;
 }

@@ -80,7 +80,7 @@ MapgenValleys::MapgenValleys(MapgenValleysParams *params, std::unique_ptr<Emerge
 	dungeon_ymax       = params->dungeon_ymax;
 
 	//// 2D Terrain noise
-	noise_filler_depth       = new Noise(&params->np_filler_depth,       seed, csize.X, csize.Z);
+	noise_filler_depth       = std::make_unique<Noise>(&params->np_filler_depth,       seed, csize.X, csize.Z);
 	noise_inter_valley_slope = new Noise(&params->np_inter_valley_slope, seed, csize.X, csize.Z);
 	noise_rivers             = new Noise(&params->np_rivers,             seed, csize.X, csize.Z);
 	noise_terrain_height     = new Noise(&params->np_terrain_height,     seed, csize.X, csize.Z);
@@ -101,7 +101,6 @@ MapgenValleys::MapgenValleys(MapgenValleysParams *params, std::unique_ptr<Emerge
 
 MapgenValleys::~MapgenValleys()
 {
-	delete noise_filler_depth;
 	delete noise_inter_valley_fill;
 	delete noise_inter_valley_slope;
 	delete noise_rivers;

@@ -89,7 +89,7 @@ MapgenV7::MapgenV7(MapgenV7Params *params, std::unique_ptr<EmergeParams> emerge)
 	noise_height_select =
 		new Noise(&params->np_height_select,   seed, csize.X, csize.Z);
 	noise_filler_depth =
-		new Noise(&params->np_filler_depth,    seed, csize.X, csize.Z);
+		std::make_unique<Noise>(&params->np_filler_depth,    seed, csize.X, csize.Z);
 
 	if (spflags & MGV7_MOUNTAINS) {
 		// 2D noise
@@ -130,7 +130,6 @@ MapgenV7::~MapgenV7()
 	delete noise_terrain_alt;
 	delete noise_terrain_persist;
 	delete noise_height_select;
-	delete noise_filler_depth;
 
 	if (spflags & MGV7_MOUNTAINS) {
 		delete noise_mount_height;

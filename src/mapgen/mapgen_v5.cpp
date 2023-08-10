@@ -62,7 +62,7 @@ MapgenV5::MapgenV5(MapgenV5Params *params, std::unique_ptr<EmergeParams> emerge)
 	dungeon_ymax       = params->dungeon_ymax;
 
 	// Terrain noise
-	noise_filler_depth = new Noise(&params->np_filler_depth, seed, csize.X, csize.Z);
+	noise_filler_depth = std::make_unique<Noise>(&params->np_filler_depth, seed, csize.X, csize.Z);
 	noise_factor       = new Noise(&params->np_factor,       seed, csize.X, csize.Z);
 	noise_height       = new Noise(&params->np_height,       seed, csize.X, csize.Z);
 
@@ -79,7 +79,6 @@ MapgenV5::MapgenV5(MapgenV5Params *params, std::unique_ptr<EmergeParams> emerge)
 
 MapgenV5::~MapgenV5()
 {
-	delete noise_filler_depth;
 	delete noise_factor;
 	delete noise_height;
 	delete noise_ground;
