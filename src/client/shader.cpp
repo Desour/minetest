@@ -162,8 +162,11 @@ private:
 	std::string readFile(const std::string &path)
 	{
 		std::ifstream is(path.c_str(), std::ios::binary);
-		if(!is.is_open())
+		if(!is.is_open()) {
+			warningstream << "SourceShaderCache::readFile(): Could not open \""
+					<< path << "\"" << std::endl;
 			return "";
+		}
 		std::ostringstream tmp_os;
 		tmp_os << is.rdbuf();
 		return tmp_os.str();
