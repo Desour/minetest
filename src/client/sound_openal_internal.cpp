@@ -1143,19 +1143,41 @@ void *OpenALSoundManager::run()
 	struct MsgVisitor {
 		enum class Result { Ok, Empty, StopRequested };
 
-		Result operator()(std::monostate &&)
-		{
-			return Result::Empty;
-		}
-		Result operator()(PleaseCall &&msg)
-		{
-			msg.f();
-			return Result::Ok;
-		}
-		Result operator()(PleaseStop &&msg)
-		{
-			return Result::StopRequested;
-		}
+		OpenALSoundManager &mgr;
+
+		Result operator()(std::monostate &&) {
+			return Result::Empty; }
+
+		Result operator()(PauseAll &&) {
+			mgr.pauseAll(); return Result::Ok; }
+		Result operator()(ResumeAll &&) {
+			mgr.resumeAll(); return Result::Ok; }
+
+		Result operator()(UpdateListener &&msg) {
+			mgr.updateListener(msg.pos_, msg.vel_, msg.at_, msg.up_); return Result::Ok; }
+		Result operator()(SetListenerGain &&msg) {
+			mgr.setListenerGain(msg.gain); return Result::Ok; }
+
+		Result operator()(LoadSoundFile &&msg) {
+			mgr.loadSoundFileNoCheck(msg.name, msg.filepath); return Result::Ok; }
+		Result operator()(LoadSoundData &&msg) {
+			mgr.loadSoundDataNoCheck(msg.name, std::move(msg.filedata)); return Result::Ok; }
+		Result operator()(AddSoundToGroup &&msg) {
+			mgr.addSoundToGroup(msg.sound_name, msg.group_name); return Result::Ok; }
+
+		Result operator()(PlaySound &&msg) {
+			mgr.playSound(msg.id, msg.spec); return Result::Ok; }
+		Result operator()(PlaySoundAt &&msg) {
+			mgr.playSoundAt(msg.id, msg.spec, msg.pos_, msg.vel_); return Result::Ok; }
+		Result operator()(StopSound &&msg) {
+			mgr.stopSound(msg.sound); return Result::Ok; }
+		Result operator()(FadeSound &&msg) {
+			mgr.fadeSound(msg.soundid, msg.step, msg.target_gain); return Result::Ok; }
+		Result operator()(UpdateSoundPosVel &&msg) {
+			mgr.updateSoundPosVel(msg.sound, msg.pos_, msg.vel_); return Result::Ok; }
+
+		Result operator()(PleaseStop &&msg) {
+			return Result::StopRequested; }
 	};
 
 	u64 t_step_start = porting::getTimeMs();
@@ -1173,7 +1195,7 @@ void *OpenALSoundManager::run()
 			SoundManagerMsgToMgr msg =
 					m_queue_to_mgr.pop_frontNoEx(std::max(get_remaining_timeout(), 0));
 
-			MsgVisitor::Result res = std::visit(MsgVisitor{}, std::move(msg));
+			MsgVisitor::Result res = std::visit(MsgVisitor{*this}, std::move(msg));
 
 			if (res == MsgVisitor::Result::Empty && get_remaining_timeout() <= 0) {
 				break; // finished sleeping
@@ -1256,33 +1278,23 @@ void ProxySoundManager::step(f32 dtime)
 
 void ProxySoundManager::pauseAll()
 {
-	send(sound_manager_messages_to_mgr::PleaseCall{std::bind(
-			&OpenALSoundManager::pauseAll, &m_sound_manager
-		)});
+	send(sound_manager_messages_to_mgr::PauseAll{});
 }
 
 void ProxySoundManager::resumeAll()
 {
-	send(sound_manager_messages_to_mgr::PleaseCall{std::bind(
-			&OpenALSoundManager::resumeAll, &m_sound_manager
-		)});
+	send(sound_manager_messages_to_mgr::ResumeAll{});
 }
 
 void ProxySoundManager::updateListener(const v3f &pos_, const v3f &vel_,
 		const v3f &at_, const v3f &up_)
 {
-	send(sound_manager_messages_to_mgr::PleaseCall{std::bind(
-			&OpenALSoundManager::updateListener, &m_sound_manager,
-			pos_, vel_, at_, up_
-		)});
+	send(sound_manager_messages_to_mgr::UpdateListener{pos_, vel_, at_, up_});
 }
 
 void ProxySoundManager::setListenerGain(f32 gain)
 {
-	send(sound_manager_messages_to_mgr::PleaseCall{std::bind(
-			&OpenALSoundManager::setListenerGain, &m_sound_manager,
-			gain
-		)});
+	send(sound_manager_messages_to_mgr::SetListenerGain{gain});
 }
 
 bool ProxySoundManager::loadSoundFile(const std::string &name,
@@ -1296,10 +1308,7 @@ bool ProxySoundManager::loadSoundFile(const std::string &name,
 	if (!fs::IsFile(filepath))
 		return false;
 
-	send(sound_manager_messages_to_mgr::PleaseCall{std::bind(
-			&OpenALSoundManager::loadSoundFileNoCheck, &m_sound_manager,
-			name, filepath
-		)});
+	send(sound_manager_messages_to_mgr::LoadSoundFile{name, filepath});
 
 	m_known_sound_names.insert(name);
 	return true;
@@ -1311,11 +1320,7 @@ bool ProxySoundManager::loadSoundData(const std::string &name, std::string &&fil
 	if (m_known_sound_names.count(name) != 0)
 		return false;
 
-	send(sound_manager_messages_to_mgr::PleaseCall{
-			[mgr = &m_sound_manager, name, fdata = std::move(filedata)] {
-				mgr->loadSoundDataNoCheck(name, std::move(const_cast<std::string &>(fdata)));
-			}
-		});
+	send(sound_manager_messages_to_mgr::LoadSoundData{name, std::move(filedata)});
 
 	m_known_sound_names.insert(name);
 	return true;
@@ -1324,20 +1329,14 @@ bool ProxySoundManager::loadSoundData(const std::string &name, std::string &&fil
 void ProxySoundManager::addSoundToGroup(const std::string &sound_name,
 		const std::string &group_name)
 {
-	send(sound_manager_messages_to_mgr::PleaseCall{std::bind(
-			&OpenALSoundManager::addSoundToGroup, &m_sound_manager,
-			sound_name, group_name
-		)});
+	send(sound_manager_messages_to_mgr::AddSoundToGroup{sound_name, group_name});
 }
 
 void ProxySoundManager::playSound(sound_handle_t id, const SoundSpec &spec)
 {
 	if (id == 0)
 		id = allocateId(1);
-	send(sound_manager_messages_to_mgr::PleaseCall{std::bind(
-			&OpenALSoundManager::playSound, &m_sound_manager,
-			id, spec
-		)});
+	send(sound_manager_messages_to_mgr::PlaySound{id, spec});
 }
 
 void ProxySoundManager::playSoundAt(sound_handle_t id, const SoundSpec &spec, const v3f &pos_,
@@ -1345,32 +1344,20 @@ void ProxySoundManager::playSoundAt(sound_handle_t id, const SoundSpec &spec, co
 {
 	if (id == 0)
 		id = allocateId(1);
-	send(sound_manager_messages_to_mgr::PleaseCall{std::bind(
-			&OpenALSoundManager::playSoundAt, &m_sound_manager,
-			id, spec, pos_, vel_
-		)});
+	send(sound_manager_messages_to_mgr::PlaySoundAt{id, spec, pos_, vel_});
 }
 
 void ProxySoundManager::stopSound(sound_handle_t sound)
 {
-	send(sound_manager_messages_to_mgr::PleaseCall{std::bind(
-			&OpenALSoundManager::stopSound, &m_sound_manager,
-			sound
-		)});
+	send(sound_manager_messages_to_mgr::StopSound{sound});
 }
 
 void ProxySoundManager::fadeSound(sound_handle_t soundid, f32 step, f32 target_gain)
 {
-	send(sound_manager_messages_to_mgr::PleaseCall{std::bind(
-			&OpenALSoundManager::fadeSound, &m_sound_manager,
-			soundid, step, target_gain
-		)});
+	send(sound_manager_messages_to_mgr::FadeSound{soundid, step, target_gain});
 }
 
 void ProxySoundManager::updateSoundPosVel(sound_handle_t sound, const v3f &pos_, const v3f &vel_)
 {
-	send(sound_manager_messages_to_mgr::PleaseCall{std::bind(
-			&OpenALSoundManager::updateSoundPosVel, &m_sound_manager,
-			sound, pos_, vel_
-		)});
+	send(sound_manager_messages_to_mgr::UpdateSoundPosVel{sound, pos_, vel_});
 }
