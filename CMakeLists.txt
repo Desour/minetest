@@ -30,6 +30,21 @@ if (CMAKE_BUILD_TYPE STREQUAL Debug)
 	set(VERSION_STRING "${VERSION_STRING}-debug")
 endif()
 
+
+include(FetchContent)
+
+message(STATUS "Fetching Tracy")
+FetchContent_Declare(
+	tracy
+	GIT_REPOSITORY https://github.com/wolfpld/tracy.git
+	GIT_TAG v0.9.1
+	GIT_SHALLOW TRUE
+	GIT_PROGRESS TRUE
+)
+FetchContent_MakeAvailable(tracy)
+message(STATUS "Fetching Tracy - done")
+
+
 # Configuration options
 set(BUILD_CLIENT TRUE CACHE BOOL "Build client")
 set(BUILD_SERVER FALSE CACHE BOOL "Build server")

@@ -600,6 +600,7 @@ if(BUILD_CLIENT)
 		# on Android, Minetest depends on SDL2 directly
 		# on other platforms, only IrrlichtMt depends on SDL2
 		"$<$<PLATFORM_ID:Android>:${SDL2_LIBRARIES}>"
+		Tracy::TracyClient
 	)
 	if(NOT USE_LUAJIT)
 		set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -674,6 +675,7 @@ if(BUILD_SERVER)
 		sha256
 		${GMP_LIBRARY}
 		${PLATFORM_LIBS}
+		Tracy::TracyClient
 	)
 	set_target_properties(${PROJECT_NAME}server PROPERTIES
 		COMPILE_DEFINITIONS "SERVER")
