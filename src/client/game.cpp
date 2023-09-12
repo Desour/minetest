@@ -1142,6 +1142,7 @@ bool Game::startup(bool *kill,
 
 void Game::run()
 {
+	ZoneScoped;
 	static const char *framename_game = "Game::run()-frame";
 
 	ProfilerGraph graph;
@@ -1250,6 +1251,8 @@ void Game::run()
 
 void Game::shutdown()
 {
+	ZoneScoped;
+
 	auto formspec = m_game_ui->getFormspecGUI();
 	if (formspec)
 		formspec->quitMenu();
@@ -1335,6 +1338,8 @@ bool Game::init(
 		u16 port,
 		const SubgameSpec &gamespec)
 {
+	ZoneScoped;
+
 	texture_src = createTextureSource();
 
 	showOverlayMessage(N_("Loading..."), 0, 0);
@@ -1365,6 +1370,8 @@ bool Game::init(
 
 bool Game::initSound()
 {
+	ZoneScoped;
+
 #if USE_SOUND
 	if (g_settings->getBool("enable_sound") && g_sound_manager_singleton.get()) {
 		infostream << "Attempting to use OpenAL audio" << std::endl;
@@ -1394,6 +1401,8 @@ bool Game::initSound()
 bool Game::createSingleplayerServer(const std::string &map_dir,
 		const SubgameSpec &gamespec, u16 port)
 {
+	ZoneScoped;
+
 	showOverlayMessage(N_("Creating server..."), 0, 5);
 
 	std::string bind_str;
@@ -1476,6 +1485,8 @@ void Game::copyServerClientCache()
 
 bool Game::createClient(const GameStartData &start_data)
 {
+	ZoneScoped;
+
 	showOverlayMessage(N_("Creating client..."), 0, 10);
 
 	draw_control = new MapDrawControl();
@@ -1578,6 +1589,8 @@ bool Game::createClient(const GameStartData &start_data)
 
 bool Game::initGui()
 {
+	ZoneScoped;
+
 	m_game_ui->init();
 
 	// Remove stale "recent" chat messages from previous connections
@@ -1599,6 +1612,7 @@ bool Game::initGui()
 bool Game::connectToServer(const GameStartData &start_data,
 		bool *connect_ok, bool *connection_aborted)
 {
+	ZoneScoped;
 	static const char *framename_game_connectToServer = "Game::connectToServer()-frame";
 
 	*connect_ok = false;	// Let's not be overly optimistic
@@ -1750,6 +1764,7 @@ bool Game::connectToServer(const GameStartData &start_data,
 
 bool Game::getServerContent(bool *aborted)
 {
+	ZoneScoped;
 	static const char *framename_game_getServerContent = "Game::getServerContent()-frame";
 
 	input->clear();
@@ -1875,6 +1890,8 @@ inline bool Game::checkConnection()
  */
 inline bool Game::handleCallbacks()
 {
+	ZoneScoped;
+
 	if (g_gamecallback->disconnect_requested) {
 		g_gamecallback->disconnect_requested = false;
 		return false;
@@ -1915,12 +1932,16 @@ inline bool Game::handleCallbacks()
 
 void Game::processQueues()
 {
+	ZoneScoped;
+
 	texture_src->processQueue();
 	shader_src->processQueue();
 }
 
 void Game::updateDebugState()
 {
+	ZoneScoped;
+
 	LocalPlayer *player = client->getEnv().getLocalPlayer();
 
 	// debug UI and wireframe
@@ -1952,6 +1973,8 @@ void Game::updateDebugState()
 void Game::updateProfilers(const RunStats &stats, const FpsControl &draw_times,
 		f32 dtime)
 {
+	ZoneScoped;
+
 	float profiler_print_interval =
 			g_settings->getFloat("profiler_print_interval");
 	bool print_to_log = true;
@@ -1988,6 +2011,7 @@ void Game::updateProfilers(const RunStats &stats, const FpsControl &draw_times,
 void Game::updateStats(RunStats *stats, const FpsControl &draw_times,
 		f32 dtime)
 {
+	ZoneScoped;
 
 	f32 jitter;
 	Jitter *jp;
@@ -2042,6 +2066,8 @@ void Game::updateStats(RunStats *stats, const FpsControl &draw_times,
 
 void Game::processUserInput(f32 dtime)
 {
+	ZoneScoped;
+
 	// Reset input if window not active or some menu is active
 	if (!device->isWindowActive() || isMenuActive() || guienv->hasFocus(gui_chat_console)) {
 		if (m_game_focused) {
@@ -2279,6 +2305,8 @@ void Game::dropSelectedItem(bool single_item)
 
 void Game::openInventory()
 {
+	ZoneScoped;
+
 	/*
 	 * Don't permit to open inventory is CAO or player doesn't exists.
 	 * This prevent showing an empty inventory at player load
@@ -2317,6 +2345,8 @@ void Game::openInventory()
 
 void Game::openConsole(float scale, const wchar_t *line)
 {
+	ZoneScoped;
+
 	assert(scale > 0.0f && scale <= 1.0f);
 
 #ifdef __ANDROID__
@@ -2797,6 +2827,8 @@ void Game::updatePauseState()
 
 inline void Game::step(f32 dtime)
 {
+	ZoneScoped;
+
 	if (server) {
 		float fps_max = (!device->isWindowFocused() || g_menumgr.pausesGame()) ?
 				g_settings->getFloat("fps_max_unfocused") :
@@ -2927,6 +2959,8 @@ void Game::handleClientEvent_Deathscreen(ClientEvent *event, CameraOrientation *
 
 void Game::handleClientEvent_ShowFormSpec(ClientEvent *event, CameraOrientation *cam)
 {
+	ZoneScoped;
+
 	if (event->show_formspec.formspec->empty()) {
 		auto formspec = m_game_ui->getFormspecGUI();
 		if (formspec && (event->show_formspec.formname->empty()
@@ -2951,6 +2985,8 @@ void Game::handleClientEvent_ShowFormSpec(ClientEvent *event, CameraOrientation 
 
 void Game::handleClientEvent_ShowLocalFormSpec(ClientEvent *event, CameraOrientation *cam)
 {
+	ZoneScoped;
+
 	FormspecFormSource *fs_src = new FormspecFormSource(*event->show_formspec.formspec);
 	LocalFormspecHandler *txt_dst =
 		new LocalFormspecHandler(*event->show_formspec.formname, client);
@@ -2964,12 +3000,16 @@ void Game::handleClientEvent_ShowLocalFormSpec(ClientEvent *event, CameraOrienta
 void Game::handleClientEvent_HandleParticleEvent(ClientEvent *event,
 		CameraOrientation *cam)
 {
+	ZoneScoped;
+
 	LocalPlayer *player = client->getEnv().getLocalPlayer();
 	client->getParticleManager()->handleParticleEvent(event, client, player);
 }
 
 void Game::handleClientEvent_HudAdd(ClientEvent *event, CameraOrientation *cam)
 {
+	ZoneScoped;
+
 	LocalPlayer *player = client->getEnv().getLocalPlayer();
 
 	u32 server_id = event->hudadd->server_id;
@@ -3003,6 +3043,8 @@ void Game::handleClientEvent_HudAdd(ClientEvent *event, CameraOrientation *cam)
 
 void Game::handleClientEvent_HudRemove(ClientEvent *event, CameraOrientation *cam)
 {
+	ZoneScoped;
+
 	LocalPlayer *player = client->getEnv().getLocalPlayer();
 
 	auto i = m_hud_server_to_client.find(event->hudrm.id);
@@ -3016,6 +3058,8 @@ void Game::handleClientEvent_HudRemove(ClientEvent *event, CameraOrientation *ca
 
 void Game::handleClientEvent_HudChange(ClientEvent *event, CameraOrientation *cam)
 {
+	ZoneScoped;
+
 	LocalPlayer *player = client->getEnv().getLocalPlayer();
 
 	HudElement *e = nullptr;
@@ -3075,6 +3119,8 @@ void Game::handleClientEvent_HudChange(ClientEvent *event, CameraOrientation *ca
 
 void Game::handleClientEvent_SetSky(ClientEvent *event, CameraOrientation *cam)
 {
+	ZoneScoped;
+
 	sky->setVisible(false);
 	// Whether clouds are visible in front of a custom skybox.
 	sky->setCloudsEnabled(event->set_sky->clouds);
@@ -3145,6 +3191,8 @@ void Game::handleClientEvent_SetSky(ClientEvent *event, CameraOrientation *cam)
 
 void Game::handleClientEvent_SetSun(ClientEvent *event, CameraOrientation *cam)
 {
+	ZoneScoped;
+
 	sky->setSunVisible(event->sun_params->visible);
 	sky->setSunTexture(event->sun_params->texture,
 		event->sun_params->tonemap, texture_src);
@@ -3196,6 +3244,8 @@ void Game::handleClientEvent_CloudParams(ClientEvent *event, CameraOrientation *
 
 void Game::processClientEvents(CameraOrientation *cam)
 {
+	ZoneScoped;
+
 	while (client->hasClientEvents()) {
 		std::unique_ptr<ClientEvent> event(client->getClientEvent());
 		FATAL_ERROR_IF(event->type >= CLIENTEVENT_MAX, "Invalid clientevent type");
@@ -3206,6 +3256,8 @@ void Game::processClientEvents(CameraOrientation *cam)
 
 void Game::updateChat(f32 dtime)
 {
+	ZoneScoped;
+
 	// Get new messages from error log buffer
 	while (!m_chat_log_buf.empty())
 		chat_backend->addMessage(L"", utf8_to_wide(m_chat_log_buf.get()));
@@ -3300,6 +3352,8 @@ void Game::updateCamera(f32 dtime)
 
 void Game::updateSound(f32 dtime)
 {
+	ZoneScoped;
+
 	// Update sound listener
 	LocalPlayer *player = client->getEnv().getLocalPlayer();
 	ClientActiveObject *parent = player->getParent();
@@ -3328,6 +3382,8 @@ void Game::updateSound(f32 dtime)
 
 void Game::processPlayerInteraction(f32 dtime, bool show_hud)
 {
+	ZoneScoped;
+
 	LocalPlayer *player = client->getEnv().getLocalPlayer();
 
 	const v3f camera_direction = camera->getDirection();
@@ -3493,6 +3549,8 @@ PointedThing Game::updatePointedThing(
 	bool look_for_object,
 	const v3s16 &camera_offset)
 {
+	ZoneScoped;
+
 	std::vector<aabb3f> *selectionboxes = hud->getSelectionBoxes();
 	selectionboxes->clear();
 	hud->setSelectedFaceNormal(v3f());
@@ -3597,6 +3655,8 @@ void Game::handlePointingAtNothing(const ItemStack &playerItem)
 void Game::handlePointingAtNode(const PointedThing &pointed,
 	const ItemStack &selected_item, const ItemStack &hand_item, f32 dtime)
 {
+	ZoneScoped;
+
 	v3s16 nodepos = pointed.node_undersurface;
 	v3s16 neighborpos = pointed.node_abovesurface;
 
@@ -3654,6 +3714,8 @@ bool Game::nodePlacement(const ItemDefinition &selected_def,
 	const ItemStack &selected_item, const v3s16 &nodepos, const v3s16 &neighborpos,
 	const PointedThing &pointed, const NodeMetadata *meta)
 {
+	ZoneScoped;
+
 	const auto &prediction = selected_def.node_placement_prediction;
 
 	const NodeDefManager *nodedef = client->ndef();
@@ -3888,6 +3950,8 @@ bool Game::nodePlacement(const ItemDefinition &selected_def,
 void Game::handlePointingAtObject(const PointedThing &pointed,
 		const ItemStack &tool_item, const v3f &player_position, bool show_debug)
 {
+	ZoneScoped;
+
 	std::wstring infotext = unescape_translate(
 		utf8_to_wide(runData.selected_object->infoText()));
 
@@ -3940,6 +4004,8 @@ void Game::handlePointingAtObject(const PointedThing &pointed,
 void Game::handleDigging(const PointedThing &pointed, const v3s16 &nodepos,
 		const ItemStack &selected_item, const ItemStack &hand_item, f32 dtime)
 {
+	ZoneScoped;
+
 	// See also: serverpackethandle.cpp, action == 2
 	LocalPlayer *player = client->getEnv().getLocalPlayer();
 	ClientMap &map = client->getEnv().getClientMap();
@@ -4076,6 +4142,8 @@ void Game::handleDigging(const PointedThing &pointed, const v3s16 &nodepos,
 void Game::updateFrame(ProfilerGraph *graph, RunStats *stats, f32 dtime,
 		const CameraOrientation &cam)
 {
+	ZoneScoped;
+
 	TimeTaker tt_update("Game::updateFrame()");
 	LocalPlayer *player = client->getEnv().getLocalPlayer();
 
@@ -4299,6 +4367,8 @@ void Game::updateClouds(float dtime)
 /* Log times and stuff for visualization */
 inline void Game::updateProfilerGraphs(ProfilerGraph *graph)
 {
+	ZoneScoped;
+
 	Profiler::GraphValues values;
 	g_profiler->graphPop(values);
 	graph->put(values);
@@ -4309,6 +4379,8 @@ inline void Game::updateProfilerGraphs(ProfilerGraph *graph)
  *****************************************************************************/
 void Game::updateShadows()
 {
+	ZoneScoped;
+
 	ShadowRenderer *shadow = RenderingEngine::get_shadow_renderer();
 	if (!shadow)
 		return;
@@ -4414,6 +4486,8 @@ void Game::drawScene(ProfilerGraph *graph, RunStats *stats)
 
 void Game::showOverlayMessage(const char *msg, float dtime, int percent, float *indef_pos)
 {
+	ZoneScoped;
+
 	m_rendering_engine->draw_load_screen(wstrgettext(msg), guienv, texture_src,
 			dtime, percent, indef_pos);
 }
@@ -4602,6 +4676,8 @@ void the_game(bool *kill,
 		ChatBackend &chat_backend,
 		bool *reconnect_requested) // Used for local game
 {
+	ZoneScoped;
+
 	Game game;
 
 	/* Make a copy of the server address because if a local singleplayer server

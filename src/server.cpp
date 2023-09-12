@@ -103,6 +103,7 @@ private:
 
 void *ServerThread::run()
 {
+	ZoneScoped;
 	static const char *framename_server_run         = "server-run-frame";
 	static const char *framename_server_run_astep   = "server-run-AsyncRunStep-frame";
 	static const char *framename_server_run_receive = "server-run-Receive-frame";
@@ -623,6 +624,8 @@ void Server::step()
 
 void Server::AsyncRunStep(float dtime, bool initial_step)
 {
+	ZoneScoped;
+
 	{
 		// Send blocks to clients
 		SendBlocks(dtime);
@@ -1071,6 +1074,8 @@ void Server::AsyncRunStep(float dtime, bool initial_step)
 
 void Server::Receive(float timeout)
 {
+	ZoneScoped;
+
 	const u64 t0 = porting::getTimeUs();
 	const float timeout_us = timeout * 1e6f;
 	auto remaining_time_us = [&]() -> float {

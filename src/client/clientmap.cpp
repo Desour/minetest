@@ -35,6 +35,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <queue>
 
+#include <tracy/Tracy.hpp>
+
 namespace {
 	// A helper struct
 	struct MeshBufListMaps
@@ -280,6 +282,7 @@ private:
 
 void ClientMap::updateDrawList()
 {
+	ZoneScoped;
 	ScopeProfiler sp(g_profiler, "CM::updateDrawList()", SPT_AVG);
 
 	m_needs_update_drawlist = false;
@@ -645,6 +648,8 @@ void ClientMap::updateDrawList()
 
 void ClientMap::touchMapBlocks()
 {
+	ZoneScoped;
+
 	if (m_control.range_all || m_loops_occlusion_culler)
 		return;
 
@@ -714,6 +719,8 @@ void ClientMap::touchMapBlocks()
 
 void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 {
+	ZoneScoped;
+
 	bool is_transparent_pass = pass == scene::ESNRP_TRANSPARENT;
 
 	std::string prefix;
@@ -1067,6 +1074,8 @@ int ClientMap::getBackgroundBrightness(float max_d, u32 daylight_factor,
 
 void ClientMap::renderPostFx(CameraMode cam_mode)
 {
+	ZoneScoped;
+
 	// Sadly ISceneManager has no "post effects" render pass, in that case we
 	// could just register for that and handle it in renderMap().
 
@@ -1108,6 +1117,8 @@ void ClientMap::PrintInfo(std::ostream &out)
 void ClientMap::renderMapShadows(video::IVideoDriver *driver,
 		const video::SMaterial &material, s32 pass, int frame, int total_frames)
 {
+	ZoneScoped;
+
 	bool is_transparent_pass = pass != scene::ESNRP_SOLID;
 	std::string prefix;
 	if (is_transparent_pass)
@@ -1249,6 +1260,7 @@ void ClientMap::renderMapShadows(video::IVideoDriver *driver,
 */
 void ClientMap::updateDrawListShadow(v3f shadow_light_pos, v3f shadow_light_dir, float radius, float length)
 {
+	ZoneScoped;
 	ScopeProfiler sp(g_profiler, "CM::updateDrawListShadow()", SPT_AVG);
 
 	for (auto &i : m_drawlist_shadow) {

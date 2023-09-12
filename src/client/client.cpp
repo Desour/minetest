@@ -67,6 +67,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "content/mod_configuration.h"
 #include "mapnode.h"
 
+#include <tracy/Tracy.hpp>
+
 extern gui::IGUIEnvironment* guienv;
 
 /*
@@ -382,6 +384,8 @@ Client::~Client()
 void Client::connect(const Address &address, const std::string &address_name,
 	bool is_local_server)
 {
+	ZoneScoped;
+
 	if (m_con) {
 		// can't do this if the connection has entered auth phase
 		sanity_check(m_state == LC_Created && m_proto_ver == 0);
@@ -406,6 +410,8 @@ void Client::connect(const Address &address, const std::string &address_name,
 
 void Client::step(float dtime)
 {
+	ZoneScoped;
+
 	// Limit a bit
 	if (dtime > DTIME_LIMIT)
 		dtime = DTIME_LIMIT;
@@ -776,6 +782,9 @@ void Client::step(float dtime)
 bool Client::loadMedia(const std::string &data, const std::string &filename,
 	bool from_media_push)
 {
+	ZoneScoped;
+	ZoneText(filename.c_str(), filename.size());
+
 	std::string name;
 
 	const char *image_ext[] = {
@@ -946,6 +955,8 @@ void Client::initLocalMapSaving(const Address &address,
 
 void Client::ReceiveAll()
 {
+	ZoneScoped;
+
 	NetworkPacket pkt;
 	u64 start_ms = porting::getTimeMs();
 	const u64 budget = 10;
@@ -975,6 +986,8 @@ void Client::ReceiveAll()
 
 inline void Client::handleCommand(NetworkPacket* pkt)
 {
+	ZoneScoped;
+
 	const ToClientCommandHandler& opHandle = toClientCommandTable[pkt->getCommand()];
 	(this->*opHandle.handler)(pkt);
 }
@@ -984,6 +997,8 @@ inline void Client::handleCommand(NetworkPacket* pkt)
 */
 void Client::ProcessData(NetworkPacket *pkt)
 {
+	ZoneScoped;
+
 	ToClientCommand command = (ToClientCommand) pkt->getCommand();
 
 	m_packetcounter.add(static_cast<u16>(command));
@@ -1826,7 +1841,10 @@ void Client::showUpdateProgressTexture(void *args, u32 progress, u32 max_progres
 
 void Client::afterContentReceived()
 {
+	ZoneScoped;
+
 	infostream<<"Client::afterContentReceived() started"<<std::endl;
+	TracyMessageL("Client::afterContentReceived() started");
 	assert(m_itemdef_received); // pre-condition
 	assert(m_nodedef_received); // pre-condition
 	assert(mediaReceived()); // pre-condition
@@ -1838,18 +1856,21 @@ void Client::afterContentReceived()
 
 	// Rebuild inherited images and recreate textures
 	infostream<<"- Rebuilding images and textures"<<std::endl;
+	TracyMessageL("- Rebuilding images and textures (Loading textures...)");
 	m_rendering_engine->draw_load_screen(wstrgettext("Loading textures..."),
 			guienv, m_tsrc, 0, 70);
 	m_tsrc->rebuildImagesAndTextures();
 
 	// Rebuild shaders
 	infostream<<"- Rebuilding shaders"<<std::endl;
+	TracyMessageL("- Rebuilding shaders (Rebuilding shaders...)");
 	m_rendering_engine->draw_load_screen(wstrgettext("Rebuilding shaders..."),
 			guienv, m_tsrc, 0, 71);
 	m_shsrc->rebuildShaders();
 
 	// Update node aliases
 	infostream<<"- Updating node aliases"<<std::endl;
+	TracyMessageL("- Updating node aliases (Initializing nodes...)");
 	m_rendering_engine->draw_load_screen(wstrgettext("Initializing nodes..."),
 			guienv, m_tsrc, 0, 72);
 	m_nodedef->updateAliases(m_itemdef);
@@ -1863,6 +1884,7 @@ void Client::afterContentReceived()
 
 	// Update node textures and assign shaders to each tile
 	infostream<<"- Updating node textures"<<std::endl;
+	TracyMessageL("- Updating node textures (Initializing nodes)");
 	TextureUpdateArgs tu_args;
 	tu_args.guienv = guienv;
 	tu_args.last_time_ms = porting::getTimeMs();
@@ -1873,6 +1895,7 @@ void Client::afterContentReceived()
 
 	// Start mesh update thread after setting up content definitions
 	infostream<<"- Starting mesh update thread"<<std::endl;
+	TracyMessageL("- Starting mesh update thread");
 	m_mesh_update_manager->start();
 
 	m_state = LC_Ready;
@@ -1883,6 +1906,7 @@ void Client::afterContentReceived()
 
 	m_rendering_engine->draw_load_screen(wstrgettext("Done!"), guienv, m_tsrc, 0, 100);
 	infostream<<"Client::afterContentReceived() done"<<std::endl;
+	TracyMessageL("Client::afterContentReceived() done");
 }
 
 float Client::getRTT()
@@ -1900,6 +1924,8 @@ float Client::getCurRate()
 
 void Client::makeScreenshot()
 {
+	ZoneScoped;
+
 	irr::video::IVideoDriver *driver = m_rendering_engine->get_video_driver();
 	irr::video::IImage* const raw_image = driver->createScreenShot();
 
@@ -2020,6 +2046,8 @@ ParticleManager* Client::getParticleManager()
 
 scene::IAnimatedMesh* Client::getMesh(const std::string &filename, bool cache)
 {
+	ZoneScoped;
+
 	StringMap::const_iterator it = m_mesh_data.find(filename);
 	if (it == m_mesh_data.end()) {
 		errorstream << "Client::getMesh(): Mesh not found: \"" << filename

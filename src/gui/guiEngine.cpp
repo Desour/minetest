@@ -293,6 +293,7 @@ bool GUIEngine::loadMainMenuScript()
 /******************************************************************************/
 void GUIEngine::run()
 {
+	ZoneScoped;
 	static const char *framename_guiEngine = "GUIEngine::run()-frame";
 
 	IrrlichtDevice *device = m_rendering_engine->get_raw_device();

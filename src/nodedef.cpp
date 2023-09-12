@@ -42,6 +42,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <algorithm>
 #include <cmath>
 
+#include <tracy/Tracy.hpp>
+
 /*
 	NodeBox
 */
@@ -692,6 +694,8 @@ static void fillTileAttribs(ITextureSource *tsrc, TileLayer *layer,
 		u8 material_type, u32 shader_id, bool backface_culling,
 		const TextureSettings &tsettings)
 {
+	ZoneScoped;
+
 	layer->shader_id     = shader_id;
 	layer->texture       = tsrc->getTextureForMesh(tiledef.name, &layer->texture_id);
 	layer->material_type = material_type;
@@ -787,6 +791,8 @@ bool isWorldAligned(AlignStyle style, WorldAlignMode mode, NodeDrawType drawtype
 void ContentFeatures::updateTextures(ITextureSource *tsrc, IShaderSource *shdsrc,
 	scene::IMeshManipulator *meshmanip, Client *client, const TextureSettings &tsettings)
 {
+	ZoneScoped;
+
 	// minimap pixel color - the average color of a texture
 	if (tsettings.enable_minimap && !tiledef[0].name.empty())
 		minimap_color = tsrc->getTextureAverageColor(tiledef[0].name);
@@ -1486,6 +1492,8 @@ void NodeDefManager::applyTextureOverrides(const std::vector<TextureOverride> &o
 
 void NodeDefManager::updateTextures(IGameDef *gamedef, void *progress_callback_args)
 {
+	ZoneScoped;
+
 #ifndef SERVER
 	infostream << "NodeDefManager::updateTextures(): Updating "
 		"textures in node definitions" << std::endl;
