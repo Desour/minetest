@@ -84,6 +84,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 	#include "client/sound/sound_openal.h"
 #endif
 
+#include <tracy/Tracy.hpp>
+
 /*
 	Text input system
 */
@@ -1140,6 +1142,8 @@ bool Game::startup(bool *kill,
 
 void Game::run()
 {
+	static const char *framename_game = "Game::run()-frame";
+
 	ProfilerGraph graph;
 	RunStats stats = {};
 	CameraOrientation cam_view_target = {};
@@ -1167,14 +1171,20 @@ void Game::run()
 	const bool initial_window_maximized = !g_settings->getBool("fullscreen") &&
 			g_settings->getBool("window_maximized");
 
+	FrameMarkStart(framename_game);
+
 	while (m_rendering_engine->run()
 			&& !(*kill || g_gamecallback->shutdown_requested
 			|| (server && server->isShutdownRequested()))) {
+
+		FrameMarkEnd(framename_game);
 
 		// Calculate dtime =
 		//    m_rendering_engine->run() from this iteration
 		//  + Sleep time until the wanted FPS are reached
 		draw_times.limit(device, &dtime, g_menumgr.pausesGame());
+
+		FrameMarkStart(framename_game);
 
 		const auto current_dynamic_info = ClientDynamicInfo::getCurrent();
 		if (!current_dynamic_info.equal(client_display_info)) {
@@ -1231,6 +1241,8 @@ void Game::run()
 			showPauseMenu();
 		}
 	}
+
+	FrameMarkEnd(framename_game);
 
 	RenderingEngine::autosaveScreensizeAndCo(initial_screen_size, initial_window_maximized);
 }
@@ -1587,6 +1599,8 @@ bool Game::initGui()
 bool Game::connectToServer(const GameStartData &start_data,
 		bool *connect_ok, bool *connection_aborted)
 {
+	static const char *framename_game_connectToServer = "Game::connectToServer()-frame";
+
 	*connect_ok = false;	// Let's not be overly optimistic
 	*connection_aborted = false;
 	bool local_server_mode = false;
@@ -1673,9 +1687,13 @@ bool Game::connectToServer(const GameStartData &start_data,
 
 		fps_control.reset();
 
+		FrameMarkStart(framename_game_connectToServer);
+
 		while (m_rendering_engine->run()) {
 
+			FrameMarkEnd(framename_game_connectToServer);
 			fps_control.limit(device, &dtime);
+			FrameMarkStart(framename_game_connectToServer);
 
 			// Update client and server
 			step(dtime);
@@ -1721,6 +1739,7 @@ bool Game::connectToServer(const GameStartData &start_data,
 			// Update status
 			showOverlayMessage(N_("Connecting to server..."), dtime, 20);
 		}
+		FrameMarkEnd(framename_game_connectToServer);
 	} catch (con::PeerNotFoundException &e) {
 		warningstream << "This should not happen. Please report a bug." << std::endl;
 		return false;
@@ -1731,6 +1750,8 @@ bool Game::connectToServer(const GameStartData &start_data,
 
 bool Game::getServerContent(bool *aborted)
 {
+	static const char *framename_game_getServerContent = "Game::getServerContent()-frame";
+
 	input->clear();
 
 	FpsControl fps_control;
@@ -1738,9 +1759,12 @@ bool Game::getServerContent(bool *aborted)
 
 	fps_control.reset();
 
+	FrameMarkStart(framename_game_getServerContent);
 	while (m_rendering_engine->run()) {
 
+		FrameMarkEnd(framename_game_getServerContent);
 		fps_control.limit(device, &dtime);
+		FrameMarkStart(framename_game_getServerContent);
 
 		// Update client and server
 		step(dtime);
@@ -1806,6 +1830,7 @@ bool Game::getServerContent(bool *aborted)
 				texture_src, dtime, progress);
 		}
 	}
+	FrameMarkEnd(framename_game_getServerContent);
 
 	*aborted = true;
 	infostream << "Connect aborted [device]" << std::endl;

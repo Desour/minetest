@@ -76,6 +76,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "particles.h"
 #include "gettext.h"
 
+#include <tracy/Tracy.hpp>
+
 class ClientNotFoundException : public BaseException
 {
 public:
@@ -101,6 +103,10 @@ private:
 
 void *ServerThread::run()
 {
+	static const char *framename_server_run         = "server-run-frame";
+	static const char *framename_server_run_astep   = "server-run-AsyncRunStep-frame";
+	static const char *framename_server_run_receive = "server-run-Receive-frame";
+
 	BEGIN_DEBUG_EXCEPTION_HANDLER
 
 	/*
@@ -110,8 +116,11 @@ void *ServerThread::run()
 	 * server-step frequency. Receive() is used for waiting between the steps.
 	 */
 
+	FrameMarkStart(framename_server_run);
 	try {
+		FrameMarkStart(framename_server_run_astep);
 		m_server->AsyncRunStep(0.0f, true);
+		FrameMarkEnd(framename_server_run_astep);
 	} catch (con::ConnectionBindFailed &e) {
 		m_server->setAsyncFatalError(e.what());
 	} catch (LuaError &e) {
@@ -119,10 +128,12 @@ void *ServerThread::run()
 	} catch (ModError &e) {
 		m_server->setAsyncFatalError(e.what());
 	}
+	FrameMarkEnd(framename_server_run);
 
 	float dtime = 0.0f;
 
 	while (!stopRequested()) {
+		FrameMarkStart(framename_server_run);
 		ScopeProfiler spm(g_profiler, "Server::RunStep() (max)", SPT_MAX);
 
 		u64 t0 = porting::getTimeUs();
@@ -130,11 +141,15 @@ void *ServerThread::run()
 		const Server::StepSettings step_settings = m_server->getStepSettings();
 
 		try {
+			FrameMarkStart(framename_server_run_astep);
 			m_server->AsyncRunStep(step_settings.pause ? 0.0f : dtime);
+			FrameMarkEnd(framename_server_run_astep);
 
 			const float remaining_time = step_settings.steplen
 					- 1e-6f * (porting::getTimeUs() - t0);
+			FrameMarkStart(framename_server_run_receive);
 			m_server->Receive(remaining_time);
+			FrameMarkEnd(framename_server_run_receive);
 
 		} catch (con::PeerNotFoundException &e) {
 			infostream<<"Server: PeerNotFoundException"<<std::endl;
@@ -149,6 +164,7 @@ void *ServerThread::run()
 		}
 
 		dtime = 1e-6f * (porting::getTimeUs() - t0);
+		FrameMarkEnd(framename_server_run);
 	}
 
 	END_DEBUG_EXCEPTION_HANDLER

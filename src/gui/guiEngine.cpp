@@ -45,6 +45,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 	#include "client/sound/sound_openal.h"
 #endif
 
+#include <tracy/Tracy.hpp>
 
 /******************************************************************************/
 void TextDestGuiEngine::gotText(const StringMap &fields)
@@ -292,6 +293,8 @@ bool GUIEngine::loadMainMenuScript()
 /******************************************************************************/
 void GUIEngine::run()
 {
+	static const char *framename_guiEngine = "GUIEngine::run()-frame";
+
 	IrrlichtDevice *device = m_rendering_engine->get_raw_device();
 	video::IVideoDriver *driver = device->getVideoDriver();
 
@@ -329,9 +332,13 @@ void GUIEngine::run()
 
 	fps_control.reset();
 
+	FrameMarkStart(framename_guiEngine);
+
 	while (m_rendering_engine->run() && !m_startgame && !m_kill) {
 
+		FrameMarkEnd(framename_guiEngine);
 		fps_control.limit(device, &dtime);
+		FrameMarkStart(framename_guiEngine);
 
 		if (device->isWindowVisible()) {
 			// check if we need to update the "upper left corner"-text
@@ -371,6 +378,7 @@ void GUIEngine::run()
 		m_menu->getAndroidUIInput();
 #endif
 	}
+	FrameMarkEnd(framename_guiEngine);
 
 	m_script->beforeClose();
 

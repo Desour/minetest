@@ -39,6 +39,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <ICameraSceneNode.h>
 #include <unordered_map>
 
+#include <tracy/Tracy.hpp>
+
 #if USE_SOUND
 	#include "sound/sound_openal.h"
 #endif
@@ -101,6 +103,8 @@ bool ClientLauncher::run(GameStartData &start_data, const Settings &cmd_args)
 	 *   - Join server (no map but address provided)
 	 *   - Local server (for main menu only)
 	*/
+
+	static const char *framename_ClientLauncher_run = "ClientLauncher::run()-frame";
 
 	init_args(start_data, cmd_args);
 
@@ -168,6 +172,8 @@ bool ClientLauncher::run(GameStartData &start_data, const Settings &cmd_args)
 
 	while (m_rendering_engine->run() && !*kill &&
 		!g_gamecallback->shutdown_requested) {
+		FrameMarkStart(framename_ClientLauncher_run);
+
 		// Set the window caption
 		auto driver_name = m_rendering_engine->getVideoDriver()->getName();
 		std::string caption = std::string(PROJECT_NAME_C) +
@@ -252,6 +258,8 @@ bool ClientLauncher::run(GameStartData &start_data, const Settings &cmd_args)
 				retval = false;
 			break;
 		}
+
+		FrameMarkEnd(framename_ClientLauncher_run);
 	} // Menu-game loop
 
 	// If profiler was enabled print it one last time
@@ -540,19 +548,25 @@ bool ClientLauncher::launch_game(std::string &error_message,
 
 void ClientLauncher::main_menu(MainMenuData *menudata)
 {
+	static const char *framename_ClientLauncher_main_menu = "ClientLauncher::main_menu()-wait-frame";
+
 	bool *kill = porting::signal_handler_killstatus();
 	video::IVideoDriver *driver = m_rendering_engine->get_video_driver();
 
 	infostream << "Waiting for other menus" << std::endl;
+	FrameMarkStart(framename_ClientLauncher_main_menu);
 	while (m_rendering_engine->run() && !*kill) {
 		if (!isMenuActive())
 			break;
 		driver->beginScene(true, true, video::SColor(255, 128, 128, 128));
 		m_rendering_engine->get_gui_env()->drawAll();
 		driver->endScene();
+		FrameMarkEnd(framename_ClientLauncher_main_menu);
 		// On some computers framerate doesn't seem to be automatically limited
 		sleep_ms(25);
+		FrameMarkStart(framename_ClientLauncher_main_menu);
 	}
+	FrameMarkEnd(framename_ClientLauncher_main_menu);
 	infostream << "Waited for other menus" << std::endl;
 
 	auto *cur_control = m_rendering_engine->get_raw_device()->getCursorControl();
