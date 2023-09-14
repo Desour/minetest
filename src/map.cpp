@@ -978,7 +978,7 @@ NodeMetadata *Map::getNodeMetadata(v3s16 p)
 	return meta;
 }
 
-bool Map::setNodeMetadata(v3s16 p, NodeMetadata *meta)
+bool Map::setNodeMetadata(v3s16 p, std::unique_ptr<NodeMetadata> meta)
 {
 	v3s16 blockpos = getNodeBlockPos(p);
 	v3s16 p_rel = p - blockpos*MAP_BLOCKSIZE;
@@ -993,7 +993,7 @@ bool Map::setNodeMetadata(v3s16 p, NodeMetadata *meta)
 				<<std::endl;
 		return false;
 	}
-	block->m_node_metadata.set(p_rel, meta);
+	block->m_node_metadata.set(p_rel, meta.release());
 	return true;
 }
 

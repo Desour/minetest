@@ -245,17 +245,15 @@ public:
 	 * Sets metadata for a node.
 	 * This method sets the metadata for a given node.
 	 * On success, it returns @c true and the object pointed to
-	 * by @p meta is then managed by the system and should
-	 * not be deleted by the caller.
+	 * by @p meta is then managed by the system.
 	 *
-	 * In case of failure, the method returns @c false and the
-	 * caller is still responsible for deleting the object!
+	 * In case of failure, the method returns @c false and @p meta is dropped.
 	 *
 	 * @param p node coordinates
 	 * @param meta pointer to @c NodeMetadata object
 	 * @return @c true on success, false on failure
 	 */
-	bool setNodeMetadata(v3s16 p, NodeMetadata *meta);
+	bool setNodeMetadata(v3s16 p, std::unique_ptr<NodeMetadata> meta);
 	void removeNodeMetadata(v3s16 p);
 
 	/*

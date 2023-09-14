@@ -161,9 +161,9 @@ bool RollbackAction::applyRevert(Map *map, InventoryManager *imgr, IGameDef *gam
 				} else {
 					NodeMetadata *meta = map->getNodeMetadata(p);
 					if (!meta) {
-						meta = new NodeMetadata(gamedef->idef());
-						if (!map->setNodeMetadata(p, meta)) {
-							delete meta;
+						auto meta_up = std::make_unique<NodeMetadata>(gamedef->idef());
+						meta = meta_up.get();
+						if (!map->setNodeMetadata(p, std::move(meta_up))) {
 							infostream << "RollbackAction::applyRevert(): "
 								<< "setNodeMetadata failed at "
 								<< p << " for " << n_old.name

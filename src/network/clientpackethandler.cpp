@@ -284,12 +284,8 @@ void Client::handleCommand_NodemetaChanged(NetworkPacket *pkt)
 			i != meta_updates_list.end(); ++i) {
 		v3s16 pos = i->first;
 
-		if (map.isValidPosition(pos) &&
-				map.setNodeMetadata(pos, i->second))
-			continue; // Prevent from deleting metadata
-
-		// Meta couldn't be set, unused metadata
-		delete i->second;
+		if (map.isValidPosition(pos))
+			map.setNodeMetadata(pos, std::unique_ptr<NodeMetadata>(i->second));
 	}
 }
 

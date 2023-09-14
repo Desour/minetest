@@ -36,12 +36,11 @@ IMetadata* NodeMetaRef::getmeta(bool auto_create)
 		return m_local_meta;
 
 	NodeMetadata *meta = m_env->getMap().getNodeMetadata(m_p);
-	if (meta == NULL && auto_create) {
-		meta = new NodeMetadata(m_env->getGameDef()->idef());
-		if (!m_env->getMap().setNodeMetadata(m_p, meta)) {
-			delete meta;
-			return NULL;
-		}
+	if (!meta && auto_create) {
+		auto meta_up = std::make_unique<NodeMetadata>(m_env->getGameDef()->idef());
+		meta = meta_up.get();
+		if (!m_env->getMap().setNodeMetadata(m_p, std::move(meta_up)))
+			return nullptr;
 	}
 	return meta;
 }
