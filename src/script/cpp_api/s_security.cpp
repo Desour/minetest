@@ -439,6 +439,7 @@ bool ScriptApiSecurity::safeLoadString(lua_State *L, const std::string &code, co
 bool ScriptApiSecurity::safeLoadFile(lua_State *L, const char *path, const char *display_name)
 {
 	FILE *fp;
+	std::unique_ptr<char[]> chunk_name_up;
 	char *chunk_name;
 	if (!display_name)
 		display_name = path;
@@ -452,7 +453,8 @@ bool ScriptApiSecurity::safeLoadFile(lua_State *L, const char *path, const char 
 			return false;
 		}
 		size_t len = strlen(display_name) + 2;
-		chunk_name = new char[len];
+		chunk_name_up.reset(new char[len]);
+		chunk_name = chunk_name_up.get();
 		snprintf(chunk_name, len, "@%s", display_name);
 	}
 
@@ -469,10 +471,8 @@ bool ScriptApiSecurity::safeLoadFile(lua_State *L, const char *path, const char 
 	int ret = std::fseek(fp, 0, SEEK_END);
 	if (ret) {
 		lua_pushfstring(L, "%s: %s", path, strerror(errno));
-		if (path) {
+		if (path)
 			std::fclose(fp);
-			delete [] chunk_name;
-		}
 		return false;
 	}
 
@@ -481,10 +481,8 @@ bool ScriptApiSecurity::safeLoadFile(lua_State *L, const char *path, const char 
 	ret = std::fseek(fp, start, SEEK_SET);
 	if (ret) {
 		lua_pushfstring(L, "%s: %s", path, strerror(errno));
-		if (path) {
+		if (path)
 			std::fclose(fp);
-			delete [] chunk_name;
-		}
 		return false;
 	}
 
@@ -493,14 +491,10 @@ bool ScriptApiSecurity::safeLoadFile(lua_State *L, const char *path, const char 
 		std::fclose(fp);
 	if (num_read != size) {
 		lua_pushliteral(L, "Error reading file to load.");
-		if (path)
-			delete [] chunk_name;
 		return false;
 	}
 
 	bool result = safeLoadString(L, code, chunk_name);
-	if (path)
-		delete [] chunk_name;
 	return result;
 }
 
