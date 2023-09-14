@@ -19,6 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <vector>
 #include "irrlichttypes_extrabloated.h"
@@ -173,4 +174,4 @@ private:
  * @param client Reference to the client context.
  * @return A new ShadowRenderer instance or nullptr if shadows are disabled or not supported.
  */
-ShadowRenderer *createShadowRenderer(IrrlichtDevice *device, Client *client);
+std::unique_ptr<ShadowRenderer> createShadowRenderer(IrrlichtDevice *device, Client *client);

@@ -24,9 +24,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "settings.h"
 
 RenderingCore::RenderingCore(IrrlichtDevice *_device, Client *_client, Hud *_hud,
-		ShadowRenderer *_shadow_renderer, std::unique_ptr<RenderPipeline> _pipeline,
-		v2f _virtual_size_scale)
-	: device(_device), client(_client), hud(_hud), shadow_renderer(_shadow_renderer),
+		std::unique_ptr<ShadowRenderer> _shadow_renderer,
+		std::unique_ptr<RenderPipeline> _pipeline, v2f _virtual_size_scale)
+	: device(_device), client(_client), hud(_hud),
+	shadow_renderer(std::move(_shadow_renderer)),
 	pipeline(std::move(_pipeline)), virtual_size_scale(_virtual_size_scale)
 {
 }
@@ -34,7 +35,7 @@ RenderingCore::RenderingCore(IrrlichtDevice *_device, Client *_client, Hud *_hud
 RenderingCore::~RenderingCore()
 {
 	pipeline.reset();
-	delete shadow_renderer;
+	shadow_renderer.reset();
 }
 
 void RenderingCore::draw(video::SColor _skycolor, bool _show_hud,
@@ -43,7 +44,7 @@ void RenderingCore::draw(video::SColor _skycolor, bool _show_hud,
 	v2u32 screensize = device->getVideoDriver()->getScreenSize();
 	virtual_size = v2u32(screensize.X * virtual_size_scale.X, screensize.Y * virtual_size_scale.Y);
 
-	PipelineContext context(device, client, hud, shadow_renderer, _skycolor, screensize);
+	PipelineContext context(device, client, hud, shadow_renderer.get(), _skycolor, screensize);
 	context.draw_crosshair = _draw_crosshair;
 	context.draw_wield_tool = _draw_wield_tool;
 	context.show_hud = _show_hud;

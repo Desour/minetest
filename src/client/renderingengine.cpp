@@ -397,7 +397,7 @@ std::vector<video::E_DRIVER_TYPE> RenderingEngine::getSupportedVideoDrivers()
 void RenderingEngine::initialize(Client *client, Hud *hud)
 {
 	const std::string &draw_mode = g_settings->get("3d_mode");
-	core.reset(createRenderingCore(draw_mode, m_device, client, hud));
+	core = createRenderingCore(draw_mode, m_device, client, hud);
 }
 
 void RenderingEngine::finalize()

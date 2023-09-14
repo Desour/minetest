@@ -30,20 +30,21 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 struct CreatePipelineResult
 {
 	v2f virtual_size_scale;
-	ShadowRenderer *shadow_renderer { nullptr };
+	std::unique_ptr<ShadowRenderer> shadow_renderer;
 	std::unique_ptr<RenderPipeline> pipeline;
 };
 
 void createPipeline(const std::string &stereo_mode, IrrlichtDevice *device,
 		Client *client, Hud *hud, CreatePipelineResult &result);
 
-RenderingCore *createRenderingCore(const std::string &stereo_mode, IrrlichtDevice *device,
-		Client *client, Hud *hud)
+std::unique_ptr<RenderingCore> createRenderingCore(const std::string &stereo_mode,
+		IrrlichtDevice *device, Client *client, Hud *hud)
 {
 	CreatePipelineResult created_pipeline;
 	createPipeline(stereo_mode, device, client, hud, created_pipeline);
-	return new RenderingCore(device, client, hud,
-			created_pipeline.shadow_renderer, std::move(created_pipeline.pipeline),
+	return std::make_unique<RenderingCore>(device, client, hud,
+			std::move(created_pipeline.shadow_renderer),
+			std::move(created_pipeline.pipeline),
 			created_pipeline.virtual_size_scale);
 }
 

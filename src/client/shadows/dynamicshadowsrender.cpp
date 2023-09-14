@@ -720,7 +720,7 @@ std::string ShadowRenderer::readShaderFile(const std::string &path)
 	return prefix + content;
 }
 
-ShadowRenderer *createShadowRenderer(IrrlichtDevice *device, Client *client)
+std::unique_ptr<ShadowRenderer> createShadowRenderer(IrrlichtDevice *device, Client *client)
 {
 	// disable if unsupported
 	if (g_settings->getBool("enable_dynamic_shadows") && (
@@ -731,7 +731,7 @@ ShadowRenderer *createShadowRenderer(IrrlichtDevice *device, Client *client)
 
 	if (g_settings->getBool("enable_shaders") &&
 			g_settings->getBool("enable_dynamic_shadows")) {
-		ShadowRenderer *shadow_renderer = new ShadowRenderer(device, client);
+		auto shadow_renderer = std::make_unique<ShadowRenderer>(device, client);
 		shadow_renderer->initialize();
 		return shadow_renderer;
 	}
