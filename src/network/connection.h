@@ -301,7 +301,7 @@ public:
 
 private:
 	// Key is seqnum
-	std::map<u16, IncomingSplitPacket*> m_buf;
+	std::map<u16, std::unique_ptr<IncomingSplitPacket>> m_buf;
 
 	std::mutex m_map_mutex;
 };

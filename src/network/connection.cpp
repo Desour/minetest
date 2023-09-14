@@ -447,9 +447,7 @@ SharedBuffer<u8> IncomingSplitPacket::reassemble()
 IncomingSplitBuffer::~IncomingSplitBuffer()
 {
 	MutexAutoLock listlock(m_map_mutex);
-	for (auto &i : m_buf) {
-		delete i.second;
-	}
+	m_buf.clear();
 }
 
 SharedBuffer<u8> IncomingSplitBuffer::insert(BufferedPacketPtr &p_ptr, bool reliable)
@@ -479,13 +477,10 @@ SharedBuffer<u8> IncomingSplitBuffer::insert(BufferedPacketPtr &p_ptr, bool reli
 	}
 
 	// Add if doesn't exist
-	IncomingSplitPacket *sp;
-	if (m_buf.find(seqnum) == m_buf.end()) {
-		sp = new IncomingSplitPacket(chunk_count, reliable);
-		m_buf[seqnum] = sp;
-	} else {
-		sp = m_buf[seqnum];
-	}
+	auto [it_sp, sp_didnt_exist] = m_buf.emplace(seqnum, nullptr);
+	if (sp_didnt_exist)
+		it_sp->second = std::make_unique<IncomingSplitPacket>(chunk_count, reliable);
+	IncomingSplitPacket *sp = it_sp->second.get();
 
 	if (chunk_count != sp->chunk_count) {
 		errorstream << "IncomingSplitBuffer::insert(): chunk_count="
@@ -514,7 +509,6 @@ SharedBuffer<u8> IncomingSplitBuffer::insert(BufferedPacketPtr &p_ptr, bool reli
 
 	// Remove sp from buffer
 	m_buf.erase(seqnum);
-	delete sp;
 
 	return fulldata;
 }
@@ -525,7 +519,7 @@ void IncomingSplitBuffer::removeUnreliableTimedOuts(float dtime, float timeout)
 	std::vector<u16> remove_queue;
 	{
 		for (const auto &i : m_buf) {
-			IncomingSplitPacket *p = i.second;
+			IncomingSplitPacket *p = i.second.get();
 			// Reliable ones are not removed by timeout
 			if (p->reliable)
 				continue;
@@ -536,9 +530,7 @@ void IncomingSplitBuffer::removeUnreliableTimedOuts(float dtime, float timeout)
 	}
 	for (u16 j : remove_queue) {
 		LOG(dout_con<<"NOTE: Removing timed out unreliable split packet"<<std::endl);
-		auto it = m_buf.find(j);
-		delete it->second;
-		m_buf.erase(it);
+		m_buf.erase(j);
 	}
 }
 
