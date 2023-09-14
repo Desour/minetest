@@ -73,7 +73,7 @@ ClientLauncher::~ClientLauncher()
 {
 	input.reset();
 
-	delete receiver;
+	receiver.reset();
 
 	delete g_fontengine;
 	delete g_gamecallback;
@@ -210,7 +210,8 @@ bool ClientLauncher::run(GameStartData &start_data, const Settings &cmd_args)
 				break;
 
 			if (g_settings->getBool("enable_touch")) {
-				receiver->m_touchscreengui = new TouchScreenGUI(m_rendering_engine->get_raw_device(), receiver);
+				receiver->m_touchscreengui = new TouchScreenGUI(
+						m_rendering_engine->get_raw_device(), receiver.get());
 				g_touchscreengui = receiver->m_touchscreengui;
 			}
 
@@ -302,8 +303,8 @@ void ClientLauncher::init_args(GameStartData &start_data, const Settings &cmd_ar
 
 bool ClientLauncher::init_engine()
 {
-	receiver = new MyEventReceiver();
-	m_rendering_engine = new RenderingEngine(receiver);
+	receiver = std::make_unique<MyEventReceiver>();
+	m_rendering_engine = new RenderingEngine(receiver.get());
 	return m_rendering_engine->get_raw_device() != nullptr;
 }
 
@@ -312,7 +313,7 @@ void ClientLauncher::init_input()
 	if (random_input)
 		input = std::make_unique<RandomInputHandler>();
 	else
-		input = std::make_unique<RealInputHandler>(receiver);
+		input = std::make_unique<RealInputHandler>(receiver.get());
 
 	if (g_settings->getBool("enable_joysticks")) {
 		irr::core::array<irr::SJoystickInfo> infos;

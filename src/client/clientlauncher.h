@@ -50,5 +50,5 @@ private:
 	bool random_input = false;
 	RenderingEngine *m_rendering_engine = nullptr;
 	std::unique_ptr<InputHandler> input;
-	MyEventReceiver *receiver = nullptr;
+	std::unique_ptr<MyEventReceiver> receiver;
 };
