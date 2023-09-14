@@ -20,6 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 #include "irrlichttypes_extrabloated.h"
+#include <memory>
 
 class ShadowRenderer;
 class Camera;
@@ -37,14 +38,14 @@ protected:
 	Hud *hud;
 	ShadowRenderer *shadow_renderer;
 
-	RenderPipeline *pipeline;
+	std::unique_ptr<RenderPipeline> pipeline;
 
 	v2f virtual_size_scale;
 	v2u32 virtual_size { 0, 0 };
 
 public:
 	RenderingCore(IrrlichtDevice *device, Client *client, Hud *hud,
-			ShadowRenderer *shadow_renderer, RenderPipeline *pipeline,
+			ShadowRenderer *shadow_renderer, std::unique_ptr<RenderPipeline> pipeline,
 			v2f virtual_size_scale);
 	RenderingCore(const RenderingCore &) = delete;
 	RenderingCore(RenderingCore &&) = delete;
