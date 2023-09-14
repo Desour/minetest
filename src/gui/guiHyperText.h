@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <vector>
 #include <list>
+#include <memory>
 #include <unordered_map>
 #include <string>
 #include "irrlichttypes_extrabloated.h"
@@ -35,7 +36,6 @@ class ParsedText
 {
 public:
 	ParsedText(const wchar_t *text);
-	~ParsedText();
 
 	enum ElementType
 	{
@@ -156,7 +156,7 @@ protected:
 	std::unordered_map<std::string, StyleList> m_elementtags;
 	std::unordered_map<std::string, StyleList> m_paragraphtags;
 
-	std::vector<Tag *> m_not_root_tags;
+	std::vector<std::unique_ptr<Tag>> m_not_root_tags;
 	std::list<Tag *> m_active_tags;
 
 	// Current values

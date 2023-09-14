@@ -172,12 +172,6 @@ ParsedText::ParsedText(const wchar_t *text)
 	parse(text);
 }
 
-ParsedText::~ParsedText()
-{
-	for (auto &tag : m_not_root_tags)
-		delete tag;
-}
-
 void ParsedText::parse(const wchar_t *text)
 {
 	wchar_t c;
@@ -300,11 +294,12 @@ void ParsedText::pushChar(wchar_t c)
 ParsedText::Tag *ParsedText::newTag(const std::string &name, const AttrsList &attrs)
 {
 	endElement();
-	Tag *newtag = new Tag();
+	auto newtag = std::make_unique<Tag>();
+	auto ret = newtag.get();
 	newtag->name = name;
 	newtag->attrs = attrs;
-	m_not_root_tags.push_back(newtag);
-	return newtag;
+	m_not_root_tags.push_back(std::move(newtag));
+	return ret;
 }
 
 ParsedText::Tag *ParsedText::openTag(const std::string &name, const AttrsList &attrs)
