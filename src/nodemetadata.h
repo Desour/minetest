@@ -19,6 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <memory>
 #include <unordered_set>
 #include <map>
 #include "metadata.h"
@@ -50,7 +51,7 @@ public:
 	// The inventory
 	Inventory *getInventory()
 	{
-		return m_inventory;
+		return m_inventory.get();
 	}
 
 	inline bool isPrivate(const std::string &name) const
@@ -62,7 +63,7 @@ public:
 private:
 	int countNonPrivate() const;
 
-	Inventory *m_inventory;
+	std::unique_ptr<Inventory> m_inventory;
 	std::unordered_set<std::string> m_privatevars;
 };
 

@@ -32,13 +32,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 NodeMetadata::NodeMetadata(IItemDefManager *item_def_mgr):
-	m_inventory(new Inventory(item_def_mgr))
+	m_inventory(std::make_unique<Inventory>(item_def_mgr))
 {}
 
-NodeMetadata::~NodeMetadata()
-{
-	delete m_inventory;
-}
+NodeMetadata::~NodeMetadata() = default;
 
 void NodeMetadata::serialize(std::ostream &os, u8 version, bool disk) const
 {
