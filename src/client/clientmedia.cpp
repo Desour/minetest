@@ -68,9 +68,6 @@ ClientMediaDownloader::~ClientMediaDownloader()
 	if (m_httpfetch_caller != HTTPFETCH_DISCARD)
 		httpfetch_caller_free(m_httpfetch_caller);
 
-	for (auto &file_it : m_files)
-		delete file_it.second;
-
 	for (auto &remote : m_remotes)
 		delete remote;
 }
@@ -109,11 +106,11 @@ void ClientMediaDownloader::addFile(const std::string &name, const std::string &
 		return;
 	}
 
-	FileStatus *filestatus = new FileStatus();
+	auto filestatus = std::make_unique<FileStatus>();
 	filestatus->received = false;
 	filestatus->sha1 = sha1;
 	filestatus->current_remote = -1;
-	m_files.insert(std::make_pair(name, filestatus));
+	m_files.emplace(name, std::move(filestatus));
 }
 
 void ClientMediaDownloader::addRemoteServer(const std::string &baseurl)
@@ -188,7 +185,7 @@ void ClientMediaDownloader::initialStep(Client *client)
 	m_uncached_count = m_files.size();
 	for (auto &file_it : m_files) {
 		const std::string &name = file_it.first;
-		FileStatus *filestatus = file_it.second;
+		FileStatus *filestatus = file_it.second.get();
 		const std::string &sha1 = filestatus->sha1;
 
 		if (tryLoadFromCache(name, sha1, client)) {
@@ -297,9 +294,9 @@ void ClientMediaDownloader::remoteHashSetReceived(
 			// available on this server, add this server
 			// to the available_remotes array
 
-			for(auto it = m_files.upper_bound(m_name_bound);
+			for (auto it = m_files.upper_bound(m_name_bound);
 					it != m_files.end(); ++it) {
-				FileStatus *f = it->second;
+				FileStatus *f = it->second.get();
 				if (!f->received && sha1_set.count(f->sha1))
 					f->available_remotes.push_back(remote_id);
 			}
@@ -331,7 +328,7 @@ void ClientMediaDownloader::remoteMediaReceived(
 
 	sanity_check(m_files.count(name) != 0);
 
-	FileStatus *filestatus = m_files[name];
+	FileStatus *filestatus = m_files[name].get();
 	sanity_check(!filestatus->received);
 	sanity_check(filestatus->current_remote >= 0);
 
@@ -400,7 +397,7 @@ void ClientMediaDownloader::startRemoteMediaTransfers()
 			break;
 
 		const std::string &name = files_iter->first;
-		FileStatus *filestatus = files_iter->second;
+		FileStatus *filestatus = files_iter->second.get();
 
 		if (!filestatus->received && filestatus->current_remote < 0) {
 			// File has not been received yet and is not currently
@@ -483,7 +480,7 @@ bool ClientMediaDownloader::conventionalTransferDone(
 			<< std::endl;
 		return false;
 	}
-	FileStatus *filestatus = file_iter->second;
+	FileStatus *filestatus = file_iter->second.get();
 	assert(filestatus != NULL);
 
 	// Check that file hasn't already been received

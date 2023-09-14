@@ -23,6 +23,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "filecache.h"
 #include "util/basic_macros.h"
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 #include <unordered_map>
@@ -160,7 +161,7 @@ private:
 	std::string serializeRequiredHashSet();
 
 	// Maps filename to file status
-	std::map<std::string, FileStatus*> m_files;
+	std::map<std::string, std::unique_ptr<FileStatus>> m_files;
 
 	// Array of remote media servers
 	std::vector<RemoteServerStatus*> m_remotes;
