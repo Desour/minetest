@@ -78,7 +78,7 @@ ClientLauncher::~ClientLauncher()
 	delete g_fontengine;
 	delete g_gamecallback;
 
-	delete m_rendering_engine;
+	m_rendering_engine.reset();
 
 #if USE_SOUND
 	g_sound_manager_singleton.reset();
@@ -218,7 +218,7 @@ bool ClientLauncher::run(GameStartData &start_data, const Settings &cmd_args)
 			the_game(
 				kill,
 				input.get(),
-				m_rendering_engine,
+				m_rendering_engine.get(),
 				start_data,
 				error_message,
 				chat_backend,
@@ -304,7 +304,7 @@ void ClientLauncher::init_args(GameStartData &start_data, const Settings &cmd_ar
 bool ClientLauncher::init_engine()
 {
 	receiver = std::make_unique<MyEventReceiver>();
-	m_rendering_engine = new RenderingEngine(receiver.get());
+	m_rendering_engine = std::make_unique<RenderingEngine>(receiver.get());
 	return m_rendering_engine->get_raw_device() != nullptr;
 }
 
@@ -549,7 +549,8 @@ void ClientLauncher::main_menu(MainMenuData *menudata)
 	}
 
 	/* show main menu */
-	GUIEngine mymenu(&input->joystick, guiroot, m_rendering_engine, &g_menumgr, menudata, *kill);
+	GUIEngine mymenu(&input->joystick, guiroot, m_rendering_engine.get(),
+			&g_menumgr, menudata, *kill);
 
 	/* leave scene manager in a clean state */
 	m_rendering_engine->get_scene_manager()->clear();
