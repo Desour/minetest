@@ -57,7 +57,7 @@ ClientEnvironment::~ClientEnvironment()
 	m_ao_manager.clear();
 
 	for (auto &simple_object : m_simple_objects) {
-		delete simple_object;
+		simple_object.reset();
 	}
 
 	m_map.reset();
@@ -282,23 +282,23 @@ void ClientEnvironment::step(float dtime)
 		Step and handle simple objects
 	*/
 	g_profiler->avg("ClientEnv: CSO count [#]", m_simple_objects.size());
-	for (auto i = m_simple_objects.begin(); i != m_simple_objects.end();) {
-		ClientSimpleObject *simple = *i;
+	for (auto it = m_simple_objects.begin(); it != m_simple_objects.end();) {
+		ClientSimpleObject *simple = it->get();
 
 		simple->step(dtime);
-		if(simple->m_to_be_removed) {
-			delete simple;
-			i = m_simple_objects.erase(i);
+		if (simple->m_to_be_removed) {
+			it->reset();
+			it = m_simple_objects.erase(it);
 		}
 		else {
-			++i;
+			++it;
 		}
 	}
 }
 
-void ClientEnvironment::addSimpleObject(ClientSimpleObject *simple)
+void ClientEnvironment::addSimpleObject(std::unique_ptr<ClientSimpleObject> simple)
 {
-	m_simple_objects.push_back(simple);
+	m_simple_objects.push_back(std::move(simple));
 }
 
 GenericCAO* ClientEnvironment::getGenericCAO(u16 id)

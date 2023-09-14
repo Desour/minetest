@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "irrlichttypes_extrabloated.h"
 #include "clientsimpleobject.h"
+#include <memory>
 
-ClientSimpleObject* createSmokePuff(scene::ISceneManager *smgr,
+std::unique_ptr<ClientSimpleObject> createSmokePuff(scene::ISceneManager *smgr,
 		ClientEnvironment *env, v3f pos, v2f size);

@@ -71,9 +71,9 @@ public:
 	}
 };
 
-ClientSimpleObject* createSmokePuff(scene::ISceneManager *smgr,
+std::unique_ptr<ClientSimpleObject> createSmokePuff(scene::ISceneManager *smgr,
 		ClientEnvironment *env, v3f pos, v2f size)
 {
-	return new SmokePuffCSO(smgr, env, pos, size);
+	return std::make_unique<SmokePuffCSO>(smgr, env, pos, size);
 }
 

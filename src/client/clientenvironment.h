@@ -82,7 +82,7 @@ public:
 		ClientSimpleObjects
 	*/
 
-	void addSimpleObject(ClientSimpleObject *simple);
+	void addSimpleObject(std::unique_ptr<ClientSimpleObject> simple);
 
 	/*
 		ActiveObjects
@@ -155,7 +155,7 @@ private:
 	Client *m_client;
 	ClientScripting *m_script = nullptr; // owned by client
 	client::ActiveObjectMgr m_ao_manager;
-	std::vector<ClientSimpleObject*> m_simple_objects;
+	std::vector<std::unique_ptr<ClientSimpleObject>> m_simple_objects;
 	std::queue<ClientEnvEvent> m_client_event_queue;
 	IntervalLimiter m_active_object_light_update_interval;
 	std::set<std::string> m_player_names;
