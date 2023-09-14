@@ -66,14 +66,11 @@ ShadowRenderer::~ShadowRenderer()
 	// call to disable releases dynamically allocated resources
 	disable();
 
-	if (m_shadow_depth_cb)
-		delete m_shadow_depth_cb;
-	if (m_shadow_depth_entity_cb)
-		delete m_shadow_depth_entity_cb;
-	if (m_shadow_depth_trans_cb)
-		delete m_shadow_depth_trans_cb;
-	if (m_shadow_mix_cb)
-		delete m_shadow_mix_cb;
+	// FIXME: do we leak m_screen_quad?
+	m_shadow_depth_cb.reset();
+	m_shadow_depth_entity_cb.reset();
+	m_shadow_depth_trans_cb.reset();
+	m_shadow_mix_cb.reset();
 	m_shadow_node_array.clear();
 	m_light_list.clear();
 }
@@ -301,7 +298,8 @@ void ShadowRenderer::updateSMTextures()
 		// Update SM incrementally:
 		for (DirectionalLight &light : m_light_list) {
 			// Static shader values.
-			for (auto cb : {m_shadow_depth_cb, m_shadow_depth_entity_cb, m_shadow_depth_trans_cb})
+			for (auto cb : {m_shadow_depth_cb.get(), m_shadow_depth_entity_cb.get(),
+						m_shadow_depth_trans_cb.get()})
 				if (cb) {
 					cb->MapRes = (f32)m_shadow_map_texture_size;
 					cb->MaxFar = (f32)m_shadow_map_max_distance * BS;
@@ -566,18 +564,17 @@ void ShadowRenderer::createShaders()
 			errorstream << "Error shadow mapping fs shader not found." << std::endl;
 			return;
 		}
-		m_shadow_depth_cb = new ShadowDepthShaderCB();
+		m_shadow_depth_cb = std::make_unique<ShadowDepthShaderCB>();
 
 		depth_shader = gpu->addHighLevelShaderMaterial(
 				readShaderFile(depth_shader_vs).c_str(), "vertexMain",
 				video::EVST_VS_1_1,
 				readShaderFile(depth_shader_fs).c_str(), "pixelMain",
-				video::EPST_PS_1_2, m_shadow_depth_cb, video::EMT_ONETEXTURE_BLEND);
+				video::EPST_PS_1_2, m_shadow_depth_cb.get(), video::EMT_ONETEXTURE_BLEND);
 
 		if (depth_shader == -1) {
 			// upsi, something went wrong loading shader.
-			delete m_shadow_depth_cb;
-			m_shadow_depth_cb = nullptr;
+			m_shadow_depth_cb.reset();
 			m_shadows_enabled = false;
 			m_shadows_supported = false;
 			errorstream << "Error compiling shadow mapping shader." << std::endl;
@@ -605,18 +602,17 @@ void ShadowRenderer::createShaders()
 			errorstream << "Error shadow mapping fs shader not found." << std::endl;
 			return;
 		}
-		m_shadow_depth_entity_cb = new ShadowDepthShaderCB();
+		m_shadow_depth_entity_cb = std::make_unique<ShadowDepthShaderCB>();
 
 		depth_shader_entities = gpu->addHighLevelShaderMaterial(
 				readShaderFile(depth_shader_vs).c_str(), "vertexMain",
 				video::EVST_VS_1_1,
 				readShaderFile(depth_shader_fs).c_str(), "pixelMain",
-				video::EPST_PS_1_2, m_shadow_depth_entity_cb);
+				video::EPST_PS_1_2, m_shadow_depth_entity_cb.get());
 
 		if (depth_shader_entities == -1) {
 			// upsi, something went wrong loading shader.
-			delete m_shadow_depth_entity_cb;
-			m_shadow_depth_entity_cb = nullptr;
+			m_shadow_depth_entity_cb.reset();
 			m_shadows_enabled = false;
 			m_shadows_supported = false;
 			errorstream << "Error compiling shadow mapping shader (dynamic)." << std::endl;
@@ -643,20 +639,20 @@ void ShadowRenderer::createShaders()
 			errorstream << "Error cascade shadow mapping fs shader not found." << std::endl;
 			return;
 		}
-		m_shadow_mix_cb = new shadowScreenQuadCB();
+		m_shadow_mix_cb = std::make_unique<shadowScreenQuadCB>();
 		m_screen_quad = new shadowScreenQuad();
 		mixcsm_shader = gpu->addHighLevelShaderMaterial(
 				readShaderFile(depth_shader_vs).c_str(), "vertexMain",
 				video::EVST_VS_1_1,
 				readShaderFile(depth_shader_fs).c_str(), "pixelMain",
-				video::EPST_PS_1_2, m_shadow_mix_cb);
+				video::EPST_PS_1_2, m_shadow_mix_cb.get());
 
 		m_screen_quad->getMaterial().MaterialType =
 				(video::E_MATERIAL_TYPE)mixcsm_shader;
 
 		if (mixcsm_shader == -1) {
 			// upsi, something went wrong loading shader.
-			delete m_shadow_mix_cb;
+			m_shadow_mix_cb.reset();
 			delete m_screen_quad;
 			m_shadows_supported = false;
 			errorstream << "Error compiling cascade shadow mapping shader." << std::endl;
@@ -682,18 +678,17 @@ void ShadowRenderer::createShaders()
 			errorstream << "Error shadow mapping fs shader not found." << std::endl;
 			return;
 		}
-		m_shadow_depth_trans_cb = new ShadowDepthShaderCB();
+		m_shadow_depth_trans_cb = std::make_unique<ShadowDepthShaderCB>();
 
 		depth_shader_trans = gpu->addHighLevelShaderMaterial(
 				readShaderFile(depth_shader_vs).c_str(), "vertexMain",
 				video::EVST_VS_1_1,
 				readShaderFile(depth_shader_fs).c_str(), "pixelMain",
-				video::EPST_PS_1_2, m_shadow_depth_trans_cb);
+				video::EPST_PS_1_2, m_shadow_depth_trans_cb.get());
 
 		if (depth_shader_trans == -1) {
 			// upsi, something went wrong loading shader.
-			delete m_shadow_depth_trans_cb;
-			m_shadow_depth_trans_cb = nullptr;
+			m_shadow_depth_trans_cb.reset();
 			m_shadow_map_colored = false;
 			m_shadows_supported = false;
 			errorstream << "Error compiling colored shadow mapping shader." << std::endl;

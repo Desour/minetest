@@ -159,12 +159,12 @@ private:
 	s32 depth_shader_trans{-1};
 	s32 mixcsm_shader{-1};
 
-	ShadowDepthShaderCB *m_shadow_depth_cb{nullptr};
-	ShadowDepthShaderCB *m_shadow_depth_entity_cb{nullptr};
-	ShadowDepthShaderCB *m_shadow_depth_trans_cb{nullptr};
+	std::unique_ptr<ShadowDepthShaderCB> m_shadow_depth_cb;
+	std::unique_ptr<ShadowDepthShaderCB> m_shadow_depth_entity_cb{nullptr};
+	std::unique_ptr<ShadowDepthShaderCB> m_shadow_depth_trans_cb{nullptr};
 
 	shadowScreenQuad *m_screen_quad{nullptr};
-	shadowScreenQuadCB *m_shadow_mix_cb{nullptr};
+	std::unique_ptr<shadowScreenQuadCB> m_shadow_mix_cb{nullptr};
 };
 
 /**
