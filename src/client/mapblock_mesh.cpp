@@ -644,7 +644,7 @@ MapBlockMesh::MapBlockMesh(Client *client, MeshMakeData *data, v3s16 camera_offs
 	m_last_daynight_ratio((u32) -1)
 {
 	for (auto &m : m_mesh)
-		m = new scene::SMesh();
+		m = make_irr<scene::SMesh>();
 	m_enable_shaders = data->m_use_shaders;
 
 	auto mesh_grid = client->getMeshGrid();
@@ -693,7 +693,7 @@ MapBlockMesh::MapBlockMesh(Client *client, MeshMakeData *data, v3s16 camera_offs
 	m_bounding_radius = std::sqrt(collector.m_bounding_radius_sq);
 
 	for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) {
-		scene::SMesh *mesh = (scene::SMesh *)m_mesh[layer];
+		scene::SMesh *mesh = static_cast<scene::SMesh *>(m_mesh[layer].get());
 
 		for(u32 i = 0; i < collector.prebuffers[layer].size(); i++)
 		{
@@ -827,8 +827,8 @@ MapBlockMesh::MapBlockMesh(Client *client, MeshMakeData *data, v3s16 camera_offs
 
 MapBlockMesh::~MapBlockMesh()
 {
-	for (scene::IMesh *m : m_mesh) {
-		m->drop();
+	for (auto &m : m_mesh) {
+		m.reset();
 	}
 }
 
@@ -898,7 +898,7 @@ bool MapBlockMesh::animate(bool faraway, float time, int crack,
 		get_sunlight_color(&day_color, daynight_ratio);
 
 		for (auto &daynight_diff : m_daynight_diffs) {
-			auto *mesh = m_mesh[daynight_diff.first.first];
+			auto *mesh = m_mesh[daynight_diff.first.first].get();
 			mesh->setDirty(scene::EBT_VERTEX); // force reload to VBO
 			scene::IMeshBuffer *buf = mesh->
 				getMeshBuffer(daynight_diff.first.second);

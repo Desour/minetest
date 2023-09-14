@@ -20,6 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include "irrlichttypes_extrabloated.h"
+#include "irr_ptr.h"
 #include "util/numeric.h"
 #include "client/tile.h"
 #include "voxel.h"
@@ -194,12 +195,12 @@ public:
 
 	scene::IMesh *getMesh()
 	{
-		return m_mesh[0];
+		return m_mesh[0].get();
 	}
 
 	scene::IMesh *getMesh(u8 layer)
 	{
-		return m_mesh[layer];
+		return m_mesh[layer].get();
 	}
 
 	std::vector<std::unique_ptr<MinimapMapblock>> moveMinimapMapblocks();
@@ -238,7 +239,7 @@ private:
 		TileLayer tile;
 	};
 
-	scene::IMesh *m_mesh[MAX_TILE_LAYERS];
+	irr_ptr<scene::IMesh> m_mesh[MAX_TILE_LAYERS];
 	std::vector<std::unique_ptr<MinimapMapblock>> m_minimap_mapblocks;
 	ITextureSource *m_tsrc;
 	IShaderSource *m_shdrsrc;
