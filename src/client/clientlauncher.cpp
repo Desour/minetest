@@ -71,7 +71,7 @@ static void dump_start_data(const GameStartData &data)
 
 ClientLauncher::~ClientLauncher()
 {
-	delete input;
+	input.reset();
 
 	delete receiver;
 
@@ -216,7 +216,7 @@ bool ClientLauncher::run(GameStartData &start_data, const Settings &cmd_args)
 
 			the_game(
 				kill,
-				input,
+				input.get(),
 				m_rendering_engine,
 				start_data,
 				error_message,
@@ -310,9 +310,9 @@ bool ClientLauncher::init_engine()
 void ClientLauncher::init_input()
 {
 	if (random_input)
-		input = new RandomInputHandler();
+		input = std::make_unique<RandomInputHandler>();
 	else
-		input = new RealInputHandler(receiver);
+		input = std::make_unique<RealInputHandler>(receiver);
 
 	if (g_settings->getBool("enable_joysticks")) {
 		irr::core::array<irr::SJoystickInfo> infos;
