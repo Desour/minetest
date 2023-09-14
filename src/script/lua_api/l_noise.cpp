@@ -139,16 +139,10 @@ luaL_Reg LuaPerlinNoise::methods[] = {
 LuaPerlinNoiseMap::LuaPerlinNoiseMap(const NoiseParams *np, s32 seed, v3s16 size)
 {
 	try {
-		noise = new Noise(np, seed, size.X, size.Y, size.Z);
+		noise = std::make_unique<Noise>(np, seed, size.X, size.Y, size.Z);
 	} catch (InvalidNoiseParamsException &e) {
 		throw LuaError(e.what());
 	}
-}
-
-
-LuaPerlinNoiseMap::~LuaPerlinNoiseMap()
-{
-	delete noise;
 }
 
 
@@ -160,7 +154,7 @@ int LuaPerlinNoiseMap::l_get_2d_map(lua_State *L)
 	LuaPerlinNoiseMap *o = checkObject<LuaPerlinNoiseMap>(L, 1);
 	v2f p = readParam<v2f>(L, 2);
 
-	Noise *n = o->noise;
+	Noise *n = o->noise.get();
 	n->perlinMap2D(p.X, p.Y);
 
 	lua_createtable(L, n->sy, 0);
@@ -184,7 +178,7 @@ int LuaPerlinNoiseMap::l_get_2d_map_flat(lua_State *L)
 	v2f p = readParam<v2f>(L, 2);
 	bool use_buffer = lua_istable(L, 3);
 
-	Noise *n = o->noise;
+	Noise *n = o->noise.get();
 	n->perlinMap2D(p.X, p.Y);
 
 	size_t maplen = n->sx * n->sy;
@@ -213,7 +207,7 @@ int LuaPerlinNoiseMap::l_get_3d_map(lua_State *L)
 	if (!o->is3D())
 		return 0;
 
-	Noise *n = o->noise;
+	Noise *n = o->noise.get();
 	n->perlinMap3D(p.X, p.Y, p.Z);
 
 	lua_createtable(L, n->sz, 0);
@@ -244,7 +238,7 @@ int LuaPerlinNoiseMap::l_get_3d_map_flat(lua_State *L)
 	if (!o->is3D())
 		return 0;
 
-	Noise *n = o->noise;
+	Noise *n = o->noise.get();
 	n->perlinMap3D(p.X, p.Y, p.Z);
 
 	size_t maplen = n->sx * n->sy * n->sz;
@@ -269,7 +263,7 @@ int LuaPerlinNoiseMap::l_calc_2d_map(lua_State *L)
 	LuaPerlinNoiseMap *o = checkObject<LuaPerlinNoiseMap>(L, 1);
 	v2f p = readParam<v2f>(L, 2);
 
-	Noise *n = o->noise;
+	Noise *n = o->noise.get();
 	n->perlinMap2D(p.X, p.Y);
 
 	return 0;
@@ -285,7 +279,7 @@ int LuaPerlinNoiseMap::l_calc_3d_map(lua_State *L)
 	if (!o->is3D())
 		return 0;
 
-	Noise *n = o->noise;
+	Noise *n = o->noise.get();
 	n->perlinMap3D(p.X, p.Y, p.Z);
 
 	return 0;
@@ -301,7 +295,7 @@ int LuaPerlinNoiseMap::l_get_map_slice(lua_State *L)
 	v3s16 slice_size     = read_v3s16(L, 3);
 	bool use_buffer      = lua_istable(L, 4);
 
-	Noise *n = o->noise;
+	Noise *n = o->noise.get();
 
 	if (use_buffer)
 		lua_pushvalue(L, 4);

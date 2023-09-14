@@ -62,7 +62,7 @@ public:
 */
 class LuaPerlinNoiseMap : public ModApiBase
 {
-	Noise *noise;
+	std::unique_ptr<Noise> noise;
 
 	static luaL_Reg methods[];
 
@@ -82,7 +82,6 @@ class LuaPerlinNoiseMap : public ModApiBase
 
 public:
 	LuaPerlinNoiseMap(const NoiseParams *np, s32 seed, v3s16 size);
-	~LuaPerlinNoiseMap();
 
 	inline bool is3D() const { return noise->sz > 1; }
 
