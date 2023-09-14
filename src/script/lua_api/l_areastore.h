@@ -20,6 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include "lua_api/l_base.h"
+#include <memory>
 
 class AreaStore;
 
@@ -47,7 +48,7 @@ private:
 	static int l_from_file(lua_State *L);
 
 public:
-	AreaStore *as = nullptr;
+	std::unique_ptr<AreaStore> as;
 
 	LuaAreaStore();
 	LuaAreaStore(const std::string &type);

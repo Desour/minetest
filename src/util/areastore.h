@@ -22,6 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "irr_v3d.h"
 #include "noise.h" // for PcgRandom
 #include <map>
+#include <memory>
 #include <list>
 #include <vector>
 #include <istream>
@@ -59,7 +60,7 @@ public:
 
 	virtual ~AreaStore() = default;
 
-	static AreaStore *getOptimalImplementation();
+	static std::unique_ptr<AreaStore> getOptimalImplementation();
 
 	virtual void reserve(size_t count) {};
 	size_t size() const { return areas_map.size(); }

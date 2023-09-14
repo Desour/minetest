@@ -45,12 +45,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 	AST_OVERLAPS_IN_DIMENSION((amine), (amaxe), (b), Z))
 
 
-AreaStore *AreaStore::getOptimalImplementation()
+std::unique_ptr<AreaStore> AreaStore::getOptimalImplementation()
 {
 #if USE_SPATIAL
-	return new SpatialAreaStore();
+	return std::make_unique<SpatialAreaStore>();
 #else
-	return new VectorAreaStore();
+	return std::make_unique<VectorAreaStore>();
 #endif
 }
 
