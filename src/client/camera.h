@@ -286,7 +286,7 @@ private:
 	f32 m_cache_view_bobbing_amount;
 	bool m_arm_inertia;
 
-	std::list<Nametag *> m_nametags;
+	std::list<std::unique_ptr<Nametag>> m_nametags;
 	bool m_show_nametag_backgrounds;
 
 	// Last known light color of the player

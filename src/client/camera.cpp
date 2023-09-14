@@ -665,7 +665,7 @@ void Camera::drawNametags()
 	video::IVideoDriver *driver = RenderingEngine::get_video_driver();
 	v2u32 screensize = driver->getScreenSize();
 
-	for (const Nametag *nametag : m_nametags) {
+	for (const auto &nametag : m_nametags) {
 		// Nametags are hidden in GenericCAO::updateNametag()
 
 		v3f pos = nametag->parent_node->getAbsolutePosition() + nametag->pos * BS;
@@ -702,15 +702,15 @@ Nametag *Camera::addNametag(scene::ISceneNode *parent_node,
 		const std::string &text, video::SColor textcolor,
 		std::optional<video::SColor> bgcolor, const v3f &pos)
 {
-	Nametag *nametag = new Nametag(parent_node, text, textcolor, bgcolor, pos);
-	m_nametags.push_back(nametag);
-	return nametag;
+	auto nametag = std::make_unique<Nametag>(parent_node, text, textcolor, bgcolor, pos);
+	auto ret = nametag.get();
+	m_nametags.push_back(std::move(nametag));
+	return ret;
 }
 
 void Camera::removeNametag(Nametag *nametag)
 {
-	m_nametags.remove(nametag);
-	delete nametag;
+	m_nametags.remove_if([=](const auto &up) { return up.get() == nametag; });
 }
 
 std::array<core::plane3d<f32>, 4> Camera::getFrustumCullPlanes() const
