@@ -587,7 +587,7 @@ void Client::step(float dtime)
 		{
 			num_processed_meshes++;
 
-			std::vector<MinimapMapblock*> minimap_mapblocks;
+			std::vector<std::unique_ptr<MinimapMapblock>> minimap_mapblocks;
 			bool do_mapper_update = true;
 
 			MapSector *sector = m_env.getMap().emergeSector(v2s16(r.p.X, r.p.Z));
@@ -634,7 +634,7 @@ void Client::step(float dtime)
 				for (ofs.X = 0; ofs.X < m_mesh_grid.cell_size; ofs.X++) {
 					size_t i = m_mesh_grid.getOffsetIndex(ofs);
 					if (i < minimap_mapblocks.size() && minimap_mapblocks[i])
-						m_minimap->addBlock(r.p + ofs, minimap_mapblocks[i]);
+						m_minimap->addBlock(r.p + ofs, std::move(minimap_mapblocks[i]));
 				}
 			}
 

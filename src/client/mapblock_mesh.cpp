@@ -651,7 +651,7 @@ MapBlockMesh::MapBlockMesh(Client *client, MeshMakeData *data, v3s16 camera_offs
 	v3s16 bp = data->m_blockpos;
 	// Only generate minimap mapblocks at even coordinates.
 	if (mesh_grid.isMeshPos(bp) && client->getMinimap()) {
-		m_minimap_mapblocks.resize(mesh_grid.getCellVolume(), nullptr);
+		m_minimap_mapblocks.resize(mesh_grid.getCellVolume());
 		v3s16 ofs;
 
 		// See also client.cpp for the code that reads the array of minimap blocks.
@@ -660,8 +660,9 @@ MapBlockMesh::MapBlockMesh(Client *client, MeshMakeData *data, v3s16 camera_offs
 		for (ofs.X = 0; ofs.X < mesh_grid.cell_size; ofs.X++) {
 			v3s16 p = (bp + ofs) * MAP_BLOCKSIZE;
 			if (data->m_vmanip.getNodeNoEx(p).getContent() != CONTENT_IGNORE) {
-				MinimapMapblock *block = new MinimapMapblock;
-				m_minimap_mapblocks[mesh_grid.getOffsetIndex(ofs)] = block;
+				std::unique_ptr<MinimapMapblock> block_up(new MinimapMapblock);
+				MinimapMapblock *block = block_up.get();
+				m_minimap_mapblocks[mesh_grid.getOffsetIndex(ofs)] = std::move(block_up);
 				block->getMinimapNodes(&data->m_vmanip, p);
 			}
 		}
@@ -829,8 +830,6 @@ MapBlockMesh::~MapBlockMesh()
 	for (scene::IMesh *m : m_mesh) {
 		m->drop();
 	}
-	for (MinimapMapblock *block : m_minimap_mapblocks)
-		delete block;
 }
 
 bool MapBlockMesh::animate(bool faraway, float time, int crack,
@@ -912,6 +911,11 @@ bool MapBlockMesh::animate(bool faraway, float time, int crack,
 	}
 
 	return true;
+}
+
+std::vector<std::unique_ptr<MinimapMapblock>> MapBlockMesh::moveMinimapMapblocks()
+{
+	return std::exchange(m_minimap_mapblocks, {});
 }
 
 void MapBlockMesh::updateTransparentBuffers(v3f camera_pos, v3s16 block_pos)

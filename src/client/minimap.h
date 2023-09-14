@@ -89,17 +89,17 @@ struct MinimapData {
 
 struct QueuedMinimapUpdate {
 	v3s16 pos;
-	MinimapMapblock *data = nullptr;
+	std::unique_ptr<MinimapMapblock> data;
 };
 
 class MinimapUpdateThread : public UpdateThread {
 public:
 	MinimapUpdateThread() : UpdateThread("Minimap") {}
-	virtual ~MinimapUpdateThread();
+	~MinimapUpdateThread() override = default;
 
 	void getMap(v3s16 pos, s16 size, s16 height);
-	void enqueueBlock(v3s16 pos, MinimapMapblock *data);
-	bool pushBlockUpdate(v3s16 pos, MinimapMapblock *data);
+	void enqueueBlock(v3s16 pos, std::unique_ptr<MinimapMapblock> data);
+	bool pushBlockUpdate(v3s16 pos, std::unique_ptr<MinimapMapblock> data);
 	bool popBlockUpdate(QueuedMinimapUpdate *update);
 
 	MinimapData *data = nullptr;
@@ -110,7 +110,7 @@ protected:
 private:
 	std::mutex m_queue_mutex;
 	std::deque<QueuedMinimapUpdate> m_update_queue;
-	std::map<v3s16, MinimapMapblock *> m_blocks_cache;
+	std::map<v3s16, std::unique_ptr<MinimapMapblock>> m_blocks_cache;
 };
 
 class Minimap {
@@ -118,7 +118,7 @@ public:
 	Minimap(Client *client);
 	~Minimap();
 
-	void addBlock(v3s16 pos, MinimapMapblock *data);
+	void addBlock(v3s16 pos, std::unique_ptr<MinimapMapblock> data);
 
 	v3f getYawVec();
 
