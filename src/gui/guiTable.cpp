@@ -81,9 +81,6 @@ GUITable::GUITable(gui::IGUIEnvironment *env,
 
 GUITable::~GUITable()
 {
-	for (GUITable::Row &row : m_rows)
-		delete[] row.cells;
-
 	if (m_font)
 		m_font->drop();
 
@@ -118,13 +115,13 @@ void GUITable::setTextList(const std::vector<std::string> &content,
 	m_rows.resize(content.size());
 	for (s32 i = 0; i < (s32) content.size(); ++i) {
 		Row *row = &m_rows[i];
-		row->cells = new Cell[1];
+		row->cells.reset(new Cell[1]);
 		row->cellcount = 1;
 		row->indent = 0;
 		row->visible_index = i;
 		m_visible_rows.push_back(i);
 
-		Cell *cell = row->cells;
+		Cell *cell = &row->cells[0];
 		cell->xmin = 0;
 		cell->xmax = 0x7fff;  // something large enough
 		cell->xpos = 6;
@@ -235,7 +232,7 @@ void GUITable::setTable(const TableOptions &options,
 
 		TempRow(): x(0), indent(0), content_index(0), content_width(0) {}
 	};
-	TempRow *rows = new TempRow[rowcount];
+	std::unique_ptr<TempRow[]> rows(new TempRow[rowcount]);
 
 	// Get em width. Pedantically speaking, the width of "M" is not
 	// necessarily the same as the em width, but whatever, close enough.
@@ -434,8 +431,8 @@ void GUITable::setTable(const TableOptions &options,
 		for (s32 i = 0; i < rowcount; ++i) {
 			Row *row = &m_rows[i];
 			row->cellcount = rows[i].cells.size();
-			row->cells = new Cell[row->cellcount];
-			memcpy((void*) row->cells, (void*) &rows[i].cells[0],
+			row->cells.reset(new Cell[row->cellcount]);
+			memcpy(&row->cells[0], &rows[i].cells[0],
 					row->cellcount * sizeof(Cell));
 			row->indent = rows[i].indent;
 			row->visible_index = i;
@@ -461,7 +458,7 @@ void GUITable::setTable(const TableOptions &options,
 	}
 
 	// Delete temporary information used only during setTable()
-	delete[] rows;
+	rows.reset();
 	allocationComplete();
 
 	// Clamp scroll bar position
@@ -471,8 +468,6 @@ void GUITable::setTable(const TableOptions &options,
 void GUITable::clear()
 {
 	// Clean up cells and rows
-	for (GUITable::Row &row : m_rows)
-		delete[] row.cells;
 	m_rows.clear();
 	m_visible_rows.clear();
 

@@ -20,6 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -169,7 +170,7 @@ protected:
 	};
 
 	struct Row {
-		Cell *cells;
+		std::unique_ptr<Cell[]> cells;
 		s32 cellcount;
 		s32 indent;
 		// visible_index >= 0: is index of row in m_visible_rows
