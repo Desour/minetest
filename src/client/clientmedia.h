@@ -164,7 +164,7 @@ private:
 	std::map<std::string, std::unique_ptr<FileStatus>> m_files;
 
 	// Array of remote media servers
-	std::vector<RemoteServerStatus*> m_remotes;
+	std::vector<std::unique_ptr<RemoteServerStatus>> m_remotes;
 
 	// Has an attempt been made to load media files from the file cache?
 	// Have hash sets been requested from remote servers?

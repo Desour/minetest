@@ -67,9 +67,6 @@ ClientMediaDownloader::~ClientMediaDownloader()
 {
 	if (m_httpfetch_caller != HTTPFETCH_DISCARD)
 		httpfetch_caller_free(m_httpfetch_caller);
-
-	for (auto &remote : m_remotes)
-		delete remote;
 }
 
 bool ClientMediaDownloader::loadMedia(Client *client, const std::string &data,
@@ -123,10 +120,10 @@ void ClientMediaDownloader::addRemoteServer(const std::string &baseurl)
 		infostream << "Client: Adding remote server \""
 			<< baseurl << "\" for media download" << std::endl;
 
-		RemoteServerStatus *remote = new RemoteServerStatus();
+		auto remote = std::make_unique<RemoteServerStatus>();
 		remote->baseurl = baseurl;
 		remote->active_count = 0;
-		m_remotes.push_back(remote);
+		m_remotes.push_back(std::move(remote));
 	}
 
 #else
@@ -241,7 +238,7 @@ void ClientMediaDownloader::initialStep(Client *client)
 		for (u32 i = 0; i < m_remotes.size(); ++i) {
 			assert(m_httpfetch_next_id == i);
 
-			RemoteServerStatus *remote = m_remotes[i];
+			RemoteServerStatus *remote = m_remotes[i].get();
 			actionstream << "Client: Contacting remote server \""
 				<< remote->baseurl << "\"" << std::endl;
 
@@ -278,7 +275,7 @@ void ClientMediaDownloader::remoteHashSetReceived(
 {
 	u32 remote_id = fetch_result.request_id;
 	assert(remote_id < m_remotes.size());
-	RemoteServerStatus *remote = m_remotes[remote_id];
+	RemoteServerStatus *remote = m_remotes[remote_id].get();
 
 	m_outstanding_hash_sets--;
 
@@ -332,7 +329,7 @@ void ClientMediaDownloader::remoteMediaReceived(
 	sanity_check(!filestatus->received);
 	sanity_check(filestatus->current_remote >= 0);
 
-	RemoteServerStatus *remote = m_remotes[filestatus->current_remote];
+	RemoteServerStatus *remote = m_remotes[filestatus->current_remote].get();
 
 	filestatus->current_remote = -1;
 	remote->active_count--;
@@ -406,7 +403,7 @@ void ClientMediaDownloader::startRemoteMediaTransfers()
 			if (remote_id >= 0) {
 				// Found a server, so start fetching
 				RemoteServerStatus *remote =
-					m_remotes[remote_id];
+					m_remotes[remote_id].get();
 
 				std::string url = remote->baseurl +
 					hex_encode(filestatus->sha1);
