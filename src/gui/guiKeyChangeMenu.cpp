@@ -96,9 +96,6 @@ GUIKeyChangeMenu::~GUIKeyChangeMenu()
 	removeAllChildren();
 	key_used_text = nullptr;
 
-	for (key_setting *ks : key_settings) {
-		delete ks;
-	}
 	key_settings.clear();
 }
 
@@ -134,7 +131,7 @@ void GUIKeyChangeMenu::regenerateGui(v2u32 screensize)
 
 	for(size_t i = 0; i < key_settings.size(); i++)
 	{
-		key_setting *k = key_settings.at(i);
+		key_setting *k = key_settings.at(i).get();
 		{
 			core::rect<s32> rect(0, 0, 150 * s, 20 * s);
 			rect += topleft + v2s32(offset.X, offset.Y);
@@ -224,7 +221,7 @@ void GUIKeyChangeMenu::drawMenu()
 
 bool GUIKeyChangeMenu::acceptInput()
 {
-	for (key_setting *k : key_settings) {
+	for (auto &k : key_settings) {
 		std::string default_key;
 		Settings::getLayer(SL_DEFAULTS)->getNoEx(k->setting_name, default_key);
 
@@ -289,8 +286,8 @@ bool GUIKeyChangeMenu::OnEvent(const SEvent& event)
 		// Display Key already in use message
 		bool key_in_use = false;
 		if (strcmp(kp.sym(), "") != 0) {
-			for (key_setting *ks : key_settings) {
-				if (ks != active_key && ks->key == kp) {
+			for (auto &ks : key_settings) {
+				if (ks.get() != active_key && ks->key == kp) {
 					key_in_use = true;
 					break;
 				}
@@ -352,9 +349,9 @@ bool GUIKeyChangeMenu::OnEvent(const SEvent& event)
 					return true;
 				default:
 					resetMenu();
-					for (key_setting *ks : key_settings) {
+					for (auto &ks : key_settings) {
 						if (ks->id == event.GUIEvent.Caller->getID()) {
-							active_key = ks;
+							active_key = ks.get();
 							break;
 						}
 					}
@@ -372,13 +369,13 @@ bool GUIKeyChangeMenu::OnEvent(const SEvent& event)
 
 void GUIKeyChangeMenu::add_key(int id, std::wstring button_name, const std::string &setting_name)
 {
-	key_setting *k = new key_setting;
+	auto k = std::make_unique<key_setting>();
 	k->id = id;
 
 	k->button_name = std::move(button_name);
 	k->setting_name = setting_name;
 	k->key = getKeySetting(k->setting_name.c_str());
-	key_settings.push_back(k);
+	key_settings.push_back(std::move(k));
 }
 
 void GUIKeyChangeMenu::init_keys()

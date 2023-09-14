@@ -74,6 +74,6 @@ private:
 
 	key_setting *active_key = nullptr;
 	gui::IGUIStaticText *key_used_text = nullptr;
-	std::vector<key_setting *> key_settings;
+	std::vector<std::unique_ptr<key_setting>> key_settings;
 	ISimpleTextureSource *m_tsrc;
 };
