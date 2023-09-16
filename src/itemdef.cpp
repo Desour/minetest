@@ -380,13 +380,7 @@ public:
 		clear();
 	}
 
-	virtual ~CItemDefManager()
-	{
-		for (auto &item_definition : m_item_definitions) {
-			delete item_definition.second;
-		}
-		m_item_definitions.clear();
-	}
+	virtual ~CItemDefManager() = default;
 	virtual const ItemDefinition& get(const std::string &name_) const
 	{
 		// Convert name according to possible alias
@@ -520,7 +514,7 @@ public:
 				continue; // Ignore unknown item
 			}
 
-			ItemDefinition* itemdef = m_item_definitions[texture_override.id];
+			ItemDefinition *itemdef = m_item_definitions[texture_override.id].get();
 
 			if (texture_override.hasTarget(OverrideTarget::INVENTORY))
 				itemdef->inventory_image = texture_override.texture;
@@ -531,10 +525,6 @@ public:
 	}
 	void clear()
 	{
-		for (auto &i : m_item_definitions)
-		{
-			delete i.second;
-		}
 		m_item_definitions.clear();
 		m_aliases.clear();
 
@@ -545,26 +535,26 @@ public:
 		//   "air" is the air node
 		//   "ignore" is the ignore node
 
-		ItemDefinition* hand_def = new ItemDefinition;
+		auto hand_def = std::make_unique<ItemDefinition>();
 		hand_def->name.clear();
 		hand_def->wield_image = "wieldhand.png";
 		hand_def->tool_capabilities = std::make_unique<ToolCapabilities>();
-		m_item_definitions.insert(std::make_pair("", hand_def));
+		m_item_definitions.insert(std::make_pair("", std::move(hand_def)));
 
-		ItemDefinition* unknown_def = new ItemDefinition;
+		auto unknown_def = std::make_unique<ItemDefinition>();
 		unknown_def->type = ITEM_NODE;
 		unknown_def->name = "unknown";
-		m_item_definitions.insert(std::make_pair("unknown", unknown_def));
+		m_item_definitions.insert(std::make_pair("unknown", std::move(unknown_def)));
 
-		ItemDefinition* air_def = new ItemDefinition;
+		auto air_def = std::make_unique<ItemDefinition>();
 		air_def->type = ITEM_NODE;
 		air_def->name = "air";
-		m_item_definitions.insert(std::make_pair("air", air_def));
+		m_item_definitions.insert(std::make_pair("air", std::move(air_def)));
 
-		ItemDefinition* ignore_def = new ItemDefinition;
+		auto ignore_def = std::make_unique<ItemDefinition>();
 		ignore_def->type = ITEM_NODE;
 		ignore_def->name = "ignore";
-		m_item_definitions.insert(std::make_pair("ignore", ignore_def));
+		m_item_definitions.insert(std::make_pair("ignore", std::move(ignore_def)));
 	}
 	virtual void registerItem(const ItemDefinition &def)
 	{
@@ -573,10 +563,10 @@ public:
 		if (def.name.empty())
 			FATAL_ERROR_IF(!def.tool_capabilities, "Hand does not have ToolCapabilities");
 
-		if(m_item_definitions.count(def.name) == 0)
-			m_item_definitions[def.name] = new ItemDefinition(def);
+		if (m_item_definitions.count(def.name) == 0)
+			m_item_definitions[def.name] = std::make_unique<ItemDefinition>(def);
 		else
-			*(m_item_definitions[def.name]) = def;
+			*m_item_definitions[def.name] = def;
 
 		// Remove conflicting alias if it exists
 		bool alias_removed = (m_aliases.erase(def.name) != 0);
@@ -588,7 +578,6 @@ public:
 	{
 		verbosestream<<"ItemDefManager: unregistering \""<<name<<"\""<<std::endl;
 
-		delete m_item_definitions[name];
 		m_item_definitions.erase(name);
 	}
 	virtual void registerAlias(const std::string &name,
@@ -607,7 +596,7 @@ public:
 		writeU16(os, count);
 
 		for (const auto &it : m_item_definitions) {
-			ItemDefinition *def = it.second;
+			ItemDefinition *def = it.second.get();
 			// Serialize ItemDefinition and write wrapped in a string
 			std::ostringstream tmp_os(std::ios::binary);
 			def->serialize(tmp_os, protocol_version);
@@ -650,7 +639,7 @@ public:
 
 private:
 	// Key is name
-	std::map<std::string, ItemDefinition*> m_item_definitions;
+	std::map<std::string, std::unique_ptr<ItemDefinition>> m_item_definitions;
 	// Aliases
 	StringMap m_aliases;
 #ifndef SERVER
