@@ -457,7 +457,7 @@ private:
 	const u64 m_connection_time = porting::getTimeS();
 };
 
-typedef std::unordered_map<u16, RemoteClient*> RemoteClientMap;
+typedef std::unordered_map<u16, std::unique_ptr<RemoteClient>> RemoteClientMap;
 
 class ClientInterface {
 public:

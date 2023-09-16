@@ -785,7 +785,7 @@ void Server::AsyncRunStep(float dtime, bool initial_step)
 
 			m_player_gauge->set(clients.size());
 			for (const auto &client_it : clients) {
-				RemoteClient *client = client_it.second;
+				RemoteClient *client = client_it.second.get();
 
 				if (client->getState() < CS_DefinitionsSent)
 					continue;
@@ -849,7 +849,7 @@ void Server::AsyncRunStep(float dtime, bool initial_step)
 			for (const auto &client_it : clients) {
 				reliable_data.clear();
 				unreliable_data.clear();
-				RemoteClient *client = client_it.second;
+				RemoteClient *client = client_it.second.get();
 				PlayerSAO *player = getPlayerSAO(client->peer_id);
 				// Go through all objects in message buffer
 				for (const auto &buffered_message : buffered_messages) {

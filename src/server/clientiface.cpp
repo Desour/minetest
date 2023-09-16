@@ -675,7 +675,7 @@ ClientInterface::~ClientInterface()
 
 		for (auto &client_it : m_clients) {
 			// Delete client
-			delete client_it.second;
+			client_it.second.reset();
 		}
 	}
 }
@@ -799,7 +799,7 @@ void ClientInterface::sendToAll(NetworkPacket *pkt)
 {
 	RecursiveMutexAutoLock clientslock(m_clients_mutex);
 	for (auto &client_it : m_clients) {
-		RemoteClient *client = client_it.second;
+		RemoteClient *client = client_it.second.get();
 
 		if (client->net_proto_version != 0) {
 			auto &ccf = clientCommandFactoryTable[pkt->getCommand()];
@@ -809,22 +809,13 @@ void ClientInterface::sendToAll(NetworkPacket *pkt)
 	}
 }
 
-RemoteClient* ClientInterface::getClientNoEx(session_t peer_id, ClientState state_min)
+RemoteClient *ClientInterface::getClientNoEx(session_t peer_id, ClientState state_min)
 {
 	RecursiveMutexAutoLock clientslock(m_clients_mutex);
-	RemoteClientMap::const_iterator n = m_clients.find(peer_id);
-	// The client may not exist; clients are immediately removed if their
-	// access is denied, and this event occurs later then.
-	if (n == m_clients.end())
-		return NULL;
-
-	if (n->second->getState() >= state_min)
-		return n->second;
-
-	return NULL;
+	return lockedGetClientNoEx(peer_id, state_min);
 }
 
-RemoteClient* ClientInterface::lockedGetClientNoEx(session_t peer_id, ClientState state_min)
+RemoteClient *ClientInterface::lockedGetClientNoEx(session_t peer_id, ClientState state_min)
 {
 	RemoteClientMap::const_iterator n = m_clients.find(peer_id);
 	// The client may not exist; clients are immediately removed if their
@@ -833,7 +824,7 @@ RemoteClient* ClientInterface::lockedGetClientNoEx(session_t peer_id, ClientStat
 		return NULL;
 
 	if (n->second->getState() >= state_min)
-		return n->second;
+		return n->second.get();
 
 	return NULL;
 }
@@ -875,7 +866,7 @@ void ClientInterface::DeleteClient(session_t peer_id)
 		Mark objects to be not known by the client
 	*/
 	//TODO this should be done by client destructor!!!
-	RemoteClient *client = n->second;
+	RemoteClient *client = n->second.get();
 	// Handle objects
 	for (u16 id : client->m_known_objects) {
 		// Get object
@@ -886,7 +877,6 @@ void ClientInterface::DeleteClient(session_t peer_id)
 	}
 
 	// Delete client
-	delete m_clients[peer_id];
 	m_clients.erase(peer_id);
 }
 
@@ -900,9 +890,9 @@ void ClientInterface::CreateClient(session_t peer_id)
 	if (n != m_clients.end()) return;
 
 	// Create client
-	RemoteClient *client = new RemoteClient();
+	auto client = std::make_unique<RemoteClient>();
 	client->peer_id = peer_id;
-	m_clients[client->peer_id] = client;
+	m_clients[client->peer_id] = std::move(client);
 }
 
 void ClientInterface::event(session_t peer_id, ClientStateEvent event)
