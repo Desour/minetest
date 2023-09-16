@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include "irrlichttypes_extrabloated.h"
+#include <memory>
 #include <string>
 #include <iostream>
 #include <optional>
@@ -102,7 +103,7 @@ struct ItemDefinition
 	std::optional<Pointabilities> pointabilities;
 
 	// They may be NULL. If non-NULL, deleted by destructor
-	ToolCapabilities *tool_capabilities;
+	std::unique_ptr<ToolCapabilities> tool_capabilities;
 
 	std::optional<WearBarParams> wear_bar_params;
 
@@ -131,8 +132,6 @@ struct ItemDefinition
 	void reset();
 	void serialize(std::ostream &os, u16 protocol_version) const;
 	void deSerialize(std::istream &is, u16 protocol_version);
-private:
-	void resetInitial();
 };
 
 class IItemDefManager

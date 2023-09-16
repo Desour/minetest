@@ -93,7 +93,7 @@ void read_item_definition(lua_State* L, int index,
 
 	lua_getfield(L, index, "tool_capabilities");
 	if(lua_istable(L, -1)){
-		def.tool_capabilities = new ToolCapabilities(
+		def.tool_capabilities = std::make_unique<ToolCapabilities>(
 				read_tool_capabilities(L, -1));
 	}
 	lua_getfield(L, index, "wear_color");
@@ -110,7 +110,7 @@ void read_item_definition(lua_State* L, int index,
 	// because it will be looked up there whenever any other item has
 	// no ToolCapabilities
 	if (def.name.empty() && def.tool_capabilities == NULL){
-		def.tool_capabilities = new ToolCapabilities();
+		def.tool_capabilities = std::make_unique<ToolCapabilities>();
 	}
 
 	lua_getfield(L, index, "groups");

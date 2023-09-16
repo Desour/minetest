@@ -121,11 +121,11 @@ struct ItemStack
 			const IItemDefManager *itemdef) const
 	{
 		const ToolCapabilities *item_cap =
-			itemdef->get(name).tool_capabilities;
+			itemdef->get(name).tool_capabilities.get();
 
 		if (item_cap == NULL)
 			// Fall back to the hand's tool capabilities
-			item_cap = itemdef->get("").tool_capabilities;
+			item_cap = itemdef->get("").tool_capabilities.get();
 
 		assert(item_cap != NULL);
 		return metadata.getToolCapabilities(*item_cap); // Check for override

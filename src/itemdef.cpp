@@ -93,12 +93,12 @@ void TouchInteraction::deSerialize(std::istream &is)
 */
 ItemDefinition::ItemDefinition()
 {
-	resetInitial();
+	reset();
 }
 
 ItemDefinition::ItemDefinition(const ItemDefinition &def)
 {
-	resetInitial();
+	reset();
 	*this = def;
 }
 
@@ -123,7 +123,7 @@ ItemDefinition& ItemDefinition::operator=(const ItemDefinition &def)
 	liquids_pointable = def.liquids_pointable;
 	pointabilities = def.pointabilities;
 	if (def.tool_capabilities)
-		tool_capabilities = new ToolCapabilities(*def.tool_capabilities);
+		tool_capabilities = std::make_unique<ToolCapabilities>(*def.tool_capabilities);
 	wear_bar_params = def.wear_bar_params;
 	groups = def.groups;
 	node_placement_prediction = def.node_placement_prediction;
@@ -145,14 +145,6 @@ ItemDefinition::~ItemDefinition()
 	reset();
 }
 
-void ItemDefinition::resetInitial()
-{
-	// Initialize pointers to NULL so reset() does not delete undefined pointers
-	tool_capabilities = NULL;
-	wear_bar_params = std::nullopt;
-	reset();
-}
-
 void ItemDefinition::reset()
 {
 	type = ITEM_NONE;
@@ -170,8 +162,7 @@ void ItemDefinition::reset()
 	usable = false;
 	liquids_pointable = false;
 	pointabilities = std::nullopt;
-	delete tool_capabilities;
-	tool_capabilities = NULL;
+	tool_capabilities.reset();
 	wear_bar_params.reset();
 	groups.clear();
 	sound_place = SoundSpec();
@@ -289,7 +280,7 @@ void ItemDefinition::deSerialize(std::istream &is, u16 protocol_version)
 	std::string tool_capabilities_s = deSerializeString16(is);
 	if (!tool_capabilities_s.empty()) {
 		std::istringstream tmp_is(tool_capabilities_s, std::ios::binary);
-		tool_capabilities = new ToolCapabilities;
+		tool_capabilities = std::make_unique<ToolCapabilities>();
 		tool_capabilities->deSerialize(tmp_is);
 	}
 
@@ -557,7 +548,7 @@ public:
 		ItemDefinition* hand_def = new ItemDefinition;
 		hand_def->name.clear();
 		hand_def->wield_image = "wieldhand.png";
-		hand_def->tool_capabilities = new ToolCapabilities;
+		hand_def->tool_capabilities = std::make_unique<ToolCapabilities>();
 		m_item_definitions.insert(std::make_pair("", hand_def));
 
 		ItemDefinition* unknown_def = new ItemDefinition;
