@@ -515,6 +515,12 @@ public:
  * The SoundManager thread
  */
 
+struct SoundManagerMsgToMgr {
+	enum class Result { Ok, Empty, StopRequested };
+	virtual ~SoundManagerMsgToMgr = default;
+	virtual Result run(OpenALSoundManager *mgr) && = 0;
+};
+/*
 namespace sound_manager_messages_to_mgr {
 	struct PauseAll {};
 	struct ResumeAll {};
@@ -555,7 +561,7 @@ using SoundManagerMsgToMgr = std::variant<
 		sound_manager_messages_to_mgr::UpdateSoundPosVel,
 
 		sound_manager_messages_to_mgr::PleaseStop
-	>;
+	>;*/
 
 namespace sound_manager_messages_to_proxy {
 	struct ReportRemovedSound { sound_handle_t id; };
@@ -605,7 +611,7 @@ private:
 
 public:
 	// used for communication with ProxySoundManager
-	MutexedQueue<SoundManagerMsgToMgr> m_queue_to_mgr;
+	MutexedQueue<std::unique_ptr<SoundManagerMsgToMgr>> m_queue_to_mgr;
 	MutexedQueue<SoundManagerMsgToProxy> m_queue_to_proxy;
 
 private:

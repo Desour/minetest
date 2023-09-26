@@ -1136,10 +1136,60 @@ void OpenALSoundManager::updateSoundPosVel(sound_handle_t id, const v3f &pos_,
 	i->second->updatePosVel(pos, vel);
 }
 
+namespace sound_manager_messages_to_mgr
+{
+	struct PauseAll final : SoundManagerMsgToMgr {
+		Result run(OpenALSoundManager *mgr) && override {
+			mgr->pauseAll();
+			return Result::Ok;
+		}
+	};
+	struct ResumeAll final : SoundManagerMsgToMgr {
+		Result run(OpenALSoundManager *mgr) && override {
+			mgr->resumeAll();
+			return Result::Ok;
+		}
+	};
+
+	struct UpdateListener final : SoundManagerMsgToMgr {
+		v3f pos_; v3f vel_; v3f at_; v3f up_;
+		Result run(OpenALSoundManager *mgr) && override {
+			mgr->updateListener(pos_, vel_, at_, up_);
+			return Result::Ok;
+		}
+	};
+	struct SetListenerGain { f32 gain; };//...
+
+	struct LoadSoundFile { std::string name; std::string filepath; };//...
+
+	struct LoadSoundData final : SoundManagerMsgToMgr {
+		std::string name; std::string filedata;
+		Result run(OpenALSoundManager *mgr) && override {
+			// Note: std::function would be bad, because it could copy filedata.
+			// and std::move_only_function is C++23
+			mgr->loadSoundDataNoCheck(name, std::move(filedata));
+			return Result::Ok;
+		}
+	};
+	struct AddSoundToGroup { std::string sound_name; std::string group_name; };//...
+
+	struct PlaySound { sound_handle_t id; SoundSpec spec; };//...
+	struct PlaySoundAt { sound_handle_t id; SoundSpec spec; v3f pos_; v3f vel_; };
+	struct StopSound { sound_handle_t sound; };
+	struct FadeSound { sound_handle_t soundid; f32 step; f32 target_gain; };
+	struct UpdateSoundPosVel { sound_handle_t sound; v3f pos_; v3f vel_; };
+
+	struct PleaseStop {
+		Result run(OpenALSoundManager *mgr) {
+			return Result::StopRequested;
+		}
+	};
+}
+
 void *OpenALSoundManager::run()
 {
 	using namespace sound_manager_messages_to_mgr;
-
+/*
 	struct MsgVisitor {
 		enum class Result { Ok, Empty, StopRequested };
 
@@ -1178,7 +1228,7 @@ void *OpenALSoundManager::run()
 
 		Result operator()(PleaseStop &&msg) {
 			return Result::StopRequested; }
-	};
+	};*/
 
 	u64 t_step_start = porting::getTimeMs();
 	while (true) {
@@ -1192,10 +1242,11 @@ void *OpenALSoundManager::run()
 		bool stop_requested = false;
 
 		while (true) {
-			SoundManagerMsgToMgr msg =
+			auto msg =
 					m_queue_to_mgr.pop_frontNoEx(std::max(get_remaining_timeout(), 0));
 
-			MsgVisitor::Result res = std::visit(MsgVisitor{*this}, std::move(msg));
+			//~ MsgVisitor::Result res = std::visit(MsgVisitor{*this}, std::move(msg));
+			MsgVisitor::Result res = std::move(*msg).run(this);
 
 			if (res == MsgVisitor::Result::Empty && get_remaining_timeout() <= 0) {
 				break; // finished sleeping
