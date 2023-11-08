@@ -22,85 +22,182 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "irrlichttypes.h"
 #include "irr_v3d.h"
 #include <array>
+#include <optional>
 #include <ostream>
 #include <string_view>
 
-// default-initialized DirNum is invalid
-// value-initialized DirNum is +x-axis
-// valid DirNums are 0 to 5
+/** Helper for enumerating all 6 possible directions along axes.
+ *
+ * A DirNum encodes a vector.
+ * Bits:
+ * `0 0 0 0 0 a1 a0 s`
+ * The lowest bit (`s`) encodes the sign (1 is -, 0 is +).
+ * Bit 1 and 2 (`a1 a0`) encode the axis (0 is x, 1 is y, 2 is z).
+ *
+ * A default-initialized DirNum is invalid.
+ * A value-initialized DirNum is the +x-axis.
+ * Valid DirNums are 0 to 5.
+ */
 struct DirNum
 {
 	u8 num;
 
-	// the axes
-	// use operator- to get the negative directions, e.g. -DirNum::x
-	static const DirNum x; //TODO: functions?
-	static const DirNum y;
-	static const DirNum z;
+	/** The axes.
+	 *
+	 * Use operator- to get the negative directions, e.g. `-DirNum::x()`.
+	 */
+	static constexpr DirNum x() noexcept { return {0}; };
+	static constexpr DirNum y() noexcept { return {2}; };
+	static constexpr DirNum z() noexcept { return {4}; };
 
-	// for iterating (TODO: remove?)
-	static constexpr DirNum begin() { return {0}; };
-	static constexpr DirNum end() { return {6}; };
-
-	// alternative for iterating
-	static constexpr std::array<DirNum, 6> allDirs()
-	{
-		return {{{0}, {1}, {2}, {3}, {4}, {5}}};
-	}
-
-	constexpr bool operator==(const DirNum &other) const
-	{
-		return num == other.num;
-	}
-
-	constexpr bool operator!=(const DirNum &other) const
-	{
-		return !(*this == other);
-	}
-
-	// mirror
-	constexpr DirNum operator-() const
+	//! Mirror.
+	constexpr DirNum operator-() const noexcept
 	{
 		return {(u8)(num ^ 1)};
 	}
 
-	// for iterating (TODO: remove?)
-	constexpr DirNum &operator++()
+	//! For iterating.
+	static constexpr std::array<DirNum, 6> allDirs() noexcept
 	{
-		++num;
-		return *this;
+		return {{{0}, {1}, {2}, {3}, {4}, {5}}};
 	}
 
-	// for iterating (TODO: remove?)
-	constexpr DirNum operator++(int)
+	constexpr bool operator==(const DirNum &other) const noexcept
 	{
-		DirNum ret = *this;
-		++*this;
-		return ret;
+		return num == other.num;
 	}
 
-	constexpr std::string_view humanReadable() const
+	constexpr bool operator!=(const DirNum &other) const noexcept
 	{
-		return human_readable_names[num];
+		return !(*this == other);
+	}
+
+	//! +1 for +x, +y, +z, otherwise -1.
+	constexpr s8 sign() const noexcept
+	{
+		return 1 - 2 * (num & 1);
+	}
+
+	template <typename T>
+	core::vector3d<T> toVector3d() const noexcept
+	{
+		// FIXME: make vector3d constexpr
+		static const core::vector3d<T> lut_vector3d[6] = {
+			core::vector3d<T>(1,0,0), core::vector3d<T>(-1,0,0),
+			core::vector3d<T>(0,1,0), core::vector3d<T>(0,-1,0),
+			core::vector3d<T>(0,0,1), core::vector3d<T>(0,0,-1),
+		};
+		return lut_vector3d[num];
+	}
+
+	// same abbreviations as in irr_v3d.h
+	v3f toV3f() const noexcept { return toVector3d<float>(); }
+	v3d toV3d() const noexcept { return toVector3d<double>(); }
+	v3s16 toV3s16() const noexcept { return toVector3d<s16>(); }
+	v3u16 toV3u16() const noexcept { return toVector3d<u16>(); }
+	v3s32 toV3s32() const noexcept { return toVector3d<s32>(); }
+
+	/** Get the direction that a vector is pointing in.
+	 *
+	 * Not recommended for floating point vectors.
+	 */
+	template <typename T>
+	static constexpr std::optional<DirNum> directionOf(const core::vector3d<T> &v) noexcept
+	{
+		if (v.X != 0) {
+			if (v.Y != 0 || v.Z != 0)
+				return std::nullopt;
+			if (v.X > 0)
+				return DirNum::x();
+			else
+				return -DirNum::x();
+		} else if (v.Y != 0) {
+			if (v.Z != 0)
+				return std::nullopt;
+			if (v.Y > 0)
+				return DirNum::y();
+			else
+				return -DirNum::y();
+		} else if (v.Z != 0) {
+			if (v.Z > 0)
+				return DirNum::z();
+			else
+				return -DirNum::z();
+		} else {
+			return std::nullopt;
+		}
+	}
+
+	constexpr std::string_view humanReadable() const noexcept
+	{
+		return lut_human_readable_names[num];
+	}
+
+	/** Use this for accessing the wanted componend of a vector3d.
+	 *
+	 * Example:
+	 * ```
+	 * v3s16 v;
+	 * DirNum dn;
+	 * v.*dn.memberPtrInVector3d<s16>() = 42
+	 * ```
+	 */
+	template <typename T>
+	constexpr T core::vector3d<T>::* memberPtrInVector3d() const noexcept
+	{
+		constexpr T core::vector3d<T>::* lut_ptrs[3] =
+				{&core::vector3d<T>::X, &core::vector3d<T>::Y, &core::vector3d<T>::Z};
+		return lut_ptrs[num >> 1];
 	}
 
 private:
-	static constexpr char human_readable_names[6][3] = {"+x", "-x", "+y", "-y", "+z", "-z"};
+	// static variables in constexpr functions are not yet allowed, hence this is here
+	static constexpr char lut_human_readable_names[6][3] = {"+x", "-x", "+y", "-y", "+z", "-z"};
 };
 
-// TODO: remove comment?, and
-// can't be defined in struct definition, because DirNum is an incomplete type there
-// see also https://stackoverflow.com/questions/67300293/can-i-initialize-a-constexpr-static-member-outside-the-class
-inline constexpr DirNum DirNum::x = {0};
-inline constexpr DirNum DirNum::y = {2};
-inline constexpr DirNum DirNum::z = {4};
-inline constexpr DirNum begin = {0};
-inline constexpr DirNum end = {6};
+static_assert(sizeof(DirNum) == 1);
 
-
+// pretty printing
 std::ostream &operator<<(std::ostream &os, DirNum dn)
 {
 	return os << dn.humanReadable();
+}
+
+// d + v
+template <typename T>
+core::vector3d<T> operator+(const DirNum &d, const core::vector3d<T> &v) noexcept
+{
+	auto ret = v;
+	ret.*d.memberPtrInVector3d<T>() += d.sign();
+	return ret;
+}
+
+// v + d
+template <typename T>
+core::vector3d<T> operator+(const core::vector3d<T> &v, const DirNum &d) noexcept
+{
+	return d + v;
+}
+
+// v - d
+template <typename T>
+core::vector3d<T> operator-(const core::vector3d<T> &v, const DirNum &d) noexcept
+{
+	return v + (-d);
+}
+
+// d * s
+template <typename T>
+core::vector3d<T> operator*(const DirNum &d, const T &s) noexcept
+{
+	return d.toVector3d<T>() * s;
+}
+
+// s * d
+template <typename T>
+core::vector3d<T> operator*(const T &s, const DirNum &d) noexcept
+{
+	return d * s;
 }
 
 
