@@ -24,6 +24,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <array>
 #include <optional>
 #include <ostream>
+#include <string>
 #include <string_view>
 
 /** Helper for enumerating all 6 possible directions along axes.
@@ -201,7 +202,6 @@ core::vector3d<T> operator*(const T &s, const DirNum &d) noexcept
 }
 
 
-/*
 // default-initialized RotNum is invalid
 // value-initialized RotNum sets every component to +x
 struct RotNum
@@ -209,10 +209,11 @@ struct RotNum
 	u16 num;
 
 	// identity
-	static constexpr RotNum id = {0x210};
+	static constexpr RotNum id = {0x420};
 
 	// positive 90-degree rotation around axis
-	static constexpr RotNum rotx = {0x160};
+	//~ static constexpr RotNum rotx = {0x250};
+	static constexpr RotNum rotx = {DirNum::y(), -DirNum::z(), DirNum::x};
 	static constexpr RotNum roty = {0x0}; //TODO
 	static constexpr RotNum rotz = {0x0};
 
@@ -266,5 +267,14 @@ struct RotNum
 		ret ^= (d.num & 1) << 2;
 		return {((ret & 6) >> 1) | ((ret & 1) << 2)};
 	}
+
+	std::string humanReadable() const noexcept
+	{
+		// example: "(+x/+y/+z)"
+		return std::string("(") + row0().humanReadable()
+				+ "/" + row1().humanReadable()
+				+ "/" + row2().humanReadable() + ")";
+	}
 };
-*/
+
+static_assert(sizeof(RotNum) == 2);
