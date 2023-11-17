@@ -677,13 +677,12 @@ void Camera::drawNametags()
 		v3f pos = nametag->parent_node->getAbsolutePosition() + nametag->pos * BS;
 		f32 transformed_pos[4] = { pos.X, pos.Y, pos.Z, 1.0f };
 		trans.multiplyWith1x4Matrix(transformed_pos);
-		if (transformed_pos[3] > 0) {
+		if (transformed_pos[3] > 0.0e-37f) { // large enough that the reciprocal is <inf
 			std::wstring nametag_colorless =
 				unescape_translate(utf8_to_wide(nametag->text));
 			core::dimension2d<u32> textsize = font->getDimension(
 				nametag_colorless.c_str());
-			f32 zDiv = transformed_pos[3] == 0.0f ? 1.0f :
-				core::reciprocal(transformed_pos[3]);
+			f32 zDiv = core::reciprocal(transformed_pos[3]);
 			v2s32 screen_pos;
 			screen_pos.X = screensize.X *
 				(0.5 * transformed_pos[0] * zDiv + 0.5) - textsize.Width / 2;
