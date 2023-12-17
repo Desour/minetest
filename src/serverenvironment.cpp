@@ -815,7 +815,7 @@ class ABMHandler
 {
 private:
 	ServerEnvironment *m_env;
-	std::vector<std::vector<ActiveABM> *> m_aabms;
+	std::vector<std::unique_ptr<std::vector<ActiveABM>>> m_aabms;
 public:
 	ABMHandler(std::vector<ABMWithState> &abms,
 		float dtime_s, ServerEnvironment *env,
@@ -872,19 +872,13 @@ public:
 				ndef->getIds(content_s, ids);
 				for (content_t c : ids) {
 					if (c >= m_aabms.size())
-						m_aabms.resize(c + 256, NULL);
+						m_aabms.resize(c + 256);
 					if (!m_aabms[c])
-						m_aabms[c] = new std::vector<ActiveABM>;
+						m_aabms[c] = std::make_unique<std::vector<ActiveABM>>();
 					m_aabms[c]->push_back(aabm);
 				}
 			}
 		}
-	}
-
-	~ABMHandler()
-	{
-		for (auto &aabms : m_aabms)
-			delete aabms;
 	}
 
 	// Find out how many objects the given block and its neighbors contain.
