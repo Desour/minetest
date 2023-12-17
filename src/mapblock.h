@@ -95,9 +95,9 @@ public:
 		raiseModified(MOD_STATE_WRITE_NEEDED, MOD_REASON_REALLOCATE);
 	}
 
-	MapNode* getData()
+	MapNode *getData()
 	{
-		return data;
+		return data.get();
 	}
 
 	////
@@ -493,7 +493,7 @@ private:
 	 * heap fragmentation (the array is exactly 16K), CPU caches and/or
 	 * optimizability of algorithms working on this array.
 	 */
-	MapNode *const data; // of `nodecount` elements
+	const std::unique_ptr<MapNode[]> data; // of `nodecount` elements
 
 	// provides the item and node definitions
 	IGameDef *m_gamedef;

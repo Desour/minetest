@@ -74,10 +74,7 @@ MapBlock::MapBlock(v3s16 pos, IGameDef *gamedef):
 	assert(m_modified > MOD_STATE_CLEAN);
 }
 
-MapBlock::~MapBlock()
-{
-	delete[] data;
-}
+MapBlock::~MapBlock() = default;
 
 bool MapBlock::onObjectsActivation()
 {
@@ -165,7 +162,7 @@ void MapBlock::copyTo(VoxelManipulator &dst)
 	VoxelArea data_area(v3s16(0,0,0), data_size - v3s16(1,1,1));
 
 	// Copy from data to VoxelManipulator
-	dst.copyFrom(data, data_area, v3s16(0,0,0),
+	dst.copyFrom(data.get(), data_area, v3s16(0,0,0),
 			getPosRelative(), data_size);
 }
 
@@ -175,7 +172,7 @@ void MapBlock::copyFrom(VoxelManipulator &dst)
 	VoxelArea data_area(v3s16(0,0,0), data_size - v3s16(1,1,1));
 
 	// Copy from VoxelManipulator to data
-	dst.copyTo(data, data_area, v3s16(0,0,0),
+	dst.copyTo(data.get(), data_area, v3s16(0,0,0),
 			getPosRelative(), data_size);
 }
 
@@ -356,7 +353,7 @@ void MapBlock::serialize(std::ostream &os_compressed, u8 version, bool disk, int
  	if(disk)
 	{
 		auto tmp_nodes = std::unique_ptr<MapNode[]>(new MapNode[nodecount]);
-		memcpy(tmp_nodes.get(), data, nodecount * sizeof(MapNode));
+		memcpy(tmp_nodes.get(), data.get(), nodecount * sizeof(MapNode));
 		getBlockNodeIdMapping(&nimap, tmp_nodes.get(), m_gamedef->ndef());
 
 		buf = MapNode::serializeBulk(version, tmp_nodes.get(), nodecount,
@@ -372,7 +369,7 @@ void MapBlock::serialize(std::ostream &os_compressed, u8 version, bool disk, int
 	}
 	else
 	{
-		buf = MapNode::serializeBulk(version, data, nodecount,
+		buf = MapNode::serializeBulk(version, data.get(), nodecount,
 				content_width, params_width);
 	}
 
@@ -493,12 +490,12 @@ void MapBlock::deSerialize(std::istream &in_compressed, u8 version, bool disk)
 		Bulk node data
 	*/
 	if (version >= 29) {
-		MapNode::deSerializeBulk(is, version, data, nodecount,
+		MapNode::deSerializeBulk(is, version, data.get(), nodecount,
 			content_width, params_width);
 	} else {
 		// use in_raw from above to avoid allocating another stream object
 		decompress(is, in_raw, version);
-		MapNode::deSerializeBulk(in_raw, version, data, nodecount,
+		MapNode::deSerializeBulk(in_raw, version, data.get(), nodecount,
 			content_width, params_width);
 	}
 
@@ -562,7 +559,7 @@ void MapBlock::deSerialize(std::istream &in_compressed, u8 version, bool disk)
 		}
 
 		// Dynamically re-set ids based on node names
-		correctBlockNodeIds(&nimap, data, m_gamedef);
+		correctBlockNodeIds(&nimap, data.get(), m_gamedef);
 
 		if(version >= 25){
 			TRACESTREAM(<<"MapBlock::deSerialize "<<getPos()
@@ -779,7 +776,7 @@ void MapBlock::deSerialize_pre22(std::istream &is, u8 version, bool disk)
 			m_is_air = false;
 			m_is_air_expired = true;
 		}
-		correctBlockNodeIds(&nimap, data, m_gamedef);
+		correctBlockNodeIds(&nimap, data.get(), m_gamedef);
 	}
 
 	// Legacy data changes
