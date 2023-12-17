@@ -165,8 +165,9 @@ MapSector * ClientMap::emergeSector(v2s16 p2d)
 
 	// Create it if it does not exist yet
 	if (!sector) {
-		sector = new MapSector(this, p2d, m_gamedef);
-		m_sectors[p2d] = sector;
+		auto sector_up = std::make_unique<MapSector>(this, p2d, m_gamedef);
+		sector = sector_up.get();
+		m_sectors[p2d] = std::move(sector_up);
 	}
 
 	return sector;
@@ -329,7 +330,7 @@ void ClientMap::updateDrawList()
 		MapBlockVect sectorblocks;
 
 		for (auto &sector_it : m_sectors) {
-			const MapSector *sector = sector_it.second;
+			const MapSector *sector = sector_it.second.get();
 			v2s16 sp = sector->getPos();
 
 			blocks_loaded += sector->size();
@@ -647,7 +648,7 @@ void ClientMap::touchMapBlocks()
 	u32 blocks_in_range_with_mesh = 0;
 
 	for (const auto &sector_it : m_sectors) {
-		const MapSector *sector = sector_it.second;
+		const MapSector *sector = sector_it.second.get();
 		v2s16 sp = sector->getPos();
 
 		blocks_loaded += sector->size();
@@ -1256,7 +1257,7 @@ void ClientMap::updateDrawListShadow(v3f shadow_light_pos, v3f shadow_light_dir,
 	u32 blocks_in_range_with_mesh = 0;
 
 	for (auto &sector_it : m_sectors) {
-		const MapSector *sector = sector_it.second;
+		const MapSector *sector = sector_it.second.get();
 		if (!sector)
 			continue;
 		blocks_loaded += sector->size();

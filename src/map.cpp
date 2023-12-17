@@ -68,15 +68,7 @@ Map::Map(IGameDef *gamedef):
 {
 }
 
-Map::~Map()
-{
-	/*
-		Free all MapSectors
-	*/
-	for (auto &sector : m_sectors) {
-		delete sector.second;
-	}
-}
+Map::~Map() = default;
 
 void Map::addEventReceiver(MapEventReceiver *event_receiver)
 {
@@ -107,7 +99,7 @@ MapSector * Map::getSectorNoGenerateNoLock(v2s16 p)
 	if (n == m_sectors.end())
 		return NULL;
 
-	MapSector *sector = n->second;
+	MapSector *sector = n->second.get();
 
 	// Cache the last result
 	m_sector_cache_p = p;
@@ -333,7 +325,7 @@ void Map::timerUpdate(float dtime, float unload_timeout, s32 max_loaded_blocks,
 	// If there is no practical limit, we spare creation of mapblock_queue
 	if (max_loaded_blocks < 0) {
 		for (auto &sector_it : m_sectors) {
-			MapSector *sector = sector_it.second;
+			MapSector *sector = sector_it.second.get();
 
 			bool all_blocks_deleted = true;
 
@@ -377,7 +369,7 @@ void Map::timerUpdate(float dtime, float unload_timeout, s32 max_loaded_blocks,
 	} else {
 		std::priority_queue<TimeOrderedMapBlock> mapblock_queue;
 		for (auto &sector_it : m_sectors) {
-			MapSector *sector = sector_it.second;
+			MapSector *sector = sector_it.second.get();
 
 			MapBlockVect blocks;
 			sector->getBlocks(blocks);
@@ -460,16 +452,17 @@ void Map::unloadUnreferencedBlocks(std::vector<v3s16> *unloaded_blocks)
 	timerUpdate(0.0, -1.0, 0, unloaded_blocks);
 }
 
-void Map::deleteSectors(std::vector<v2s16> &sectorList)
+void Map::deleteSectors(std::vector<v2s16> &sector_list)
 {
-	for (v2s16 j : sectorList) {
-		MapSector *sector = m_sectors[j];
+	for (v2s16 j : sector_list) {
+		auto sector_it = m_sectors.find(j);
+		if (sector_it == m_sectors.end())
+			continue;
 		// If sector is in sector cache, remove it from there
-		if(m_sector_cache == sector)
-			m_sector_cache = NULL;
+		if (m_sector_cache == sector_it->second.get())
+			m_sector_cache = nullptr;
 		// Remove from map and delete
-		m_sectors.erase(j);
-		delete sector;
+		m_sectors.erase(sector_it);
 	}
 }
 
@@ -1511,12 +1504,13 @@ MapSector *ServerMap::createSector(v2s16 p2d)
 	/*
 		Generate blank sector
 	*/
-	sector = new MapSector(this, p2d, m_gamedef);
+	auto sector_up = std::make_unique<MapSector>(this, p2d, m_gamedef);
+	sector = sector_up.get();
 
 	/*
 		Insert to container
 	*/
-	m_sectors[p2d] = sector;
+	m_sectors[p2d] = std::move(sector_up);
 
 	return sector;
 }
@@ -1674,7 +1668,7 @@ void ServerMap::save(ModifiedState save_level)
 	bool save_started = false;
 
 	for (auto &sector_it : m_sectors) {
-		MapSector *sector = sector_it.second;
+		MapSector *sector = sector_it.second.get();
 
 		MapBlockVect blocks;
 		sector->getBlocks(blocks);
@@ -1728,7 +1722,7 @@ void ServerMap::listAllLoadableBlocks(std::vector<v3s16> &dst)
 void ServerMap::listAllLoadedBlocks(std::vector<v3s16> &dst)
 {
 	for (auto &sector_it : m_sectors) {
-		MapSector *sector = sector_it.second;
+		MapSector *sector = sector_it.second.get();
 
 		MapBlockVect blocks;
 		sector->getBlocks(blocks);

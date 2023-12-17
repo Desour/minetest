@@ -30,8 +30,9 @@ public:
 		for (s16 z = bpmin.Z; z <= bpmax.Z; z++)
 		for (s16 x = bpmin.X; x <= bpmax.X; x++) {
 			v2s16 p2d(x, z);
-			MapSector *sector = new MapSector(this, p2d, gamedef);
-			m_sectors[p2d] = sector;
+			auto sector_up = std::make_unique<MapSector>(this, p2d, gamedef);
+			MapSector *sector = sector_up.get();
+			m_sectors[p2d] = std::move(sector_up);
 			for (s16 y = bpmin.Y; y <= bpmax.Y; y++)
 				sector->createBlankBlock(y);
 		}
