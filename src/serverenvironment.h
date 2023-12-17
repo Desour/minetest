@@ -83,10 +83,10 @@ public:
 
 struct ABMWithState
 {
-	ActiveBlockModifier *abm;
+	std::unique_ptr<ActiveBlockModifier> abm;
 	float timer = 0.0f;
 
-	ABMWithState(ActiveBlockModifier *abm_);
+	ABMWithState(std::unique_ptr<ActiveBlockModifier> abm_);
 };
 
 struct LoadingBlockModifierDef
@@ -331,7 +331,7 @@ public:
 		-------------------------------------------
 	*/
 
-	void addActiveBlockModifier(ActiveBlockModifier *abm);
+	void addActiveBlockModifier(std::unique_ptr<ActiveBlockModifier> abm);
 	void addLoadingBlockModifierDef(LoadingBlockModifierDef *lbm);
 
 	/*

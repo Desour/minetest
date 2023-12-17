@@ -151,10 +151,10 @@ void ScriptApiEnv::initializeEnvironment(ServerEnvironment *env)
 		luaL_checktype(L, current_abm + 1, LUA_TFUNCTION);
 		lua_pop(L, 1);
 
-		LuaABM *abm = new LuaABM(L, id, trigger_contents, required_neighbors,
+		auto abm = std::make_unique<LuaABM>(L, id, trigger_contents, required_neighbors,
 			trigger_interval, trigger_chance, simple_catch_up, min_y, max_y);
 
-		env->addActiveBlockModifier(abm);
+		env->addActiveBlockModifier(std::move(abm));
 
 		// removes value, keeps key for next iteration
 		lua_pop(L, 1);

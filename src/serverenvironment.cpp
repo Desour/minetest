@@ -62,8 +62,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 	ABMWithState
 */
 
-ABMWithState::ABMWithState(ActiveBlockModifier *abm_):
-	abm(abm_)
+ABMWithState::ABMWithState(std::unique_ptr<ActiveBlockModifier> abm_) :
+	abm(std::move(abm_))
 {
 	// Initialize timer to random value to spread processing
 	float itv = abm->getTriggerInterval();
@@ -552,9 +552,7 @@ ServerEnvironment::~ServerEnvironment()
 		m_map->drop();
 
 	// Delete ActiveBlockModifiers
-	for (ABMWithState &m_abm : m_abms) {
-		delete m_abm.abm;
-	}
+	m_abms.clear();
 
 	// Deallocate players
 	for (RemotePlayer *m_player : m_players) {
@@ -801,7 +799,7 @@ void ServerEnvironment::loadDefaultMeta()
 
 struct ActiveABM
 {
-	ActiveBlockModifier *abm;
+	ActiveBlockModifier *abm; // owned by an ABMWithState
 	int chance;
 	std::vector<content_t> required_neighbors;
 	bool check_required_neighbors; // false if required_neighbors is known to be empty
@@ -826,7 +824,7 @@ public:
 			return;
 		const NodeDefManager *ndef = env->getGameDef()->ndef();
 		for (ABMWithState &abmws : abms) {
-			ActiveBlockModifier *abm = abmws.abm;
+			ActiveBlockModifier *abm = abmws.abm.get();
 			float trigger_interval = abm->getTriggerInterval();
 			if(trigger_interval < 0.001)
 				trigger_interval = 0.001;
@@ -1071,9 +1069,9 @@ void ServerEnvironment::activateBlock(MapBlock *block, u32 additional_dtime)
 	});
 }
 
-void ServerEnvironment::addActiveBlockModifier(ActiveBlockModifier *abm)
+void ServerEnvironment::addActiveBlockModifier(std::unique_ptr<ActiveBlockModifier> abm)
 {
-	m_abms.emplace_back(abm);
+	m_abms.emplace_back(std::move(abm));
 }
 
 void ServerEnvironment::addLoadingBlockModifierDef(LoadingBlockModifierDef *lbm)
