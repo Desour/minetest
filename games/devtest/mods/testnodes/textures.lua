@@ -174,14 +174,18 @@ else
 	end
 end
 
-minetest.register_on_joinplayer(function(player)
-	local pname = player:get_player_name()
+-- Add generated textures to startup downloaded media
+local generated_textures_sent = false
+minetest.register_on_prejoinplayer(function()
+	if generated_textures_sent then
+		return
+	end
+	generated_textures_sent = true
 	for f=1, #gen_files do
 		local name = gen_files[f].name
-		local callback = function(pname)
-			minetest.log("action", "[testnodes] "..pname.." received dynamic media: "..name)
-		end
-		local ok = minetest.dynamic_add_media({filepath = textures_path .. name, to_player=pname, ephemeral = true}, callback)
+		local ok = minetest.dynamic_add_media(
+				{filepath = textures_path .. name, ephemeral = false},
+				function() end)
 		if not ok then
 			minetest.log("error", "[testnodes] Could not add dynamic media: " .. name)
 		end
