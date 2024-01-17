@@ -151,18 +151,42 @@ checker = nil
 
 local textures_path = minetest.get_worldpath() .. "/generated_textures/"
 local path_created = minetest.mkdir(textures_path)
+local gen_files = {
+	{
+		name = "testnodes_generated_mb.png",
+		encode_args = { 512, 512, "rgb", data_mb },
+	},
+	{
+		name = "testnodes_generated_ck.png",
+		encode_args = { 512, 512, "gray", data_ck },
+	}
+}
 if not path_created then
 	minetest.log("error", "[testnodes] Could not create path for generated textures at "..textures_path)
 else
-	minetest.safe_file_write(
-		textures_path .. "testnodes_generated_mb.png",
-		encode_and_check(512, 512, "rgb", data_mb)
-	)
-	minetest.safe_file_write(
-		textures_path .. "testnodes_generated_ck.png",
-		encode_and_check(512, 512, "gray", data_ck)
-	)
+	for f=1, #gen_files do
+		local name = gen_files[f].name
+		local encode_args = gen_files[f].encode_args
+		minetest.safe_file_write(
+			textures_path .. name,
+			encode_and_check(unpack(encode_args))
+		)
+	end
 end
+
+minetest.register_on_joinplayer(function(player)
+	local pname = player:get_player_name()
+	for f=1, #gen_files do
+		local name = gen_files[f].name
+		local callback = function(pname)
+			minetest.log("action", "[testnodes] "..pname.." received dynamic media: "..name)
+		end
+		local ok = minetest.dynamic_add_media({filepath = textures_path .. name, to_player=pname, ephemeral = true}, callback)
+		if not ok then
+			minetest.log("error", "[testnodes] Could not add dynamic media: " .. name)
+		end
+	end
+end)
 
 minetest.register_node("testnodes:generated_png_mb", {
 	description = S("Generated Mandelbrot PNG Test Node"),
