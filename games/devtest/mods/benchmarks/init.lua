@@ -137,11 +137,23 @@ minetest.register_chatcommand("bench_bulk_get_node", {
 			minetest.get_node(pos_list[i])
 		end
 		local middle_time = minetest.get_us_time()
-		minetest.bulk_get_node(pos_list, {name = "mapgen_stone"})
+		minetest.bulk_get_node(pos_list)
+		local middle_time2 = minetest.get_us_time()
+		for i=1,#pos_list do
+			minetest.get_node(pos_list[i])
+		end
+		local middle_time3 = minetest.get_us_time()
+		minetest.bulk_get_node(pos_list)
 		local end_time = minetest.get_us_time()
-		local msg = string.format("Benchmark results: minetest.get_node loop: %.2f ms; minetest.bulk_get_node: %.2f ms",
+		local msg = string.format("Benchmark results: "
+				.."minetest.get_node loop 1: %.2f ms; "
+				.."minetest.bulk_get_node 1: %.2f ms; "
+				.."minetest.get_node loop 2: %.2f ms"
+				.."minetest.bulk_get_node 2: %.2f ms",
 			((middle_time - start_time)) / 1000,
-			((end_time - middle_time)) / 1000
+			((middle_time2 - middle_time)) / 1000,
+			((middle_time3 - middle_time2)) / 1000,
+			((end_time - middle_time3)) / 1000
 		)
 		return true, msg
 	end,

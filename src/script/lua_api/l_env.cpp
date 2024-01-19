@@ -339,6 +339,24 @@ int ModApiEnv::l_get_node(lua_State *L)
 	return 1;
 }
 
+int ModApiEnv::l_get_node_raw(lua_State *L)
+{
+	GET_ENV_PTR;
+
+	// pos
+	double x = lua_tonumber(L, 1);
+	double y = lua_tonumber(L, 2);
+	double z = lua_tonumber(L, 3);
+	v3s16 pos = doubleToInt(v3d(x, y, z), 1.0);
+	// Do it
+	MapNode n = env->getMap().getNode(pos);
+	// Return node
+	lua_pushinteger(L, n.getContent());
+	lua_pushinteger(L, n.getParam1());
+	lua_pushinteger(L, n.getParam2());
+	return 3;
+}
+
 // get_node_or_nil(pos)
 // pos = {x=num, y=num, z=num}
 int ModApiEnv::l_get_node_or_nil(lua_State *L)
@@ -1474,6 +1492,7 @@ void ModApiEnv::Initialize(lua_State *L, int top)
 	API_FCT(add_item);
 	API_FCT(remove_node);
 	API_FCT(get_node);
+	API_FCT(get_node_raw);
 	API_FCT(get_node_or_nil);
 	API_FCT(bulk_get_node);
 	API_FCT(get_node_light);
