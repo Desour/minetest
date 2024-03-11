@@ -121,6 +121,18 @@ std::optional<OggFileDecodeInfo> RAIIOggFile::getDecodeInfo(const std::string &f
 
 	ret.freq = pInfo->rate;
 
+	if (!ov_seekable(&m_file)) {
+		warningstream << "Audio: Can't decode. Sound is not seekable, can't get length: "
+				<< ret.name_for_logging << std::endl;
+		return std::nullopt;
+	}
+	if (ov_pcm_total(&m_file, -1) < 0) {
+		warningstream << "huh? "
+				<< ret.name_for_logging << std::endl;
+	}
+	if (ret.name_for_logging == "mcl_sounds_place_node_water.ogg") {
+		warningstream << "len: " << ov_pcm_total(&m_file, -1) << std::endl;
+	}
 	ret.length_samples = static_cast<ALuint>(ov_pcm_total(&m_file, -1));
 	ret.length_seconds = static_cast<f32>(ov_time_total(&m_file, -1));
 
@@ -157,8 +169,25 @@ RAIIALSoundBuffer RAIIOggFile::loadBuffer(const OggFileDecodeInfo &decode_info,
 				endian, word_size, word_signed, &bitStream);
 
 		if (num_bytes <= 0) {
-			warningstream << "Audio: Error decoding "
-					<< decode_info.name_for_logging << std::endl;
+
+			long num_bytes2 = ov_read(&m_file, &snd_buffer[read_count], size - read_count,
+					endian, word_size, word_signed, &bitStream);
+
+			std::string_view errstr = [&]{
+				switch (num_bytes) {
+				case 0: return "EOF";
+				case OV_HOLE: return "OV_HOLE";
+				case OV_EBADLINK: return "OV_EBADLINK";
+				case OV_EINVAL: return "OV_EINVAL";
+				default: return "unknown";
+				}
+			}();
+			warningstream << "Audio: Error decoding \""
+					<< decode_info.name_for_logging
+					<< "\": " << errstr << " (" << num_bytes << ")" << std::endl;
+			warningstream << "read_count: " << read_count << std::endl;
+			warningstream << "size: " << size << std::endl;
+			warningstream << "num_bytes2: " << num_bytes2 << std::endl;
 			return RAIIALSoundBuffer();
 		}
 
