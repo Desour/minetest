@@ -24,6 +24,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "ogg_file.h"
 
+#include <cassert>
 #include <cstring> // memcpy
 
 namespace sound {
@@ -98,12 +99,21 @@ const ov_callbacks OggVorbisBufferSource::s_ov_callbacks = {
 std::optional<OggFileDecodeInfo> RAIIOggFile::getDecodeInfo(const std::string &filename_for_logging)
 {
 	OggFileDecodeInfo ret;
-
-	vorbis_info *pInfo = ov_info(&m_file, -1);
-	if (!pInfo)
-		return std::nullopt;
-
 	ret.name_for_logging = filename_for_logging;
+
+	long num_logical_bitstreams = ov_streams(&m_file);
+	if (num_logical_bitstreams != 1) {
+		warningstream << "Audio: Only files with 1 logical bitstream supported, but has "
+				<< num_logical_bitstreams << ", playback may be broken: "
+				<< ret.name_for_logging << std::endl;
+	}
+
+	vorbis_info *pInfo = ov_info(&m_file, 0);
+	if (!pInfo) {
+		warningstream << "Audio: Can't decode. ov_info failed for: "
+				<< ret.name_for_logging << std::endl;
+		return std::nullopt;
+	}
 
 	if (pInfo->channels == 1) {
 		ret.is_stereo = false;
@@ -146,6 +156,15 @@ RAIIALSoundBuffer RAIIOggFile::loadBuffer(const OggFileDecodeInfo &decode_info,
 	constexpr int word_size = 2; // we use s16 samples
 	constexpr int word_signed = 1; // ^
 
+	if (pcm_end > decode_info.length_samples) {
+		errorstream << "Audio: pcm_end too high ("
+				<< pcm_end << " > " << decode_info.length_samples << "): "
+				<< decode_info.name_for_logging << std::endl;
+	}
+
+	assert(pcm_end <= decode_info.length_samples);
+	assert(pcm_start <= decode_info.length_samples);
+
 	// seek
 	if (ov_pcm_tell(&m_file) != pcm_start) {
 		if (ov_pcm_seek(&m_file, pcm_start) != 0) {
@@ -153,7 +172,9 @@ RAIIALSoundBuffer RAIIOggFile::loadBuffer(const OggFileDecodeInfo &decode_info,
 					<< decode_info.name_for_logging << std::endl;
 			return RAIIALSoundBuffer();
 		}
+		assert(ov_pcm_tell(&m_file) == pcm_start);
 	}
+	long last_pcm_tell = ov_pcm_tell(&m_file);
 
 	const size_t size = static_cast<size_t>(pcm_end - pcm_start)
 			* decode_info.bytes_per_sample;
@@ -162,16 +183,19 @@ RAIIALSoundBuffer RAIIOggFile::loadBuffer(const OggFileDecodeInfo &decode_info,
 
 	// read size bytes
 	size_t read_count = 0;
-	int bitStream;
+	int bitstream;
+	//~ bool tmp_clear = true;
 	while (read_count < size) {
 		// Read up to a buffer's worth of decoded sound data
 		long num_bytes = ov_read(&m_file, &snd_buffer[read_count], size - read_count,
-				endian, word_size, word_signed, &bitStream);
+				endian, word_size, word_signed, &bitstream);
 
 		if (num_bytes <= 0) {
 
 			long num_bytes2 = ov_read(&m_file, &snd_buffer[read_count], size - read_count,
-					endian, word_size, word_signed, &bitStream);
+					endian, word_size, word_signed, &bitstream);
+			if (bitstream != 0)
+				errorstream << "last bitstream: " << bitstream << std::endl;
 
 			std::string_view errstr = [&]{
 				switch (num_bytes) {
@@ -188,8 +212,40 @@ RAIIALSoundBuffer RAIIOggFile::loadBuffer(const OggFileDecodeInfo &decode_info,
 			warningstream << "read_count: " << read_count << std::endl;
 			warningstream << "size: " << size << std::endl;
 			warningstream << "num_bytes2: " << num_bytes2 << std::endl;
+			warningstream << "ov_pcm_tell: " << ov_pcm_tell(&m_file) << std::endl;
+			warningstream << "decode_info.length_samples: " << decode_info.length_samples << std::endl;
 			return RAIIALSoundBuffer();
 		}
+
+		//~ if (tmp_clear) {
+			//~ memset(&snd_buffer[read_count], 0, num_bytes);
+		//~ }
+		//~ tmp_clear = true;
+
+		// only one logical bitstream supported
+		assert(bitstream == 0);
+
+		long current_pcm_tell = ov_pcm_tell(&m_file);
+		long current_expected_byte_offset = last_pcm_tell * decode_info.bytes_per_sample + num_bytes;
+		assert(num_bytes % decode_info.bytes_per_sample == 0);
+		if (num_bytes >= 0
+				&& current_pcm_tell * decode_info.bytes_per_sample != current_expected_byte_offset) {
+			warningstream << "=== ov_read lies ===" << std::endl;
+			warningstream << "last_pcm_tell: " << last_pcm_tell << std::endl;
+			warningstream << "ov_pcm_tell: " << ov_pcm_tell(&m_file) << std::endl;
+			warningstream << "diff: " << (ov_pcm_tell(&m_file) - last_pcm_tell) << std::endl;
+			warningstream << "num_bytes: " << num_bytes << std::endl;
+			warningstream << "num samples: " << (num_bytes / decode_info.bytes_per_sample) << std::endl;
+			warningstream << "requested bytes: " << (size - read_count) << std::endl;
+
+			//~ long to_fill_up = current_pcm_tell * decode_info.bytes_per_sample - current_expected_byte_offset;
+			//~ memset(&snd_buffer[read_count + num_bytes], 0, to_fill_up);
+			//~ num_bytes += to_fill_up;
+			assert(ov_pcm_seek(&m_file, current_expected_byte_offset / decode_info.bytes_per_sample) == 0);
+			assert(ov_pcm_tell(&m_file) == current_expected_byte_offset / decode_info.bytes_per_sample);
+			//~ tmp_clear = false;
+		}
+		last_pcm_tell = ov_pcm_tell(&m_file);
 
 		read_count += num_bytes;
 	}
