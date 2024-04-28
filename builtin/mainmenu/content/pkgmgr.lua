@@ -111,6 +111,8 @@ pkgmgr = {}
 function pkgmgr.get_mods(path, virtual_path, listing, modpack)
 	local mods = core.get_dir_list(path, true)
 
+	--~ core.log(string.format("get_mods #mods: %s", #mods))
+
 	for _, name in ipairs(mods) do
 		if name:sub(1, 1) ~= "." then
 			local mod_path = path .. DIR_DELIM .. name
@@ -190,6 +192,8 @@ function pkgmgr.get_texture_packs()
 	if txtpath ~= txtpath_system then
 		load_texture_packs(txtpath_system, retval)
 	end
+
+	--~ core.log(string.format("get_texture_packs #retval: %s", #retval))
 
 	pkgmgr.update_translations(retval)
 
@@ -779,15 +783,57 @@ function pkgmgr.update_gamelist()
 	table.sort(pkgmgr.games, function(a, b)
 		return a.title:lower() < b.title:lower()
 	end)
+	--~ core.log(string.format("update_gamelist #pkgmgr.games: %s", #pkgmgr.games))
 	pkgmgr.update_translations(pkgmgr.games)
 end
 
 --------------------------------------------------------------------------------
+local tmp_sum = nil
+local tmp_sums = nil
+tmp_traceback_printed = {}
+
 function pkgmgr.update_translations(list)
+
+	if not tmp_sum then
+		tmp_sum = 0
+		tmp_sums = {}
+		--~ core.after(1, function()
+			--~ core.log(string.format("update_translations tmp_sum: %s", tmp_sum))
+			--~ tmp_sum = nil
+		--~ end)
+		core.handle_async(function(t0)
+			while os.clock() < t0 + 1 do
+			end
+		end, os.clock(), function()
+			core.log(string.format("update_translations tmp_sum: %s", tmp_sum))
+
+			local tmp_sums_max = -1
+			local tmp_sums_max_path = "nothing"
+			for path, cnt in pairs(tmp_sums) do
+				if cnt > tmp_sums_max then
+					tmp_sums_max = cnt
+					tmp_sums_max_path = path
+				end
+			end
+			core.log(string.format("update_translations tmp_sums_max: %s, %s", tmp_sums_max, tmp_sums_max_path))
+
+			tmp_sum = nil
+			tmp_sums = nil
+		end)
+	end
+	tmp_sum = tmp_sum + #list
+	--~ core.log(string.format("update_translations #list: %s", #list))
+
 	for _, item in ipairs(list) do
 		local info = core.get_content_info(item.path)
 		assert(info.path)
 		assert(info.textdomain)
+
+		tmp_sums[info.path] = (tmp_sums[info.path] or 0) + 1
+		--~ if not tmp_traceback_printed[tmp_sums[info.path]] then
+			--~ tmp_traceback_printed[tmp_sums[info.path]] = true
+			--~ core.log(string.format("update_translations traceback for %s: %s", tmp_sums[info.path], debug.traceback()))
+		--~ end
 
 		assert(not item.is_translated)
 		item.is_translated = true
@@ -831,4 +877,5 @@ end
 --------------------------------------------------------------------------------
 -- read initial data
 --------------------------------------------------------------------------------
+require("jit.p").start("f5vzi1pl")
 pkgmgr.update_gamelist()
