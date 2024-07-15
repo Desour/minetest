@@ -69,6 +69,19 @@ for a=1,#alphas do
 	})
 end
 
+minetest.register_node("testnodes:alpha_compositing", {
+	description = S("Alpha Compositing Test Node") .. "\n" ..
+		S("A regular grid should be visible where each cell contains two " ..
+		"texels with the same colour.") .. "\n" ..
+		S("Alpha compositing is gamma-incorrect for backwards compatibility."),
+	drawtype = "glasslike",
+	paramtype = "light",
+	tiles = {"testnodes_alpha_compositing_bottom.png^"  ..
+		"testnodes_alpha_compositing_top.png"},
+	use_texture_alpha = "blend",
+	groups = {dig_immediate = 3},
+})
+
 -- Generate PNG textures
 
 local function mandelbrot(w, h, iterations)
