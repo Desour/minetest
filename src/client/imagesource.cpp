@@ -29,6 +29,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "imagefilters.h"
 #include "texturepaths.h"
 #include "util/numeric.h"
+#include "filesys.h"
+#include "porting.h"
 
 
 ////////////////////////////////
@@ -1928,6 +1930,25 @@ video::IImage* ImageSource::generateImage(std::string_view name,
 		errorstream << "generateImage(): "
 				"Failed to generate \"" << last_part_of_name << "\""
 				<< std::endl;
+	}
+	// tmp testing code
+	if (name == "testnodes_alpha_compositing_bottom.png^testnodes_alpha_compositing_top.png") {
+		static int cntr = 0;
+
+		std::string screenshot_dir;
+		if (fs::IsPathAbsolute(g_settings->get("screenshot_path")))
+			screenshot_dir = g_settings->get("screenshot_path");
+		else
+			screenshot_dir = porting::path_user + DIR_DELIM + g_settings->get("screenshot_path");
+
+		std::string path = screenshot_dir+"/mt_texs/tex_"+itos(cntr)+".png";
+
+		errorstream << "writing texture to: "<< path << std::endl;
+		if (!RenderingEngine::get_video_driver()
+				->writeImageToFile(baseimg, path.c_str()))
+			errorstream << "it failed." << std::endl;
+
+		cntr += 1;
 	}
 
 	// If no resulting image, print a warning
