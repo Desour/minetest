@@ -48,11 +48,8 @@ minetest.register_node("testnodes:performance_overlay_blend", {
 	drawtype = "mesh",
 	mesh = "testnodes_marble_metal.obj",
 	tiles = {"testnodes_marble_metal.png"},
-	overlay_tiles = {{name = "testnodes_marble_metal_overlay.png", color = "white"}},
+	overlay_tiles = {"testnodes_marble_metal.png"},
 	paramtype = "light",
-	paramtype2 = "color",
-	palette = "testnodes_palette_metal.png",
-	color = "#705216";
 	use_texture_alpha = "blend",
 
 	groups = {dig_immediate=3},

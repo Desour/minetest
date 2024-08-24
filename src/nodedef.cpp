@@ -943,8 +943,8 @@ void ContentFeatures::updateTextures(ITextureSource *tsrc, IShaderSource *shdsrc
 				color, material_type, tile_shader,
 				tdef[j].backface_culling, tsettings);
 		if (!tdef_overlay[j].name.empty())
-			fillTileAttribs(tsrc, &tiles[j].layers[1], tiles[j], tdef_overlay[j],
-					color, overlay_material, overlay_shader,
+			fillTileAttribs(tsrc, &tiles[j].layers[1], tiles[j], tdef[j],
+					color, material_type, tile_shader,
 					tdef[j].backface_culling, tsettings);
 	}
 

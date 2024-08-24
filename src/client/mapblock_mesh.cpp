@@ -596,7 +596,13 @@ void PartialMeshBuffer::beforeDraw() const
 {
 	// Patch the indexes in the mesh buffer before draw
 	m_buffer->Indices = std::move(m_vertex_indexes);
-	m_buffer->setDirty(scene::EBT_INDEX);
+
+	thread_local int cntr = 0;
+	cntr += 1;
+	//~ if (cntr == 5) {
+		m_buffer->setDirty(scene::EBT_INDEX);
+		cntr = 0;
+	//~ }
 }
 
 void PartialMeshBuffer::afterDraw() const
@@ -784,7 +790,7 @@ MapBlockMesh::MapBlockMesh(Client *client, MeshMakeData *data, v3s16 camera_offs
 
 		if (mesh) {
 			// Use VBO for mesh (this just would set this for ever buffer)
-			mesh->setHardwareMappingHint(scene::EHM_STATIC);
+			mesh->setHardwareMappingHint(scene::EHM_DYNAMIC);
 		}
 	}
 
@@ -899,11 +905,29 @@ void MapBlockMesh::updateTransparentBuffers(v3f camera_pos, v3s16 block_pos)
 	if (m_transparent_triangles.empty())
 		return;
 
+	//~ thread_local int cntr = 0;
+	//~ cntr += 1;
+	//~ if (cntr == 100) {
+		//~ cntr = 0;
+	//~ } else
+		//~ return;
+
 	v3f block_posf = intToFloat(block_pos * MAP_BLOCKSIZE, BS);
 	v3f rel_camera_pos = camera_pos - block_posf;
 
-	std::vector<s32> triangle_refs;
-	m_bsp_tree.traverse(rel_camera_pos, triangle_refs);
+	std::vector<s32> triangle_refs1;
+	m_bsp_tree.traverse(rel_camera_pos, triangle_refs1);
+
+	std::vector<s32> triangle_refs = std::move(triangle_refs1);
+
+	//~ std::vector<s32> triangle_refs;
+	//~ std::unordered_set<s32> triangle_refs_set;
+	//~ for (auto i : triangle_refs1) {
+		//~ auto [it, did_insert] = triangle_refs_set.insert(i);
+		//~ if (did_insert)
+			//~ triangle_refs.push_back(i);
+	//~ }
+	//~ errorstream << "before: " << triangle_refs1.size() << " after: " << triangle_refs.size() << std::endl;
 
 	// arrange index sequences into partial buffers
 	m_transparent_buffers.clear();
