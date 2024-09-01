@@ -19,11 +19,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+// IWYU pragma: begin_exports
+
 #include "irrlichttypes_bloated.h"
 
 #ifndef SERVER
 #include <IMesh.h>
 #include <IImage.h>
+#include <IrrlichtDevice.h>
 #include <IMeshSceneNode.h>
 #include <IDummyTransformationSceneNode.h>
 #include <SMesh.h>
@@ -33,3 +36,5 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <IGUIElement.h>
 #include <IGUIEnvironment.h>
 #endif
+
+// IWYU pragma: end_exports

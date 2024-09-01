@@ -22,10 +22,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "config.h"
 
 #if USE_SYSTEM_JSONCPP
-#include <json/version.h>
-#include <json/allocator.h>
-#include <json/config.h>
-#include <json/forwards.h>
+#include <json/version.h>   // IWYU pragma: export
+#include <json/allocator.h> // IWYU pragma: export
+#include <json/config.h>    // IWYU pragma: export
+#include <json/forwards.h>  // IWYU pragma: export
 #else
-#include <json/json-forwards.h>
+#include <json/json-forwards.h> // IWYU pragma: export
 #endif

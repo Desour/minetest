@@ -19,8 +19,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irrlichttypes.h"
+#include "irrlichttypes.h" // IWYU pragma: export
 
-#include <aabbox3d.h>
+#include <aabbox3d.h> // IWYU pragma: export
 
 typedef core::aabbox3d<f32> aabb3f;

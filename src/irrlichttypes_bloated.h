@@ -19,10 +19,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irrlichttypes.h"
+#include "irrlichttypes.h" // IWYU pragma: export
 
-#include "irr_v2d.h"
-#include "irr_v3d.h"
-#include "irr_aabb3d.h"
+#include "irr_v2d.h" // IWYU pragma: export
+#include "irr_v3d.h" // IWYU pragma: export
+#include "irr_aabb3d.h" // IWYU pragma: export
 
 #include <SColor.h>

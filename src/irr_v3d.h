@@ -19,9 +19,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irrlichttypes.h"
+#include "irrlichttypes.h" // IWYU pragma: export
 
-#include <vector3d.h>
+#include <vector3d.h> // IWYU pragma: export
 
 typedef core::vector3df v3f;
 typedef core::vector3d<double> v3d;
