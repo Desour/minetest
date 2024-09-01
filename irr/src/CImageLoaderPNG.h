@@ -9,6 +9,14 @@
 #pragma once
 
 #include "IImageLoader.h"
+#include "path.h"
+
+namespace irr::io {
+class IReadFile;
+}  // namespace irr::io
+namespace irr::video {
+class IImage;
+}  // namespace irr::video
 
 namespace irr
 {

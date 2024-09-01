@@ -4,9 +4,21 @@
 
 #pragma once
 #include "OpenGL/Driver.h"
+#include "EDriverTypes.h"
+#include "OpenGL/Common.h"
+
+namespace irr::io {
+class IFileSystem;
+}  // namespace irr::io
+namespace irr::video {
+class IContextManager;
+class IVideoDriver;
+}  // namespace irr::video
 
 namespace irr
 {
+struct SIrrlichtCreationParameters;
+
 namespace video
 {
 

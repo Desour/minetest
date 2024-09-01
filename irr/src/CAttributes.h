@@ -6,8 +6,14 @@
 
 #include <map>
 #include <string>
+#include <functional>
 #include "IAttributes.h"
-#include "IAttribute.h"
+#include "EAttributes.h"
+#include "irrTypes.h"
+
+namespace irr::io {
+class IAttribute;
+}  // namespace irr::io
 
 namespace irr
 {

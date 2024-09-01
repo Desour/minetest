@@ -5,12 +5,25 @@
 #pragma once
 
 #include "IGUIComboBox.h"
-#include "IGUIStaticText.h"
 #include "irrString.h"
 #include "irrArray.h"
+#include "EGUIAlignment.h"
+#include "irrTypes.h"
+
+namespace irr::core {
+template <class T> class rect;
+}  // namespace irr::core
+namespace irr::gui {
+class IGUIElement;
+class IGUIEnvironment;
+class IGUIFont;
+class IGUIStaticText;
+}  // namespace irr::gui
 
 namespace irr
 {
+struct SEvent;
+
 namespace gui
 {
 class IGUIButton;

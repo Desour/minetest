@@ -7,6 +7,8 @@
 #include "IFileList.h"
 #include "irrString.h"
 #include "irrArray.h"
+#include "irrTypes.h"
+#include "path.h"
 
 namespace irr
 {

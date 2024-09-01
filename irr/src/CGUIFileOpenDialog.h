@@ -5,10 +5,23 @@
 #pragma once
 
 #include "IGUIFileOpenDialog.h"
-#include "IGUIButton.h"
-#include "IGUIListBox.h"
-#include "IGUIEditBox.h"
-#include "IFileSystem.h"
+#include "IEventReceiver.h"
+#include "irrString.h"
+#include "irrTypes.h"
+#include "path.h"
+#include "position2d.h"
+
+namespace irr::gui {
+class IGUIButton;
+class IGUIEditBox;
+class IGUIElement;
+class IGUIEnvironment;
+class IGUIListBox;
+}  // namespace irr::gui
+namespace irr::io {
+class IFileList;
+class IFileSystem;
+}  // namespace irr::io
 
 namespace irr
 {

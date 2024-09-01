@@ -5,6 +5,11 @@
 #pragma once
 
 #include "IGUISpriteBank.h"
+#include "SColor.h"
+#include "irrArray.h"
+#include "irrTypes.h"
+#include "position2d.h"
+#include "rect.h"
 
 namespace irr
 {

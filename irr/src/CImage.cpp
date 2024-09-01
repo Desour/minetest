@@ -3,11 +3,17 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CImage.h"
-#include "irrString.h"
+#include <string.h>
 #include "CColorConverter.h"
 #include "CBlit.h"
 #include "os.h"
 #include "SoftwareDriver2_helper.h"
+#include "ILogger.h"
+#include "irrMath.h"
+
+namespace irr::core {
+template <class T> class rect;
+}  // namespace irr::core
 
 namespace irr
 {

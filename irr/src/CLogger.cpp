@@ -3,6 +3,9 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CLogger.h"
+#include "IEventReceiver.h"
+#include "irrString.h"
+#include "os.h"
 
 namespace irr
 {

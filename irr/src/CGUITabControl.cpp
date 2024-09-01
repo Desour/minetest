@@ -3,14 +3,22 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CGUITabControl.h"
-
-#include "CGUIButton.h"
+#include <stddef.h>
 #include "IGUISkin.h"
 #include "IGUIEnvironment.h"
 #include "IGUIFont.h"
 #include "IVideoDriver.h"
 #include "rect.h"
-#include "os.h"
+#include "IEventReceiver.h"
+#include "IGUIButton.h"
+#include "IGUIElement.h"
+#include "dimension2d.h"
+#include "position2d.h"
+#include "vector2d.h"
+
+namespace irr::gui {
+class IGUISpriteBank;
+}  // namespace irr::gui
 
 namespace irr
 {

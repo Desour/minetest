@@ -4,6 +4,7 @@
 
 #include "CEmptySceneNode.h"
 #include "ISceneManager.h"
+#include "ECullingTypes.h"
 
 namespace irr
 {

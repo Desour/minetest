@@ -3,14 +3,14 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "COSOperator.h"
+#include "SDL_stdinc.h"
 
 #ifdef _IRR_WINDOWS_API_
 #include <windows.h>
 #else
-#include <cstring>
 #include <unistd.h>
+#include <cstring>
 #ifndef _IRR_ANDROID_PLATFORM_
-#include <sys/types.h>
 #ifdef _IRR_OSX_PLATFORM_
 #include <sys/sysctl.h>
 #endif
@@ -26,8 +26,6 @@
 #if defined(_IRR_COMPILE_WITH_OSX_DEVICE_)
 #import <Cocoa/Cocoa.h>
 #endif
-
-#include "fast_atof.h"
 
 namespace irr
 {

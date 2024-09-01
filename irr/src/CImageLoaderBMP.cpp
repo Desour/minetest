@@ -3,13 +3,18 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CImageLoaderBMP.h"
-
+#include <stdint.h>
+#include <string.h>
 #include "IReadFile.h"
 #include "SColor.h"
 #include "CColorConverter.h"
 #include "CImage.h"
 #include "os.h"
-#include "irrString.h"
+#include "IImage.h"
+#include "ILogger.h"
+#include "coreutil.h"
+#include "dimension2d.h"
+#include "irrMath.h"
 
 namespace irr
 {

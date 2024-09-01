@@ -6,13 +6,21 @@
 
 #include <vector>
 #include "IFileSystem.h"
+#include "IFileArchive.h"
+#include "irrTypes.h"
+#include "path.h"
+
+namespace irr::io {
+class IFileList;
+class IReadFile;
+class IWriteFile;
+}  // namespace irr::io
 
 namespace irr
 {
 namespace io
 {
 
-class CZipReader;
 
 /*!
 	FileSystem which uses normal files and one zipfile

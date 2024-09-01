@@ -4,12 +4,13 @@
 
 #pragma once
 
+#include <stddef.h>
 #include "IReadFile.h"
-#include "irrString.h"
+#include "EReadFileType.h"
+#include "path.h"
 
 namespace irr
 {
-class CUnicodeConverter;
 
 namespace io
 {

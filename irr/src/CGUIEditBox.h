@@ -6,10 +6,24 @@
 
 #include "IGUIEditBox.h"
 #include "irrArray.h"
-#include "IOSOperator.h"
+#include "EGUIAlignment.h"
+#include "IEventReceiver.h"
+#include "SColor.h"
+#include "dimension2d.h"
+#include "irrString.h"
+#include "irrTypes.h"
+#include "rect.h"
+
+namespace irr::gui {
+class IGUIElement;
+class IGUIEnvironment;
+class IGUIFont;
+}  // namespace irr::gui
 
 namespace irr
 {
+class IOSOperator;
+
 namespace gui
 {
 class CGUIEditBox : public IGUIEditBox

@@ -12,8 +12,19 @@
 #include "os.h"
 #include "CTimer.h"
 #include "CLogger.h"
-#include "irrString.h"
-#include "IrrCompileConfig.h" // for IRRLICHT_SDK_VERSION
+#include "IContextManager.h"
+#include "ICursorControl.h"
+#include "ILogger.h"
+#include "IOSOperator.h"
+#include "ITimer.h"
+#include "irrMath.h"
+
+namespace irr::core {
+template <class T> class array;
+}  // namespace irr::core
+namespace irr::video {
+class IImage;
+}  // namespace irr::video
 
 namespace irr
 {

@@ -9,9 +9,15 @@
 #include "EMaterialTypes.h"
 #include "IMaterialRenderer.h"
 #include "IMaterialRendererServices.h"
-#include "IGPUProgrammingServices.h"
+#include "S3DVertex.h"
+#include "SDL_opengl.h"
+#include "irrTypes.h"
 
-#include "Common.h"
+namespace irr::video {
+class IShaderConstantSetCallBack;
+class IVideoDriver;
+class SMaterial;
+}  // namespace irr::video
 
 namespace irr
 {

@@ -5,6 +5,13 @@
 #pragma once
 
 #include "ISceneNode.h"
+#include "ESceneNodeTypes.h"
+#include "aabbox3d.h"
+#include "irrTypes.h"
+
+namespace irr::scene {
+class ISceneManager;
+}  // namespace irr::scene
 
 namespace irr
 {

@@ -4,6 +4,13 @@
 
 #include "CDummyTransformationSceneNode.h"
 #include "os.h"
+#include "ECullingTypes.h"
+#include "ILogger.h"
+
+namespace irr::scene {
+class ISceneManager;
+class ISceneNode;
+}  // namespace irr::scene
 
 namespace irr
 {

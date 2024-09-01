@@ -6,17 +6,42 @@
 
 #include "IrrlichtDevice.h"
 #include "SIrrCreationParameters.h"
-#include "IContextManager.h"
+#include "IEventReceiver.h"
+#include "SColor.h"
+#include "dimension2d.h"
+#include "irrTypes.h"
+#include "position2d.h"
+
+namespace irr::core {
+template <class T> class array;
+}  // namespace irr::core
+namespace irr::gui {
+class ICursorControl;
+}  // namespace irr::gui
+namespace irr::io {
+class IFileSystem;
+}  // namespace irr::io
+namespace irr::scene {
+class ISceneManager;
+}  // namespace irr::scene
+namespace irr::video {
+class IContextManager;
+class IImage;
+class IVideoDriver;
+}  // namespace irr::video
 
 namespace irr
 {
 // lots of prototypes:
 class ILogger;
 class CLogger;
+class IOSOperator;
+class ITimer;
 
 namespace gui
 {
 class IGUIEnvironment;
+
 IGUIEnvironment *createGUIEnvironment(io::IFileSystem *fs,
 		video::IVideoDriver *Driver, IOSOperator *op);
 }

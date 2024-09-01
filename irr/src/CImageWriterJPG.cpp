@@ -3,17 +3,20 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CImageWriterJPG.h"
-
+#include <cstdio> // required for jpeglib.h
 #include "CColorConverter.h"
 #include "IWriteFile.h"
-#include "CImage.h"
-#include "irrString.h"
 #include "os.h"
+#include "IImage.h"
+#include "ILogger.h"
+#include "SColor.h"
+#include "coreutil.h"
+#include "dimension2d.h"
 
-#include <cstdio> // required for jpeglib.h
 extern "C" {
 #include <jpeglib.h>
 #include <jerror.h>
+#include <jmorecfg.h>
 }
 
 namespace irr

@@ -3,14 +3,17 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CGUIEditBox.h"
-
 #include "IGUISkin.h"
 #include "IGUIEnvironment.h"
 #include "IGUIFont.h"
-#include "IVideoDriver.h"
 #include "rect.h"
 #include "os.h"
 #include "Keycodes.h"
+#include "IGUIElement.h"
+#include "IOSOperator.h"
+#include "irrMath.h"
+#include "position2d.h"
+#include "vector2d.h"
 
 /*
 	todo:

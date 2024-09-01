@@ -3,11 +3,19 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CImageLoaderJPG.h"
-
+#include <setjmp.h>
+#include <string.h>
+#include <cstdio>
 #include "IReadFile.h"
 #include "CImage.h"
 #include "os.h"
 #include "irrString.h"
+#include "IImage.h"
+#include "ILogger.h"
+#include "SColor.h"
+#include "coreutil.h"
+#include "dimension2d.h"
+#include "irrTypes.h"
 
 namespace irr
 {

@@ -5,10 +5,15 @@
 #include "CCameraSceneNode.h"
 #include "ISceneManager.h"
 #include "IVideoDriver.h"
-#include "os.h"
+#include "EVideoTypes.h"
+#include "ISceneNode.h"
+#include "dimension2d.h"
+#include "irrMath.h"
 
 namespace irr
 {
+struct SEvent;
+
 namespace scene
 {
 

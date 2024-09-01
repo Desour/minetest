@@ -7,6 +7,20 @@
 #include "CBoneSceneNode.h"
 #include "IAnimatedMeshSceneNode.h"
 #include "os.h"
+#include "IBoneSceneNode.h"
+#include "ILogger.h"
+#include "S3DVertex.h"
+#include "SMaterial.h"
+#include "SSkinMeshBuffer.h"
+#include "irrMath.h"
+#include "irrString.h"
+#include "matrix4.h"
+#include "quaternion.h"
+
+namespace irr::scene {
+class IMeshBuffer;
+class ISceneManager;
+}  // namespace irr::scene
 
 namespace
 {

@@ -6,7 +6,8 @@
 
 #include <cstdio>
 #include "IReadFile.h"
-#include "irrString.h"
+#include "EReadFileType.h"
+#include "path.h"
 
 namespace irr
 {

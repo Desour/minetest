@@ -3,10 +3,19 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CBillboardSceneNode.h"
+#include <math.h>
+#include <vector>
 #include "IVideoDriver.h"
 #include "ISceneManager.h"
 #include "ICameraSceneNode.h"
-#include "os.h"
+#include "EDebugSceneTypes.h"
+#include "EHardwareBufferFlags.h"
+#include "EVideoTypes.h"
+#include "ISceneNode.h"
+#include "S3DVertex.h"
+#include "SMaterial.h"
+#include "irrMath.h"
+#include "matrix4.h"
 
 namespace irr
 {

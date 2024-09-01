@@ -6,11 +6,14 @@
 
 #if defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
 
+#include <string>
 #include "IContextManager.h"
+#include "SExposedVideoData.h"
 
 namespace irr
 {
 class CIrrDeviceSDL;
+struct SIrrlichtCreationParameters;
 
 namespace video
 {

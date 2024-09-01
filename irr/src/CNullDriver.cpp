@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CNullDriver.h"
+#include <string.h>
 #include "os.h"
 #include "CImage.h"
 #include "CAttributes.h"
@@ -14,8 +15,23 @@
 #include "IAnimatedMeshSceneNode.h"
 #include "CMeshManipulator.h"
 #include "CColorConverter.h"
-#include "IReferenceCounted.h"
 #include "IRenderTarget.h"
+#include "ECullingTypes.h"
+#include "ESceneNodeTypes.h"
+#include "IAnimatedMesh.h"
+#include "IAttributes.h"
+#include "IFileSystem.h"
+#include "IImage.h"
+#include "ILogger.h"
+#include "IMeshManipulator.h"
+#include "IMeshSceneNode.h"
+#include "SMaterialLayer.h"
+#include "irrMath.h"
+#include "vector2d.h"
+
+namespace irr::video {
+class IShaderConstantSetCallBack;
+}  // namespace irr::video
 
 namespace irr
 {

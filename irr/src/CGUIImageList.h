@@ -4,7 +4,17 @@
 #pragma once
 
 #include "IGUIImageList.h"
-#include "IVideoDriver.h"
+#include "dimension2d.h"
+#include "irrTypes.h"
+#include "position2d.h"
+
+namespace irr::core {
+template <class T> class rect;
+}  // namespace irr::core
+namespace irr::video {
+class ITexture;
+class IVideoDriver;
+}  // namespace irr::video
 
 namespace irr
 {

@@ -6,7 +6,13 @@
 #pragma once
 
 #include "IShaderConstantSetCallBack.h"
-#include "IMaterialRendererServices.h"
+#include "SColor.h"
+#include "irrTypes.h"
+
+namespace irr::video {
+class IMaterialRendererServices;
+class SMaterial;
+}  // namespace irr::video
 
 namespace irr
 {

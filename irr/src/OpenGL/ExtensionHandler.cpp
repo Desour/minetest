@@ -5,12 +5,7 @@
 // For conditions of distribution and use, see copyright notice in Irrlicht.h
 
 #include "ExtensionHandler.h"
-
-#include "irrString.h"
-#include "SMaterial.h"
-#include "fast_atof.h"
-#include "os.h"
-#include <mt_opengl.h>
+#include <stddef.h>
 
 namespace irr
 {

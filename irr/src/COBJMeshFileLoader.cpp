@@ -3,16 +3,26 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "COBJMeshFileLoader.h"
+#include <string.h>
+#include <utility>
+#include <vector>
 #include "IMeshManipulator.h"
-#include "IVideoDriver.h"
 #include "SMesh.h"
-#include "SMeshBuffer.h"
 #include "SAnimatedMesh.h"
 #include "IReadFile.h"
 #include "IAttributes.h"
 #include "fast_atof.h"
 #include "coreutil.h"
 #include "os.h"
+#include "ILogger.h"
+#include "IMesh.h"
+#include "ISceneManager.h"
+#include "SceneParameters.h"
+#include "irrMath.h"
+
+namespace irr::scene {
+class IAnimatedMesh;
+}  // namespace irr::scene
 
 namespace irr
 {

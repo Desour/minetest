@@ -6,13 +6,23 @@
 
 #include "IGUITabControl.h"
 #include "irrArray.h"
-#include "IGUISkin.h"
+#include "EGUIAlignment.h"
+#include "SColor.h"
+#include "irrTypes.h"
+#include "rect.h"
+
+namespace irr::gui {
+class IGUIElement;
+class IGUIEnvironment;
+class IGUIFont;
+}  // namespace irr::gui
 
 namespace irr
 {
+struct SEvent;
+
 namespace gui
 {
-class CGUITabControl;
 class IGUIButton;
 
 // A tab, onto which other gui elements could be added.

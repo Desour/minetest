@@ -3,8 +3,26 @@
 // For conditions of distribution and use, see copyright notice in Irrlicht.h
 
 #include "Driver.h"
+#include <SDL_opengl.h>
 #include <cassert>
+#include <string>
 #include "mt_opengl.h"
+#include "COpenGLCoreFeature.h"
+#include "ILogger.h"
+#include "SColor.h"
+#include "SDL_opengl.h"
+#include "SIrrCreationParameters.h"
+#include "SMaterial.h"
+#include "irrTypes.h"
+#include "os.h"
+
+namespace irr::io {
+class IFileSystem;
+}  // namespace irr::io
+namespace irr::video {
+class IContextManager;
+class IVideoDriver;
+}  // namespace irr::video
 
 namespace irr
 {

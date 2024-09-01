@@ -5,10 +5,21 @@
 #pragma once
 
 #include "IGUIScrollBar.h"
-#include "IGUIButton.h"
+#include "SColor.h"
+#include "irrTypes.h"
+#include "position2d.h"
+#include "rect.h"
+
+namespace irr::gui {
+class IGUIButton;
+class IGUIElement;
+class IGUIEnvironment;
+}  // namespace irr::gui
 
 namespace irr
 {
+struct SEvent;
+
 namespace gui
 {
 

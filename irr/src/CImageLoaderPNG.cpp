@@ -3,12 +3,20 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CImageLoaderPNG.h"
-
 #include <png.h> // use system lib png
-
+#include <pngconf.h>
+#include <setjmp.h>
+#include <stddef.h>
+#include <string>
 #include "CImage.h"
-#include "CReadFile.h"
 #include "os.h"
+#include "IImage.h"
+#include "ILogger.h"
+#include "IReadFile.h"
+#include "SColor.h"
+#include "coreutil.h"
+#include "dimension2d.h"
+#include "irrTypes.h"
 
 namespace irr
 {

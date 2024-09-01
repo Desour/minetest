@@ -3,11 +3,20 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CMeshManipulator.h"
+#include <math.h>
+#include <vector>
 #include "ISkinnedMesh.h"
 #include "SMesh.h"
 #include "CMeshBuffer.h"
 #include "SAnimatedMesh.h"
-#include "os.h"
+#include "IAnimatedMesh.h"
+#include "IMeshBuffer.h"
+#include "S3DVertex.h"
+#include "SMaterial.h"
+#include "SVertexIndex.h"
+#include "aabbox3d.h"
+#include "plane3d.h"
+#include "vector3d.h"
 
 namespace irr
 {

@@ -7,10 +7,13 @@
 #ifdef _IRR_COMPILE_WITH_OPENGL_
 
 #include "COpenGLCommon.h"
-
-#include "COpenGLCoreFeature.h"
 #include "COpenGLCoreTexture.h"
 #include "COpenGLCoreCacheHandler.h"
+#include "SDL_opengl.h"
+
+namespace irr::video {
+class COpenGLDriver;
+}  // namespace irr::video
 
 namespace irr
 {

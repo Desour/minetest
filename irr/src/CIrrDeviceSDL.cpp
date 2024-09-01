@@ -5,27 +5,49 @@
 #ifdef _IRR_COMPILE_WITH_SDL_DEVICE_
 
 #include "CIrrDeviceSDL.h"
+#include <SDL_video.h>
+#include <string.h>
+#include <cstdio>
+#include <algorithm>
+#include <string>
 #include "IEventReceiver.h"
 #include "IGUIElement.h"
 #include "IGUIEnvironment.h"
-#include "IImageLoader.h"
-#include "IFileSystem.h"
 #include "IVideoDriver.h"
 #include "os.h"
-#include "CTimer.h"
 #include "irrString.h"
 #include "Keycodes.h"
 #include "COSOperator.h"
-#include <cstdio>
-#include <cstdlib>
 #include "SIrrCreationParameters.h"
-#include <SDL_video.h>
+#include "EDriverTypes.h"
+#include "IImage.h"
+#include "ILogger.h"
+#include "ITimer.h"
+#include "SDL.h"
+#include "SDL_error.h"
+#include "SDL_hints.h"
+#include "SDL_keyboard.h"
+#include "SDL_keycode.h"
+#include "SDL_rect.h"
+#include "SDL_surface.h"
+#include "SDL_syswm.h"
+#include "SDL_timer.h"
+#include "SDL_version.h"
+#include "dimension2d.h"
+#include "irrMath.h"
 
 #ifdef _IRR_EMSCRIPTEN_PLATFORM_
 #include <emscripten.h>
 #endif
 
 #include "CSDLManager.h"
+
+namespace irr::io {
+class IFileSystem;
+}  // namespace irr::io
+namespace irr::video {
+class IContextManager;
+}  // namespace irr::video
 
 static int SDLDeviceInstances = 0;
 

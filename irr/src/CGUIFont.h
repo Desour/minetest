@@ -4,11 +4,25 @@
 
 #pragma once
 
+#include <map>
 #include "IGUIFontBitmap.h"
 #include "irrString.h"
-#include "IReadFile.h"
 #include "irrArray.h"
-#include <map>
+#include "IGUIFont.h"
+#include "SColor.h"
+#include "dimension2d.h"
+#include "irrTypes.h"
+#include "path.h"
+
+namespace irr::core {
+template <class T> class rect;
+}  // namespace irr::core
+namespace irr::gui {
+class IGUISpriteBank;
+}  // namespace irr::gui
+namespace irr::io {
+class IReadFile;
+}  // namespace irr::io
 
 namespace irr
 {

@@ -3,7 +3,12 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CMemoryFile.h"
-#include "irrString.h"
+#include <string.h>
+#include "irrTypes.h"
+
+namespace irr::io {
+class IReadFile;
+}  // namespace irr::io
 
 namespace irr
 {

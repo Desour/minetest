@@ -3,6 +3,11 @@
 // For conditions of distribution and use, see copyright notice in Irrlicht.h
 
 #include "CSDLManager.h"
+#include "SDL_video.h"
+
+namespace irr {
+struct SIrrlichtCreationParameters;
+}  // namespace irr
 
 #if defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
 

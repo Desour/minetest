@@ -6,9 +6,16 @@
 
 // Used with SkinnedMesh and IAnimatedMeshSceneNode, for boned meshes
 
-#include "IBoneSceneNode.h"
-
 #include <optional>
+#include <string>
+#include "IBoneSceneNode.h"
+#include "aabbox3d.h"
+#include "irrTypes.h"
+
+namespace irr::scene {
+class ISceneManager;
+class ISceneNode;
+}  // namespace irr::scene
 
 namespace irr
 {

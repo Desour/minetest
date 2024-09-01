@@ -5,7 +5,18 @@
 #pragma once
 
 #include "IMeshSceneNode.h"
-#include "IMesh.h"
+#include "ESceneNodeTypes.h"
+#include "SMaterial.h"
+#include "aabbox3d.h"
+#include "irrArray.h"
+#include "irrTypes.h"
+#include "vector3d.h"
+
+namespace irr::scene {
+class IMesh;
+class ISceneManager;
+class ISceneNode;
+}  // namespace irr::scene
 
 namespace irr
 {

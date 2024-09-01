@@ -5,6 +5,15 @@
 #pragma once
 
 #include "IImageLoader.h"
+#include "irrTypes.h"
+#include "path.h"
+
+namespace irr::io {
+class IReadFile;
+}  // namespace irr::io
+namespace irr::video {
+class IImage;
+}  // namespace irr::video
 
 namespace irr
 {
@@ -49,8 +58,6 @@ struct SBMPHeader
 	u32 ImportantColors;
 } PACK_STRUCT;
 
-// Default alignment
-#include "irrunpack.h"
 
 /*!
 	Surface Loader for Windows bitmaps

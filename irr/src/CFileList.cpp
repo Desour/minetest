@@ -6,8 +6,6 @@
 #include "irrArray.h"
 #include "coreutil.h"
 
-#include "os.h"
-
 namespace irr
 {
 namespace io

@@ -3,15 +3,22 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CGUIListBox.h"
-
-#include "CGUIListBox.h"
 #include "IGUISkin.h"
 #include "IGUIEnvironment.h"
-#include "IVideoDriver.h"
 #include "IGUIFont.h"
 #include "IGUISpriteBank.h"
 #include "CGUIScrollBar.h"
 #include "os.h"
+#include "EGUIAlignment.h"
+#include "IEventReceiver.h"
+#include "IGUIElement.h"
+#include "IGUIScrollBar.h"
+#include "Keycodes.h"
+#include "dimension2d.h"
+#include "irrMath.h"
+#include "position2d.h"
+#include "rect.h"
+#include "vector2d.h"
 
 namespace irr
 {

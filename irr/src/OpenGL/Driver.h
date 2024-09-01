@@ -6,22 +6,60 @@
 
 #pragma once
 
+#include <SDL_opengl.h>
+#include <stdint.h>
+#include <vector>
 #include "SIrrCreationParameters.h"
 #include "Common.h"
 #include "CNullDriver.h"
 #include "IMaterialRendererServices.h"
 #include "EDriverFeatures.h"
-#include "fast_atof.h"
 #include "ExtensionHandler.h"
-#include "IContextManager.h"
+#include "EDriverTypes.h"
+#include "EMaterialTypes.h"
+#include "EPrimitiveTypes.h"
+#include "EShaderTypes.h"
+#include "EVideoTypes.h"
+#include "S3DVertex.h"
+#include "SColor.h"
+#include "SDL_opengl.h"
+#include "SExposedVideoData.h"
+#include "SMaterial.h"
+#include "SVertexIndex.h"
+#include "dimension2d.h"
+#include "irrString.h"
+#include "irrTypes.h"
+#include "matrix4.h"
+#include "path.h"
+#include "position2d.h"
+#include "vector3d.h"
+
+namespace irr::core {
+template <class T> class array;
+template <class T> class rect;
+}  // namespace irr::core
+namespace irr::io {
+class IFileSystem;
+}  // namespace irr::io
+namespace irr::scene {
+class IMeshBuffer;
+}  // namespace irr::scene
+namespace irr::video {
+class IContextManager;
+class IGPUProgrammingServices;
+class IImage;
+class IRenderTarget;
+class IShaderConstantSetCallBack;
+class ITexture;
+class IVideoDriver;
+template <class TOpenGLDriver> class COpenGLCoreTexture;
+}  // namespace irr::video
 
 namespace irr
 {
 namespace video
 {
 struct VertexType;
-
-class COpenGL3FixedPipelineRenderer;
 class COpenGL3Renderer2D;
 
 class COpenGL3DriverBase : public CNullDriver, public IMaterialRendererServices, public COpenGL3ExtensionHandler

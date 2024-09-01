@@ -4,20 +4,50 @@
 
 #pragma once
 
+#include <vector>
 #include "ISceneManager.h"
 #include "ISceneNode.h"
-#include "ICursorControl.h"
-#include "irrString.h"
-#include "irrArray.h"
-#include "IMeshLoader.h"
-#include "CAttributes.h"
+#include "ESceneNodeTypes.h"
+#include "SColor.h"
+#include "SMaterial.h"
+#include "aabbox3d.h"
+#include "dimension2d.h"
+#include "irrTypes.h"
+#include "path.h"
+#include "vector3d.h"
+
+namespace irr::core {
+template <class T> class array;
+}  // namespace irr::core
+namespace irr::gui {
+class ICursorControl;
+}  // namespace irr::gui
+namespace irr::io {
+class CAttributes;
+class IAttributes;
+class IReadFile;
+}  // namespace irr::io
+namespace irr::scene {
+class IAnimatedMesh;
+class IAnimatedMeshSceneNode;
+class IBillboardSceneNode;
+class ICameraSceneNode;
+class IDummyTransformationSceneNode;
+class IMesh;
+class IMeshLoader;
+class IMeshManipulator;
+class IMeshSceneNode;
+class ISceneCollisionManager;
+class ISkinnedMesh;
+}  // namespace irr::scene
+namespace irr::video {
+class IVideoDriver;
+}  // namespace irr::video
 
 namespace irr
 {
-namespace io
-{
-class IFileSystem;
-}
+struct SEvent;
+
 namespace scene
 {
 class IMeshCache;

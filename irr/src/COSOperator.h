@@ -5,11 +5,11 @@
 #pragma once
 
 #include "IOSOperator.h"
+#include "irrString.h"
+#include "irrTypes.h"
 
 namespace irr
 {
-
-class CIrrDeviceLinux;
 
 //! The OSOperator provides OS-specific methods and information.
 class COSOperator : public IOSOperator

@@ -5,7 +5,15 @@
 #pragma once
 
 #include "IImage.h"
-#include "rect.h"
+#include "SColor.h"
+#include "dimension2d.h"
+#include "irrTypes.h"
+#include "position2d.h"
+#include "vector2d.h"
+
+namespace irr::core {
+template <class T> class rect;
+}  // namespace irr::core
 
 namespace irr
 {

@@ -6,14 +6,22 @@
 
 #ifdef _IRR_COMPILE_WITH_OPENGL_
 
+#include <SDL_opengl.h>
 #include "EMaterialTypes.h"
 #include "IMaterialRenderer.h"
 #include "IMaterialRendererServices.h"
-#include "IGPUProgrammingServices.h"
 #include "irrArray.h"
 #include "irrString.h"
+#include "EPrimitiveTypes.h"
+#include "EShaderTypes.h"
+#include "S3DVertex.h"
+#include "SDL_opengl.h"
+#include "irrTypes.h"
 
-#include "COpenGLCommon.h"
+namespace irr::video {
+class IVideoDriver;
+class SMaterial;
+}  // namespace irr::video
 
 namespace irr
 {

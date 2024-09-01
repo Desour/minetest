@@ -6,9 +6,24 @@
 
 #include <map>
 #include "IMeshLoader.h"
-#include "ISceneManager.h"
 #include "irrString.h"
 #include "SMeshBuffer.h"
+#include "S3DVertex.h"
+#include "SColor.h"
+#include "SMaterial.h"
+#include "irrArray.h"
+#include "irrTypes.h"
+#include "path.h"
+#include "vector2d.h"
+#include "vector3d.h"
+
+namespace irr::io {
+class IReadFile;
+}  // namespace irr::io
+namespace irr::scene {
+class IAnimatedMesh;
+class ISceneManager;
+}  // namespace irr::scene
 
 namespace irr
 {

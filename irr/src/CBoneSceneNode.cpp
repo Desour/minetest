@@ -3,8 +3,13 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CBoneSceneNode.h"
-
 #include <optional>
+#include <list>
+#include "ISceneNode.h"
+
+namespace irr::scene {
+class ISceneManager;
+}  // namespace irr::scene
 
 namespace irr
 {

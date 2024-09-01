@@ -6,6 +6,19 @@
 
 #include "IGUIStaticText.h"
 #include "irrArray.h"
+#include "EGUIAlignment.h"
+#include "SColor.h"
+#include "irrString.h"
+#include "irrTypes.h"
+
+namespace irr::core {
+template <class T> class rect;
+}  // namespace irr::core
+namespace irr::gui {
+class IGUIElement;
+class IGUIEnvironment;
+class IGUIFont;
+}  // namespace irr::gui
 
 namespace irr
 {

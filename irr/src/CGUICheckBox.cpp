@@ -3,12 +3,18 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CGUICheckBox.h"
-
 #include "IGUISkin.h"
 #include "IGUIEnvironment.h"
 #include "IVideoDriver.h"
 #include "IGUIFont.h"
 #include "os.h"
+#include "IEventReceiver.h"
+#include "IGUIElement.h"
+#include "Keycodes.h"
+#include "SColor.h"
+#include "position2d.h"
+#include "rect.h"
+#include "vector2d.h"
 
 namespace irr
 {

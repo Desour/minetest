@@ -3,13 +3,18 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CGUIFont.h"
-
+#include <utility>
 #include "os.h"
-#include "coreutil.h"
 #include "IGUIEnvironment.h"
 #include "IReadFile.h"
 #include "IVideoDriver.h"
 #include "IGUISpriteBank.h"
+#include "IImage.h"
+#include "ILogger.h"
+#include "ITexture.h"
+#include "position2d.h"
+#include "rect.h"
+#include "vector2d.h"
 
 namespace irr
 {

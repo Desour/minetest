@@ -3,21 +3,49 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "COpenGLDriver.h"
+#include <SDL_opengl.h>
+#include <string.h>
 #include <cassert>
+#include <list>
 #include "CNullDriver.h"
 #include "IContextManager.h"
+#include "COpenGLCommon.h"
+#include "COpenGLCoreCacheHandler.h"
+#include "COpenGLCoreFeature.h"
+#include "EHardwareBufferFlags.h"
+#include "IAttributes.h"
+#include "IImage.h"
+#include "ILogger.h"
+#include "IMaterialRenderer.h"
+#include "IMeshBuffer.h"
+#include "IRenderTarget.h"
+#include "ITexture.h"
+#include "SMaterialLayer.h"
+#include "SOverrideMaterial.h"
+#include "irrMath.h"
+#include "rect.h"
+#include "vector2d.h"
+
+namespace irr::io {
+class IFileSystem;
+}  // namespace irr::io
+namespace irr::scene {
+class IMesh;
+class ISceneNode;
+}  // namespace irr::scene
+namespace irr::video {
+class IShaderConstantSetCallBack;
+class IVideoDriver;
+}  // namespace irr::video
 
 #ifdef _IRR_COMPILE_WITH_OPENGL_
 
 #include "os.h"
-
 #include "COpenGLCacheHandler.h"
 #include "COpenGLMaterialRenderer.h"
 #include "COpenGLSLMaterialRenderer.h"
-
 #include "COpenGLCoreTexture.h"
 #include "COpenGLCoreRenderTarget.h"
-
 #include "mt_opengl.h"
 
 namespace irr

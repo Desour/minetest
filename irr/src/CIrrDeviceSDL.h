@@ -8,22 +8,42 @@
 
 #ifdef _IRR_COMPILE_WITH_SDL_DEVICE_
 
-#include "IrrlichtDevice.h"
 #include "CIrrDeviceStub.h"
 #include "ICursorControl.h"
+#include "EDeviceTypes.h"
+#include "Keycodes.h"
+#include "SColor.h"
+#include "SDL_events.h"
+#include "SDL_joystick.h"
+#include "SDL_mouse.h"
+#include "SDL_stdinc.h"
+#include "SDL_video.h"
+#include "irrArray.h"
+#include "irrTypes.h"
+#include "position2d.h"
+#include "rect.h"
+#include "vector2d.h"
+
+namespace irr {
+struct SIrrlichtCreationParameters;
+struct SJoystickInfo;
+}  // namespace irr
+namespace irr::video {
+class IImage;
+}  // namespace irr::video
 
 #ifdef _IRR_EMSCRIPTEN_PLATFORM_
 #include <emscripten/html5.h>
 #endif
 
-#include <SDL.h>
 // DirectFB is removed in SDL3, thou distribution as Alpine currently ships SDL2
 // with enabled DirectFB, but requiring another fix at a top of SDL2.
 // We don't need DirectFB in Irrlicht/Minetest, so simply disable it here to prevent issues.
 #undef SDL_VIDEO_DRIVER_DIRECTFB
 #include <SDL_syswm.h>
-
+#include <stdint.h>
 #include <memory>
+#include <vector>
 
 namespace irr
 {

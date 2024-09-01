@@ -6,6 +6,22 @@
 
 #include "IBillboardSceneNode.h"
 #include "SMeshBuffer.h"
+#include "ESceneNodeTypes.h"
+#include "SColor.h"
+#include "aabbox3d.h"
+#include "dimension2d.h"
+#include "irrTypes.h"
+#include "vector3d.h"
+
+namespace irr::scene {
+class ICameraSceneNode;
+class IMeshBuffer;
+class ISceneManager;
+class ISceneNode;
+}  // namespace irr::scene
+namespace irr::video {
+class SMaterial;
+}  // namespace irr::video
 
 namespace irr
 {

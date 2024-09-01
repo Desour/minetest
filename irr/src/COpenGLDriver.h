@@ -4,23 +4,55 @@
 
 #pragma once
 
+#include <vector>
 #include "SIrrCreationParameters.h"
+#include "EDriverFeatures.h"
+#include "EDriverTypes.h"
+#include "EMaterialTypes.h"
+#include "EPrimitiveTypes.h"
+#include "EShaderTypes.h"
+#include "EVideoTypes.h"
+#include "S3DVertex.h"
+#include "SColor.h"
+#include "SDL_opengl.h"
+#include "SExposedVideoData.h"
+#include "SMaterial.h"
+#include "SVertexIndex.h"
+#include "aabbox3d.h"
+#include "dimension2d.h"
+#include "irrArray.h"
+#include "irrString.h"
+#include "irrTypes.h"
+#include "matrix4.h"
+#include "path.h"
+#include "position2d.h"
+#include "vector3d.h"
 
-namespace irr
-{
-class CIrrDeviceWin32;
-class CIrrDeviceLinux;
-class CIrrDeviceSDL;
-class CIrrDeviceMacOSX;
-}
+namespace irr::core {
+template <class T> class rect;
+}  // namespace irr::core
+namespace irr::io {
+class IFileSystem;
+}  // namespace irr::io
+namespace irr::scene {
+class IMesh;
+class IMeshBuffer;
+class ISceneNode;
+}  // namespace irr::scene
+namespace irr::video {
+class COpenGLCacheHandler;
+class IImage;
+class IRenderTarget;
+class IShaderConstantSetCallBack;
+class ITexture;
+class IVideoDriver;
+}  // namespace irr::video
 
 #ifdef _IRR_COMPILE_WITH_OPENGL_
 
 #include "IMaterialRendererServices.h"
 #include "CNullDriver.h"
-
 #include "COpenGLExtensionHandler.h"
-#include "IContextManager.h"
 
 namespace irr
 {

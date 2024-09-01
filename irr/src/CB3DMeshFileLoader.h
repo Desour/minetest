@@ -8,11 +8,23 @@
 
 #pragma once
 
+#include <string>
 #include "IMeshLoader.h"
-#include "ISceneManager.h"
 #include "CSkinnedMesh.h"
 #include "SB3DStructs.h"
-#include "IReadFile.h"
+#include "S3DVertex.h"
+#include "irrArray.h"
+#include "irrTypes.h"
+#include "path.h"
+
+namespace irr::io {
+class IReadFile;
+}  // namespace irr::io
+namespace irr::scene {
+class IAnimatedMesh;
+class ISceneManager;
+struct SSkinMeshBuffer;
+}  // namespace irr::scene
 
 namespace irr
 {

@@ -3,19 +3,28 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CAnimatedMeshSceneNode.h"
+#include <math.h>
+#include <stddef.h>
+#include <optional>
+#include <string>
 #include "IVideoDriver.h"
 #include "ISceneManager.h"
-#include "S3DVertex.h"
 #include "os.h"
 #include "CSkinnedMesh.h"
-#include "IDummyTransformationSceneNode.h"
 #include "IBoneSceneNode.h"
-#include "IMaterialRenderer.h"
 #include "IMesh.h"
-#include "IMeshCache.h"
 #include "IAnimatedMesh.h"
-#include "IFileSystem.h"
 #include "quaternion.h"
+#include "EDebugSceneTypes.h"
+#include "EVideoTypes.h"
+#include "ILogger.h"
+#include "IMeshBuffer.h"
+#include "ISceneNode.h"
+#include "ISkinnedMesh.h"
+#include "SColor.h"
+#include "SMaterial.h"
+#include "SSkinMeshBuffer.h"
+#include "irrMath.h"
 
 namespace irr
 {

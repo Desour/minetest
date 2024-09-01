@@ -4,7 +4,10 @@
 
 #include "CMeshCache.h"
 #include "IAnimatedMesh.h"
-#include "IMesh.h"
+
+namespace irr::scene {
+class IMesh;
+}  // namespace irr::scene
 
 namespace irr
 {

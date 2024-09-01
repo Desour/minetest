@@ -6,16 +6,13 @@
 
 #pragma once
 
-#include <unordered_set>
-
-#include "EDriverFeatures.h"
-#include "irrTypes.h"
-#include "os.h"
-
-#include "Common.h"
 #include <mt_opengl.h> // must be after Common.h
-
+#include <string>
+#include "EDriverFeatures.h"
+#include "os.h"
 #include "COGLESCoreExtensionHandler.h"
+#include "ILogger.h"
+#include "SDL_opengl.h"
 
 namespace irr
 {

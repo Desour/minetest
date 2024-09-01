@@ -5,14 +5,13 @@
 #pragma once
 
 #include "irrTypes.h"
-#include "irrString.h"
 #include "path.h"
 #include "ILogger.h"
-#include "ITimer.h"
 
 // CODE_UNREACHABLE(): Invokes undefined behavior for unreachable code optimization
 #if defined(__cpp_lib_unreachable)
 #include <utility>
+
 #define CODE_UNREACHABLE() std::unreachable()
 #elif defined(__has_builtin)
 #if __has_builtin(__builtin_unreachable)

@@ -5,6 +5,19 @@
 #pragma once
 
 #include "IGUIImage.h"
+#include "SColor.h"
+#include "irrMath.h"
+#include "irrTypes.h"
+#include "rect.h"
+#include "vector2d.h"
+
+namespace irr::gui {
+class IGUIElement;
+class IGUIEnvironment;
+}  // namespace irr::gui
+namespace irr::video {
+class ITexture;
+}  // namespace irr::video
 
 namespace irr
 {

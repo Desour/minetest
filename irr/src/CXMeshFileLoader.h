@@ -7,6 +7,24 @@
 #include "IMeshLoader.h"
 #include "irrString.h"
 #include "CSkinnedMesh.h"
+#include "ISkinnedMesh.h"
+#include "S3DVertex.h"
+#include "SMaterial.h"
+#include "irrArray.h"
+#include "irrTypes.h"
+#include "matrix4.h"
+#include "path.h"
+#include "vector2d.h"
+#include "vector3d.h"
+
+namespace irr::scene {
+class IAnimatedMesh;
+class ISceneManager;
+struct SSkinMeshBuffer;
+}  // namespace irr::scene
+namespace irr::video {
+class SColor;
+}  // namespace irr::video
 
 namespace irr
 {
@@ -16,7 +34,6 @@ class IReadFile;
 } // end namespace io
 namespace scene
 {
-class IMeshManipulator;
 
 //! Meshloader capable of loading x meshes.
 class CXMeshFileLoader : public IMeshLoader

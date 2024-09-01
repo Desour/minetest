@@ -5,12 +5,11 @@
 #pragma once
 
 #include "ILogger.h"
-#include "os.h"
-#include "irrString.h"
-#include "IEventReceiver.h"
+#include "irrTypes.h"
 
 namespace irr
 {
+class IEventReceiver;
 
 //! Class for logging messages, warnings and errors to stdout
 class CLogger : public ILogger

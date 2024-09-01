@@ -4,9 +4,8 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CGUIEnvironment.h"
-
+#include <stddef.h>
 #include "IVideoDriver.h"
-
 #include "CGUISkin.h"
 #include "CGUIButton.h"
 #include "CGUIScrollBar.h"
@@ -21,12 +20,38 @@
 #include "CGUIEditBox.h"
 #include "CGUITabControl.h"
 #include "CGUIComboBox.h"
-
-#include "IWriteFile.h"
+#include "EFocusFlags.h"
+#include "EGUIElementTypes.h"
+#include "IEventReceiver.h"
+#include "IFileSystem.h"
+#include "IGUIButton.h"
+#include "IGUICheckBox.h"
+#include "IGUIComboBox.h"
+#include "IGUIEditBox.h"
+#include "IGUIFileOpenDialog.h"
+#include "IGUIFont.h"
+#include "IGUIFontBitmap.h"
+#include "IGUIImage.h"
+#include "IGUIListBox.h"
+#include "IGUIScrollBar.h"
+#include "IGUISpriteBank.h"
+#include "IGUIStaticText.h"
+#include "IGUITabControl.h"
+#include "ILogger.h"
+#include "IOSOperator.h"
+#include "IReadFile.h"
+#include "ITexture.h"
+#include "Keycodes.h"
+#include "rect.h"
+#include "vector2d.h"
 #ifdef IRR_ENABLE_BUILTIN_FONT
 #include "BuiltInFont.h"
 #endif
 #include "os.h"
+
+namespace irr::gui {
+class IGUIImageList;
+}  // namespace irr::gui
 
 namespace irr
 {

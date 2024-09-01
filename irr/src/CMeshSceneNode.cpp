@@ -5,12 +5,12 @@
 #include "CMeshSceneNode.h"
 #include "IVideoDriver.h"
 #include "ISceneManager.h"
-#include "S3DVertex.h"
-#include "ICameraSceneNode.h"
-#include "IMeshCache.h"
-#include "IAnimatedMesh.h"
-#include "IMaterialRenderer.h"
-#include "IFileSystem.h"
+#include "EDebugSceneTypes.h"
+#include "EVideoTypes.h"
+#include "IMesh.h"
+#include "IMeshBuffer.h"
+#include "ISceneNode.h"
+#include "SColor.h"
 
 namespace irr
 {

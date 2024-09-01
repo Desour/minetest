@@ -4,9 +4,11 @@
 
 #pragma once
 
+#include <stddef.h>
 #include "IMemoryReadFile.h"
 #include "IWriteFile.h"
-#include "irrString.h"
+#include "EReadFileType.h"
+#include "path.h"
 
 namespace irr
 {

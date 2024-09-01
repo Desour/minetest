@@ -6,9 +6,28 @@
 
 #pragma once
 
+#include <optional>
+#include <string>
 #include "ISkinnedMesh.h"
-#include "SMeshBuffer.h"
-#include "quaternion.h"
+#include "EHardwareBufferFlags.h"
+#include "IMesh.h"
+#include "aabbox3d.h"
+#include "irrArray.h"
+#include "irrTypes.h"
+#include "vector2d.h"
+#include "vector3d.h"
+
+namespace irr::core {
+class quaternion;
+}  // namespace irr::core
+namespace irr::scene {
+class IMeshBuffer;
+class ISceneManager;
+struct SSkinMeshBuffer;
+}  // namespace irr::scene
+namespace irr::video {
+class SMaterial;
+}  // namespace irr::video
 
 namespace irr
 {

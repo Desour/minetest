@@ -7,11 +7,44 @@
 #include "IGUIEnvironment.h"
 #include "IGUIElement.h"
 #include "irrArray.h"
-#include "IFileSystem.h"
-#include "IOSOperator.h"
+#include "IGUISkin.h"
+#include "dimension2d.h"
+#include "irrTypes.h"
+#include "path.h"
+#include "position2d.h"
+
+namespace irr::core {
+template <class T> class rect;
+}  // namespace irr::core
+namespace irr::gui {
+class IGUIButton;
+class IGUICheckBox;
+class IGUIComboBox;
+class IGUIEditBox;
+class IGUIFileOpenDialog;
+class IGUIFont;
+class IGUIImage;
+class IGUIImageList;
+class IGUIListBox;
+class IGUIScrollBar;
+class IGUISpriteBank;
+class IGUIStaticText;
+class IGUITab;
+class IGUITabControl;
+}  // namespace irr::gui
+namespace irr::io {
+class IFileSystem;
+}  // namespace irr::io
+namespace irr::video {
+class ITexture;
+class IVideoDriver;
+}  // namespace irr::video
 
 namespace irr
 {
+class IEventReceiver;
+class IOSOperator;
+struct SEvent;
 
 namespace gui
 {

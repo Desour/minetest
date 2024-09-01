@@ -5,6 +5,14 @@
 #pragma once
 
 #include "IMeshManipulator.h"
+#include "IMesh.h"
+#include "irrTypes.h"
+
+namespace irr::scene {
+class IAnimatedMesh;
+class IMeshBuffer;
+struct SMesh;
+}  // namespace irr::scene
 
 namespace irr
 {

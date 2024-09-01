@@ -4,11 +4,17 @@
 
 #pragma once
 
-#include "IImageLoader.h"
-
-#include <cstdio>    // required for jpeglib.h
 #include <jpeglib.h> // use system lib
-#include <setjmp.h>
+#include <jmorecfg.h>
+#include "IImageLoader.h"
+#include "path.h"
+
+namespace irr::io {
+class IReadFile;
+}  // namespace irr::io
+namespace irr::video {
+class IImage;
+}  // namespace irr::video
 
 namespace irr
 {

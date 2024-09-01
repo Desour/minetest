@@ -6,7 +6,7 @@
 
 #include <cstdio>
 #include "IWriteFile.h"
-#include "irrString.h"
+#include "path.h"
 
 namespace irr
 {

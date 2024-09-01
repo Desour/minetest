@@ -11,20 +11,22 @@
 // merged this into Irrlicht 0.14, thanks to him for his work.
 
 #include "COpenGLSLMaterialRenderer.h"
+#include <string.h>
+#include "EDriverFeatures.h"
+#include "ILogger.h"
+#include "SMaterial.h"
+#include "irrMath.h"
+
+namespace irr::video {
+class IVideoDriver;
+}  // namespace irr::video
 
 #ifdef _IRR_COMPILE_WITH_OPENGL_
 
-#include "IGPUProgrammingServices.h"
 #include "IShaderConstantSetCallBack.h"
-#include "IMaterialRendererServices.h"
-#include "IVideoDriver.h"
 #include "os.h"
-
 #include "COpenGLDriver.h"
 #include "COpenGLCacheHandler.h"
-#include "COpenGLMaterialRenderer.h"
-
-#include "COpenGLCoreFeature.h"
 
 namespace irr
 {

@@ -3,6 +3,11 @@
 // modified by Thomas Alten
 
 #include "CGUIImageList.h"
+#include "ITexture.h"
+#include "IVideoDriver.h"
+#include "SColor.h"
+#include "rect.h"
+#include "vector2d.h"
 
 namespace irr
 {

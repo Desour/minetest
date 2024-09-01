@@ -7,12 +7,29 @@
 // declared public domain
 
 #include "CB3DMeshFileLoader.h"
-
-#include "IVideoDriver.h"
-#include "IFileSystem.h"
-#include "os.h"
-
+#include <string.h>
 #include <algorithm>
+#include <optional>
+#include <vector>
+#include "os.h"
+#include "EMaterialTypes.h"
+#include "ILogger.h"
+#include "IReadFile.h"
+#include "SColor.h"
+#include "SMaterial.h"
+#include "SSkinMeshBuffer.h"
+#include "coreutil.h"
+#include "irrMath.h"
+#include "matrix4.h"
+#include "plane3d.h"
+#include "quaternion.h"
+#include "vector2d.h"
+#include "vector3d.h"
+
+namespace irr::scene {
+class IAnimatedMesh;
+class ISceneManager;
+}  // namespace irr::scene
 
 #ifdef _DEBUG
 #define _B3D_READER_DEBUG

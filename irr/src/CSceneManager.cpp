@@ -3,19 +3,14 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include <algorithm>
-
+#include <list>
+#include <optional>
+#include <string>
 #include "CSceneManager.h"
 #include "IVideoDriver.h"
-#include "IFileSystem.h"
-#include "SAnimatedMesh.h"
 #include "CMeshCache.h"
-#include "IGUIEnvironment.h"
-#include "IMaterialRenderer.h"
 #include "IReadFile.h"
-#include "IWriteFile.h"
-
 #include "os.h"
-
 #include "CSkinnedMesh.h"
 #include "CXMeshFileLoader.h"
 #include "COBJMeshFileLoader.h"
@@ -26,11 +21,41 @@
 #include "CMeshSceneNode.h"
 #include "CDummyTransformationSceneNode.h"
 #include "CEmptySceneNode.h"
-
 #include "CSceneCollisionManager.h"
+#include "CAttributes.h"
+#include "ECullingTypes.h"
+#include "EVideoTypes.h"
+#include "IAnimatedMesh.h"
+#include "IAnimatedMeshSceneNode.h"
+#include "IBillboardSceneNode.h"
+#include "ICameraSceneNode.h"
+#include "ICursorControl.h"
+#include "IDummyTransformationSceneNode.h"
+#include "ILogger.h"
+#include "IMeshCache.h"
+#include "IMeshLoader.h"
+#include "IMeshSceneNode.h"
+#include "ISceneCollisionManager.h"
+#include "SOverrideMaterial.h"
+#include "SViewFrustum.h"
+#include "SceneParameters.h"
+#include "irrArray.h"
+#include "matrix4.h"
+#include "plane3d.h"
+
+namespace irr::io {
+class IAttributes;
+}  // namespace irr::io
+namespace irr::scene {
+class IMesh;
+class IMeshManipulator;
+class ISkinnedMesh;
+}  // namespace irr::scene
 
 namespace irr
 {
+struct SEvent;
+
 namespace scene
 {
 

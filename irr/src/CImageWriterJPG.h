@@ -5,6 +5,15 @@
 #pragma once
 
 #include "IImageWriter.h"
+#include "irrTypes.h"
+#include "path.h"
+
+namespace irr::io {
+class IWriteFile;
+}  // namespace irr::io
+namespace irr::video {
+class IImage;
+}  // namespace irr::video
 
 namespace irr
 {

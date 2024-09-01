@@ -5,8 +5,12 @@
 #include "CSceneCollisionManager.h"
 #include "ICameraSceneNode.h"
 #include "SViewFrustum.h"
-
-#include "irrMath.h"
+#include "ISceneManager.h"
+#include "IVideoDriver.h"
+#include "dimension2d.h"
+#include "rect.h"
+#include "vector2d.h"
+#include "vector3d.h"
 
 namespace irr
 {

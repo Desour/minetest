@@ -5,10 +5,16 @@
 #pragma once
 
 #include <vector>
-#include "IReadFile.h"
-#include "irrString.h"
-#include "IFileSystem.h"
 #include "CFileList.h"
+#include "IFileArchive.h"
+#include "irrTypes.h"
+#include "path.h"
+
+namespace irr::io {
+class IFileList;
+class IFileSystem;
+class IReadFile;
+}  // namespace irr::io
 
 namespace irr
 {
@@ -117,8 +123,6 @@ struct SGZIPMemberHeader
 	u8 operatingSystem;
 } PACK_STRUCT;
 
-// Default alignment
-#include "irrunpack.h"
 
 //! Contains extended info about zip files in the archive
 struct SZipFileEntry

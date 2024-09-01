@@ -5,8 +5,17 @@
 #pragma once
 
 #include "ISceneCollisionManager.h"
-#include "ISceneManager.h"
-#include "IVideoDriver.h"
+#include "irrTypes.h"
+#include "line3d.h"
+#include "position2d.h"
+
+namespace irr::scene {
+class ICameraSceneNode;
+class ISceneManager;
+}  // namespace irr::scene
+namespace irr::video {
+class IVideoDriver;
+}  // namespace irr::video
 
 namespace irr
 {

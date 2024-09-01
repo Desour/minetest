@@ -3,13 +3,24 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CXMeshFileLoader.h"
+#include <string.h>
+#include <optional>
+#include <string>
+#include <vector>
 #include "os.h"
-
 #include "fast_atof.h"
 #include "coreutil.h"
-#include "ISceneManager.h"
-#include "IVideoDriver.h"
 #include "IReadFile.h"
+#include "ILogger.h"
+#include "SColor.h"
+#include "SSkinMeshBuffer.h"
+#include "irrMath.h"
+#include "quaternion.h"
+
+namespace irr::scene {
+class IAnimatedMesh;
+class ISceneManager;
+}  // namespace irr::scene
 
 #ifdef _DEBUG
 #define _XREADER_DEBUG

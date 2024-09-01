@@ -6,6 +6,13 @@
 
 #include "IMeshCache.h"
 #include "irrArray.h"
+#include "irrTypes.h"
+#include "path.h"
+
+namespace irr::scene {
+class IAnimatedMesh;
+class IMesh;
+}  // namespace irr::scene
 
 namespace irr
 {

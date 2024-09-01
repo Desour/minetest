@@ -6,9 +6,21 @@
 
 #include "ICameraSceneNode.h"
 #include "SViewFrustum.h"
+#include "ESceneNodeTypes.h"
+#include "aabbox3d.h"
+#include "irrTypes.h"
+#include "matrix4.h"
+#include "vector3d.h"
+
+namespace irr::scene {
+class ISceneManager;
+class ISceneNode;
+}  // namespace irr::scene
 
 namespace irr
 {
+struct SEvent;
+
 namespace scene
 {
 

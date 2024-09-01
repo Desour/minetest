@@ -5,15 +5,28 @@
 #pragma once
 
 #include "IAnimatedMeshSceneNode.h"
-#include "IAnimatedMesh.h"
-
 #include "matrix4.h"
+#include "ESceneNodeTypes.h"
+#include "aabbox3d.h"
+#include "irrArray.h"
+#include "irrTypes.h"
+#include "vector3d.h"
+
+namespace irr::scene {
+class IAnimatedMesh;
+class IBoneSceneNode;
+class IMesh;
+class ISceneManager;
+class ISceneNode;
+}  // namespace irr::scene
+namespace irr::video {
+class SMaterial;
+}  // namespace irr::video
 
 namespace irr
 {
 namespace scene
 {
-class IDummyTransformationSceneNode;
 
 class CAnimatedMeshSceneNode : public IAnimatedMeshSceneNode
 {

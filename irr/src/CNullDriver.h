@@ -4,20 +4,53 @@
 
 #pragma once
 
+#include <stddef.h>
+#include <list>
+#include <vector>
 #include "IVideoDriver.h"
-#include "IFileSystem.h"
 #include "IGPUProgrammingServices.h"
 #include "irrArray.h"
 #include "irrString.h"
-#include "IAttributes.h"
 #include "IMesh.h"
 #include "IMeshBuffer.h"
-#include "IMeshSceneNode.h"
 #include "CFPSCounter.h"
 #include "S3DVertex.h"
 #include "SVertexIndex.h"
 #include "SExposedVideoData.h"
-#include <list>
+#include "EDriverFeatures.h"
+#include "EDriverTypes.h"
+#include "EHardwareBufferFlags.h"
+#include "EMaterialTypes.h"
+#include "EPrimitiveTypes.h"
+#include "EShaderTypes.h"
+#include "EVideoTypes.h"
+#include "ISceneNode.h"
+#include "ITexture.h"
+#include "SColor.h"
+#include "SMaterial.h"
+#include "SOverrideMaterial.h"
+#include "aabbox3d.h"
+#include "dimension2d.h"
+#include "irrTypes.h"
+#include "matrix4.h"
+#include "path.h"
+#include "position2d.h"
+#include "rect.h"
+#include "vector3d.h"
+
+namespace irr::io {
+class IAttributes;
+class IFileSystem;
+}  // namespace irr::io
+namespace irr::scene {
+class IMeshManipulator;
+}  // namespace irr::scene
+namespace irr::video {
+class IImage;
+class IMaterialRenderer;
+class IRenderTarget;
+class IShaderConstantSetCallBack;
+}  // namespace irr::video
 
 namespace irr
 {

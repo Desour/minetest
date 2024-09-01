@@ -5,12 +5,23 @@
 #pragma once
 
 #include "IGUIButton.h"
-#include "IGUISpriteBank.h"
 #include "ITexture.h"
 #include "SColor.h"
+#include "irrTypes.h"
+#include "position2d.h"
+#include "rect.h"
+
+namespace irr::gui {
+class IGUIElement;
+class IGUIEnvironment;
+class IGUIFont;
+class IGUISpriteBank;
+}  // namespace irr::gui
 
 namespace irr
 {
+struct SEvent;
+
 namespace gui
 {
 

@@ -3,14 +3,20 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CZipReader.h"
-
-#include "os.h"
-
-#include "CFileList.h"
-#include "CReadFile.h"
-#include "coreutil.h"
-
 #include <zlib.h> // use system lib
+#include <string.h>
+#include <zconf.h>
+#include "os.h"
+#include "CFileList.h"
+#include "coreutil.h"
+#include "IFileSystem.h"
+#include "ILogger.h"
+#include "IReadFile.h"
+#include "irrArray.h"
+
+namespace irr::io {
+class IFileList;
+}  // namespace irr::io
 
 namespace irr
 {
@@ -336,10 +342,6 @@ bool CZipReader::scanZipHeader(bool ignoreGPBits)
 	entry.Offset = File->getPos();
 	// move forward length of data
 	File->seek(entry.header.DataDescriptor.CompressedSize, true);
-
-#ifdef _DEBUG
-// os::Debuginfo::print("added file from archive", ZipFileName.c_str());
-#endif
 
 	addItem(ZipFileName, entry.Offset, entry.header.DataDescriptor.UncompressedSize, ZipFileName.lastChar() == '/', FileInfo.size());
 	FileInfo.push_back(entry);

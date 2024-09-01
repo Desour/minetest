@@ -4,7 +4,6 @@
 
 #include "CLimitReadFile.h"
 #include "irrMath.h"
-#include "irrString.h"
 
 namespace irr
 {

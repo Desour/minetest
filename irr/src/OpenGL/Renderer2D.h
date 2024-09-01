@@ -5,6 +5,14 @@
 #pragma once
 
 #include "MaterialRenderer.h"
+#include "S3DVertex.h"
+#include "irrTypes.h"
+
+namespace irr::video {
+class COpenGL3DriverBase;
+class IMaterialRendererServices;
+class SMaterial;
+}  // namespace irr::video
 
 namespace irr
 {

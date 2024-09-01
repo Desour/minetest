@@ -3,12 +3,15 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CGUIStaticText.h"
-
+#include <stddef.h>
 #include "IGUISkin.h"
 #include "IGUIEnvironment.h"
 #include "IGUIFont.h"
 #include "IVideoDriver.h"
 #include "rect.h"
+#include "IGUIElement.h"
+#include "dimension2d.h"
+#include "vector2d.h"
 
 namespace irr
 {

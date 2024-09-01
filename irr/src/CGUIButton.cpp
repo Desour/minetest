@@ -3,12 +3,20 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CGUIButton.h"
-
+#include <algorithm>
+#include <cmath>
 #include "IGUISkin.h"
 #include "IGUIEnvironment.h"
 #include "IVideoDriver.h"
 #include "IGUIFont.h"
 #include "os.h"
+#include "IEventReceiver.h"
+#include "IGUIElement.h"
+#include "IGUISpriteBank.h"
+#include "Keycodes.h"
+#include "dimension2d.h"
+#include "irrArray.h"
+#include "vector2d.h"
 
 namespace irr
 {

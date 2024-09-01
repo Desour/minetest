@@ -3,17 +3,23 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "MaterialRenderer.h"
-
+#include <SDL_opengl.h>
+#include <string.h>
+#include <utility>
 #include "EVertexAttributes.h"
-#include "IGPUProgrammingServices.h"
 #include "IShaderConstantSetCallBack.h"
-#include "IVideoDriver.h"
 #include "os.h"
-
 #include "Driver.h"
-
-#include "COpenGLCoreTexture.h"
 #include "COpenGLCoreCacheHandler.h"
+#include "ILogger.h"
+#include "OpenGL/Common.h"
+#include "SMaterial.h"
+#include "irrMath.h"
+#include "mt_opengl.h"
+
+namespace irr::video {
+class IVideoDriver;
+}  // namespace irr::video
 
 namespace irr
 {

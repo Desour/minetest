@@ -5,9 +5,20 @@
 #pragma once
 
 #include "IGUICheckBox.h"
+#include "irrTypes.h"
+
+namespace irr::core {
+template <class T> class rect;
+}  // namespace irr::core
+namespace irr::gui {
+class IGUIElement;
+class IGUIEnvironment;
+}  // namespace irr::gui
 
 namespace irr
 {
+struct SEvent;
+
 namespace gui
 {
 

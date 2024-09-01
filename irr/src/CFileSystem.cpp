@@ -3,17 +3,22 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CFileSystem.h"
-#include "IReadFile.h"
-#include "IWriteFile.h"
+#include <list>
 #include "CZipReader.h"
 #include "CFileList.h"
-#include "stdio.h"
-#include "os.h"
 #include "CReadFile.h"
 #include "CMemoryFile.h"
 #include "CLimitReadFile.h"
 #include "CWriteFile.h"
-#include <list>
+#include "coreutil.h"
+#include "irrMath.h"
+#include "irrString.h"
+
+namespace irr::io {
+class IFileList;
+class IReadFile;
+class IWriteFile;
+}  // namespace irr::io
 
 #if defined(__STRICT_ANSI__)
 #error Compiling with __STRICT_ANSI__ not supported. g++ does set this when compiling with -std=c++11 or -std=c++0x. Use instead -std=gnu++11 or -std=gnu++0x. Or use -U__STRICT_ANSI__ to disable strict ansi.
@@ -24,14 +29,11 @@
 #include <io.h>     // for _access
 #include <tchar.h>
 #elif (defined(_IRR_POSIX_API_) || defined(_IRR_OSX_PLATFORM_) || defined(_IRR_ANDROID_PLATFORM_))
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <climits>
-#include <sys/types.h>
 #include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <cstdlib>
+#include <cstring>
 #elif defined(_IRR_EMSCRIPTEN_PLATFORM_)
 #include <unistd.h>
 #endif

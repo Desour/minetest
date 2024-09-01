@@ -3,15 +3,17 @@
 // For conditions of distribution and use, see copyright notice in Irrlicht.h
 
 #include "Renderer2D.h"
-
-#include "IGPUProgrammingServices.h"
-#include "os.h"
-
 #include "Driver.h"
-
-#include "COpenGLCoreFeature.h"
-#include "COpenGLCoreTexture.h"
 #include "COpenGLCoreCacheHandler.h"
+#include "EMaterialTypes.h"
+#include "OpenGL/Common.h"
+#include "OpenGL/MaterialRenderer.h"
+#include "SMaterial.h"
+#include "SMaterialLayer.h"
+
+namespace irr::video {
+class IMaterialRendererServices;
+}  // namespace irr::video
 
 namespace irr
 {

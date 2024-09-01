@@ -4,8 +4,12 @@
 // For conditions of distribution and use, see copyright notice in Irrlicht.h
 
 #include "FixedPipelineRenderer.h"
-
 #include "IVideoDriver.h"
+#include "EVideoTypes.h"
+#include "IMaterialRendererServices.h"
+#include "SMaterial.h"
+#include "SMaterialLayer.h"
+#include "matrix4.h"
 
 namespace irr
 {

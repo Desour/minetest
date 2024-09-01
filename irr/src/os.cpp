@@ -3,31 +3,35 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "os.h"
-#include "irrString.h"
 #include "irrMath.h"
 
 #if defined(_IRR_COMPILE_WITH_SDL_DEVICE_)
 #include <SDL_endian.h>
+
 #define bswap_16(X) SDL_Swap16(X)
 #define bswap_32(X) SDL_Swap32(X)
 #define bswap_64(X) SDL_Swap64(X)
 #elif defined(_IRR_WINDOWS_API_) && defined(_MSC_VER)
 #include <cstdlib>
+
 #define bswap_16(X) _byteswap_ushort(X)
 #define bswap_32(X) _byteswap_ulong(X)
 #define bswap_64(X) _byteswap_uint64(X)
 #elif defined(_IRR_OSX_PLATFORM_)
 #include <libkern/OSByteOrder.h>
+
 #define bswap_16(X) OSReadSwapInt16(&X, 0)
 #define bswap_32(X) OSReadSwapInt32(&X, 0)
 #define bswap_64(X) OSReadSwapInt64(&X, 0)
 #elif defined(__FreeBSD__)
 #include <sys/endian.h>
+
 #define bswap_16(X) bswap16(X)
 #define bswap_32(X) bswap32(X)
 #define bswap_64(X) bswap64(X)
 #elif defined(__OpenBSD__)
 #include <endian.h>
+
 #define bswap_16(X) letoh16(X)
 #define bswap_32(X) letoh32(X)
 #define bswap_64(X) letoh64(X)
@@ -190,8 +194,8 @@ u32 Timer::getRealTime()
 // ----------------------------------------------------------------
 
 #include <emscripten.h>
-#include <ctime>
 #include <sys/time.h>
+#include <ctime>
 
 namespace irr
 {
@@ -240,9 +244,8 @@ u32 Timer::getRealTime()
 // linux/ansi version
 // ----------------------------------------------------------------
 
-#include <cstdio>
-#include <ctime>
 #include <sys/time.h>
+#include <cstdio>
 
 namespace irr
 {

@@ -3,10 +3,11 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "COpenGLExtensionHandler.h"
+#include <string>
+#include "irrMath.h"
 
 #ifdef _IRR_COMPILE_WITH_OPENGL_
 
-#include "irrString.h"
 #include "SMaterial.h"
 #include "fast_atof.h"
 #include "IContextManager.h"
