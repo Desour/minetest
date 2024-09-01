@@ -21,8 +21,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include <lauxlib.h>
-#include <lua.h>
 #include "lua_api/l_base.h"
 #include "util/basic_macros.h"
 

@@ -33,7 +33,6 @@ extern "C" {
 	#include <lua.h>
 #endif
 #include <lauxlib.h>
-#include <lua.h>
 }
 
 /*

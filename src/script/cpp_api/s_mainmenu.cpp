@@ -21,7 +21,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <lauxlib.h>
 #include <lua.h>
 #include <unordered_map>
-#include <utility>
 #include "cpp_api/s_internal.h"
 #include "common/c_converter.h"
 #include "common/c_internal.h"

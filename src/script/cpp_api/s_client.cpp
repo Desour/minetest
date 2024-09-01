@@ -19,7 +19,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "s_client.h"
-#include <lua.h>
 #include <unordered_map>
 #include <utility>
 #include "s_internal.h"

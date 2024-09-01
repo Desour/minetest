@@ -18,7 +18,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include <assert.h>
-#include <lauxlib.h>
 #include <sstream>
 #include <string>
 #include <vector>

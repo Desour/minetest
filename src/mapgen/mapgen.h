@@ -35,7 +35,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "mapnode.h"
 #include "util/basic_macros.h"
 
-enum MapgenType;
 template <typename Value> class UniqueQueue;
 
 #define MAPGEN_DEFAULT MAPGEN_V7

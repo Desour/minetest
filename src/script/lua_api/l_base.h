@@ -21,13 +21,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "common/c_types.h"
 #include "common/helper.h"
-
-class IGameDef;
+#include <string>
 
 extern "C" {
-#include <lua.h>
-#include <lauxlib.h>
-#include <string>
+#include <lua.h> // IWYU pragma: export
+#include <lauxlib.h> // IWYU pragma: export
 }
 
 #ifndef SERVER
@@ -39,6 +37,7 @@ class ScriptApiBase;
 class Server;
 class Environment;
 class ServerInventoryManager;
+class IGameDef;
 
 class ModApiBase : protected LuaHelper {
 public:

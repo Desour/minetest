@@ -18,7 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "scripting_emerge.h"
-#include <assert.h>
+#include <cassert>
 #include <memory>
 #include <string>
 #include "emerge_internal.h"
@@ -38,9 +38,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "lua_api/l_util.h"
 #include "lua_api/l_vmanip.h"
 #include "lua_api/l_settings.h"
-
-extern "C" {
-}
 
 EmergeScripting::EmergeScripting(EmergeThread *parent):
 		ScriptApiBase(ScriptingType::Emerge)

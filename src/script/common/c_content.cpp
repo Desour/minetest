@@ -20,7 +20,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <SColor.h>
 #include <assert.h>
 #include <json/value.h>
-#include <lauxlib.h>
 #include <math.h>
 #include <string.h>
 #include <initializer_list>
@@ -29,7 +28,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <optional>
 #include <string_view>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include "common/c_converter.h"
 #include "common/c_types.h"

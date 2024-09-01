@@ -19,7 +19,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "cpp_api/s_inventory.h"
 #include <lauxlib.h>
-#include <lua.h>
 #include <ostream>
 #include "cpp_api/s_internal.h"
 #include "inventorymanager.h"

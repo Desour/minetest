@@ -20,7 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include "irrlichttypes.h"
-#include "debug.h" // For assert()
+#include <cassert>
 #include <cstring>
 #include <memory> // std::shared_ptr
 #include <string_view>

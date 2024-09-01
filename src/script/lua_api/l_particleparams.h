@@ -18,6 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #pragma once
+
 #include "lua_api/l_particles.h"
 #include "lua_api/l_object.h"
 #include "lua_api/l_internal.h"

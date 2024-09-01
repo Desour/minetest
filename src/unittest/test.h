@@ -20,10 +20,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include <functional>
+#include <exception>
+#include <sstream>
 #include <vector>
-#include <string>
-#include <utility>
+
 #include "irrlichttypes_extrabloated.h"
+#include "porting.h"
 #include "filesys.h"
 #include "mapnode.h"
 

@@ -27,9 +27,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include <thread>
-#include "common/c_internal.h"
+#include "common/c_internal.h"  // IWYU pragma: export
 #include "cpp_api/s_base.h"
 #include "threading/mutex_auto_lock.h"
+#include "common/c_types.h" // IWYU pragma: keep (StackUnroller)
 
 #ifdef SCRIPTAPI_LOCK_DEBUG
 #include <cassert>

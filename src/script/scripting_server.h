@@ -18,7 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #pragma once
-#include <lua.h>
+
 #include <string>
 #include "cpp_api/s_base.h"
 #include "cpp_api/s_entity.h"

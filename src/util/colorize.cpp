@@ -16,16 +16,14 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
 #include "colorize.h"
-#include <ctype.h>
-#include <curl/curl.h>
+
+#ifdef HAVE_COLORIZE_URL
+
+#include <curl/urlapi.h>
 #include <iomanip>
 #include <memory>
 #include <stdexcept>
 #include <string_view>
-#include "curl.h"
-
-#ifdef HAVE_COLORIZE_URL
-
 #include <sstream>
 
 std::string colorize_url(const std::string &url)

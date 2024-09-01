@@ -18,7 +18,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "cpp_api/s_node.h"
-#include <lua.h>
 #include <stddef.h>
 #include <unordered_map>
 #include <utility>

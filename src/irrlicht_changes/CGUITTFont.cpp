@@ -30,16 +30,13 @@
    john@suckerfreegames.com
 */
 
-#include <irrlicht.h>
-#include <freetype/fterrors.h>
-#include <freetype/fttypes.h>
+#include "CGUITTFont.h"
 #include <stdlib.h>
 #include <string.h>
 #include <wchar.h>
 #include <iostream>
 #include <utility>
 #include <vector>
-#include "CGUITTFont.h"
 #include "util/enriched_string.h"
 
 namespace irr

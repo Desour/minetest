@@ -26,7 +26,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "common/c_internal.h"
+#include "common/c_internal.h" // IWYU pragma: export
 
 #define luamethod(class, name) {#name, class::l_##name}
 

@@ -26,15 +26,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include "config.h"
 extern "C" {
-#include <lua.h>
-#include <stddef.h>
+#include <lua.h> // IWYU pragma: export
+#include <lauxlib.h> // IWYU pragma: export
+}
+#include <cstddef>
 #include <iosfwd>
 #include <string>
-}
-
-#include "config.h"
-
 
 /*
 	Define our custom indices into the Lua registry table.

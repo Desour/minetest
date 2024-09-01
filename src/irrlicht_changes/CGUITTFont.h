@@ -33,16 +33,13 @@
 #pragma once
 
 #include <irrlicht.h>
-#include <freetype/config/ftheader.h>
-#include <freetype/config/integer-types.h>
-#include <freetype/ftimage.h>
+#include <ft2build.h> // IWYU pragma: keep
 #include <map>
 #include <string>
 #include "util/basic_macros.h"
+#include FT_FREETYPE_H
 
 class EnrichedString;
-
-#include FT_FREETYPE_H
 
 namespace irr
 {

@@ -28,6 +28,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 class IGameDef;
 class NodeDefManager;
 
+using namespace irr;
+
 #define OBJDEF_INVALID_INDEX ((u32)(-1))
 #define OBJDEF_INVALID_HANDLE 0
 #define OBJDEF_HANDLE_SALT 0x00585e6fu

@@ -19,7 +19,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include <lua.h>
 #include <vector>
 #include <deque>
 #include <unordered_set>

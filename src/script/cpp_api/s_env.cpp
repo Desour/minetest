@@ -18,8 +18,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "cpp_api/s_env.h"
-#include <lauxlib.h>
-#include <lua.h>
 #include <stddef.h>
 #include <ostream>
 #include <set>

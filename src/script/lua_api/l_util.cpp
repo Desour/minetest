@@ -20,7 +20,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <zstd.h>
 #include <json/reader.h>
 #include <json/value.h>
-#include <lauxlib.h>
 #include <string.h>
 #include <cstdio>
 #include <sstream>

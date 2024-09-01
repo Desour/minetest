@@ -18,7 +18,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "lua_api/l_object.h"
-#include <lua.h>
 #include <cmath>
 #include <cstddef>
 #include <functional>

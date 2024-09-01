@@ -20,11 +20,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 extern "C" {
-#include <string>
 #include "lua.h"
 }
-
 #include "exceptions.h"
+#include <string>
 
 struct EnumString
 {

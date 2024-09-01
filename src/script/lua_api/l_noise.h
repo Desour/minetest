@@ -19,9 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include <lauxlib.h>
-#include <lua.h>
-#include <stddef.h>
+#include <cstddef>
 #include "irr_v3d.h"
 #include "lua_api/l_base.h"
 #include "noise.h"

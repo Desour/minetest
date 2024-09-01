@@ -71,13 +71,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 #include <signal.h>
-#include <__stdarg_va_arg.h>
-#include <string.h>
-#include <sys/types.h>
+#include <cstring>
 #include <vector>
 #include <cstdio>
 #include <atomic>
 #include <cstdlib>
+#include <cstdarg>
 #include <fstream>
 #include <string_view>
 #include "debug.h"

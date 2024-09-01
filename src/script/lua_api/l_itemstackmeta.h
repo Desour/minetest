@@ -21,8 +21,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include <lauxlib.h>
-#include <lua.h>
 #include <string>
 #include "lua_api/l_metadata.h"
 #include "lua_api/l_item.h"

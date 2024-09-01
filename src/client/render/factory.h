@@ -29,5 +29,5 @@ namespace irr {
 class IrrlichtDevice;
 }  // namespace irr
 
-RenderingCore *createRenderingCore(const std::string &stereo_mode, IrrlichtDevice *device,
-		Client *client, Hud *hud);
+RenderingCore *createRenderingCore(const std::string &stereo_mode,
+		irr::IrrlichtDevice *device, Client *client, Hud *hud);
