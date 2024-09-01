@@ -3,7 +3,6 @@
 // For conditions of distribution and use, see copyright notice in Irrlicht.h
 
 #include "Driver.h"
-#include <SDL_opengl.h>
 #include <cassert>
 #include <string>
 #include "mt_opengl.h"

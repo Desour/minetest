@@ -12,6 +12,7 @@
 
 #include "COpenGLSLMaterialRenderer.h"
 #include <string.h>
+#include <SDL_opengl.h>
 #include "EDriverFeatures.h"
 #include "ILogger.h"
 #include "SMaterial.h"

@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include <SDL_opengl.h>
 #include <stdint.h>
 #include <vector>
 #include "SIrrCreationParameters.h"

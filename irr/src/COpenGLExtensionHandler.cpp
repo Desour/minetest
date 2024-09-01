@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "COpenGLExtensionHandler.h"
+#include <SDL_opengl.h>
 #include <string>
 #include "irrMath.h"
 

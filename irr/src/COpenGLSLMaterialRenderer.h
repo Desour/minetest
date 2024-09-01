@@ -6,7 +6,6 @@
 
 #ifdef _IRR_COMPILE_WITH_OPENGL_
 
-#include <SDL_opengl.h>
 #include "EMaterialTypes.h"
 #include "IMaterialRenderer.h"
 #include "IMaterialRendererServices.h"

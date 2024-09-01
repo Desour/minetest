@@ -7,6 +7,7 @@
 #include "Driver.h"
 #include <stddef.h>
 #include <string.h>
+#include <SDL_opengl.h>
 #include <cassert>
 #include <initializer_list>
 #include <list>
