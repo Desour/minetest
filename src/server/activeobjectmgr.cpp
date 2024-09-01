@@ -18,9 +18,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include <log.h>
+#include <assert.h>
+#include <stddef.h>
+#include <ostream>
+#include <utility>
 #include "mapblock.h"
 #include "profiler.h"
 #include "activeobjectmgr.h"
+#include "activeobject.h"
+#include "server/serveractiveobject.h"
+#include "util/container.h"
 
 namespace server
 {

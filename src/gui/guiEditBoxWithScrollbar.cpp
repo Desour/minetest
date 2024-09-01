@@ -4,14 +4,19 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "guiEditBoxWithScrollbar.h"
-
+#include <vector>
 #include "IGUISkin.h"
 #include "IGUIEnvironment.h"
 #include "IGUIFont.h"
-#include "IVideoDriver.h"
 #include "rect.h"
 #include "porting.h"
-#include "Keycodes.h"
+#include "EGUIAlignment.h"
+#include "IOSOperator.h"
+#include "dimension2d.h"
+#include "gui/guiEditBox.h"
+#include "gui/guiScrollBar.h"
+#include "irrString.h"
+#include "irrlichttypes_extrabloated.h"
 
 /*
 todo:

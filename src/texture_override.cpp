@@ -18,12 +18,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "texture_override.h"
-
+#include <fstream>
+#include <map>
+#include <utility>
 #include "log.h"
 #include "filesys.h"
 #include "util/string.h"
-#include <algorithm>
-#include <fstream>
 
 #define override_cast static_cast<override_t>
 

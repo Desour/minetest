@@ -21,20 +21,27 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <vector>
 #include <memory>
-
+#include <iosfwd>
+#include <map>
+#include <set>
+#include <string>
 #include "map.h"
 #include "util/container.h"
 #include "util/metricsbackend.h"
 #include "map_settings_manager.h"
+#include "irrlichttypes_bloated.h"
 
 class Settings;
 class MapDatabase;
-class IRollbackManager;
 class EmergeManager;
 class ServerEnvironment;
 struct BlockMakeData;
-
-class MetricsBackend;
+class IGameDef;
+class MapBlock;
+class MapSector;
+enum ModifiedState : u16;
+struct MapNode;
+struct MapgenParams;
 
 /*
 	ServerMap

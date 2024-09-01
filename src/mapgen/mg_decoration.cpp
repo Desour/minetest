@@ -19,15 +19,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "mg_decoration.h"
+#include <algorithm>
+#include <vector>
 #include "mg_schematic.h"
 #include "mapgen.h"
 #include "noise.h"
 #include "map.h"
-#include "log.h"
-#include "util/numeric.h"
-#include <algorithm>
-#include <vector>
 #include "mapgen/treegen.h"
+#include "constants.h"
+#include "irrlichttypes_bloated.h"
+#include "util/basic_macros.h"
+#include "voxel.h"
+
+class IGameDef;
 
 
 FlagDesc flagdesc_deco[] = {

@@ -17,13 +17,18 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <stdio.h>
+#include <string>
 #include "test.h"
-
 #include "noise.h"
 #include "settings.h"
 #include "mapgen/mapgen_v5.h"
-#include "util/sha1.h"
 #include "map_settings_manager.h"
+#include "filesys.h"
+#include "irr_v3d.h"
+#include "mapgen/mapgen.h"
+
+class IGameDef;
 
 class TestMapSettingsManager : public TestBase {
 public:

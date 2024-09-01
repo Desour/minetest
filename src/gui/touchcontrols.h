@@ -20,19 +20,30 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "IGUIStaticText.h"
-#include "irrlichttypes.h"
 #include <IEventReceiver.h>
-#include <IGUIImage.h>
-#include <IGUIEnvironment.h>
-
+#include <stddef.h>
 #include <memory>
 #include <optional>
 #include <unordered_map>
 #include <vector>
-
+#include <string>
+#include "irrlichttypes.h"
 #include "itemdef.h"
-#include "client/game.h"
+#include "Keycodes.h"
+#include "irr_v2d.h"
+#include "line3d.h"
+#include "rect.h"
+
+class ISimpleTextureSource;
+namespace irr::gui {
+class IGUIElement;
+class IGUIEnvironment;
+class IGUIImage;
+class IGUIStaticText;
+}  // namespace irr::gui
+namespace irr::video {
+class IVideoDriver;
+}  // namespace irr::video
 
 namespace irr
 {

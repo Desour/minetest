@@ -26,7 +26,11 @@ SQLite format specification:
 
 
 #include "database-sqlite3.h"
-
+#include <sqlite3.h>
+#include <cassert>
+#include <sstream>
+#include <unordered_map>
+#include <utility>
 #include "log.h"
 #include "filesys.h"
 #include "exceptions.h"
@@ -36,8 +40,11 @@ SQLite format specification:
 #include "remoteplayer.h"
 #include "irrlicht_changes/printing.h"
 #include "server/player_sao.h"
-
-#include <cassert>
+#include "database/database.h"
+#include "debug.h"
+#include "inventory.h"
+#include "metadata.h"
+#include "util/basic_macros.h"
 
 // When to print messages when the database is being held locked by another process
 // Note: I've seen occasional delays of over 250ms while running minetestmapper.

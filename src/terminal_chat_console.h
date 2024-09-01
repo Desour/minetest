@@ -19,13 +19,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <set>
+#include <sstream>
+#include <string>
+#include <utility>
 #include "chat.h"
 #include "threading/thread.h"
 #include "util/container.h"
 #include "log.h"
-#include <set>
-#include <sstream>
-
+#include "irrTypes.h"
 
 struct ChatInterface;
 

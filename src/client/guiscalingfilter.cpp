@@ -17,12 +17,24 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "guiscalingfilter.h"
+#include <cstdio>
+#include <map>
+#include <ostream>
+#include <string>
+#include <utility>
 #include "imagefilters.h"
 #include "porting.h"
 #include "settings.h"
 #include "util/numeric.h"
-#include <cstdio>
 #include "client/renderingengine.h"
+#include "EDriverFeatures.h"
+#include "ITexture.h"
+#include "IVideoDriver.h"
+#include "SColor.h"
+#include "dimension2d.h"
+#include "irrString.h"
+#include "log.h"
+#include "rect.h"
 
 /* Maintain a static cache to store the images that correspond to textures
  * in a format that's manipulable by code.  Some platforms exhibit issues

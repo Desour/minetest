@@ -17,18 +17,28 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <array>
+#include <cstring>
+#include <string>
+#include <vector>
 #include "test.h"
-
-#include <algorithm>
-#include <numeric>
-
-#include "gamedef.h"
 #include "dummygamedef.h"
 #include "client/content_mapblock.h"
 #include "client/mapblock_mesh.h"
 #include "client/meshgen/collector.h"
 #include "mesh_compare.h"
-#include "util/directiontables.h"
+#include "S3DVertex.h"
+#include "SColor.h"
+#include "client/tile.h"
+#include "constants.h"
+#include "irr_v3d.h"
+#include "itemdef.h"
+#include "light.h"
+#include "mapnode.h"
+#include "nodedef.h"
+#include "voxel.h"
+
+class IGameDef;
 
 namespace {
 

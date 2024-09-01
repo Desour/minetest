@@ -18,18 +18,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 
-#include <cstdlib>
-#include <cmath>
-#include <algorithm>
-#include <iterator>
-#include <limits>
-#include <sstream>
-#include "guiFormSpecMenu.h"
-#include "constants.h"
-#include "gamedef.h"
-#include "client/keycode.h"
-#include "util/strfnd.h"
-#include <IGUIButton.h>
 #include <IGUICheckBox.h>
 #include <IGUIComboBox.h>
 #include <IGUIEditBox.h>
@@ -37,24 +25,29 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <IGUITabControl.h>
 #include <IGUIImage.h>
 #include <IAnimatedMeshSceneNode.h>
+#include <assert.h>
+#include <ctype.h>
+#include <limits.h>
+#include <cstdlib>
+#include <algorithm>
+#include <iterator>
+#include <sstream>
+#include <string_view>
+#include "guiFormSpecMenu.h"
+#include "client/keycode.h"
 #include "client/renderingengine.h"
 #include "log.h"
 #include "client/hud.h" // drawItemStack
-#include "filesys.h"
-#include "gettime.h"
 #include "gettext.h"
-#include "scripting_server.h"
 #include "mainmenumanager.h"
 #include "porting.h"
 #include "settings.h"
 #include "client/client.h"
 #include "client/fontengine.h"
 #include "client/sound.h"
-#include "util/hex.h"
 #include "util/numeric.h"
 #include "util/string.h" // for parseColorString()
 #include "irrlicht_changes/static_text.h"
-#include "client/guiscalingfilter.h"
 #include "guiAnimatedImage.h"
 #include "guiBackgroundImage.h"
 #include "guiBox.h"
@@ -67,6 +60,34 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "guiScrollContainer.h"
 #include "guiHyperText.h"
 #include "guiScene.h"
+#include "EGUIAlignment.h"
+#include "EGUIElementTypes.h"
+#include "ICursorControl.h"
+#include "IEventReceiver.h"
+#include "IGUISkin.h"
+#include "IGUIStaticText.h"
+#include "ITexture.h"
+#include "IVideoDriver.h"
+#include "Keycodes.h"
+#include "client/joystick_controller.h"
+#include "client/keys.h"
+#include "client/texturesource.h"
+#include "debug.h"
+#include "dimension2d.h"
+#include "gui/StyleSpec.h"
+#include "gui/guiScrollBar.h"
+#include "gui/guiTable.h"
+#include "gui/modalMenu.h"
+#include "itemdef.h"
+#include "network/networkprotocol.h"
+#include "position2d.h"
+#include "sound.h"
+#include "util/basic_macros.h"
+#include "util/enriched_string.h"
+
+namespace irr::scene {
+class IAnimatedMesh;
+}  // namespace irr::scene
 
 #define MY_CHECKPOS(a,b)													\
 	if (v_pos.size() != 2) {												\

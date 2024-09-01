@@ -19,16 +19,21 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irrlichttypes_bloated.h"
-#include "util/string.h"
-#include "util/basic_macros.h"
+#include <stddef.h>
 #include <string>
-#include <set>
 #include <map>
 #include <mutex>
+#include <iosfwd>
+#include <string_view>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+#include "irrlichttypes_bloated.h"
+#include "util/basic_macros.h"
 
 class Settings;
 struct NoiseParams;
+struct FlagDesc;
 
 // Global objects
 extern Settings *g_settings; // Same as Settings::getLayer(SL_GLOBAL);

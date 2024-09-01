@@ -18,12 +18,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "pipeline.h"
-#include "client/client.h"
-#include "client/hud.h"
-#include "IRenderTarget.h"
-
+#include <assert.h>
 #include <vector>
 #include <memory>
+#include <cstring>
+#include <stdexcept>
+#include "IRenderTarget.h"
+#include "EVideoTypes.h"
+#include "ITexture.h"
+#include "IVideoDriver.h"
 
 
 TextureBuffer::~TextureBuffer()

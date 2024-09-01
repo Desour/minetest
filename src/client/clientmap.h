@@ -19,11 +19,26 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <math.h>
+#include <set>
+#include <map>
+#include <iosfwd>
+#include <string_view>
+#include <vector>
 #include "irrlichttypes_extrabloated.h"
 #include "map.h"
 #include "camera.h"
-#include <set>
-#include <map>
+#include "ISceneNode.h"
+#include "SColor.h"
+#include "constants.h"
+
+class MapBlock;
+class MapSector;
+class RenderingEngine;
+namespace irr::video {
+class IVideoDriver;
+class SMaterial;
+}  // namespace irr::video
 
 struct MapDrawControl
 {
@@ -38,7 +53,6 @@ struct MapDrawControl
 };
 
 class Client;
-class ITextureSource;
 class PartialMeshBuffer;
 
 /*

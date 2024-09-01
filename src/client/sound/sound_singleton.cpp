@@ -23,6 +23,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "sound_singleton.h"
+#include <al.h>
+#include <ostream>
+#include "log.h"
 
 namespace sound {
 

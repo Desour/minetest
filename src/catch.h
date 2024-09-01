@@ -4,8 +4,9 @@
 // We want to have catch write to rawstream (stderr) instead of stdout.
 // This should be included instead of <catch_amalgamated.hpp>
 // to patch the output streams accordingly.
+#include <iosfwd>
+
 #define CATCH_CONFIG_NOSTDOUT
-#include <catch_amalgamated.hpp>
 
 namespace Catch {
 	std::ostream& cout();

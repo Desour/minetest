@@ -18,9 +18,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "serveractiveobject.h"
+#include <sstream>
+#include <utility>
 #include "inventory.h"
 #include "inventorymanager.h"
 #include "constants.h" // BS
+#include "util/serialize.h"
 
 ServerActiveObject::ServerActiveObject(ServerEnvironment *env, v3f pos):
 	ActiveObject(0),

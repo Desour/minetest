@@ -19,11 +19,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "l_client.h"
+#include <assert.h>
+#include <lauxlib.h>
+#include <libintl.h>
+#include <locale.h>
+#include <ostream>
+#include <set>
+#include <string>
+#include <unordered_set>
 #include "chatmessage.h"
 #include "client/client.h"
 #include "client/clientevent.h"
-#include "client/sound.h"
-#include "client/clientenvironment.h"
 #include "common/c_content.h"
 #include "common/c_converter.h"
 #include "cpp_api/s_base.h"
@@ -34,6 +40,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "map.h"
 #include "util/string.h"
 #include "nodedef.h"
+#include "environment.h"
+#include "gamedef.h"
+#include "irr_v3d.h"
+#include "itemdef.h"
+#include "log.h"
+#include "mapnode.h"
+#include "network/address.h"
+#include "network/networkprotocol.h"
+#include "nodemetadata.h"
 
 #define checkCSMRestrictionFlag(flag) \
 	( getClient(L)->checkCSMRestrictionFlag(CSMRestrictionFlags::flag) )

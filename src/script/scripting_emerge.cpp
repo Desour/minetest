@@ -18,6 +18,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "scripting_emerge.h"
+#include <assert.h>
+#include <memory>
+#include <string>
 #include "emerge_internal.h"
 #include "server.h"
 #include "settings.h"
@@ -37,7 +40,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "lua_api/l_settings.h"
 
 extern "C" {
-#include <lualib.h>
 }
 
 EmergeScripting::EmergeScripting(EmergeThread *parent):

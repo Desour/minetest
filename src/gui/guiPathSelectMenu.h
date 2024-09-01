@@ -20,10 +20,18 @@
 #pragma once
 
 #include <string>
-
 #include "modalMenu.h"
-#include "IGUIFileOpenDialog.h"
-#include "guiFormSpecMenu.h" //required because of TextDest only !!!
+#include "irr_v2d.h"
+
+namespace irr {
+struct SEvent;
+}  // namespace irr
+namespace irr::gui {
+class IGUIElement;
+class IGUIEnvironment;
+class IGUIFileOpenDialog;
+}  // namespace irr::gui
+struct TextDest;
 
 class GUIFileSelectMenu : public GUIModalMenu
 {

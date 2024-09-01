@@ -19,7 +19,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irrlichttypes.h"
 #include "irr_v3d.h"
 
 /// Direction in the 6D format. g_27dirs contains corresponding vectors.

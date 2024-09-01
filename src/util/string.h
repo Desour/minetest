@@ -20,19 +20,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include "irrlichttypes_bloated.h"
+#include "SColor.h"
 #ifndef SERVER
 #include "irrString.h"
 #endif
 #include <cstdlib>
 #include <string>
 #include <string_view>
-#include <cstring>
 #include <vector>
 #include <limits>
 #include <sstream>
 #include <iomanip>
 #include <cctype>
 #include <unordered_map>
+#include <utility>
 
 class Translations;
 

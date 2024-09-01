@@ -19,6 +19,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "shadowsScreenQuad.h"
 #include <IVideoDriver.h>
+#include "EVideoTypes.h"
+#include "SColor.h"
+#include "matrix4.h"
+
+namespace irr::video {
+class IMaterialRendererServices;
+}  // namespace irr::video
 
 shadowScreenQuad::shadowScreenQuad()
 {

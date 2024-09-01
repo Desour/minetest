@@ -23,9 +23,18 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 /******************************************************************************/
 
 #include "pathfinder.h"
+#include <assert.h>
+#include <map>
+#include <ostream>
+#include <queue>
+#include <utility>
 #include "map.h"
 #include "nodedef.h"
 #include "irrlicht_changes/printing.h"
+#include "aabbox3d.h"
+#include "log.h"
+#include "mapnode.h"
+#include "util/basic_macros.h"
 
 //#define PATHFINDER_DEBUG
 //#define PATHFINDER_CALC_TIME
@@ -138,7 +147,6 @@ public:
 };
 
 class Pathfinder;
-class PathfinderCompareHeuristic;
 
 /** Abstract class to manage the map data */
 class GridNodeContainer {

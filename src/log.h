@@ -25,7 +25,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <string>
 #include <fstream>
 #include <thread>
-#include <mutex>
+#include <functional>
+#include <utility>
+#include <vector>
 #include "threading/mutex_auto_lock.h"
 #include "util/basic_macros.h"
 #include "util/stream.h"

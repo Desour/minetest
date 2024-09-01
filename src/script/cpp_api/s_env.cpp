@@ -18,14 +18,23 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "cpp_api/s_env.h"
+#include <lauxlib.h>
+#include <lua.h>
+#include <stddef.h>
+#include <ostream>
+#include <set>
 #include "cpp_api/s_internal.h"
 #include "common/c_converter.h"
 #include "log.h"
-#include "environment.h"
-#include "mapgen/mapgen.h"
 #include "lua_api/l_env.h"
 #include "server.h"
 #include "script/common/c_content.h"
+#include "common/c_internal.h"
+#include "common/c_types.h"
+#include "mapnode.h"
+#include "serverenvironment.h"
+
+class ServerActiveObject;
 
 
 void ScriptApiEnv::environment_OnGenerated(v3s16 minp, v3s16 maxp,

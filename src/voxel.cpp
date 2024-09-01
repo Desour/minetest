@@ -18,13 +18,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "voxel.h"
-#include "map.h"
-#include "gettime.h"
+#include <cstring>  // memcpy, memset
+#include <utility>
 #include "nodedef.h"
-#include "util/directiontables.h"
 #include "util/timetaker.h"
 #include "porting.h"
-#include <cstring>  // memcpy, memset
 
 /*
 	Debug stuff

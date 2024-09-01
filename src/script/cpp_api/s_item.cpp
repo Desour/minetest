@@ -18,6 +18,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "cpp_api/s_item.h"
+#include <lauxlib.h>
+#include <lua.h>
+#include <ostream>
+#include <string>
+#include <vector>
 #include "cpp_api/s_internal.h"
 #include "common/c_converter.h"
 #include "common/c_content.h"
@@ -25,10 +30,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "lua_api/l_inventory.h"
 #include "server.h"
 #include "log.h"
-#include "util/pointedthing.h"
 #include "inventory.h"
-#include "inventorymanager.h"
 #include "irrlicht_changes/printing.h"
+#include "common/c_internal.h"
+#include "common/c_types.h"
+#include "debug.h"
 
 #define WRAP_LUAERROR(e, detail) \
 	LuaError(std::string(__FUNCTION__) + ": " + (e).what() + ". " detail)

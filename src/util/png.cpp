@@ -18,10 +18,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "png.h"
+#include <zlib.h>
+#include <string.h>
 #include <string>
 #include <optional>
 #include <sstream>
-#include <zlib.h>
 #include <cassert>
 #include "util/serialize.h"
 #include "serialization.h"

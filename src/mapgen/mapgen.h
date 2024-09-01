@@ -21,11 +21,22 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "noise.h"
-#include "nodedef.h"
-#include "util/string.h"
-#include "util/container.h"
 #include <utility>
+#include <list>
+#include <map>
+#include <queue>
+#include <set>
+#include <string>
+#include <vector>
+#include "noise.h"
+#include "util/string.h"
+#include "constants.h"
+#include "irrlichttypes_bloated.h"
+#include "mapnode.h"
+#include "util/basic_macros.h"
+
+enum MapgenType;
+template <typename Value> class UniqueQueue;
 
 #define MAPGEN_DEFAULT MAPGEN_V7
 #define MAPGEN_DEFAULT_NAME "v7"
@@ -47,17 +58,12 @@ class NodeDefManager;
 extern FlagDesc flagdesc_mapgen[];
 extern FlagDesc flagdesc_gennotify[];
 
-class Biome;
 class BiomeGen;
 struct BiomeParams;
 class BiomeManager;
 class EmergeParams;
-class EmergeManager;
-class MapBlock;
-class VoxelManipulator;
 struct BlockMakeData;
 class VoxelArea;
-class Map;
 
 enum MapgenObject {
 	MGOBJ_VMANIP,

@@ -17,8 +17,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <IVideoDriver.h>
+#include <assert.h>
 #include <cstring>
 #include <cmath>
+#include <initializer_list>
+#include <ostream>
+#include <utility>
 #include "client/shadows/dynamicshadowsrender.h"
 #include "client/shadows/shadowsScreenQuad.h"
 #include "client/shadows/shadowsshadercallbacks.h"
@@ -28,11 +33,22 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "client/shader.h"
 #include "client/client.h"
 #include "client/clientmap.h"
-#include "profiler.h"
 #include "EShaderTypes.h"
 #include "IGPUProgrammingServices.h"
 #include "IMaterialRenderer.h"
-#include <IVideoDriver.h>
+#include "EDriverFeatures.h"
+#include "EDriverTypes.h"
+#include "EMaterialTypes.h"
+#include "EVideoTypes.h"
+#include "ISceneNode.h"
+#include "ITexture.h"
+#include "SMaterial.h"
+#include "client/clientenvironment.h"
+#include "client/shadows/dynamicshadows.h"
+#include "constants.h"
+#include "dimension2d.h"
+#include "irrMath.h"
+#include "log.h"
 
 ShadowRenderer::ShadowRenderer(IrrlichtDevice *device, Client *client) :
 		m_smgr(device->getSceneManager()), m_driver(device->getVideoDriver()),

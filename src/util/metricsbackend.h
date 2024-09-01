@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <memory>
 #include <string>
 #include <utility>
+#include <initializer_list>
 #include "config.h"
 
 class MetricCounter

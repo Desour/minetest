@@ -21,6 +21,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "gameui.h"
 #include <irrlicht_changes/static_text.h>
 #include <gettext.h>
+#include <algorithm>
+#include <iomanip>
+#include <sstream>
 #include "gui/mainmenumanager.h"
 #include "gui/guiChatConsole.h"
 #include "util/pointedthing.h"
@@ -31,6 +34,24 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "profiler.h"
 #include "renderingengine.h"
 #include "version.h"
+#include "IGUIFont.h"
+#include "IGUISkin.h"
+#include "IGUIStaticText.h"
+#include "client/clientenvironment.h"
+#include "client/game.h"
+#include "client/localplayer.h"
+#include "cmake_config.h"
+#include "constants.h"
+#include "dimension2d.h"
+#include "gui/guiFormSpecMenu.h"
+#include "hud.h"
+#include "irrlichttypes_extrabloated.h"
+#include "mapnode.h"
+#include "position2d.h"
+#include "settings.h"
+#include "util/enriched_string.h"
+#include "util/numeric.h"
+#include "util/string.h"
 
 inline static const char *yawToDirectionString(int yaw)
 {

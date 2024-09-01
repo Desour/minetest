@@ -19,11 +19,21 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <stddef.h>
 #include <vector>
 #include <unordered_map>
+#include <memory>
+#include <mutex>
+#include <optional>
 #include "irrlichttypes_extrabloated.h"
 #include "irr_ptr.h"
 #include "../particles.h"
+#include "ISceneNode.h"
+#include "SColor.h"
+#include "SMaterial.h"
+#include "matrix4.h"
+#include "util/basic_macros.h"
+#include "util/numeric.h"
 
 struct ClientEvent;
 class ParticleManager;
@@ -34,6 +44,10 @@ class LocalPlayer;
 class ITextureSource;
 class IGameDef;
 class Client;
+namespace irr::video {
+class ITexture;
+struct S3DVertex;
+}  // namespace irr::video
 
 struct ClientParticleTexture
 {

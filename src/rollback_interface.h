@@ -19,16 +19,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irr_v3d.h"
+#include <time.h>
 #include <string>
-#include <iostream>
 #include <list>
-#include "exceptions.h"
+#include "irr_v3d.h"
 #include "inventory.h"
 
 class Map;
 class IGameDef;
-struct MapNode;
 class InventoryManager;
 
 struct RollbackNode

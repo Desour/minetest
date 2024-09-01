@@ -18,6 +18,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "cpp_api/s_nodemeta.h"
+#include <lauxlib.h>
+#include <lua.h>
+#include <string>
 #include "cpp_api/s_internal.h"
 #include "common/c_converter.h"
 #include "nodedef.h"
@@ -25,6 +28,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "server.h"
 #include "environment.h"
 #include "lua_api/l_item.h"
+#include "common/c_internal.h"
+#include "common/c_types.h"
+#include "inventory.h"
+#include "inventorymanager.h"
+#include "map.h"
+
+class ServerActiveObject;
 
 // Return number of accepted items to be moved
 int ScriptApiNodemeta::nodemeta_inventory_AllowMove(

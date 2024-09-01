@@ -19,10 +19,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irrlichttypes_extrabloated.h"
-#include "keys.h"
 #include <bitset>
 #include <vector>
+#include <string>
+#include "irrlichttypes_extrabloated.h"
+#include "keys.h"
+#include "IEventReceiver.h"
 
 enum JoystickAxis {
 	JA_SIDEWARD_MOVE,

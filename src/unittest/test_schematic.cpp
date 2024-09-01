@@ -17,11 +17,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <stddef.h>
+#include <sstream>
+#include <string>
+#include <vector>
 #include "test.h"
-
 #include "mapgen/mg_schematic.h"
 #include "gamedef.h"
 #include "nodedef.h"
+#include "irr_v3d.h"
+#include "mapnode.h"
+#include "util/string.h"
 
 class TestSchematic : public TestBase {
 public:

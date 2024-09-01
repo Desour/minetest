@@ -17,10 +17,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <IGUISpriteBank.h>
+#include <ICameraSceneNode.h>
+#include <assert.h>
+#include <libintl.h>
+#include <stdlib.h>
+#include <unordered_map>
+#include <exception>
+#include <fstream>
+#include <memory>
+#include <utility>
+#include <vector>
 #include "gui/mainmenumanager.h"
 #include "clouds.h"
 #include "gui/touchcontrols.h"
-#include "server.h"
 #include "filesys.h"
 #include "gui/guiMainMenu.h"
 #include "game.h"
@@ -33,10 +43,31 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "clientlauncher.h"
 #include "version.h"
 #include "renderingengine.h"
-#include "network/networkexceptions.h"
-#include <IGUISpriteBank.h>
-#include <ICameraSceneNode.h>
-#include <unordered_map>
+#include "IAttributes.h"
+#include "ICursorControl.h"
+#include "IEventReceiver.h"
+#include "IGUISkin.h"
+#include "IGUIStaticText.h"
+#include "IVideoDriver.h"
+#include "SColor.h"
+#include "SceneParameters.h"
+#include "client/inputhandler.h"
+#include "client/joystick_controller.h"
+#include "cmake_config.h"
+#include "content/subgames.h"
+#include "debug.h"
+#include "gameparams.h"
+#include "irrArray.h"
+#include "irrlichttypes_extrabloated.h"
+#include "log.h"
+#include "porting.h"
+#include "rect.h"
+#include "util/numeric.h"
+#include "util/string.h"
+
+namespace irr::video {
+class ITexture;
+}  // namespace irr::video
 
 #if USE_SOUND
 	#include "sound/sound_openal.h"

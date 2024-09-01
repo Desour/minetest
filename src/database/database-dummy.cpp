@@ -22,7 +22,10 @@ Dummy database class
 */
 
 #include "database-dummy.h"
+#include <utility>
 #include "remoteplayer.h"
+
+class PlayerSAO;
 
 
 bool Database_Dummy::saveBlock(const v3s16 &pos, std::string_view data)

@@ -18,10 +18,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "pointabilities.h"
-
+#include <sstream>
+#include <utility>
 #include "serialize.h"
 #include "exceptions.h"
-#include <sstream>
 
 PointabilityType Pointabilities::deSerializePointabilityType(std::istream &is)
 {

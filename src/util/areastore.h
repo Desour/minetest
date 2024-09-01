@@ -19,12 +19,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irr_v3d.h"
-#include "noise.h" // for PcgRandom
+#include <stddef.h>
 #include <map>
-#include <list>
 #include <vector>
 #include <istream>
+#include <string>
+#include "irr_v3d.h"
 #include "util/container.h"
 #include "util/numeric.h"
 #ifndef ANDROID

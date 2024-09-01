@@ -18,6 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "face_position_cache.h"
+#include <utility>
 #include "threading/mutex_auto_lock.h"
 
 

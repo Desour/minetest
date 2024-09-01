@@ -18,6 +18,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "guiScrollContainer.h"
+#include <list>
+#include "EGUIElementTypes.h"
+#include "IEventReceiver.h"
+#include "gui/guiScrollBar.h"
+#include "position2d.h"
+#include "rect.h"
 
 GUIScrollContainer::GUIScrollContainer(gui::IGUIEnvironment *env,
 		gui::IGUIElement *parent, s32 id, const core::rect<s32> &rectangle,

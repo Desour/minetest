@@ -27,7 +27,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "mapnode.h"
 
 class MMVManip;
-class NodeDefManager;
 class ServerMap;
 
 namespace treegen {

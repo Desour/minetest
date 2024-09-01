@@ -19,13 +19,24 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <stddef.h>
+#include <atomic>
+#include <string>
+#include <list>
+#include <vector>
+#include <unordered_set>
+#include <optional>
+#include <string_view>
+#include <memory>
+#include <mutex>
+#include <queue>
+#include <set>
+#include <unordered_map>
+#include <utility>
 #include "irr_v3d.h"
 #include "map.h"
 #include "hud.h"
 #include "gamedef.h"
-#include "serialization.h" // For SER_FMT_VER_INVALID
-#include "content/mods.h"
-#include "inventorymanager.h"
 #include "content/subgames.h"
 #include "network/peerhandler.h"
 #include "network/connection.h"
@@ -38,14 +49,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "chatmessage.h"
 #include "sound.h"
 #include "translation.h"
-#include <atomic>
-#include <string>
-#include <list>
-#include <map>
-#include <vector>
-#include <unordered_set>
-#include <optional>
-#include <string_view>
+#include "common/c_types.h"
+#include "constants.h"
+#include "exceptions.h"
+#include "irr_v2d.h"
+#include "network/address.h"
+#include "network/networkprotocol.h"
+#include "settings.h"
+#include "voxel.h"
 
 class ChatEvent;
 struct ChatEventChat;
@@ -63,8 +74,6 @@ class IRollbackManager;
 struct RollbackAction;
 class EmergeManager;
 class ServerScripting;
-class ServerEnvironment;
-struct SoundSpec;
 struct CloudParams;
 struct SkyboxParams;
 struct SunParams;
@@ -77,6 +86,17 @@ class ServerInventoryManager;
 struct PackedValue;
 struct ParticleParameters;
 struct ParticleSpawnerParameters;
+class ICraftDefManager;
+class IItemDefManager;
+class MapBlock;
+class ModChannel;
+class ModStorageDatabase;
+class NetworkPacket;
+class ServerActiveObject;
+struct ClientDynamicInfo;
+struct GameParams;
+struct MapNode;
+struct ModSpec;
 
 enum ClientDeletionReason {
 	CDR_LEAVE,

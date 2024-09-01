@@ -20,23 +20,27 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irrlichttypes_extrabloated.h"
 #include <string>
 #include <iostream>
 #include <optional>
 #include <set>
+#include <vector>
+#include "irrlichttypes_extrabloated.h"
 #include "itemgroup.h"
 #include "sound.h"
-#include "texture_override.h" // TextureOverride
 #include "tool.h"
 #include "util/pointabilities.h"
-#include "util/pointedthing.h"
+#include "SColor.h"
 
-class IGameDef;
 class Client;
-struct ToolCapabilities;
+enum PointedThingType : u8;
+namespace irr::video {
+class ITexture;
+}  // namespace irr::video
+struct TextureOverride;
 #ifndef SERVER
 #include "client/texturesource.h"
+
 struct ItemMesh;
 struct ItemStack;
 #endif

@@ -18,17 +18,25 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "guiHyperText.h"
+#include <stdio.h>
+#include <algorithm>
+#include <cstdlib>
+#include <utility>
 #include "guiScrollBar.h"
 #include "client/fontengine.h"
 #include "IVideoDriver.h"
 #include "client/client.h"
 #include "client/renderingengine.h"
-#include "hud.h"
 #include "inventory.h"
 #include "util/string.h"
 #include "irrlicht_changes/CGUITTFont.h"
 #include "mainmenumanager.h"
 #include "porting.h"
+#include "client/hud.h"
+#include "client/texturesource.h"
+#include "util/numeric.h"
+
+class IItemDefManager;
 
 using namespace irr::gui;
 

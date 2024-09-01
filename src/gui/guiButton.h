@@ -4,14 +4,25 @@
 
 #pragma once
 
-#include <IGUIStaticText.h>
-#include "irrlicht_changes/static_text.h"
+#include <array>
 #include "IGUIButton.h"
-#include "IGUISpriteBank.h"
 #include "ITexture.h"
 #include "SColor.h"
-#include "guiSkin.h"
 #include "StyleSpec.h"
+#include "irr_v2d.h"
+#include "position2d.h"
+#include "rect.h"
+
+namespace irr {
+struct SEvent;
+}  // namespace irr
+namespace irr::gui {
+class IGUIElement;
+class IGUIEnvironment;
+class IGUIFont;
+class IGUISpriteBank;
+class IGUIStaticText;
+}  // namespace irr::gui
 
 using namespace irr;
 

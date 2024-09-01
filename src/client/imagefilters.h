@@ -20,6 +20,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "irrlichttypes_extrabloated.h"
 
+namespace irr::core {
+template <class T> class rect;
+}  // namespace irr::core
+namespace irr::video {
+class IVideoDriver;
+}  // namespace irr::video
+
 /* Fill in RGB values for transparent pixels, to correct for odd colors
  * appearing at borders when blending.  This is because many PNG optimizers
  * like to discard RGB values of transparent pixels, but when blending then

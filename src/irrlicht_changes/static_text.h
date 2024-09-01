@@ -6,16 +6,13 @@
 
 #pragma once
 
-#include "IGUIStaticText.h"
-#include "irrArray.h"
-
-#include "log.h"
-
-#include <vector>
-
-#include "util/enriched_string.h"
-#include "config.h"
 #include <IGUIEnvironment.h>
+#include <stddef.h>
+#include <vector>
+#include <string_view>
+#include "IGUIStaticText.h"
+#include "util/enriched_string.h"
+#include "irrlicht.h"
 
 
 namespace irr

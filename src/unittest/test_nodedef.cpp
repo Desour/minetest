@@ -17,14 +17,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "gamedef.h"
+#include <sstream>
+#include <string>
 #include "nodedef.h"
 #include "network/networkprotocol.h"
-
-#include <catch.h>
-
-#include <ios>
-#include <sstream>
+#include "catch_amalgamated.hpp"
 
 
 TEST_CASE("Given a node definition, "

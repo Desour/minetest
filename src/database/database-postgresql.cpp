@@ -16,7 +16,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <arpa/inet.h>
+#include <limits.h>
+#include <sstream>
+#include <unordered_map>
+#include <utility>
 #include "config.h"
+#include "database/database.h"
+#include "inventory.h"
+#include "log.h"
+#include "metadata.h"
+#include "util/basic_macros.h"
 
 #if USE_POSTGRESQL
 
@@ -26,15 +36,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 	#include <windows.h>
 	#include <winsock2.h>
 #else
-#include <netinet/in.h>
 #endif
 
+#include <cstdlib>
 #include "debug.h"
 #include "exceptions.h"
-#include "settings.h"
 #include "remoteplayer.h"
 #include "server/player_sao.h"
-#include <cstdlib>
 
 Database_PostgreSQL::Database_PostgreSQL(const std::string &connect_string,
 	const char *type) :

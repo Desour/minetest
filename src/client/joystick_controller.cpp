@@ -18,10 +18,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "joystick_controller.h"
+#include <stdlib.h>
+#include <string.h>
+#include <algorithm>
+#include <cmath>
 #include "irrlichttypes_extrabloated.h"
 #include "keys.h"
 #include "settings.h"
-#include "gettime.h"
 #include "porting.h"
 #include "util/string.h"
 #include "util/numeric.h"

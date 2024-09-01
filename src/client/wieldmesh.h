@@ -22,6 +22,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <string>
 #include <vector>
 #include "irrlichttypes_extrabloated.h"
+#include "EMaterialTypes.h"
+#include "ISceneNode.h"
+#include "SColor.h"
 
 struct ItemStack;
 class Client;

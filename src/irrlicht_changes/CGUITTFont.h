@@ -33,11 +33,15 @@
 #pragma once
 
 #include <irrlicht.h>
-#include <ft2build.h>
-#include <vector>
+#include <freetype/config/ftheader.h>
+#include <freetype/config/integer-types.h>
+#include <freetype/ftimage.h>
 #include <map>
-#include "util/enriched_string.h"
+#include <string>
 #include "util/basic_macros.h"
+
+class EnrichedString;
+
 #include FT_FREETYPE_H
 
 namespace irr

@@ -19,12 +19,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "util/string.h"
-#include "threading/thread.h"
-#include "exceptions.h"
-#include <map>
 #include <string>
 #include <mutex>
+#include "util/string.h"
 
 class BanManager
 {

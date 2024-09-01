@@ -18,22 +18,28 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "httpfetch.h"
-#include "porting.h" // for sleep_ms(), get_sysinfo(), secure_rand_fill_buf()
+#include <curl/curlver.h>
+#include <stddef.h>
 #include <list>
 #include <unordered_map>
-#include <cerrno>
-#include <mutex>
+#include <algorithm>
+#include <memory>
+#include <new>
+#include <ostream>
+#include <queue>
+#include <utility>
+#include "porting.h" // for sleep_ms(), get_sysinfo(), secure_rand_fill_buf()
 #include "threading/event.h"
 #include "config.h"
 #include "exceptions.h"
 #include "debug.h"
 #include "log.h"
-#include "porting.h"
 #include "util/container.h"
-#include "util/thread.h"
 #include "version.h"
 #include "settings.h"
 #include "noise.h"
+#include "threading/mutex_auto_lock.h"
+#include "threading/thread.h"
 
 static std::mutex g_httpfetch_mutex;
 static std::unordered_map<u64, std::queue<HTTPFetchResult>>

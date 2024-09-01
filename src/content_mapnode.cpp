@@ -18,12 +18,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "content_mapnode.h"
-
+#include <string>
 #include "irrlichttypes_bloated.h"
 #include "mapnode.h"
-#include "nodedef.h"
 #include "nameidmapping.h"
-#include "util/string.h"
 
 /*
 	Legacy node content type IDs

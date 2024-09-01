@@ -21,11 +21,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include "mapgen.h"
+#include "irr_v2d.h"
+#include "noise.h"
+#include "util/string.h"
+
+class EmergeParams;
+class Settings;
+struct BlockMakeData;
 
 #define MGCARPATHIAN_CAVERNS 0x01
 #define MGCARPATHIAN_RIVERS  0x02
-
-class BiomeManager;
 
 extern FlagDesc flagdesc_mapgen_carpathian[];
 

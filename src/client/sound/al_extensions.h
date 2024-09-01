@@ -19,7 +19,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "al_helpers.h"
+#include <alc.h>
+#include <alext.h>
 
 namespace sound {
 

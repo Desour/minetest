@@ -19,14 +19,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <assert.h>
+#include <vector>
+#include <iosfwd>
 #include "irrlichttypes_bloated.h"
 #include "light.h"
 #include "util/pointer.h"
-#include <string>
-#include <vector>
+#include "util/basic_macros.h"
 
 class NodeDefManager;
 class Map;
+namespace irr::video {
+class SColor;
+}  // namespace irr::video
+struct MapNode;
 
 /*
 	Naming scheme:

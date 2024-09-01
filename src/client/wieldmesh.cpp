@@ -18,6 +18,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "wieldmesh.h"
+#include <assert.h>
+#include <stddef.h>
+#include <map>
+#include <array>
+#include <optional>
+#include <utility>
 #include "settings.h"
 #include "shader.h"
 #include "inventory.h"
@@ -29,11 +35,23 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "mapblock_mesh.h"
 #include "client/meshgen/collector.h"
 #include "client/tile.h"
-#include "log.h"
 #include "util/numeric.h"
-#include <map>
-#include <IMeshManipulator.h>
 #include "client/renderingengine.h"
+#include "ECullingTypes.h"
+#include "EHardwareBufferFlags.h"
+#include "IAnimatedMesh.h"
+#include "IReferenceCounted.h"
+#include "ITexture.h"
+#include "S3DVertex.h"
+#include "SMaterial.h"
+#include "SMaterialLayer.h"
+#include "client/shadows/dynamicshadowsrender.h"
+#include "client/texturesource.h"
+#include "constants.h"
+#include "debug.h"
+#include "dimension2d.h"
+#include "mapnode.h"
+#include "util/basic_macros.h"
 
 #define WIELD_SCALE_FACTOR 30.0
 #define WIELD_SCALE_FACTOR_EXTRUDED 40.0

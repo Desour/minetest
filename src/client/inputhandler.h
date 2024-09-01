@@ -19,11 +19,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <stddef.h>
+#include <list>
 #include "irrlichttypes_extrabloated.h"
 #include "joystick_controller.h"
-#include <list>
 #include "keycode.h"
 #include "renderingengine.h"
+#include "ICursorControl.h"
+#include "IEventReceiver.h"
+#include "client/keys.h"
 
 class InputHandler;
 

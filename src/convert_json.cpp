@@ -18,10 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "convert_json.h"
-
-#include <json/json.h>
-
-#include <iostream>
+#include <json/writer.h>
 #include <sstream>
 #include <memory>
 

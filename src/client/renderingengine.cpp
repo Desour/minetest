@@ -18,27 +18,33 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include <optional>
 #include <irrlicht.h>
+#include <assert.h>
+#include <math.h>
+#include <strings.h>
+#include <optional>
+#include <algorithm>
+#include <ostream>
+#include <stdexcept>
+#include <unordered_map>
+#include <utility>
 #include "fontengine.h"
-#include "client.h"
 #include "clouds.h"
 #include "util/numeric.h"
 #include "guiscalingfilter.h"
-#include "localplayer.h"
-#include "client/hud.h"
-#include "camera.h"
-#include "minimap.h"
-#include "clientmap.h"
 #include "renderingengine.h"
 #include "render/core.h"
 #include "render/factory.h"
-#include "inputhandler.h"
-#include "gettext.h"
 #include "filesys.h"
 #include "../gui/guiSkin.h"
 #include "irrlicht_changes/static_text.h"
 #include "irr_ptr.h"
+#include "EVideoTypes.h"
+#include "client/texturesource.h"
+#include "log.h"
+#include "porting.h"
+#include "settings.h"
+#include "util/basic_macros.h"
 
 RenderingEngine *RenderingEngine::s_singleton = nullptr;
 const video::SColor RenderingEngine::MENU_SKY_COLOR = video::SColor(255, 140, 186, 250);

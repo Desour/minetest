@@ -18,11 +18,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "cpp_api/s_inventory.h"
+#include <lauxlib.h>
+#include <lua.h>
+#include <ostream>
 #include "cpp_api/s_internal.h"
 #include "inventorymanager.h"
 #include "lua_api/l_inventory.h"
 #include "lua_api/l_item.h"
 #include "log.h"
+#include "common/c_internal.h"
+#include "common/c_types.h"
+#include "inventory.h"
+
+class ServerActiveObject;
 
 // Return number of accepted items to be moved
 int ScriptApiDetached::detached_inventory_AllowMove(

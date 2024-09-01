@@ -17,10 +17,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include <cmath>
 #include <log.h>
+#include <assert.h>
+#include <stddef.h>
+#include <cmath>
+#include <map>
+#include <ostream>
+#include <string>
+#include <utility>
 #include "profiler.h"
 #include "activeobjectmgr.h"
+#include "client/clientobject.h"
+#include "irrlichttypes_bloated.h"
+#include "line3d.h"
+#include "util/container.h"
 
 namespace client
 {

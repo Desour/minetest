@@ -19,11 +19,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irrlichttypes_extrabloated.h"
-#include "client/inputhandler.h"
-#include "gameparams.h"
+#include <string>
+#include "settings.h"
 
 class RenderingEngine;
+class InputHandler;
+class MyEventReceiver;
+struct GameStartData;
+struct MainMenuData;
 
 class ClientLauncher
 {

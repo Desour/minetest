@@ -19,13 +19,22 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "factory.h"
+#include <ostream>
 #include "log.h"
 #include "plain.h"
 #include "anaglyph.h"
 #include "interlaced.h"
 #include "sidebyside.h"
-#include "secondstage.h"
 #include "client/shadows/dynamicshadowsrender.h"
+#include "client/render/core.h"
+#include "client/render/pipeline.h"
+#include "irr_v2d.h"
+
+class Client;
+class Hud;
+namespace irr {
+class IrrlichtDevice;
+}  // namespace irr
 
 struct CreatePipelineResult
 {

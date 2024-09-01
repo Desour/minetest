@@ -19,6 +19,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <stddef.h>
+#include <memory>
+#include <string>
+#include <vector>
 /******************************************************************************/
 /* Includes                                                                   */
 /******************************************************************************/
@@ -28,6 +32,24 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "client/sound.h"
 #include "util/enriched_string.h"
 #include "translation.h"
+#include "client/texturesource.h"
+#include "irr_ptr.h"
+#include "util/string.h"
+
+class IMenuManager;
+class JoystickController;
+namespace irr::gui {
+class IGUIElement;
+class IGUIStaticText;
+}  // namespace irr::gui
+namespace irr::scene {
+class ICameraSceneNode;
+class ISceneManager;
+}  // namespace irr::scene
+namespace irr::video {
+class ITexture;
+class IVideoDriver;
+}  // namespace irr::video
 
 /******************************************************************************/
 /* Structs and macros                                                         */

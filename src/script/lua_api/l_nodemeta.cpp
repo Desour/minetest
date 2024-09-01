@@ -18,13 +18,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "lua_api/l_nodemeta.h"
+#include <assert.h>
+#include <stddef.h>
 #include "lua_api/l_internal.h"
 #include "lua_api/l_inventory.h"
 #include "common/c_content.h"
 #include "serverenvironment.h"
 #include "map.h"
-#include "mapblock.h"
 #include "server.h"
+#include "debug.h"
+#include "inventorymanager.h"
+#include "metadata.h"
+#include "nodemetadata.h"
+
+class Inventory;
 
 /*
 	NodeMetaRef

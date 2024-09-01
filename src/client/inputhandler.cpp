@@ -18,12 +18,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <assert.h>
+#include <cmath>
+#include <string>
 #include "settings.h"
 #include "util/numeric.h"
 #include "inputhandler.h"
 #include "gui/mainmenumanager.h"
 #include "gui/touchcontrols.h"
 #include "hud.h"
+#include "client/joystick_controller.h"
+#include "client/keycode.h"
+#include "client/renderingengine.h"
+#include "log.h"
 
 void KeyCache::populate_nonchanging()
 {

@@ -25,6 +25,8 @@
 
 #pragma once
 
+#include <stddef.h>
+#include <string>
 #include "irr_v3d.h"
 #include "exceptions.h"
 #include "util/string.h"

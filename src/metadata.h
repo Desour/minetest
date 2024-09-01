@@ -19,9 +19,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irr_v3d.h"
-#include <iostream>
+#include <stddef.h>
 #include <vector>
+#include <string>
+#include <string_view>
+#include "irr_v3d.h"
 #include "util/string.h"
 
 // Basic metadata interface

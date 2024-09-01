@@ -17,20 +17,21 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <stddef.h>
+#include <ostream>
 #include "config.h"
+#include "read.h"
 
 #if USE_REDIS
 
+#include <hiredis.h>
+#include <cassert>
 #include "database-redis.h"
-
 #include "settings.h"
 #include "log.h"
 #include "exceptions.h"
 #include "irrlicht_changes/printing.h"
 #include "util/string.h"
-
-#include <hiredis.h>
-#include <cassert>
 
 /*
  * Redis is not a good fit for Minetest and only still supported for legacy as

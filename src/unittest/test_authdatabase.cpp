@@ -17,13 +17,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "test.h"
-
 #include <algorithm>
+#include <ostream>
+#include <string>
+#include <vector>
+#include "test.h"
 #include "database/database-files.h"
 #include "database/database-sqlite3.h"
 #include "util/string.h"
 #include "filesys.h"
+#include "database/database.h"
+#include "irrTypes.h"
+#include "log.h"
+
+class IGameDef;
 
 namespace
 {

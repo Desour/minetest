@@ -20,13 +20,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include <map>
+#include <string>
 #include "util/basic_macros.h"
 #include "irrlichttypes.h"
-#include <IGUIFont.h>
-#include <IGUISkin.h>
-#include <IGUIEnvironment.h>
-#include "settings.h"
 #include "threading/mutex_auto_lock.h"
+#include "util/string.h"
+
+namespace irr::gui {
+class IGUIEnvironment;
+class IGUIFont;
+}  // namespace irr::gui
 
 #define FONT_SIZE_UNSPECIFIED 0xFFFFFFFF
 

@@ -19,7 +19,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #pragma once
-#include "stereo.h"
+
+#include "client/render/pipeline.h"
+#include "irr_v2d.h"
+
+class Client;
 
 class DrawImageStep : public RenderStep
 {

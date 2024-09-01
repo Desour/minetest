@@ -18,12 +18,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "texturepaths.h"
-
+#include <vector>
 #include "util/container.h"
 #include "settings.h"
 #include "filesys.h"
 #include "porting.h"
-#include <vector>
+#include "util/string.h"
 
 // A cache from texture name to texture path
 static MutexedMap<std::string, std::string> g_texturename_to_path_cache;

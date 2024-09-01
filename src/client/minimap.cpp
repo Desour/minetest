@@ -18,14 +18,38 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "minimap.h"
+#include <libintl.h>
 #include <cmath>
+#include <utility>
 #include "client.h"
-#include "clientmap.h"
 #include "settings.h"
 #include "shader.h"
 #include "mapblock.h"
 #include "client/renderingengine.h"
-#include "gettext.h"
+#include "EHardwareBufferFlags.h"
+#include "EMaterialTypes.h"
+#include "EVideoTypes.h"
+#include "ISceneNode.h"
+#include "ITexture.h"
+#include "IVideoDriver.h"
+#include "S3DVertex.h"
+#include "SColor.h"
+#include "SMaterial.h"
+#include "SMaterialLayer.h"
+#include "client/camera.h"
+#include "client/texturesource.h"
+#include "client/tile.h"
+#include "dimension2d.h"
+#include "hud.h"
+#include "irrMath.h"
+#include "matrix4.h"
+#include "nodedef.h"
+#include "porting.h"
+#include "position2d.h"
+#include "rect.h"
+#include "threading/mutex_auto_lock.h"
+#include "util/numeric.h"
+#include "voxel.h"
 
 ////
 //// MinimapUpdateThread

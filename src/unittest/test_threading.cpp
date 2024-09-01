@@ -17,12 +17,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "test.h"
-
+#include <stddef.h>
 #include <atomic>
 #include <iostream>
+#include <string>
+#include "test.h"
 #include "threading/semaphore.h"
 #include "threading/thread.h"
+#include "irrTypes.h"
+#include "porting.h"
+
+class IGameDef;
 
 
 class TestThreading : public TestBase {

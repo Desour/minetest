@@ -19,27 +19,22 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <assert.h>
+#include <stddef.h>
 #include <cmath>
+#include <ostream>
 #include "mapgen.h"
 #include "voxel.h"
 #include "noise.h"
-#include "gamedef.h"
 #include "mg_biome.h"
-#include "mapblock.h"
 #include "mapnode.h"
 #include "map.h"
 #include "nodedef.h"
 #include "emerge.h"
-#include "voxelalgorithms.h"
-#include "porting.h"
 #include "profiler.h"
 #include "settings.h"
-#include "treegen.h"
-#include "serialization.h"
-#include "util/serialize.h"
 #include "util/numeric.h"
 #include "util/directiontables.h"
-#include "filesys.h"
 #include "log.h"
 #include "mapgen_carpathian.h"
 #include "mapgen_flat.h"
@@ -51,6 +46,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "mapgen_singlenode.h"
 #include "cavegen.h"
 #include "dungeongen.h"
+#include "light.h"
+#include "util/container.h"
 
 FlagDesc flagdesc_mapgen[] = {
 	{"caves",       MG_CAVES},

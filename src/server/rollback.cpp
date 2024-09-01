@@ -18,19 +18,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "rollback.h"
+#include <stdlib.h>
 #include <fstream>
 #include <list>
-#include <sstream>
 #include "log.h"
-#include "mapnode.h"
-#include "gamedef.h"
-#include "nodedef.h"
-#include "util/serialize.h"
 #include "util/string.h"
 #include "util/numeric.h"
-#include "inventorymanager.h" // deserializing InventoryLocations
 #include "sqlite3.h"
 #include "filesys.h"
+#include "exceptions.h"
+#include "inventory.h"
 
 #define POINTS_PER_NODE (16.0)
 

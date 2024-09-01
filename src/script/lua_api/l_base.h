@@ -20,14 +20,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include "common/c_types.h"
-#include "common/c_internal.h"
 #include "common/helper.h"
-#include "gamedef.h"
-#include <unordered_map>
+
+class IGameDef;
 
 extern "C" {
 #include <lua.h>
 #include <lauxlib.h>
+#include <string>
 }
 
 #ifndef SERVER

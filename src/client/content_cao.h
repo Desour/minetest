@@ -19,19 +19,33 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include <map>
+#include <stddef.h>
+#include <cassert>
+#include <memory>
+#include <string>
+#include <unordered_set>
 #include "irrlichttypes_extrabloated.h"
 #include "clientobject.h"
 #include "object_properties.h"
 #include "itemgroup.h"
 #include "constants.h"
-#include <cassert>
-#include <memory>
+#include "EMaterialTypes.h"
+#include "SColor.h"
+#include "activeobject.h"
+#include "matrix4.h"
 
-class Camera;
 class Client;
 struct Nametag;
 struct MinimapMarker;
+class ClientEnvironment;
+class ITextureSource;
+class WieldMeshSceneNode;
+namespace irr::scene {
+class IAnimatedMeshSceneNode;
+class IBillboardSceneNode;
+class ISceneNode;
+}  // namespace irr::scene
+struct ItemStack;
 
 /*
 	SmoothTranslator

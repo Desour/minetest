@@ -24,10 +24,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "al_helpers.h"
 #include <vorbis/vorbisfile.h>
+#include <al.h>
+#include <ogg/config_types.h>
+#include <stddef.h>
 #include <optional>
 #include <string>
+#include "al_helpers.h"
+#include "irrTypes.h"
+#include "util/basic_macros.h"
 
 namespace sound {
 

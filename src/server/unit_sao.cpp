@@ -19,9 +19,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "unit_sao.h"
+#include <assert.h>
+#include <functional>
+#include <queue>
+#include <sstream>
+#include <utility>
 #include "scripting_server.h"
 #include "serverenvironment.h"
 #include "util/serialize.h"
+#include "log.h"
+#include "quaternion.h"
+#include "server/serveractiveobject.h"
 
 UnitSAO::UnitSAO(ServerEnvironment *env, v3f pos) : ServerActiveObject(env, pos)
 {

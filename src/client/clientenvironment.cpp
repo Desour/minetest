@@ -17,6 +17,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <assert.h>
+#include <stddef.h>
+#include <cmath>
+#include <functional>
+#include <ostream>
+#include <unordered_set>
+#include <utility>
 #include "util/serialize.h"
 #include "util/pointedthing.h"
 #include "client.h"
@@ -31,13 +38,29 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "nodedef.h"
 #include "profiler.h"
 #include "raycast.h"
-#include "voxelalgorithms.h"
 #include "settings.h"
-#include "shader.h"
 #include "content_cao.h"
 #include "porting.h"
-#include <algorithm>
-#include "client/renderingengine.h"
+#include "ISceneNode.h"
+#include "SColor.h"
+#include "activeobject.h"
+#include "client/activeobjectmgr.h"
+#include "client/clientobject.h"
+#include "constants.h"
+#include "debug.h"
+#include "exceptions.h"
+#include "irrlichttypes_bloated.h"
+#include "itemgroup.h"
+#include "line3d.h"
+#include "log.h"
+#include "mapnode.h"
+#include "object_properties.h"
+#include "player.h"
+#include "util/basic_macros.h"
+#include "util/pointabilities.h"
+
+class ITextureSource;
+class Map;
 
 /*
 	ClientEnvironment

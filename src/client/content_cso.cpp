@@ -19,11 +19,27 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "content_cso.h"
 #include <IBillboardSceneNode.h>
+#include <stddef.h>
+#include <ostream>
+#include <string>
 #include "client/texturesource.h"
 #include "clientenvironment.h"
 #include "client.h"
 #include "map.h"
 #include "nodedef.h"
+#include "EMaterialTypes.h"
+#include "SColor.h"
+#include "SMaterialLayer.h"
+#include "client/clientsimpleobject.h"
+#include "constants.h"
+#include "light.h"
+#include "log.h"
+#include "mapnode.h"
+#include "util/numeric.h"
+
+namespace irr::video {
+class ITexture;
+}  // namespace irr::video
 
 class SmokePuffCSO: public ClientSimpleObject
 {

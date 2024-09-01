@@ -19,9 +19,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "core.h"
-#include "plain.h"
 #include "client/shadows/dynamicshadowsrender.h"
-#include "settings.h"
+#include "IVideoDriver.h"
+#include "client/render/pipeline.h"
 
 RenderingCore::RenderingCore(IrrlichtDevice *_device, Client *_client, Hud *_hud,
 		ShadowRenderer *_shadow_renderer, RenderPipeline *_pipeline, v2f _virtual_size_scale)

@@ -19,7 +19,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <string_view>
+#include <vector>
 #include "config.h"
+#include "irr_v3d.h"
+
+class PlayerSAO;
+class RemotePlayer;
 
 #if USE_LEVELDB
 

@@ -18,19 +18,28 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "cpp_api/s_security.h"
+#include <assert.h>
+#include <lauxlib.h>
+#include <string.h>
 #include "lua_api/l_base.h"
 #include "filesys.h"
-#include "porting.h"
-#include "server.h"
+#include "cmake_config.h"
+#include "common/c_internal.h"
+#include "content/mods.h"
+#include "content/subgames.h"
+#include "debug.h"
+#include "gamedef.h"
+#include "util/basic_macros.h"
+#include "util/string.h"
 #ifndef SERVER
 #include "client/client.h"
 #endif
-#include "settings.h"
-
 #include <cerrno>
 #include <string>
 #include <algorithm>
-#include <iostream>
+#include <cstdio>
+#include <vector>
+#include "settings.h"
 
 
 #define SECURE_API(lib, name) \

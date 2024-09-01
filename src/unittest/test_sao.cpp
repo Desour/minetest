@@ -17,11 +17,36 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <stddef.h>
+#include <algorithm>
+#include <fstream>
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
 #include "test.h"
-
 #include "mock_server.h"
 #include "server/luaentity_sao.h"
 #include "emerge.h"
+#include "constants.h"
+#include "cpp_api/s_base.h"
+#include "exceptions.h"
+#include "filesys.h"
+#include "irr_v3d.h"
+#include "log.h"
+#include "map.h"
+#include "mapblock.h"
+#include "object_properties.h"
+#include "scripting_server.h"
+#include "server/serveractiveobject.h"
+#include "serverenvironment.h"
+#include "servermap.h"
+#include "settings.h"
+#include "staticobject.h"
+#include "util/metricsbackend.h"
+#include "util/numeric.h"
+
+class IGameDef;
 
 /*
  * Tests how SAOs behave in the server environment.

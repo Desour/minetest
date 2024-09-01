@@ -19,9 +19,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <stddef.h>
 #include <unordered_set>
 #include <map>
+#include <iosfwd>
+#include <string>
+#include <vector>
 #include "metadata.h"
+#include "irr_v3d.h"
 
 /*
 	NodeMetadata stores arbitary amounts of data for special blocks.

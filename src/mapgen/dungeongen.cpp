@@ -19,15 +19,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "dungeongen.h"
-#include <cmath>
+#include <assert.h>
+#include <stdlib.h>
+#include <string>
 #include "mapgen.h"
 #include "voxel.h"
 #include "noise.h"
-#include "mapblock.h"
 #include "mapnode.h"
 #include "map.h"
 #include "nodedef.h"
-#include "settings.h"
+#include "constants.h"
 
 //#define DGEN_USE_TORCHES
 

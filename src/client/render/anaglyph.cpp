@@ -19,8 +19,18 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "anaglyph.h"
-#include "client/camera.h"
 #include <IrrlichtDevice.h>
+#include "EMaterialProps.h"
+#include "EVideoTypes.h"
+#include "IVideoDriver.h"
+#include "SMaterial.h"
+#include "SOverrideMaterial.h"
+#include "client/render/pipeline.h"
+#include "client/render/plain.h"
+#include "client/render/stereo.h"
+#include "irrlichttypes_extrabloated.h"
+
+class Client;
 
 
 /// SetColorMaskStep step

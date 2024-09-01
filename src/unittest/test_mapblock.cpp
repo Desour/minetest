@@ -1,15 +1,23 @@
 // Minetest
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-#include "test.h"
-
+#include <stddef.h>
 #include <sstream>
+#include <string>
+#include <string_view>
+#include <utility>
+#include "test.h"
 #include "gamedef.h"
 #include "nodedef.h"
 #include "mapblock.h"
 #include "serialization.h"
 #include "noise.h"
 #include "inventory.h"
+#include "constants.h"
+#include "irr_v3d.h"
+#include "mapnode.h"
+#include "nodemetadata.h"
+#include "util/serialize.h"
 
 class TestMapBlock : public TestBase
 {

@@ -28,13 +28,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include "mapgen.h"
+#include "irr_v2d.h"
+#include "noise.h"
+#include "util/string.h"
+
+class EmergeParams;
+class Settings;
+struct BlockMakeData;
 
 #define MGVALLEYS_ALT_CHILL        0x01
 #define MGVALLEYS_HUMID_RIVERS     0x02
 #define MGVALLEYS_VARY_RIVER_DEPTH 0x04
 #define MGVALLEYS_ALT_DRY          0x08
 
-class BiomeManager;
 class BiomeGenOriginal;
 
 extern FlagDesc flagdesc_mapgen_valleys[];

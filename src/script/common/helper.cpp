@@ -19,13 +19,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 extern "C" {
 #include <lauxlib.h>
+#include <stddef.h>
 }
 
-#include "helper.h"
-#include <cmath>
 #include <irr_v2d.h>
 #include <irr_v3d.h>
+#include <cmath>
 #include <string_view>
+#include <string>
+#include "helper.h"
 #include "c_converter.h"
 #include "c_types.h"
 

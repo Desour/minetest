@@ -17,10 +17,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "catch.h"
-
+#include <exception>
+#include <memory>
+#include <sstream>
 #include "test.h"
-
 #include "nodedef.h"
 #include "itemdef.h"
 #include "dummygamedef.h"
@@ -28,10 +28,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "util/numeric.h"
 #include "porting.h"
 #include "debug.h"
-
-#include <iostream>
-
-#include "catch.h"
+#include "catch_amalgamated.hpp"
+#include "constants.h"
+#include "light.h"
+#include "log.h"
 
 content_t t_CONTENT_STONE;
 content_t t_CONTENT_GRASS;

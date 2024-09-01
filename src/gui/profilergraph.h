@@ -22,8 +22,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <SColor.h>
 #include <deque>
 #include <utility>
-#include <IGUIFont.h>
+#include <map>
 #include "profiler.h"
+#include "irrTypes.h"
+
+namespace irr::gui {
+class IGUIFont;
+}  // namespace irr::gui
 
 namespace irr::video {
 	class IVideoDriver;

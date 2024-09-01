@@ -17,12 +17,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "test.h"
-
 #include <sstream>
-
+#include <string>
+#include "test.h"
 #include "gamedef.h"
 #include "inventory.h"
+#include "irrTypes.h"
+
+class IItemDefManager;
 
 class TestInventory : public TestBase {
 public:

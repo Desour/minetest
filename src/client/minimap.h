@@ -19,17 +19,34 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "../hud.h"
-#include "irrlichttypes_extrabloated.h"
-#include "util/thread.h"
-#include "voxel.h"
+#include <stddef.h>
 #include <map>
 #include <string>
 #include <vector>
+#include <deque>
+#include <list>
+#include <mutex>
+#include "../hud.h"
+#include "irrlichttypes_extrabloated.h"
+#include "util/thread.h"
+#include "constants.h"
+#include "mapnode.h"
 
 class Client;
 class ITextureSource;
 class IShaderSource;
+class NodeDefManager;
+class VoxelManipulator;
+namespace irr::core {
+template <class T> class rect;
+}  // namespace irr::core
+namespace irr::scene {
+class ISceneNode;
+}  // namespace irr::scene
+namespace irr::video {
+class ITexture;
+class IVideoDriver;
+}  // namespace irr::video
 
 #define MINIMAP_MAX_SX 512
 #define MINIMAP_MAX_SY 512

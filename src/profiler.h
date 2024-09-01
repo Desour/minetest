@@ -19,18 +19,18 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irrlichttypes.h"
 #include <cassert>
 #include <string>
 #include <map>
 #include <ostream>
-
+#include <utility>
+#include "irrlichttypes.h"
 #include "threading/mutex_auto_lock.h"
 #include "util/timetaker.h"
-#include "util/numeric.h"      // paging()
 
 // Global profiler
 class Profiler;
+
 extern Profiler *g_profiler;
 
 /*

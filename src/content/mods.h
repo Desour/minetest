@@ -19,18 +19,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irrlichttypes.h"
-#include <list>
-#include <set>
 #include <vector>
 #include <string>
 #include <map>
-#include "json-forwards.h"
 #include <unordered_set>
-#include "util/basic_macros.h"
-#include "config.h"
+#include <string_view>
 #include "metadata.h"
-#include "subgames.h"
+#include "util/string.h"
 
 class ModStorageDatabase;
 

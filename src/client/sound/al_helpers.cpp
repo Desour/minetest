@@ -23,6 +23,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "al_helpers.h"
+#include <al.h>
 
 namespace sound {
 

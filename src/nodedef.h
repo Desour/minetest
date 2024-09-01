@@ -19,32 +19,38 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irrlichttypes_bloated.h"
+#include <assert.h>
+#include <stddef.h>
 #include <string>
 #include <iostream>
-#include <map>
+#include <memory>
+#include <unordered_map>
+#include <vector>
+#include "irrlichttypes_bloated.h"
 #include "mapnode.h"
 #include "nameidmapping.h"
+#include "SColor.h"
+#include "cmake_config.h"
 #ifndef SERVER
 #include "client/tile.h"
-#include <IMeshManipulator.h>
+
 class Client;
 #endif
 #include "itemgroup.h"
 #include "sound.h" // SoundSpec
-#include "constants.h" // BS
-#include "texture_override.h" // TextureOverride
 #include "tileanimation.h"
-#include "util/pointabilities.h"
 
 class IItemDefManager;
 class ITextureSource;
 class IShaderSource;
 class IGameDef;
 class NodeResolver;
-#if BUILD_UNITTESTS
-class TestSchematic;
-#endif
+enum class PointabilityType : u8;
+namespace irr::scene {
+class IMesh;
+class IMeshManipulator;
+}  // namespace irr::scene
+struct TextureOverride;
 
 enum ContentParamType : u8
 {
@@ -155,9 +161,6 @@ struct NodeBox
 	void serialize(std::ostream &os, u16 protocol_version) const;
 	void deSerialize(std::istream &is);
 };
-
-struct MapNode;
-class NodeMetadata;
 
 enum LeavesStyle {
 	LEAVES_FANCY,

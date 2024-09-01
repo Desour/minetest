@@ -20,9 +20,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "l_mainmenu_sound.h"
+#include <memory>
 #include "l_internal.h"
 #include "common/c_content.h"
 #include "gui/guiEngine.h"
+#include "client/sound.h"
+#include "sound.h"
 
 /* ModApiMainMenuSound */
 

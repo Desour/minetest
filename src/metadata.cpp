@@ -18,6 +18,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "metadata.h"
+#include <iostream>
+#include <unordered_map>
+#include <utility>
 #include "log.h"
 
 /*

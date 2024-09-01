@@ -19,9 +19,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <lua.h>
+#include <string>
 #include "cpp_api/s_base.h"
 #include "cpp_api/s_mainmenu.h"
 #include "cpp_api/s_async.h"
+#include "irrTypes.h"
+
+class GUIEngine;
 
 /*****************************************************************************/
 /* Scripting <-> Main Menu Interface                                         */

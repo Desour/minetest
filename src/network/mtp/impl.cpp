@@ -17,12 +17,21 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include <iomanip>
-#include <cerrno>
+#include <assert.h>
+#include <stdio.h>
+#include <string.h>
 #include <algorithm>
 #include <cmath>
+#include <deque>
+#include <list>
+#include <map>
+#include <memory>
+#include <queue>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
 #include "network/mtp/internal.h"
-#include "serialization.h"
 #include "log.h"
 #include "porting.h"
 #include "network/mtp/threads.h"
@@ -31,8 +40,21 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "util/serialize.h"
 #include "util/numeric.h"
 #include "util/string.h"
-#include "settings.h"
 #include "profiler.h"
+#include "constants.h"
+#include "debug.h"
+#include "exceptions.h"
+#include "irrTypes.h"
+#include "network/address.h"
+#include "network/connection.h"
+#include "network/mtp/impl.h"
+#include "network/networkexceptions.h"
+#include "network/networkprotocol.h"
+#include "network/socket.h"
+#include "threading/mutex_auto_lock.h"
+#include "util/basic_macros.h"
+#include "util/container.h"
+#include "util/pointer.h"
 
 namespace con
 {

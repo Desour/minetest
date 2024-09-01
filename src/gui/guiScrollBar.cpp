@@ -11,10 +11,23 @@ the arrow buttons where there is insufficient space.
 */
 
 #include "guiScrollBar.h"
+#include <IGUISkin.h>
+#include <algorithm>
+#include <cmath>
+#include <string>
 #include "guiButton.h"
 #include "porting.h"
 #include "settings.h"
-#include <IGUISkin.h>
+#include "EGUIAlignment.h"
+#include "EGUIElementTypes.h"
+#include "IEventReceiver.h"
+#include "IGUIButton.h"
+#include "Keycodes.h"
+#include "irrMath.h"
+
+namespace irr::gui {
+class IGUISpriteBank;
+}  // namespace irr::gui
 
 GUIScrollBar::GUIScrollBar(IGUIEnvironment *environment, IGUIElement *parent, s32 id,
 		core::rect<s32> rectangle, bool horizontal, bool auto_scale,

@@ -24,6 +24,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <alc.h>
+#include <memory>
+#include <optional>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 #include "playing_sound.h"
 #include "al_extensions.h"
 #include "sound_constants.h"
@@ -31,6 +39,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "../sound.h"
 #include "threading/thread.h"
 #include "util/container.h" // MutexedQueue
+#include "client/sound/sound_data.h"
+#include "irr_v3d.h"
+#include "util/basic_macros.h"
+
+struct SoundSpec;
 
 namespace sound {
 

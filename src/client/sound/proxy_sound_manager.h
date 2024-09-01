@@ -19,9 +19,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <memory>
+#include <string>
+#include <unordered_set>
+#include <utility>
 #include "sound_manager.h"
+#include "client/sound.h"
+#include "client/sound/sound_manager_messages.h"
+#include "irr_v3d.h"
+#include "util/container.h"
+
+struct SoundSpec;
 
 namespace sound {
+class SoundManagerSingleton;
 
 /*
  * The public ISoundManager interface

@@ -18,18 +18,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "scripting_mainmenu.h"
-#include "content/mods.h"
+#include <ostream>
+#include <utility>
 #include "cpp_api/s_internal.h"
-#include "lua_api/l_base.h"
 #include "lua_api/l_http.h"
 #include "lua_api/l_mainmenu.h"
 #include "lua_api/l_mainmenu_sound.h"
 #include "lua_api/l_util.h"
 #include "lua_api/l_settings.h"
 #include "log.h"
+#include "common/c_internal.h"
+
+class GUIEngine;
 
 extern "C" {
-#include "lualib.h"
 }
 #define MAINMENU_NUM_ASYNC_THREADS 4
 

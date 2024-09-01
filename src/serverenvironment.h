@@ -21,28 +21,44 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <set>
 #include <utility>
-
+#include <functional>
+#include <map>
+#include <memory>
+#include <optional>
+#include <queue>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 #include "activeobject.h"
 #include "environment.h"
-#include "servermap.h"
 #include "settings.h"
 #include "server/activeobjectmgr.h"
 #include "util/numeric.h"
 #include "util/metricsbackend.h"
+#include "irrlichttypes_bloated.h"
+#include "map.h"
+#include "mapnode.h"
+#include "remoteplayer.h"
 
 class IGameDef;
 struct GameParams;
-class RemotePlayer;
 class PlayerDatabase;
 class AuthDatabase;
 class PlayerSAO;
 class ServerEnvironment;
-class ActiveBlockModifier;
 struct StaticObject;
 class ServerActiveObject;
 class Server;
 class ServerScripting;
-enum AccessDeniedCode : u8;
+class MapBlock;
+class ServerMap;
+namespace irr::core {
+template <class T> class line3d;
+}  // namespace irr::core
+struct Pointabilities;
+struct PointedThing;
+
 typedef u16 session_t;
 
 /*

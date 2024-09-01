@@ -23,14 +23,16 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <limits.h>
 #include <cmath>
-#include "noise.h"
 #include <iostream>
 #include <cstring> // memset
-#include "debug.h"
+#include <new>
+#include "noise.h"
 #include "util/numeric.h"
 #include "util/string.h"
 #include "exceptions.h"
+#include "log.h"
 
 #define NOISE_MAGIC_X    1619
 #define NOISE_MAGIC_Y    31337

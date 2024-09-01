@@ -19,10 +19,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "interlaced.h"
+#include <string.h>
+#include <initializer_list>
+#include <string>
 #include "secondstage.h"
 #include "client/client.h"
 #include "client/shader.h"
-#include "client/camera.h"
+#include "EMaterialTypes.h"
+#include "ITexture.h"
+#include "SColor.h"
+#include "client/render/plain.h"
+#include "client/render/stereo.h"
+#include "client/tile.h"
+#include "dimension2d.h"
+#include "irr_v2d.h"
 
 InitInterlacedMaskStep::InitInterlacedMaskStep(TextureBuffer *_buffer, u8 _index)	:
 	buffer(_buffer), index(_index)

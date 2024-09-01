@@ -23,20 +23,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <string>
 #include <thread>
 #include <mutex>
-#include <unordered_map>
 #include "common/helper.h"
 #include "util/basic_macros.h"
 
 extern "C" {
 #include <lua.h>
-#include <lualib.h>
 }
 
 #include "irrlichttypes.h"
-#include "common/c_types.h"
 #include "common/c_internal.h"
 #include "debug.h"
-#include "config.h"
 
 #define SCRIPTAPI_LOCK_DEBUG
 

@@ -18,34 +18,35 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "socket.h"
-
-#include <cstdio>
-#include <iostream>
-#include <cstdlib>
+#include <assert.h>
 #include <cstring>
 #include <iomanip>
-#include "util/string.h"
+#include <ostream>
+#include <string>
 #include "util/numeric.h"
 #include "constants.h"
-#include "debug.h"
 #include "log.h"
+#include "irrlichttypes.h"
+#include "network/address.h"
+#include "network/networkexceptions.h"
+#include "util/basic_macros.h"
 
 #ifdef _WIN32
 #include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
+
 #define LAST_SOCKET_ERR() WSAGetLastError()
 #define SOCKET_ERR_STR(e) itos(e)
 typedef int socklen_t;
 #else
-#include <cerrno>
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <fcntl.h>
 #include <poll.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <cerrno>
+
 #define LAST_SOCKET_ERR() (errno)
 #define SOCKET_ERR_STR(e) strerror(e)
 #endif

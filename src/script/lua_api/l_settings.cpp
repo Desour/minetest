@@ -18,13 +18,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "lua_api/l_settings.h"
+#include <stddef.h>
+#include <ostream>
+#include <vector>
 #include "lua_api/l_internal.h"
 #include "cpp_api/s_security.h"
-#include "threading/mutex_auto_lock.h"
 #include "util/string.h" // FlagDesc
 #include "settings.h"
 #include "noise.h"
 #include "log.h"
+#include "common/c_content.h"
+#include "common/c_internal.h"
+#include "common/c_types.h"
+#include "irrTypes.h"
 
 
 /* This protects the following from being set:

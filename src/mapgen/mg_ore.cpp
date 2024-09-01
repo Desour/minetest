@@ -19,13 +19,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "mg_ore.h"
+#include <cmath>
+#include <string>
 #include "mapgen.h"
 #include "noise.h"
 #include "map.h"
-#include "log.h"
 #include "util/numeric.h"
-#include <cmath>
-#include <algorithm>
+#include "util/basic_macros.h"
+#include "voxel.h"
+
+class IGameDef;
 
 
 FlagDesc flagdesc_ore[] = {

@@ -18,10 +18,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "al_extensions.h"
-
+#include <al.h>
+#include <unordered_set>
+#include <ostream>
+#include <string>
+#include <vector>
 #include "settings.h"
 #include "util/string.h"
-#include <unordered_set>
+#include "log.h"
 
 namespace sound {
 

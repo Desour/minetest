@@ -18,19 +18,26 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "craftdef.h"
-
-#include "irrlichttypes.h"
-#include "log.h"
+#include <assert.h>
+#include <math.h>
 #include <sstream>
 #include <unordered_set>
 #include <algorithm>
+#include <iostream>
+#include <iterator>
+#include <memory>
+#include <queue>
+#include <unordered_map>
+#include "irrlichttypes.h"
+#include "log.h"
 #include "gamedef.h"
 #include "inventory.h"
-#include "util/serialize.h"
 #include "util/string.h"
 #include "util/numeric.h"
 #include "util/strfnd.h"
-#include "exceptions.h"
+#include "itemdef.h"
+#include "itemgroup.h"
+#include "util/basic_macros.h"
 
 inline bool isGroupRecipeStr(const std::string &rec_name)
 {

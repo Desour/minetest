@@ -18,12 +18,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "common/c_internal.h"
+#include <lauxlib.h>
+#include <algorithm> // std::find
+#include <exception>
+#include <ostream>
+#include <vector>
 #include "util/numeric.h"
 #include "debug.h"
 #include "log.h"
 #include "porting.h"
 #include "settings.h"
-#include <algorithm> // std::find
+#include "common/c_types.h"
+#include "irrTypes.h"
+#include "util/string.h"
 
 std::string script_get_backtrace(lua_State *L)
 {

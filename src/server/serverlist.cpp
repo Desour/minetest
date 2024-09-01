@@ -17,17 +17,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <json/value.h>
 #include <iostream>
 #include "version.h"
 #include "settings.h"
 #include "serverlist.h"
-#include "filesys.h"
 #include "log.h"
-#include "network/networkprotocol.h"
-#include <json/json.h>
 #include "convert_json.h"
 #include "httpfetch.h"
 #include "server.h"
+#include "content/mods.h"
 
 namespace ServerList
 {

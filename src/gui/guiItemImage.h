@@ -19,10 +19,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <string>
 #include "irrlichttypes_extrabloated.h"
-#include "util/string.h"
+#include "irrString.h"
 
 class Client;
+namespace irr::core {
+template <class T> class rect;
+}  // namespace irr::core
+namespace irr::gui {
+class IGUIFont;
+}  // namespace irr::gui
 
 class GUIItemImage : public gui::IGUIElement
 {

@@ -18,16 +18,25 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "cpp_api/s_base.h"
+#include <assert.h>
+#include <lauxlib.h>
+#include <locale.h>
+#include <string.h>
 #include "cpp_api/s_internal.h"
 #include "cpp_api/s_security.h"
 #include "lua_api/l_object.h"
 #include "common/c_converter.h"
 #include "server/player_sao.h"
 #include "filesys.h"
-#include "content/mods.h"
 #include "porting.h"
-#include "util/string.h"
 #include "server.h"
+#include "common/c_types.h"
+#include "config.h"
+#include "exceptions.h"
+#include "gamedef.h"
+#include "log.h"
+#include "lua_api/l_base.h"
+#include "server/serveractiveobject.h"
 #ifndef SERVER
 #include "client/client.h"
 #endif
@@ -43,9 +52,10 @@ extern "C" {
 }
 
 #include <cstdio>
-#include <cstdarg>
-#include "script/common/c_content.h"
 #include <sstream>
+#include <utility>
+#include <vector>
+#include "script/common/c_content.h"
 
 
 class ModNameStorer

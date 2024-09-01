@@ -18,12 +18,24 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "clientmap.h"
-#include "client.h"
-#include "client/mesh.h"
-#include "mapblock_mesh.h"
 #include <IMaterialRenderer.h>
 #include <IVideoDriver.h>
 #include <matrix4.h>
+#include <assert.h>
+#include <queue>
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <cstdlib>
+#include <memory>
+#include <optional>
+#include <ostream>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include "client.h"
+#include "client/mesh.h"
+#include "mapblock_mesh.h"
 #include "mapsector.h"
 #include "mapblock.h"
 #include "nodedef.h"
@@ -32,8 +44,23 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "camera.h"               // CameraModes
 #include "util/basic_macros.h"
 #include "client/renderingengine.h"
+#include "EVideoTypes.h"
+#include "SMaterial.h"
+#include "SMaterialLayer.h"
+#include "client/clientenvironment.h"
+#include "client/shadows/dynamicshadowsrender.h"
+#include "client/tile.h"
+#include "irrMath.h"
+#include "light.h"
+#include "log.h"
+#include "mapnode.h"
+#include "rect.h"
+#include "util/numeric.h"
+#include "util/timetaker.h"
 
-#include <queue>
+namespace irr::video {
+class ITexture;
+}  // namespace irr::video
 
 namespace {
 	// A helper struct

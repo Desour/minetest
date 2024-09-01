@@ -19,14 +19,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irrlichttypes.h"
-#include "irr_v3d.h"
 #include <iostream>
 #include <cassert>
+#include <list>
+#include <algorithm>
+#include <string>
+#include "irrlichttypes.h"
+#include "irr_v3d.h"
 #include "exceptions.h"
 #include "mapnode.h"
-#include <set>
-#include <list>
 #include "irrlicht_changes/printing.h"
 
 class NodeDefManager;

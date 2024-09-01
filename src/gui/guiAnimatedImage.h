@@ -1,10 +1,12 @@
 #pragma once
 
-#include "irrlichttypes_extrabloated.h"
 #include <algorithm>
-#include <string>
+#include "irrlichttypes_extrabloated.h"
+#include "rect.h"
 
-class ISimpleTextureSource;
+namespace irr::video {
+class ITexture;
+}  // namespace irr::video
 
 class GUIAnimatedImage : public gui::IGUIElement {
 public:

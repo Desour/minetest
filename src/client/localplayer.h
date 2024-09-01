@@ -19,20 +19,22 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "player.h"
-#include "environment.h"
-#include "constants.h"
-#include "settings.h"
-#include "lighting.h"
+#include <assert.h>
 #include <string>
+#include <vector>
+#include "player.h"
+#include "constants.h"
+#include "lighting.h"
+#include "SColor.h"
+#include "irrlichttypes_bloated.h"
 
 class Client;
 class Environment;
 class GenericCAO;
 class ClientActiveObject;
-class ClientEnvironment;
-class IGameDef;
 struct collisionMoveResult;
+class Map;
+struct CollisionInfo;
 
 enum class LocalPlayerAnimation
 {

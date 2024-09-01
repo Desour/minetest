@@ -20,16 +20,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include <map>
-#include "mg_decoration.h"
+#include <stddef.h>
+#include <iosfwd>
+#include <string>
+#include <utility>
+#include <vector>
 #include "util/string.h"
+#include "irr_v3d.h"
+#include "mapnode.h"
+#include "nodedef.h"
+#include "objdef.h"
 
 class Map;
 class ServerMap;
-class Mapgen;
 class MMVManip;
-class PseudoRandom;
-class NodeResolver;
 class Server;
 
 /*

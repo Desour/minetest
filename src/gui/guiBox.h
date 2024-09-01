@@ -19,9 +19,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include <vector>
 #include <array>
 #include "irrlichttypes_extrabloated.h"
+
+namespace irr::core {
+template <class T> class rect;
+}  // namespace irr::core
+namespace irr::video {
+class SColor;
+}  // namespace irr::video
 
 class GUIBox : public gui::IGUIElement
 {

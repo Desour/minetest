@@ -17,10 +17,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <string>
+#include <vector>
 #include "config.h"
-#include "content/mods.h"
-#include "json-forwards.h"
-#include <iostream>
+#include "irrTypes.h"
+
+struct ModSpec;
 
 #pragma once
 

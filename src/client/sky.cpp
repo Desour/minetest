@@ -18,13 +18,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include <cmath>
-#include "sky.h"
 #include <ITexture.h>
 #include <IVideoDriver.h>
-#include <ISceneManager.h>
 #include <ICameraSceneNode.h>
 #include <S3DVertex.h>
+#include <bits/std_abs.h>
+#include <cmath>
+#include "sky.h"
 #include "client/tile.h"
 #include "noise.h" // easeCurve
 #include "profiler.h"
@@ -32,6 +32,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "client/renderingengine.h"
 #include "settings.h"
 #include "camera.h" // CameraModes
+#include "ECullingTypes.h"
+#include "EHardwareBufferFlags.h"
+#include "EMaterialTypes.h"
+#include "EVideoTypes.h"
+#include "ISceneNode.h"
+#include "SMaterialLayer.h"
+#include "client/shader.h"
+#include "client/texturesource.h"
+#include "irrMath.h"
+#include "log.h"
+#include "matrix4.h"
+#include "util/basic_macros.h"
+#include "util/timetaker.h"
 
 using namespace irr::core;
 

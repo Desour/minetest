@@ -19,16 +19,25 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <stddef.h>
 #include <string>
 #include <vector>
-#include <IrrlichtDevice.h>
 #include "irrlichttypes_extrabloated.h"
-#include "client/shadows/dynamicshadows.h"
+#include "SColor.h"
 
 class ShadowDepthShaderCB;
 class shadowScreenQuad;
 class shadowScreenQuadCB;
 class IWritableShaderSource;
+class Client;
+class DirectionalLight;
+namespace irr::scene {
+class ISceneNode;
+}  // namespace irr::scene
+namespace irr::video {
+class ITexture;
+class IVideoDriver;
+}  // namespace irr::video
 
 enum E_SHADOW_MODE : u8
 {

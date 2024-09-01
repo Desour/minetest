@@ -18,15 +18,25 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "database-files.h"
+#include <json/reader.h>
+#include <stdlib.h>
+#include <fstream>
+#include <sstream>
+#include <utility>
 #include "convert_json.h"
 #include "remoteplayer.h"
 #include "settings.h"
-#include "porting.h"
 #include "filesys.h"
 #include "server/player_sao.h"
 #include "util/string.h"
-#include <json/json.h>
-#include <cassert>
+#include "constants.h"
+#include "database/database.h"
+#include "debug.h"
+#include "exceptions.h"
+#include "inventory.h"
+#include "irrTypes.h"
+#include "log.h"
+#include "metadata.h"
 
 // !!! WARNING !!!
 // This backend is intended to be used on Minetest 0.4.16 only for the transition backend

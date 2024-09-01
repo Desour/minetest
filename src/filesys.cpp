@@ -18,21 +18,24 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "filesys.h"
-#include "util/string.h"
-#include <iostream>
+#include <asm/ioctl.h>
+#include <assert.h>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <cerrno>
 #include <fstream>
 #include <atomic>
+#include <memory>
+#include "util/string.h"
 #include "log.h"
-#include "config.h"
-#include "porting.h"
+#include "IFileList.h"
+#include "IReadFile.h"
+#include "irrTypes.h"
 #ifndef SERVER
-#include "irr_ptr.h"
 #include <IFileArchive.h>
 #include <IFileSystem.h>
+#include "irr_ptr.h"
 #endif
 #ifdef __linux__
 #include <fcntl.h>

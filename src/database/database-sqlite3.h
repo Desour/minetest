@@ -21,11 +21,18 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <cstring>
 #include <string>
+#include <string_view>
+#include <vector>
 #include "database.h"
 #include "exceptions.h"
+#include "irr_v3d.h"
+#include "util/string.h"
 
 extern "C" {
 #include "sqlite3.h"
+
+class PlayerSAO;
+class RemotePlayer;
 }
 
 class Database_SQLite3 : public Database

@@ -21,6 +21,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include "mapgen.h"
+#include "irr_v2d.h"
+#include "noise.h"
+#include "util/string.h"
+
+class EmergeParams;
+class Settings;
+struct BlockMakeData;
 
 ///////////// Mapgen V7 flags
 #define MGV7_MOUNTAINS   0x01
@@ -28,8 +35,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define MGV7_FLOATLANDS  0x04
 #define MGV7_CAVERNS     0x08
 #define MGV7_BIOMEREPEAT 0x10 // Now unused
-
-class BiomeManager;
 
 extern FlagDesc flagdesc_mapgen_v7[];
 

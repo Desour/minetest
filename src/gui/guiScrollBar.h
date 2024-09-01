@@ -12,10 +12,19 @@ the arrow buttons where there is insufficient space.
 
 #pragma once
 
-#include "irrlichttypes_extrabloated.h"
 #include <optional>
+#include "irrlichttypes_extrabloated.h"
+#include "SColor.h"
+#include "position2d.h"
+#include "rect.h"
 
 class ISimpleTextureSource;
+namespace irr {
+struct SEvent;
+}  // namespace irr
+namespace irr::gui {
+class IGUIButton;
+}  // namespace irr::gui
 
 using namespace irr;
 using namespace gui;

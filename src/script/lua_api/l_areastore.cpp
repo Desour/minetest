@@ -19,13 +19,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 
 #include "lua_api/l_areastore.h"
+#include <stddef.h>
+#include <fstream>
+#include <sstream>
+#include <vector>
 #include "lua_api/l_internal.h"
 #include "common/c_converter.h"
 #include "cpp_api/s_security.h"
 #include "irr_v3d.h"
 #include "util/areastore.h"
 #include "filesys.h"
-#include <fstream>
+#include "cmake_config.h"
+#include "exceptions.h"
+#include "util/numeric.h"
 
 static inline void get_data_and_corner_flags(lua_State *L, u8 start_i,
 		bool *corners, bool *data)

@@ -19,6 +19,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <matrix4.h>
+#include <stddef.h>
+#include <cmath>
+#include <algorithm>
 #include "basic_macros.h"
 #include "constants.h"
 #include "irrlichttypes.h"
@@ -26,8 +30,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "irr_v3d.h"
 #include "irr_aabb3d.h"
 #include "SColor.h"
-#include <matrix4.h>
-#include <cmath>
+#include "irrMath.h"
 
 #define rangelim(d, min, max) ((d) < (min) ? (min) : ((d) > (max) ? (max) : (d)))
 #define myfloor(x) ((x) < 0.0 ? (int)(x) - 1 : (int)(x))

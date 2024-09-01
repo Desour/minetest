@@ -23,12 +23,18 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "playing_sound.h"
-
-#include "al_extensions.h"
-#include "debug.h"
-#include "sound_constants.h"
+#include <alext.h>
+#include <bits/std_abs.h>
 #include <cassert>
 #include <cmath>
+#include <algorithm>
+#include <ostream>
+#include "al_extensions.h"
+#include "sound_constants.h"
+#include "client/sound/al_helpers.h"
+#include "client/sound/ogg_file.h"
+#include "client/sound/sound_data.h"
+#include "log.h"
 
 namespace sound {
 

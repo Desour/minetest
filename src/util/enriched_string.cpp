@@ -18,9 +18,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "enriched_string.h"
+#include <algorithm>
 #include "util/string.h"
 #include "debug.h"
-#include "log.h"
+#include "SColor.h"
 
 using namespace irr::video;
 

@@ -18,9 +18,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "translation.h"
+#include <stddef.h>
+#include <unordered_map>
+#include <sstream>
+#include <utility>
+#include <vector>
 #include "log.h"
 #include "util/string.h"
-#include <unordered_map>
 
 
 #ifndef SERVER

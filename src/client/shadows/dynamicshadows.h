@@ -19,10 +19,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irrlichttypes_bloated.h"
 #include <matrix4.h>
-#include "util/basic_macros.h"
+#include "irrlichttypes_bloated.h"
 #include "constants.h"
+#include "SColor.h"
 
 class Camera;
 class Client;

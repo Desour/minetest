@@ -18,6 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include <map>
+#include <string>
 #include "lua_api/l_vmanip.h"
 #include "lua_api/l_mapgen.h"
 #include "lua_api/l_internal.h"
@@ -27,8 +28,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "environment.h"
 #include "map.h"
 #include "mapblock.h"
-#include "server.h"
 #include "voxelalgorithms.h"
+#include "common/c_internal.h"
+#include "common/c_types.h"
+#include "constants.h"
+#include "mapnode.h"
+#include "serverenvironment.h"
+#include "servermap.h"
+#include "util/numeric.h"
+#include "voxel.h"
 
 // garbage collector
 int LuaVoxelManip::gc_object(lua_State *L)

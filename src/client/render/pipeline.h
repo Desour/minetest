@@ -18,17 +18,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 #pragma once
 
-#include "irrlichttypes_extrabloated.h"
-#include <IrrlichtDevice.h> // used in all render/*.cpp
-#include <IVideoDriver.h> // used in all render/*.cpp
-
 #include <vector>
 #include <memory>
 #include <string>
+#include <utility>
+#include "irrlichttypes_extrabloated.h"
+#include "SColor.h"
+#include "dimension2d.h"
+#include "irrArray.h"
 
-class RenderSource;
-class RenderTarget;
-class RenderStep;
 class Client;
 class Hud;
 class ShadowRenderer;
@@ -36,6 +34,8 @@ class ShadowRenderer;
 namespace irr::video
 {
 	class IRenderTarget;
+class ITexture;
+class IVideoDriver;
 }
 
 struct PipelineContext

@@ -19,24 +19,43 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "clientenvironment.h"
-#include "irrlichttypes_extrabloated.h"
 #include <ostream>
 #include <map>
 #include <memory>
 #include <set>
 #include <vector>
 #include <unordered_set>
-#include "clientobject.h"
+#include <queue>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include "clientenvironment.h"
+#include "irrlichttypes_extrabloated.h"
 #include "gamedef.h"
 #include "inventorymanager.h"
-#include "client/hud.h"
-#include "tileanimation.h"
 #include "network/address.h"
 #include "network/peerhandler.h"
 #include "gameparams.h"
-#include "clientdynamicinfo.h"
 #include "util/numeric.h"
+#include "common/c_types.h"
+#include "network/networkprotocol.h"
+#include "util/basic_macros.h"
+#include "util/string.h"
+
+class ICraftDefManager;
+class IItemDefManager;
+class ITextureSource;
+class Inventory;
+class ModChannel;
+class ModStorageDatabase;
+namespace con {
+class IPeer;
+}  // namespace con
+namespace irr::scene {
+class IAnimatedMesh;
+}  // namespace irr::scene
+struct ClientDynamicInfo;
+struct ModSpec;
 
 #ifdef SERVER
 #error Do not include in server builds
@@ -45,9 +64,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define CLIENT_CHAT_MESSAGE_LIMIT_PER_10S 10.0f
 
 struct ClientEvent;
-struct MeshMakeData;
 struct ChatMessage;
-class MapBlockMesh;
 class RenderingEngine;
 class IWritableTextureSource;
 class IWritableShaderSource;
@@ -64,12 +81,12 @@ struct PointedThing;
 struct MapNode;
 class MapDatabase;
 class Minimap;
-struct MinimapMapblock;
 class MeshUpdateManager;
 class ParticleManager;
 class Camera;
 struct PlayerControl;
 class NetworkPacket;
+
 namespace con {
 class IConnection;
 }

@@ -18,6 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "directiontables.h"
+#include "irrlichttypes.h"
 
 const v3s16 g_6dirs[6] =
 {

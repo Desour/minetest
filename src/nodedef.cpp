@@ -18,29 +18,39 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "nodedef.h"
-
+#include <stdlib.h>
 #include "itemdef.h"
+#include "IAnimatedMesh.h"
+#include "ITexture.h"
+#include "client/texturesource.h"
+#include "constants.h"
+#include "dimension2d.h"
+#include "irrlichttypes_extrabloated.h"
+#include "light.h"
+#include "texture_override.h"
+#include "util/basic_macros.h"
+#include "util/pointabilities.h"
 #ifndef SERVER
+#include <IMeshManipulator.h>
 #include "client/mesh.h"
 #include "client/shader.h"
 #include "client/client.h"
-#include "client/renderingengine.h"
 #include "client/tile.h"
-#include <IMeshManipulator.h>
 #endif
+#include <algorithm>
+#include <cmath>
+#include <map>
+#include <set>
+#include <sstream>
+#include <utility>
 #include "log.h"
 #include "settings.h"
 #include "nameidmapping.h"
-#include "util/numeric.h"
 #include "util/serialize.h"
 #include "util/string.h"
 #include "exceptions.h"
 #include "debug.h"
-#include "gamedef.h"
 #include "mapnode.h"
-#include <fstream> // Used in applyTextureOverrides()
-#include <algorithm>
-#include <cmath>
 
 /*
 	NodeBox

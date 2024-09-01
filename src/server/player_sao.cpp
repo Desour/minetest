@@ -19,11 +19,34 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "player_sao.h"
+#include <assert.h>
+#include <math.h>
+#include <algorithm>
+#include <queue>
+#include <sstream>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 #include "nodedef.h"
 #include "remoteplayer.h"
 #include "scripting_server.h"
 #include "server.h"
 #include "serverenvironment.h"
+#include "SColor.h"
+#include "debug.h"
+#include "log.h"
+#include "map.h"
+#include "mapnode.h"
+#include "object_properties.h"
+#include "player.h"
+#include "server/serveractiveobject.h"
+#include "server/unit_sao.h"
+#include "settings.h"
+#include "tool.h"
+#include "util/basic_macros.h"
+#include "util/pointabilities.h"
+#include "util/serialize.h"
 
 PlayerSAO::PlayerSAO(ServerEnvironment *env_, RemotePlayer *player_, session_t peer_id_,
 		bool is_singleplayer):

@@ -23,12 +23,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <set>
 #include <string>
 #include <vector>
-#include <iostream>
-
 #include "irrlichttypes_extrabloated.h"
-#include "guiScrollBar.h"
+#include "irrlicht.h"
 
 class ISimpleTextureSource;
+class GUIScrollBar;
 
 /*
 	A table GUI element for GUIFormSpecMenu.

@@ -19,11 +19,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 
 #include "itemstackmetadata.h"
-#include "util/serialize.h"
-#include "util/strfnd.h"
-
 #include <algorithm>
 #include <optional>
+#include <sstream>
+#include <unordered_map>
+#include <utility>
+#include "util/serialize.h"
+#include "util/strfnd.h"
 
 #define DESERIALIZE_START '\x01'
 #define DESERIALIZE_KV_DELIM '\x02'

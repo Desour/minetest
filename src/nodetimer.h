@@ -19,10 +19,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irr_v3d.h"
 #include <iostream>
 #include <map>
 #include <vector>
+#include <utility>
+#include "irr_v3d.h"
 
 /*
 	NodeTimer provides per-node timed callback functionality.

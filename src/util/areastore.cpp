@@ -18,8 +18,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "util/areastore.h"
+#include <utility>
 #include "util/serialize.h"
 #include "util/container.h"
+#include "exceptions.h"
+#include "util/basic_macros.h"
 
 #if USE_SPATIAL
 	#include <spatialindex/SpatialIndex.h>

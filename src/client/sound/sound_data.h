@@ -24,9 +24,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "ogg_file.h"
+#include <al.h>
 #include <memory>
 #include <tuple>
+#include <string>
+#include <utility>
+#include <vector>
+#include "ogg_file.h"
+#include "client/sound/al_helpers.h"
 
 namespace sound {
 

@@ -18,7 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "threading/semaphore.h"
-
+#include <time.h>
 #include <iostream>
 #include <cstdlib>
 #include <cassert>
@@ -27,11 +27,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #ifdef _WIN32
 	#include <climits>
+
 	#define MAX_SEMAPHORE_COUNT LONG_MAX - 1
 #else
-	#include <cerrno>
 	#include <sys/time.h>
-	#include <pthread.h>
 	#if defined(__MACH__) && defined(__APPLE__)
 		#include <mach/mach.h>
 		#include <mach/task.h>

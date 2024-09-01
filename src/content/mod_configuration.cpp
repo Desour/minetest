@@ -18,14 +18,23 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "mod_configuration.h"
+#include <libintl.h>
+#include <optional>
+#include <algorithm>
+#include <list>
+#include <map>
+#include <set>
+#include <sstream>
+#include <utility>
 #include "log.h"
 #include "settings.h"
-#include "filesys.h"
 #include "gettext.h"
 #include "exceptions.h"
 #include "util/numeric.h"
-#include <optional>
-#include <algorithm>
+#include "content/mods.h"
+#include "content/subgames.h"
+#include "irrTypes.h"
+#include "util/string.h"
 
 std::string ModConfiguration::getUnsatisfiedModsError() const
 {

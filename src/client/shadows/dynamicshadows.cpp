@@ -18,13 +18,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include <cmath>
-
 #include "client/shadows/dynamicshadows.h"
 #include "client/client.h"
 #include "client/clientenvironment.h"
 #include "client/clientmap.h"
 #include "client/camera.h"
-#include <IVideoDriver.h>
+#include "ICameraSceneNode.h"
+#include "matrix4.h"
+#include "util/basic_macros.h"
+#include "util/numeric.h"
 
 using m4f = core::matrix4;
 

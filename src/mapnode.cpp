@@ -17,19 +17,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "irrlichttypes_extrabloated.h"
+#include <stddef.h>
+#include <string>
+#include <sstream>
 #include "mapnode.h"
-#include "porting.h"
 #include "nodedef.h"
 #include "map.h"
 #include "content_mapnode.h" // For mapnode_translate_*_internal
 #include "serialization.h" // For ser_ver_supported
 #include "util/serialize.h"
-#include "log.h"
 #include "util/directiontables.h"
-#include "util/numeric.h"
-#include <string>
-#include <sstream>
+#include "SColor.h"
+#include "constants.h"
+#include "debug.h"
+#include "exceptions.h"
 
 static const Rotation wallmounted_to_rot[] = {
 	ROTATE_0, ROTATE_180, ROTATE_90, ROTATE_270

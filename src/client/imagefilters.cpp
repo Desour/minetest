@@ -17,12 +17,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "imagefilters.h"
-#include "util/numeric.h"
+#include <IVideoDriver.h>
 #include <cmath>
 #include <cassert>
 #include <vector>
 #include <algorithm>
-#include <IVideoDriver.h>
+#include "util/numeric.h"
+#include "EDriverFeatures.h"
+#include "SColor.h"
+#include "dimension2d.h"
+#include "rect.h"
 
 // Simple 2D bitmap class with just the functionality needed here
 class Bitmap {

@@ -17,12 +17,23 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <stddef.h>
+#include <sstream>
+#include <unordered_map>
+#include <utility>
 #include "config.h"
+#include "database/database.h"
+#include "debug.h"
+#include "inventory.h"
+#include "iterator.h"
+#include "metadata.h"
+#include "options.h"
+#include "slice.h"
+#include "status.h"
 
 #if USE_LEVELDB
 
 #include "database-leveldb.h"
-
 #include "log.h"
 #include "filesys.h"
 #include "exceptions.h"
@@ -31,7 +42,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "server/player_sao.h"
 #include "util/serialize.h"
 #include "util/string.h"
-
 #include "leveldb/db.h"
 
 

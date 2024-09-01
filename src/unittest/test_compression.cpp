@@ -17,15 +17,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "test.h"
-
+#include <stddef.h>
 #include <sstream>
-
+#include <string>
+#include "test.h"
 #include "irrlichttypes_extrabloated.h"
 #include "log.h"
 #include "serialization.h"
-#include "nodedef.h"
 #include "noise.h"
+#include "util/pointer.h"
+
+class IGameDef;
 
 class TestCompression : public TestBase {
 public:

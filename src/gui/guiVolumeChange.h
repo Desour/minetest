@@ -19,11 +19,14 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #pragma once
 
+#include <string>
 #include "irrlichttypes_extrabloated.h"
 #include "modalMenu.h"
-#include <string>
 
 class ISimpleTextureSource;
+namespace irr {
+struct SEvent;
+}  // namespace irr
 
 class GUIVolumeChange : public GUIModalMenu
 {

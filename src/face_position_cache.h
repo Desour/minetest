@@ -19,12 +19,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irr_v3d.h"
-
-#include <map>
 #include <vector>
 #include <unordered_map>
 #include <mutex>
+#include "irr_v3d.h"
 
 /*
  * This class permits caching getFacePosition call results.

@@ -17,7 +17,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <IMeshManipulator.h>
+#include <assert.h>
+#include <stdlib.h>
 #include <cmath>
+#include <algorithm>
+#include <array>
+#include <ostream>
+#include <utility>
+#include <vector>
 #include "content_mapblock.h"
 #include "util/numeric.h"
 #include "util/directiontables.h"
@@ -26,11 +34,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "nodedef.h"
 #include "client/tile.h"
 #include "mesh.h"
-#include <IMeshManipulator.h>
 #include "client/meshgen/collector.h"
-#include "client/renderingengine.h"
-#include "client.h"
 #include "noise.h"
+#include "S3DVertex.h"
+#include "constants.h"
+#include "debug.h"
+#include "irrlichttypes_extrabloated.h"
+#include "light.h"
+#include "log.h"
+#include "util/basic_macros.h"
+#include "voxel.h"
 
 // Distance of light extrapolation (for oversized nodes)
 // After this distance, it gives up and considers light level constant

@@ -23,10 +23,18 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // This backend is intended to be used on Minetest 0.4.16 only for the transition backend
 // for player files
 
-#include "database.h"
+#include <json/value.h>
 #include <unordered_map>
 #include <unordered_set>
-#include <json/json.h> // for Json::Value
+#include <iosfwd>
+#include <string>
+#include <string_view>
+#include <vector>
+#include "database.h"
+#include "util/string.h"
+
+class PlayerSAO;
+class RemotePlayer;
 
 class PlayerDatabaseFiles : public PlayerDatabase
 {

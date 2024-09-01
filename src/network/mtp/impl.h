@@ -19,24 +19,32 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <float.h>
+#include <iostream>
+#include <vector>
+#include <map>
+#include <memory>
+#include <string>
 #include "network/connection.h"
 #include "network/socket.h"
 #include "constants.h"
 #include "util/pointer.h"
 #include "util/container.h"
-#include "util/numeric.h"
 #include "porting.h"
 #include "network/networkprotocol.h"
-#include <iostream>
-#include <vector>
-#include <map>
+#include "debug.h"
+#include "irrTypes.h"
+#include "network/address.h"
+#include "threading/mutex_auto_lock.h"
+#include "util/basic_macros.h"
+
+class NetworkPacket;
 
 namespace con
 {
 
 class ConnectionReceiveThread;
 class ConnectionSendThread;
-
 class Peer;
 
 // FIXME: Peer refcounting should generally be replaced by std::shared_ptr
@@ -71,6 +79,7 @@ enum ConnectionEventType {
 };
 
 struct ConnectionEvent;
+
 typedef std::shared_ptr<ConnectionEvent> ConnectionEventPtr;
 
 // This is very similar to ConnectionCommand
@@ -99,9 +108,11 @@ private:
 };
 
 struct ConnectionCommand;
+
 typedef std::shared_ptr<ConnectionCommand> ConnectionCommandPtr;
 
 struct BufferedPacket;
+
 typedef std::shared_ptr<BufferedPacket> BufferedPacketPtr;
 
 class Connection;

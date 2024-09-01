@@ -18,11 +18,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "serialization.h"
-#include "log.h"
-#include "util/serialize.h"
-
 #include <zlib.h>
 #include <zstd.h>
+#include <stdio.h>
+#include <zconf.h>
+#include <memory>
+#include <string>
+#include "log.h"
+#include "util/serialize.h"
+#include "exceptions.h"
 
 /* report a zlib or i/o error */
 static void zerr(int ret)

@@ -17,12 +17,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "test.h"
-
+#include <stddef.h>
 #include <cmath>
+#include <sstream>
+#include <string>
+#include <vector>
+#include "test.h"
 #include "settings.h"
 #include "defaultsettings.h"
 #include "noise.h"
+#include "exceptions.h"
+#include "irr_v3d.h"
+#include "util/string.h"
+
+class IGameDef;
 
 class TestSettings : public TestBase {
 public:

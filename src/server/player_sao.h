@@ -20,11 +20,23 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <set>
+#include <string>
 #include "constants.h"
 #include "metadata.h"
 #include "network/networkprotocol.h"
 #include "unit_sao.h"
 #include "util/numeric.h"
+#include "activeobject.h"
+#include "inventory.h"
+#include "inventorymanager.h"
+#include "irrMath.h"
+#include "irrlichttypes_bloated.h"
+
+class ServerActiveObject;
+class ServerEnvironment;
+struct PlayerHPChangeReason;
+struct ToolCapabilities;
 
 /*
 	PlayerSAO needs some internals exposed.

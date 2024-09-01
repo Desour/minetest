@@ -20,11 +20,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include <string>
-#include <iostream>
 #include <vector>
 #include <utility>
-#include "gamedef.h"
 #include "inventory.h"
+#include "irrTypes.h"
+
+class IGameDef;
 
 /*
 	Crafting methods.

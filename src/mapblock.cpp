@@ -18,10 +18,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "mapblock.h"
-
+#include <limits.h>
+#include <string.h>
 #include <sstream>
-#include "map.h"
-#include "light.h"
+#include <memory>
+#include <unordered_set>
 #include "nodedef.h"
 #include "nodemetadata.h"
 #include "gamedef.h"
@@ -31,6 +32,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "content_mapnode.h"  // For legacy name-id mapping
 #include "content_nodemeta.h" // For legacy deserialization
 #include "serialization.h"
+#include "debug.h"
+#include "settings.h"
+#include "util/pointer.h"
+#include "voxel.h"
 #ifndef SERVER
 #include "client/mapblock_mesh.h"
 #endif

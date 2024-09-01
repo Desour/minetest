@@ -19,11 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include <ostream>
-#include <cstring>
-#include "address.h"
-#include "irrlichttypes.h"
-#include "networkexceptions.h"
+class Address;
 
 extern bool socket_enable_debug_output;
 

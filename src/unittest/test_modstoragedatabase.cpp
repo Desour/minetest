@@ -20,19 +20,25 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 // This file is an edited copy of test_authdatabase.cpp
 
-#include "cmake_config.h"
-
-#include "test.h"
-
 #include <algorithm>
 #include <cstdlib>
+#include <ostream>
+#include <string>
+#include <vector>
+#include "cmake_config.h"
+#include "test.h"
 #include "database/database-dummy.h"
 #include "database/database-files.h"
 #include "database/database-sqlite3.h"
+#include "database/database.h"
+#include "log.h"
+#include "util/string.h"
 #if USE_POSTGRESQL
 #include "database/database-postgresql.h"
 #endif
 #include "filesys.h"
+
+class IGameDef;
 
 namespace
 {

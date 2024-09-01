@@ -23,6 +23,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "voxel.h"
 #include "noise.h"
 #include "mapgen.h"
+#include "irr_v3d.h"
+#include "mapnode.h"
 
 #define VMANIP_FLAG_DUNGEON_INSIDE VOXELFLAG_CHECKED1
 #define VMANIP_FLAG_DUNGEON_PRESERVE VOXELFLAG_CHECKED2

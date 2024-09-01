@@ -18,13 +18,18 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "guiEditBox.h"
-
+#include <string>
 #include "IGUISkin.h"
 #include "IGUIEnvironment.h"
 #include "IGUIFont.h"
-
 #include "porting.h"
 #include "util/string.h"
+#include "IOSOperator.h"
+#include "Keycodes.h"
+#include "gui/guiScrollBar.h"
+#include "irrMath.h"
+#include "irrlichttypes_extrabloated.h"
+#include "position2d.h"
 
 GUIEditBox::~GUIEditBox()
 {

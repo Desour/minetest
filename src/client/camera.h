@@ -19,22 +19,29 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irrlichttypes_extrabloated.h"
-#include "inventory.h"
-#include "util/numeric.h"
-#include "client/localplayer.h"
-#include <ICameraSceneNode.h>
 #include <ISceneNode.h>
 #include <plane3d.h>
+#include <stddef.h>
 #include <array>
 #include <list>
 #include <optional>
+#include <string>
+#include "irrlichttypes_extrabloated.h"
+#include "inventory.h"
+#include "util/numeric.h"
+#include "SColor.h"
+#include "constants.h"
+#include "matrix4.h"
+#include "util/basic_macros.h"
 
 class LocalPlayer;
 struct MapDrawControl;
 class Client;
 class RenderingEngine;
 class WieldMeshSceneNode;
+namespace irr::scene {
+class ICameraSceneNode;
+}  // namespace irr::scene
 
 struct Nametag
 {

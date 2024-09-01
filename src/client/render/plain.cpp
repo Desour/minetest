@@ -19,13 +19,27 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "plain.h"
+#include <string>
 #include "secondstage.h"
 #include "client/camera.h"
 #include "client/client.h"
 #include "client/clientmap.h"
 #include "client/hud.h"
-#include "client/minimap.h"
 #include "client/shadows/dynamicshadowsrender.h"
+#include "EVideoTypes.h"
+#include "ISceneNode.h"
+#include "ITexture.h"
+#include "ITimer.h"
+#include "IVideoDriver.h"
+#include "SColor.h"
+#include "client/clientenvironment.h"
+#include "client/render/pipeline.h"
+#include "dimension2d.h"
+#include "irrlichttypes_extrabloated.h"
+#include "matrix4.h"
+#include "rect.h"
+#include "settings.h"
+#include "util/basic_macros.h"
 
 /// Draw3D pipeline step
 void Draw3D::run(PipelineContext &context)

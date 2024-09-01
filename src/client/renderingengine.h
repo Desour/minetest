@@ -27,9 +27,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "debug.h"
 #include "client/shader.h"
 #include "client/render/core.h"
-// include the shadow mapper classes too
-#include "client/shadows/dynamicshadowsrender.h"
-#include <IVideoDriver.h>
+#include "constants.h"
+#include "irrlicht.h"
+
+class ShadowRenderer;
 
 #ifdef SERVER
 #error Do not include in server builds
@@ -41,13 +42,8 @@ struct VideoDriverInfo {
 };
 
 class ITextureSource;
-class Camera;
 class Client;
-class LocalPlayer;
 class Hud;
-class Minimap;
-
-class RenderingCore;
 
 // Instead of a mechanism to disable fog we just set it to be really far away
 #define FOG_RANGE_ALL (100000 * BS)

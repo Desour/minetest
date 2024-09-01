@@ -19,8 +19,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "sidebyside.h"
-#include "client/hud.h"
-#include "client/camera.h"
+#include <initializer_list>
+#include <string>
+#include "IVideoDriver.h"
+#include "SColor.h"
+#include "client/render/plain.h"
+#include "client/render/stereo.h"
+#include "dimension2d.h"
+#include "irrlichttypes_extrabloated.h"
+
+class Client;
 
 DrawImageStep::DrawImageStep(u8 texture_index, v2f _offset) :
 	texture_index(texture_index), offset(_offset)

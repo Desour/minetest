@@ -18,8 +18,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "s_modchannels.h"
+#include <lua.h>
 #include "s_internal.h"
-#include "modchannels.h"
+#include "common/c_internal.h"
 
 void ScriptApiModChannels::on_modchannel_message(const std::string &channel,
 		const std::string &sender, const std::string &message)

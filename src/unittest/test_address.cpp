@@ -17,11 +17,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <string.h>
+#include <sys/socket.h>
+#include <memory>
+#include <ostream>
+#include <string>
+#include <vector>
 #include "test.h"
-
 #include "log.h"
 #include "settings.h"
-#include "network/socket.h"
+#include "irrTypes.h"
+#include "network/address.h"
+
+class IGameDef;
 
 class TestAddress : public TestBase
 {

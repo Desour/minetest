@@ -18,6 +18,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "l_localplayer.h"
+#include <assert.h>
+#include <cstddef>
+#include <functional>
+#include <string>
+#include <vector>
 #include "l_internal.h"
 #include "lua_api/l_item.h"
 #include "script/common/c_converter.h"
@@ -25,6 +30,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "hud.h"
 #include "common/c_content.h"
 #include "client/content_cao.h"
+#include "constants.h"
+#include "inventory.h"
+#include "irrMath.h"
+#include "irr_v3d.h"
+#include "player.h"
 
 LuaLocalPlayer::LuaLocalPlayer(LocalPlayer *m) : m_localplayer(m)
 {

@@ -19,13 +19,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <optional>
+#include <iosfwd>
+#include <string>
+#include <string_view>
 #include "metadata.h"
 #include "tool.h"
-
-#include <optional>
-
-class Inventory;
-class IItemDefManager;
 
 class ItemStackMetadata : public SimpleMetadata
 {

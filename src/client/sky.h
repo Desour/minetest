@@ -19,13 +19,25 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irrlichttypes_extrabloated.h"
 #include <ISceneNode.h>
 #include <array>
+#include <string>
+#include <vector>
+#include "irrlichttypes_extrabloated.h"
 #include "camera.h"
 #include "irr_ptr.h"
-#include "shader.h"
 #include "skyparams.h"
+#include "SColor.h"
+#include "SMaterial.h"
+#include "util/numeric.h"
+
+class IShaderSource;
+class RenderingEngine;
+namespace irr::video {
+class ITexture;
+class IVideoDriver;
+struct S3DVertex;
+}  // namespace irr::video
 
 #define SKY_MATERIAL_COUNT 12
 

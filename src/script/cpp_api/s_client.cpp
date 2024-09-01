@@ -19,13 +19,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "s_client.h"
+#include <lua.h>
+#include <unordered_map>
+#include <utility>
 #include "s_internal.h"
 #include "client/client.h"
 #include "common/c_converter.h"
 #include "common/c_content.h"
 #include "lua_api/l_item.h"
-#include "itemdef.h"
-#include "s_item.h"
+#include "client/clientenvironment.h"
+#include "common/c_internal.h"
+#include "common/c_types.h"
+#include "mapnode.h"
+
+struct PointedThing;
 
 void ScriptApiClient::on_mods_loaded()
 {

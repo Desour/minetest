@@ -26,9 +26,7 @@ SOFTWARE.
 
 #include <cstdio>
 #include <cstring>
-#include <cstdlib>
 #include <cassert>
-
 #include "sha1.h"
 
 // print out memory in hexadecimal

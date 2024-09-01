@@ -19,16 +19,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <optional>
 #include "cpp_api/s_base.h"
 #include "irr_v3d.h"
-#include <optional>
 
 struct PointedThing;
 struct ItemStack;
 class ServerActiveObject;
-struct ItemDefinition;
-class LuaItemStack;
-class ModApiItem;
 class InventoryList;
 struct InventoryLocation;
 

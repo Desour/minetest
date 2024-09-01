@@ -19,6 +19,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "guiBox.h"
 #include <IVideoDriver.h>
+#include <stddef.h>
+#include "EGUIElementTypes.h"
+#include "SColor.h"
+#include "rect.h"
 
 GUIBox::GUIBox(gui::IGUIEnvironment *env, gui::IGUIElement *parent, s32 id,
 	const core::rect<s32> &rectangle,

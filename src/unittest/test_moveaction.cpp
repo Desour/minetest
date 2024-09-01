@@ -17,11 +17,31 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <lua.h>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <utility>
 #include "test.h"
-
 #include "mock_inventorymanager.h"
 #include "mock_server.h"
 #include "mock_serveractiveobject.h"
+#include "common/c_internal.h"
+#include "cpp_api/s_base.h"
+#include "exceptions.h"
+#include "filesys.h"
+#include "inventory.h"
+#include "inventorymanager.h"
+#include "log.h"
+#include "scripting_server.h"
+#include "server.h"
+#include "server/serverinventorymgr.h"
+#include "serverenvironment.h"
+#include "servermap.h"
+#include "util/metricsbackend.h"
+
+class IGameDef;
+class ServerActiveObject;
 
 class TestMoveAction : public TestBase
 {

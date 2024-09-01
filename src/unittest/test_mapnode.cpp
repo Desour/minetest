@@ -18,10 +18,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "test.h"
-
 #include "gamedef.h"
 #include "nodedef.h"
-#include "content_mapnode.h"
+#include "mapnode.h"
 
 class TestMapNode : public TestBase
 {

@@ -18,10 +18,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "raycast.h"
+#include <quaternion.h>
+#include <assert.h>
 #include "irr_v3d.h"
 #include "irr_aabb3d.h"
-#include <quaternion.h>
 #include "constants.h"
+#include "irrMath.h"
 
 bool RaycastSort::operator() (const PointedThing &pt1,
 	const PointedThing &pt2) const

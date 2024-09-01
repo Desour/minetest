@@ -18,16 +18,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "inventory.h"
-#include "serialization.h"
-#include "debug.h"
 #include <algorithm>
 #include <sstream>
+#include <ostream>
 #include "log.h"
 #include "util/strfnd.h"
 #include "content_mapnode.h" // For loading legacy MaterialItems
 #include "nameidmapping.h" // For loading legacy MaterialItems
 #include "util/serialize.h"
 #include "util/string.h"
+#include "exceptions.h"
+#include "mapnode.h"
 
 /*
 	ItemStack

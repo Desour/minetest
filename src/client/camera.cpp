@@ -18,13 +18,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "camera.h"
-#include "debug.h"
+#include <SViewFrustum.h>
+#include <IVideoDriver.h>
+#include <assert.h>
+#include <bits/std_abs.h>
+#include <cmath>
+#include <algorithm>
 #include "client.h"
-#include "config.h"
-#include "map.h"
 #include "clientmap.h"     // MapDrawControl
 #include "player.h"
-#include <cmath>
 #include "client/renderingengine.h"
 #include "client/content_cao.h"
 #include "settings.h"
@@ -35,10 +37,22 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "util/numeric.h"
 #include "constants.h"
 #include "fontengine.h"
-#include "script/scripting_client.h"
-#include "gettext.h"
-#include <SViewFrustum.h>
-#include <IVideoDriver.h>
+#include "EVideoTypes.h"
+#include "ICameraSceneNode.h"
+#include "IGUIFont.h"
+#include "ISceneNode.h"
+#include "client/clientenvironment.h"
+#include "client/clientobject.h"
+#include "client/localplayer.h"
+#include "dimension2d.h"
+#include "irrMath.h"
+#include "itemstackmetadata.h"
+#include "mapnode.h"
+#include "metadata.h"
+#include "plane3d.h"
+#include "quaternion.h"
+#include "rect.h"
+#include "util/string.h"
 
 #define CAMERA_OFFSET_STEP 200
 #define WIELDMESH_OFFSET_X 55.0f

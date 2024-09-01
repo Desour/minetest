@@ -18,8 +18,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "proxy_sound_manager.h"
-
+#include <stdexcept>
+#include <type_traits>
+#include <variant>
 #include "filesys.h"
+#include "client/sound/sound_manager.h"
+#include "debug.h"
+#include "sound.h"
 
 namespace sound {
 

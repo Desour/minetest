@@ -20,14 +20,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <stddef.h>
 #include <unordered_set>
+#include <vector>
 #include "objdef.h"
 #include "noise.h"
 #include "nodedef.h"
+#include "irr_v3d.h"
+#include "mapnode.h"
+#include "util/string.h"
+
+class IGameDef;
 
 typedef u16 biome_t;  // copy from mg_biome.h to avoid an unnecessary include
 
-class Noise;
 class Mapgen;
 class MMVManip;
 

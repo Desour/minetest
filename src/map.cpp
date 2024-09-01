@@ -18,6 +18,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "map.h"
+#include <string.h>
+#include <queue>
+#include <string>
 #include "mapsector.h"
 #include "mapblock.h"
 #include "voxel.h"
@@ -28,10 +31,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "profiler.h"
 #include "nodedef.h"
 #include "gamedef.h"
-#include "util/directiontables.h"
 #include "rollback_interface.h"
-#include "environment.h"
 #include "irrlicht_changes/printing.h"
+#include "exceptions.h"
+#include "modifiedstate.h"
+#include "util/timetaker.h"
 
 /*
 	Map

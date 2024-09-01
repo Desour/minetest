@@ -18,20 +18,29 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "guiChatConsole.h"
+#include <assert.h>
+#include <libintl.h>
+#include <stddef.h>
+#include <wctype.h>
+#include <string>
+#include <set>
+#include <sstream>
+#include <vector>
 #include "chat.h"
 #include "client/client.h"
-#include "debug.h"
-#include "gettime.h"
 #include "client/keycode.h"
 #include "settings.h"
 #include "porting.h"
 #include "client/texturesource.h"
 #include "client/fontengine.h"
 #include "log.h"
-#include "gettext.h"
 #include "irrlicht_changes/CGUITTFont.h"
 #include "util/string.h"
-#include <string>
+#include "gui/modalMenu.h"
+#include "irrlicht.h"
+#include "util/basic_macros.h"
+#include "util/enriched_string.h"
+#include "util/numeric.h"
 
 inline u32 clamp_u8(s32 value)
 {

@@ -24,8 +24,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <al.h>
+#include <memory>
+#include <optional>
+#include <utility>
 #include "sound_data.h"
-namespace sound { struct ALExtensions; }
+#include "irr_v3d.h"
+#include "util/basic_macros.h"
+
+namespace sound {
+struct ALExtensions;
+}  // namespace sound
 
 namespace sound {
 

@@ -18,6 +18,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "lua_api/l_particles.h"
+#include <lauxlib.h>
+#include <stddef.h>
+#include <string>
+#include <vector>
 #include "lua_api/l_object.h"
 #include "lua_api/l_internal.h"
 #include "lua_api/l_particleparams.h"
@@ -25,6 +29,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "common/c_content.h"
 #include "server.h"
 #include "particles.h"
+#include "common/c_internal.h"
+#include "common/c_types.h"
+#include "irrTypes.h"
+#include "mapnode.h"
+#include "tileanimation.h"
+
+class ServerActiveObject;
 
 void LuaParticleParams::readTexValue(lua_State* L, ServerParticleTexture& tex)
 {

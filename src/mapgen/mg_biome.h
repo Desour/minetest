@@ -20,9 +20,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <stddef.h>
+#include <vector>
 #include "objdef.h"
 #include "nodedef.h"
 #include "noise.h"
+#include "debug.h"
+#include "irr_v3d.h"
+#include "mapnode.h"
 
 class Server;
 class Settings;

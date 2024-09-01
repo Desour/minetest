@@ -19,14 +19,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "remoteplayer.h"
-#include <json/json.h>
-#include "filesys.h"
-#include "gamedef.h"
-#include "porting.h"  // strlcpy
-#include "server.h"
+#include <time.h>
+#include <ostream>
 #include "settings.h"
-#include "convert_json.h"
 #include "server/player_sao.h"
+#include "irrTypes.h"
+#include "log.h"
+#include "metadata.h"
+
+class IItemDefManager;
 
 /*
 	RemotePlayer

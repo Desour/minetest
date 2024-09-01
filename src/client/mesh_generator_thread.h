@@ -19,16 +19,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include <ctime>
-#include <mutex>
-#include <unordered_map>
 #include <unordered_set>
-#include "mapblock_mesh.h"
-#include "threading/mutex_auto_lock.h"
-#include "util/thread.h"
 #include <vector>
 #include <memory>
-#include <unordered_map>
+#include "threading/mutex_auto_lock.h"
+#include "util/thread.h"
+#include "irr_v3d.h"
+#include "mapblock.h"
+#include "util/container.h"
+
+class Client;
+class Map;
+class MapBlockMesh;
+struct MeshMakeData;
 
 struct QueuedMeshUpdate
 {

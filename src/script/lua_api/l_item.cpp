@@ -18,16 +18,27 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "lua_api/l_item.h"
+#include <stddef.h>
+#include <optional>
+#include <string>
+#include <unordered_map>
+#include <utility>
 #include "lua_api/l_itemstackmeta.h"
 #include "lua_api/l_internal.h"
-#include "common/c_converter.h"
 #include "common/c_content.h"
 #include "common/c_packer.h"
 #include "itemdef.h"
 #include "nodedef.h"
 #include "server.h"
 #include "inventory.h"
-#include "log.h"
+#include "common/c_internal.h"
+#include "common/c_types.h"
+#include "gamedef.h"
+#include "irrTypes.h"
+#include "itemstackmetadata.h"
+#include "mapnode.h"
+#include "tool.h"
+#include "util/string.h"
 
 
 // garbage collector

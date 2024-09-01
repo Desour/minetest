@@ -20,8 +20,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include <vector>
+#include <string>
+#include <unordered_map>
 #include "util/string.h"
-#include "config.h"
+#include "irrTypes.h"
 
 // These can be used in place of "caller" in to specify special handling.
 // Discard result (used as default value of "caller").

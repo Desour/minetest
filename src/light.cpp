@@ -18,8 +18,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "light.h"
+#include <stddef.h>
 #include <algorithm>
 #include <cmath>
+#include <string>
 #include "util/numeric.h"
 #include "settings.h"
 

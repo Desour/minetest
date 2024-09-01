@@ -28,11 +28,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 extern "C" {
 #include <lua.h>
-#include <lauxlib.h>
+#include <stddef.h>
+#include <iosfwd>
+#include <string>
 }
 
 #include "config.h"
-#include "common/c_types.h"
 
 
 /*

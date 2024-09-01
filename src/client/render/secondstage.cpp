@@ -20,10 +20,21 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "secondstage.h"
+#include <assert.h>
+#include <string>
 #include "client/client.h"
 #include "client/shader.h"
 #include "client/tile.h"
 #include "settings.h"
+#include "IVideoDriver.h"
+#include "S3DVertex.h"
+#include "SColor.h"
+#include "SMaterialLayer.h"
+#include "client/render/pipeline.h"
+#include "dimension2d.h"
+#include "irrlichttypes_extrabloated.h"
+#include "nodedef.h"
+#include "util/basic_macros.h"
 
 PostProcessingStep::PostProcessingStep(u32 _shader_id, const std::vector<u8> &_texture_map) :
 	shader_id(_shader_id), texture_map(_texture_map)

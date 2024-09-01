@@ -18,10 +18,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #pragma once
-#include "irrlichttypes_extrabloated.h"
-#include <IMaterialRendererServices.h>
 #include <IShaderConstantSetCallBack.h>
+#include "irrlichttypes_extrabloated.h"
 #include "client/shader.h"
+#include "S3DVertex.h"
+#include "SMaterial.h"
+
+namespace irr::video {
+class IMaterialRendererServices;
+class IVideoDriver;
+}  // namespace irr::video
 
 class shadowScreenQuad
 {

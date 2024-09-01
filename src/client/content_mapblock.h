@@ -19,11 +19,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <string>
 #include "nodedef.h"
-#include <IMeshManipulator.h>
+#include "SColor.h"
+#include "client/tile.h"
+#include "irrMath.h"
+#include "irrlichttypes_bloated.h"
+#include "mapnode.h"
 
 struct MeshMakeData;
 struct MeshCollector;
+namespace irr::scene {
+class IMeshManipulator;
+}  // namespace irr::scene
 
 struct LightPair {
 	u8 lightDay;

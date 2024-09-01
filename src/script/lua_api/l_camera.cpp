@@ -18,12 +18,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "l_camera.h"
-#include <cmath>
+#include <assert.h>
 #include "script/common/c_converter.h"
 #include "l_internal.h"
 #include "client/content_cao.h"
 #include "client/camera.h"
 #include "client/client.h"
+#include "ICameraSceneNode.h"
+#include "client/clientenvironment.h"
+#include "client/localplayer.h"
+#include "constants.h"
+#include "debug.h"
+#include "irrMath.h"
+#include "vector3d.h"
 
 LuaCamera::LuaCamera(Camera *m) : m_camera(m)
 {

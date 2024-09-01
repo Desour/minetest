@@ -17,10 +17,23 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <assert.h>
+#include <errno.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
+#include <cctype>
+#include <cstdlib>
+#include <initializer_list>
+#include <iostream>
+#include <map>
+#include <set>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
 #include "irrlichttypes_bloated.h"
-#include "irrlicht.h" // createDevice
 #include "irrlicht_changes/printing.h"
-#include "benchmark/benchmark.h"
 #include "chat_interface.h"
 #include "debug.h"
 #include "unittest/test.h"
@@ -40,14 +53,24 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "porting.h"
 #include "network/socket.h"
 #include "mapblock.h"
+#include "content/subgames.h"
+#include "exceptions.h"
+#include "network/address.h"
+#include "network/networkexceptions.h"
+#include "network/networkprotocol.h"
+#include "serialization.h"
+#include "serverenvironment.h"
+#include "servermap.h"
+#include "settings.h"
+#include "util/basic_macros.h"
+#include "util/numeric.h"
+#include "util/serialize.h"
+#include "util/string.h"
 #if USE_CURSES
 	#include "terminal_chat_console.h"
 #endif
 #ifndef SERVER
-#include "gui/guiMainMenu.h"
 #include "client/clientlauncher.h"
-#include "gui/guiEngine.h"
-#include "gui/mainmenumanager.h"
 #endif
 
 // for version information only

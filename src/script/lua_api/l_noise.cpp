@@ -18,13 +18,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "lua_api/l_noise.h"
+#include <string.h>
+#include <iomanip>
+#include <sstream>
+#include <string>
 #include "lua_api/l_internal.h"
 #include "common/c_converter.h"
 #include "common/c_content.h"
 #include "common/c_packer.h"
-#include "log.h"
 #include "porting.h"
-#include "util/numeric.h"
+#include "common/c_types.h"
+#include "exceptions.h"
+#include "irr_v2d.h"
+#include "util/basic_macros.h"
 
 ///////////////////////////////////////
 /*

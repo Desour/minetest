@@ -18,15 +18,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "sound.h"
-
-#include "filesys.h"
-#include "log.h"
-#include "porting.h"
-#include "settings.h"
-#include "util/numeric.h"
 #include <algorithm>
 #include <string>
 #include <vector>
+#include <initializer_list>
+#include <utility>
+#include "filesys.h"
+#include "porting.h"
+#include "settings.h"
+#include "util/numeric.h"
 
 std::vector<std::string> SoundFallbackPathProvider::
 		getLocalFallbackPathsForSoundname(const std::string &name)

@@ -19,6 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "rollback_interface.h"
 #include <sstream>
+#include <iostream>
 #include "util/serialize.h"
 #include "util/string.h"
 #include "util/numeric.h"
@@ -31,7 +32,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "inventorymanager.h"
 #include "inventory.h"
 #include "irrlicht_changes/printing.h"
-#include "mapblock.h"
+#include "constants.h"
+#include "itemdef.h"
+#include "mapnode.h"
 
 
 RollbackNode::RollbackNode(Map *map, v3s16 p, IGameDef *gamedef)

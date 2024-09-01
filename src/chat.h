@@ -21,12 +21,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <string>
 #include <vector>
-#include <list>
 #include <optional>
-
+#include <set>
 #include "irrlichttypes.h"
 #include "util/enriched_string.h"
-#include "settings.h"
+#include "SColor.h"
 
 // Chat console related classes
 

@@ -17,6 +17,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 #include "tileanimation.h"
+#include <bits/std_abs.h>
+#include <stddef.h>
 #include "util/serialize.h"
 
 void TileAnimationParams::serialize(std::ostream &os, u16 protocol_ver) const

@@ -19,16 +19,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "mg_biome.h"
+#include <assert.h>
+#include <float.h>
+#include <string.h>
+#include <algorithm>
+#include <functional>
+#include <string>
+#include <unordered_set>
 #include "mg_decoration.h"
 #include "emerge.h"
 #include "server.h"
 #include "nodedef.h"
-#include "map.h" //for MMVManip
-#include "util/numeric.h"
-#include "porting.h"
 #include "settings.h"
-
-#include <algorithm>
+#include "constants.h"
+#include "mapgen/mapgen.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 

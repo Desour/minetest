@@ -19,13 +19,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "voxel.h"
-#include "mapnode.h"
-#include "util/container.h"
+#include <map>
+#include <utility>
+#include <vector>
+#include "irr_v3d.h"
 
 class Map;
 class MapBlock;
 class MMVManip;
+struct MapNode;
 
 namespace voxalgo
 {

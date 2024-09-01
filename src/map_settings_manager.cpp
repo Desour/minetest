@@ -17,12 +17,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "debug.h"
+#include <assert.h>
+#include <fstream>
 #include "filesys.h"
 #include "log.h"
 #include "mapgen/mapgen.h"
 #include "settings.h"
-
 #include "map_settings_manager.h"
 
 MapSettingsManager::MapSettingsManager(const std::string &map_meta_path):

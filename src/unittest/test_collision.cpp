@@ -17,9 +17,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <math.h>
 #include "test.h"
-
 #include "collision.h"
+#include "irrlichttypes_bloated.h"
+
+class IGameDef;
 
 class TestCollision : public TestBase {
 public:

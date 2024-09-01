@@ -20,7 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #ifndef SERVER
 
 #include "clientdynamicinfo.h"
-
+#include <string>
 #include "settings.h"
 #include "client/renderingengine.h"
 #include "gui/touchcontrols.h"

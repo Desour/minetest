@@ -18,21 +18,22 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "settings.h"
+#include <assert.h>
+#include <fstream>
+#include <sstream>
+#include <cctype>
+#include <algorithm>
+#include <set>
 #include "irrlichttypes_bloated.h"
 #include "exceptions.h"
 #include "threading/mutex_auto_lock.h"
 #include "util/numeric.h" // rangelim
 #include "util/strfnd.h"
-#include <iostream>
-#include <fstream>
-#include <sstream>
 #include "debug.h"
 #include "log.h"
-#include "util/serialize.h"
 #include "filesys.h"
 #include "noise.h"
-#include <cctype>
-#include <algorithm>
+#include "util/string.h"
 
 Settings *g_settings = nullptr;
 static SettingsHierarchy g_hierarchy;

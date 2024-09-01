@@ -16,9 +16,19 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
 #include "guiBackgroundImage.h"
+#include <ostream>
 #include "client/guiscalingfilter.h"
 #include "log.h"
 #include "client/texturesource.h"
+#include "EGUIElementTypes.h"
+#include "ITexture.h"
+#include "SColor.h"
+#include "dimension2d.h"
+#include "position2d.h"
+
+namespace irr::video {
+class IVideoDriver;
+}  // namespace irr::video
 
 GUIBackgroundImage::GUIBackgroundImage(gui::IGUIEnvironment *env,
 	gui::IGUIElement *parent, s32 id, const core::rect<s32> &rectangle,

@@ -18,14 +18,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "server.h"
+#include <assert.h>
 #include <iostream>
 #include <queue>
 #include <algorithm>
+#include <fstream>
+#include <functional>
+#include <iomanip>
+#include <map>
+#include <sstream>
+#include <tuple>
 #include "network/connection.h"
 #include "network/networkprotocol.h"
 #include "network/serveropcodes.h"
 #include "server/ban.h"
-#include "environment.h"
 #include "servermap.h"
 #include "threading/mutex_auto_lock.h"
 #include "constants.h"
@@ -44,17 +50,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "craftdef.h"
 #include "emerge.h"
 #include "mapgen/mapgen.h"
-#include "mapgen/mg_biome.h"
-#include "content_mapnode.h"
-#include "content_nodemeta.h"
-#include "content/mods.h"
 #include "modchannels.h"
 #include "server/serverlist.h"
 #include "util/string.h"
 #include "server/rollback.h"
 #include "util/serialize.h"
 #include "util/thread.h"
-#include "defaultsettings.h"
 #include "server/mods.h"
 #include "util/base64.h"
 #include "util/sha1.h"
@@ -67,6 +68,29 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "server/serverinventorymgr.h"
 #include "translation.h"
 #include "database/database-sqlite3.h"
+#include "SColor.h"
+#include "activeobject.h"
+#include "common/c_packer.h"
+#include "debug.h"
+#include "inventory.h"
+#include "inventorymanager.h"
+#include "lighting.h"
+#include "map_settings_manager.h"
+#include "mapnode.h"
+#include "modifiedstate.h"
+#include "network/networkexceptions.h"
+#include "network/networkpacket.h"
+#include "nodemetadata.h"
+#include "object_properties.h"
+#include "player.h"
+#include "porting.h"
+#include "rollback_interface.h"
+#include "serialization.h"
+#include "skyparams.h"
+#include "texture_override.h"
+#include "threading/thread.h"
+#include "tileanimation.h"
+#include "util/container.h"
 #if USE_POSTGRESQL
 #include "database/database-postgresql.h"
 #endif
@@ -75,6 +99,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "gameparams.h"
 #include "particles.h"
 #include "gettext.h"
+
+struct ClientDynamicInfo;
+struct ModSpec;
 
 class ClientNotFoundException : public BaseException
 {

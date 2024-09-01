@@ -28,14 +28,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #if defined(__FreeBSD__)  || defined(__NetBSD__) || defined(__DragonFly__) || defined(__OpenBSD__)
 	#include <sys/types.h>
 	#include <sys/sysctl.h>
+
 	extern char **environ;
 #elif defined(_WIN32)
 	#include <windows.h>
 	#include <wincrypt.h>
-	#include <algorithm>
 	#include <shlwapi.h>
 	#include <shellapi.h>
 	#include <mmsystem.h>
+	#include <algorithm>
 #endif
 #if !defined(_WIN32)
 	#include <unistd.h>
@@ -49,8 +50,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 	#include <sys/pstat.h>
 #endif
 #if defined(__ANDROID__)
-	#include "porting_android.h"
 	#include <android/api-level.h>
+	#include "porting_android.h"
 #endif
 #if defined(__APPLE__)
 	#include <mach-o/dyld.h>
@@ -69,15 +70,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 	#include <malloc.h>
 #endif
 
+#include <signal.h>
+#include <__stdarg_va_arg.h>
+#include <string.h>
+#include <sys/types.h>
+#include <vector>
+#include <cstdio>
+#include <atomic>
+#include <cstdlib>
+#include <fstream>
+#include <string_view>
 #include "debug.h"
 #include "filesys.h"
 #include "log.h"
 #include "util/string.h"
-#include <vector>
-#include <cstdarg>
-#include <cstdio>
-#include <signal.h>
-#include <atomic>
 
 #if !defined(SERVER) && defined(_WIN32)
 // On Windows export some driver-specific variables to encourage Minetest to be

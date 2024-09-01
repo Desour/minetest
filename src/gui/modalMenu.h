@@ -19,9 +19,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <string>
 #include "irrlichttypes_extrabloated.h"
 #include "irr_ptr.h"
-#include "util/string.h"
+#include "IEventReceiver.h"
+#include "rect.h"
 #ifdef __ANDROID__
 	#include <porting_android.h>
 #endif
@@ -38,8 +40,6 @@ struct PointerAction {
 	static PointerAction fromEvent(const SEvent &event);
 	bool isRelated(PointerAction other);
 };
-
-class GUIModalMenu;
 
 class IMenuManager
 {

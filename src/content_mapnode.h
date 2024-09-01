@@ -20,6 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include "mapnode.h"
+#include "irrTypes.h"
 
 /*
 	Legacy node definitions
@@ -31,4 +32,5 @@ MapNode mapnode_translate_to_internal(MapNode n_from, u8 version);
 
 // Get legacy node name mapping for loading old blocks
 class NameIdMapping;
+
 void content_mapnode_get_name_id_mapping(NameIdMapping *nimap);

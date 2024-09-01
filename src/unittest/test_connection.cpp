@@ -17,8 +17,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <string.h>
+#include <memory>
+#include <ostream>
+#include <string>
 #include "test.h"
-
 #include "log.h"
 #include "porting.h"
 #include "settings.h"
@@ -26,7 +29,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "network/peerhandler.h"
 #include "network/mtp/internal.h"
 #include "network/networkpacket.h"
-#include "network/socket.h"
+#include "constants.h"
+#include "irrTypes.h"
+#include "network/address.h"
+#include "network/connection.h"
+#include "network/mtp/impl.h"
+#include "network/networkexceptions.h"
+#include "network/networkprotocol.h"
+#include "util/pointer.h"
+
+class IGameDef;
 
 class TestConnection : public TestBase {
 public:

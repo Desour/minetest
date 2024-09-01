@@ -19,9 +19,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <string>
 #include "cpp_api/s_base.h"
 #include "util/string.h"
-#include "gui/guiMainMenu.h"
+
+struct MainMenuDataForScript;
 
 class ScriptApiMainMenu : virtual public ScriptApiBase {
 public:

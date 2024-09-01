@@ -20,9 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include <exception>
-#include <cassert>
-#include "gettime.h"
-#include "log.h"
+#include <string>
 
 #ifdef _MSC_VER
 	#define FUNCTION_NAME __FUNCTION__

@@ -20,9 +20,18 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include "guiButton.h"
-#include "IGUIButton.h"
 #include "guiAnimatedImage.h"
 #include "irr_ptr.h"
+#include "ITexture.h"
+#include "irrTypes.h"
+#include "rect.h"
+
+class ISimpleTextureSource;
+class StyleSpec;
+namespace irr::gui {
+class IGUIElement;
+class IGUIEnvironment;
+}  // namespace irr::gui
 
 using namespace irr;
 

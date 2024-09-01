@@ -19,25 +19,26 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <map>
+#include <string>
+#include <utility>
+#include <vector>
 #include "irrlichttypes_extrabloated.h"
-#include "util/numeric.h"
 #include "client/tile.h"
 #include "voxel.h"
-#include <array>
-#include <map>
-#include <unordered_map>
+#include "SColor.h"
 
 class Client;
 class NodeDefManager;
 class IShaderSource;
 class ITextureSource;
+struct MapNode;
 
 /*
 	Mesh making stuff
 */
 
 
-class MapBlock;
 struct MinimapMapblock;
 
 struct MeshMakeData

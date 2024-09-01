@@ -22,6 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "client/client.h"
 #include "networkprotocol.h"
+#include "irrTypes.h"
 
 class NetworkPacket;
 // Note: don't forward-declare Client here (#14324)

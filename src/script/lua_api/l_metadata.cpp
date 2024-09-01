@@ -19,12 +19,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "lua_api/l_metadata.h"
+#include <stddef.h>
+#include <string_view>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 #include "lua_api/l_internal.h"
-#include "common/c_content.h"
-#include "serverenvironment.h"
-#include "map.h"
-#include "server.h"
-#include "util/basic_macros.h"
+#include "common/c_internal.h"
+#include "metadata.h"
+#include "util/string.h"
 
 MetaDataRef *MetaDataRef::checkAnyMetadata(lua_State *L, int narg)
 {

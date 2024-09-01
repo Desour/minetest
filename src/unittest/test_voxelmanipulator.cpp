@@ -17,13 +17,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "test.h"
-
 #include <algorithm>
-
+#include <list>
+#include <ostream>
+#include <vector>
+#include "test.h"
 #include "gamedef.h"
 #include "log.h"
 #include "voxel.h"
+#include "exceptions.h"
+#include "irr_v3d.h"
+#include "mapnode.h"
+
+class NodeDefManager;
 
 class TestVoxelManipulator : public TestBase {
 public:

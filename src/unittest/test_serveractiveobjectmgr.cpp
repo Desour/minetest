@@ -17,14 +17,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <algorithm>
+#include <functional>
+#include <memory>
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
 #include "test.h"
 #include "mock_serveractiveobject.h"
-#include <algorithm>
-#include <queue>
-
 #include "server/activeobjectmgr.h"
+#include "irr_v3d.h"
+#include "server/serveractiveobject.h"
 
-#include "profiler.h"
+class IGameDef;
 
 
 class TestServerActiveObjectMgr : public TestBase

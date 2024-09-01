@@ -23,9 +23,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "ogg_file.h"
-
+#include <stdio.h>
+#include <vorbis/codec.h>
 #include <cassert>
 #include <cstring> // memcpy
+#include <memory>
+#include <ostream>
+#include <string_view>
+#include "client/sound/al_helpers.h"
+#include "log.h"
 
 namespace sound {
 

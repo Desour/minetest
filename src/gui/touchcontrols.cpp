@@ -21,8 +21,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "touchcontrols.h"
-
-#include "gettime.h"
+#include <IrrlichtDevice.h>
+#include <ISceneCollisionManager.h>
+#include <assert.h>
+#include <math.h>
+#include <iostream>
+#include <algorithm>
+#include <utility>
 #include "irr_v2d.h"
 #include "log.h"
 #include "porting.h"
@@ -30,15 +35,23 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "client/guiscalingfilter.h"
 #include "client/keycode.h"
 #include "client/renderingengine.h"
-#include "util/numeric.h"
 #include "gettext.h"
 #include "IGUIStaticText.h"
 #include "IGUIFont.h"
-#include <IrrlichtDevice.h>
-#include <ISceneCollisionManager.h>
+#include "EGUIAlignment.h"
+#include "IEventReceiver.h"
+#include "IGUIImage.h"
+#include "IVideoDriver.h"
+#include "SColor.h"
+#include "client/texturesource.h"
+#include "debug.h"
+#include "dimension2d.h"
+#include "irrlichttypes_extrabloated.h"
+#include "util/basic_macros.h"
 
-#include <iostream>
-#include <algorithm>
+namespace irr::video {
+class ITexture;
+}  // namespace irr::video
 
 TouchControls *g_touchcontrols;
 

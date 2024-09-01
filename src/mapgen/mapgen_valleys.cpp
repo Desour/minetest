@@ -25,24 +25,25 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 
+#include <assert.h>
+#include <stddef.h>
+#include <cmath>
+#include <string>
 #include "mapgen.h"
 #include "voxel.h"
 #include "noise.h"
-#include "mapblock.h"
 #include "mapnode.h"
 #include "map.h"
-#include "nodedef.h"
-#include "voxelalgorithms.h"
 //#include "profiler.h" // For TimeTaker
 #include "settings.h" // For g_settings
 #include "emerge.h"
-#include "dungeongen.h"
 #include "mg_biome.h"
 #include "mg_ore.h"
 #include "mg_decoration.h"
 #include "mapgen_valleys.h"
-#include "cavegen.h"
-#include <cmath>
+#include "constants.h"
+#include "debug.h"
+#include "irrlichttypes_bloated.h"
 
 
 FlagDesc flagdesc_mapgen_valleys[] = {

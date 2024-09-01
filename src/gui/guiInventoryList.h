@@ -19,11 +19,21 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <string>
 #include "inventorymanager.h"
 #include "irrlichttypes_extrabloated.h"
-#include "util/string.h"
+#include "SColor.h"
 
 class GUIFormSpecMenu;
+namespace irr {
+struct SEvent;
+}  // namespace irr
+namespace irr::core {
+template <class T> class rect;
+}  // namespace irr::core
+namespace irr::gui {
+class IGUIFont;
+}  // namespace irr::gui
 
 class GUIInventoryList : public gui::IGUIElement
 {

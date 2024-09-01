@@ -19,12 +19,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irrlichttypes.h"
+#include <memory>
+#include <unordered_map>
 #include "irr_v2d.h"
 #include "mapblock.h"
-#include <ostream>
-#include <map>
-#include <vector>
 
 class Map;
 class IGameDef;

@@ -19,10 +19,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <iosfwd>
+#include <string>
+#include <vector>
 #include "content/mod_configuration.h"
-#include <memory>
 
 class ServerScripting;
+struct ModSpec;
 
 /**
  * Manages server mods

@@ -16,13 +16,18 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "test.h"
-
 #include <cstdio>
 #include <unordered_set>
 #include <unordered_map>
+#include <algorithm>
+#include "test.h"
 #include "mapblock.h"
 #include "dummymap.h"
+#include "constants.h"
+#include "irr_v3d.h"
+#include "mapnode.h"
+
+class IGameDef;
 
 class TestMap : public TestBase
 {

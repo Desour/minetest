@@ -18,12 +18,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "cpp_api/s_entity.h"
+#include <lauxlib.h>
+#include <stddef.h>
+#include <array>
+#include <sstream>
 #include "cpp_api/s_internal.h"
 #include "log.h"
 #include "object_properties.h"
 #include "common/c_converter.h"
 #include "common/c_content.h"
 #include "server.h"
+#include "common/c_internal.h"
+
+class ServerActiveObject;
 
 bool ScriptApiEntity::luaentity_Add(u16 id, const char *name)
 {

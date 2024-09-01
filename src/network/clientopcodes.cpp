@@ -20,6 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "clientopcodes.h"
 #include "client/client.h"
+#include "network/networkprotocol.h"
 
 const static ToClientCommandHandler null_command_handler =
 	{"TOCLIENT_NULL", TOCLIENT_STATE_ALL, &Client::handleCommand_Null};

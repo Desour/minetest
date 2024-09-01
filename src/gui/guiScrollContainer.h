@@ -19,9 +19,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <string>
 #include "irrlichttypes_extrabloated.h"
-#include "util/string.h"
 #include "guiScrollBar.h"
+
+namespace irr {
+struct SEvent;
+}  // namespace irr
+namespace irr::core {
+template <class T> class rect;
+}  // namespace irr::core
 
 class GUIScrollContainer : public gui::IGUIElement
 {

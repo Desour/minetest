@@ -21,8 +21,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <functional>
 #include <vector>
+#include <memory>
+#include <set>
+#include <string>
 #include "../activeobjectmgr.h"
 #include "serveractiveobject.h"
+#include "irrlichttypes_bloated.h"
 
 namespace server
 {

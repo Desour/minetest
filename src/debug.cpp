@@ -18,17 +18,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 
-#include "porting.h"
-#include "debug.h"
-#include "exceptions.h"
-#include <cstdio>
 #include <cstdlib>
-#include <cstring>
-#include <map>
 #include <sstream>
 #include <thread>
-#include "threading/mutex_auto_lock.h"
+#include <new>
+#include "debug.h"
 #include "config.h"
+#include "log.h"
 
 #ifdef _MSC_VER
 	#include <dbghelp.h>

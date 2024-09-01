@@ -17,8 +17,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include <algorithm>
+#include <stdlib.h>
 #include <string>
+#include <sstream>
+#include <vector>
 #include "auth.h"
 #include "base64.h"
 #include "sha1.h"

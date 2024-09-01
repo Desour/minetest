@@ -18,9 +18,22 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "game.h"
-
-#include <iomanip>
+#include <IAnimatedMeshSceneNode.h>
+#include <assert.h>
+#include <bits/std_abs.h>
+#include <libintl.h>
+#include <stdlib.h>
 #include <cmath>
+#include <algorithm>
+#include <array>
+#include <functional>
+#include <list>
+#include <memory>
+#include <optional>
+#include <sstream>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 #include "client/renderingengine.h"
 #include "camera.h"
 #include "client.h"
@@ -43,7 +56,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "gui/touchcontrols.h"
 #include "itemdef.h"
 #include "log.h"
-#include "filesys.h"
 #include "gameparams.h"
 #include "gettext.h"
 #include "gui/guiChatConsole.h"
@@ -54,7 +66,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "gui/guiVolumeChange.h"
 #include "gui/mainmenumanager.h"
 #include "gui/profilergraph.h"
-#include "mapblock.h"
 #include "minimap.h"
 #include "nodedef.h"         // Needed for determining pointing to nodes
 #include "nodemetadata.h"
@@ -72,13 +83,63 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "util/directiontables.h"
 #include "util/pointedthing.h"
 #include "util/quicktune_shortcutter.h"
-#include "irrlicht_changes/static_text.h"
 #include "irr_ptr.h"
 #include "version.h"
 #include "script/scripting_client.h"
 #include "hud.h"
 #include "clientdynamicinfo.h"
-#include <IAnimatedMeshSceneNode.h>
+#include "ESceneNodeTypes.h"
+#include "EVideoTypes.h"
+#include "IAttributes.h"
+#include "ICameraSceneNode.h"
+#include "ICursorControl.h"
+#include "IGUIStaticText.h"
+#include "ISceneNode.h"
+#include "ITexture.h"
+#include "IVideoDriver.h"
+#include "SColor.h"
+#include "SMaterial.h"
+#include "SceneParameters.h"
+#include "chat.h"
+#include "client/clientenvironment.h"
+#include "client/clientobject.h"
+#include "client/localplayer.h"
+#include "client/mtevent.h"
+#include "client/shadows/dynamicshadows.h"
+#include "client/shadows/dynamicshadowsrender.h"
+#include "client/texturesource.h"
+#include "constants.h"
+#include "debug.h"
+#include "dimension2d.h"
+#include "exceptions.h"
+#include "inventory.h"
+#include "inventorymanager.h"
+#include "irrMath.h"
+#include "irrlichttypes_extrabloated.h"
+#include "itemgroup.h"
+#include "itemstackmetadata.h"
+#include "light.h"
+#include "lighting.h"
+#include "line3d.h"
+#include "mapnode.h"
+#include "matrix4.h"
+#include "network/address.h"
+#include "network/networkexceptions.h"
+#include "network/networkprotocol.h"
+#include "object_properties.h"
+#include "player.h"
+#include "rect.h"
+#include "skyparams.h"
+#include "sound.h"
+#include "tool.h"
+#include "util/numeric.h"
+#include "util/string.h"
+#include "util/timetaker.h"
+
+namespace irr::video {
+class IMaterialRendererServices;
+}  // namespace irr::video
+struct Pointabilities;
 
 #if USE_SOUND
 	#include "client/sound/sound_openal.h"

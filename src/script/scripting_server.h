@@ -18,6 +18,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #pragma once
+#include <lua.h>
+#include <string>
 #include "cpp_api/s_base.h"
 #include "cpp_api/s_entity.h"
 #include "cpp_api/s_env.h"
@@ -28,8 +30,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "cpp_api/s_server.h"
 #include "cpp_api/s_security.h"
 #include "cpp_api/s_async.h"
+#include "irrTypes.h"
 
 struct PackedValue;
+class Server;
 
 /*****************************************************************************/
 /* Scripting <-> Server Game Interface                                       */

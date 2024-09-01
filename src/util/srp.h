@@ -55,8 +55,7 @@
 
 #pragma once
 
-struct SRPVerifier;
-struct SRPUser;
+#include <stddef.h>
 
 typedef enum {
 	SRP_NG_1024,

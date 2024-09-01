@@ -19,13 +19,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <lua.h>
+#include <unordered_set>
+#include <string>
 #include "cpp_api/s_base.h"
 #include "irr_v3d.h"
-#include <unordered_set>
 
 struct ObjectProperties;
 struct ToolCapabilities;
 struct collisionMoveResult;
+class ServerActiveObject;
 
 class ScriptApiEntity
 		: virtual public ScriptApiBase

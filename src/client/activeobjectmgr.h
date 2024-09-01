@@ -21,8 +21,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <functional>
 #include <vector>
+#include <memory>
 #include "../activeobjectmgr.h"
 #include "clientobject.h"
+#include "irr_v3d.h"
+
+namespace irr::core {
+template <class T> class line3d;
+}  // namespace irr::core
 
 namespace client
 {

@@ -18,20 +18,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "string.h"
-#include "serialize.h" // BYTE_ORDER
-#include "numeric.h"
-#include "log.h"
-
-#include "hex.h"
-#include "porting.h"
-#include "translation.h"
-#include "strfnd.h"
-
+#include <endian.h>
+#include <strings.h>
 #include <algorithm>
 #include <array>
 #include <sstream>
 #include <iomanip>
 #include <unordered_map>
+#include <cstring>
+#include "numeric.h"
+#include "log.h"
+#include "hex.h"
+#include "translation.h"
+#include "strfnd.h"
+#include "util/basic_macros.h"
 
 #ifndef _WIN32
 	#include <iconv.h>

@@ -18,6 +18,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "quicktune.h"
+#include <map>
+#include <utility>
 #include "threading/mutex_auto_lock.h"
 #include "util/string.h"
 

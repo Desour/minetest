@@ -19,8 +19,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "lua_api/l_storage.h"
+#include <assert.h>
 #include "l_internal.h"
-#include "server.h"
+#include "gamedef.h"
+#include "lua_api/l_metadata.h"
+
+class IMetadata;
+class ModStorageDatabase;
 
 int ModApiStorage::l_get_mod_storage(lua_State *L)
 {

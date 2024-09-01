@@ -19,20 +19,22 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irrlichttypes_extrabloated.h"
-#include "activeobject.h"
+#include <stddef.h>
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
-
+#include <string>
+#include "irrlichttypes_extrabloated.h"
+#include "activeobject.h"
 
 class ClientEnvironment;
 class ITextureSource;
 class Client;
-class IGameDef;
-class LocalPlayer;
 struct ItemStack;
-class WieldMeshSceneNode;
+namespace irr::scene {
+class IAnimatedMeshSceneNode;
+class ISceneNode;
+}  // namespace irr::scene
 
 class ClientActiveObject : public ActiveObject
 {

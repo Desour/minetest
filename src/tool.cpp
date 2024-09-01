@@ -18,17 +18,25 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "tool.h"
+#include <json/reader.h>
+#include <math.h>
+#include <stddef.h>
+#include <algorithm>
+#include <iterator>
+#include <stdexcept>
+#include <vector>
 #include "itemdef.h"
 #include "itemgroup.h"
-#include "log.h"
 #include "inventory.h"
 #include "exceptions.h"
 #include "convert_json.h"
 #include "util/serialize.h"
 #include "util/numeric.h"
-#include "util/hex.h"
 #include "common/c_content.h"
-#include <json/json.h>
+#include "SColor.h"
+#include "itemstackmetadata.h"
+#include "json-forwards.h"
+#include "util/string.h"
 
 
 void ToolGroupCap::toJson(Json::Value &object) const

@@ -18,12 +18,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "guiButtonItemImage.h"
-
-#include "client/client.h"
-#include "client/hud.h" // drawItemStack
 #include "guiItemImage.h"
 #include "IGUIEnvironment.h"
-#include "itemdef.h"
+#include "gui/guiButton.h"
+#include "rect.h"
+
+class ISimpleTextureSource;
+namespace irr::gui {
+class IGUIElement;
+}  // namespace irr::gui
 
 using namespace irr;
 using namespace gui;

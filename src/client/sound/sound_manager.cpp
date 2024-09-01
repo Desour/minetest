@@ -23,11 +23,26 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "sound_manager.h"
-
+#include <al.h>
+#include <assert.h>
+#include <stddef.h>
+#include <algorithm>
+#include <cmath>
+#include <ostream>
+#include <variant>
 #include "sound_singleton.h"
 #include "util/numeric.h" // myrand()
 #include "filesys.h"
 #include "porting.h"
+#include "client/sound.h"
+#include "client/sound/al_helpers.h"
+#include "client/sound/ogg_file.h"
+#include "client/sound/playing_sound.h"
+#include "client/sound/sound_constants.h"
+#include "client/sound/sound_manager_messages.h"
+#include "debug.h"
+#include "log.h"
+#include "sound.h"
 
 namespace sound {
 

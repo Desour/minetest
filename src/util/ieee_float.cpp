@@ -24,11 +24,12 @@
  */
 
 #include "ieee_float.h"
-#include "log.h"
-#include "porting.h"
 #include <limits>
 #include <cmath>
 #include <cstring>
+#include <ostream>
+#include "log.h"
+#include "porting.h"
 
 // Given an unsigned 32-bit integer representing an IEEE-754 single-precision
 // float, return the float.

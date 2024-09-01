@@ -19,24 +19,23 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 
 #include "guiTable.h"
-#include <queue>
+#include <IGUISkin.h>
+#include <IGUIFont.h>
+#include <assert.h>
 #include <sstream>
 #include <utility>
 #include <cstring>
-#include <IGUISkin.h>
-#include <IGUIFont.h>
-#include "client/renderingengine.h"
-#include "debug.h"
+#include <algorithm>
+#include <cmath>
+#include <iostream>
 #include "irrlicht_changes/CGUITTFont.h"
 #include "log.h"
 #include "client/texturesource.h"
-#include "gettime.h"
 #include "util/string.h"
 #include "util/numeric.h"
-#include "util/string.h" // for parseColorString()
-#include "settings.h" // for settings
 #include "porting.h" // for dpi
-#include "client/guiscalingfilter.h"
+#include "gui/guiScrollBar.h"
+#include "util/basic_macros.h"
 
 /*
 	GUITable

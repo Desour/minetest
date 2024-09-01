@@ -6,8 +6,17 @@
 #define GUIEDITBOXWITHSCROLLBAR_HEADER
 
 #include "guiEditBox.h"
+#include "SColor.h"
+#include "irrTypes.h"
 
 class ISimpleTextureSource;
+namespace irr::core {
+template <class T> class rect;
+}  // namespace irr::core
+namespace irr::gui {
+class IGUIElement;
+class IGUIEnvironment;
+}  // namespace irr::gui
 
 class GUIEditBoxWithScrollBar : public GUIEditBox
 {

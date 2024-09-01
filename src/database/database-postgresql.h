@@ -19,12 +19,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include <string>
 #include <libpq-fe.h>
+#include <stdlib.h>
+#include <string>
+#include <string_view>
+#include <vector>
 #include "database.h"
-#include "util/basic_macros.h"
+#include "irr_v3d.h"
+#include "util/string.h"
 
-class Settings;
+class PlayerSAO;
+class RemotePlayer;
 
 class Database_PostgreSQL: public Database
 {

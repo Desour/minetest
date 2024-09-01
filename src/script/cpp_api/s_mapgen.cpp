@@ -18,10 +18,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "cpp_api/s_mapgen.h"
+#include <lua.h>
 #include "cpp_api/s_internal.h"
 #include "common/c_converter.h"
 #include "lua_api/l_vmanip.h"
 #include "emerge.h"
+#include "common/c_internal.h"
+#include "constants.h"
+#include "irr_v3d.h"
 
 void ScriptApiMapgen::on_mods_loaded()
 {

@@ -19,11 +19,28 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "network/mtp/threads.h"
+#include <string.h>
+#include <deque>
+#include <list>
+#include <map>
+#include <memory>
+#include <ostream>
+#include <string>
+#include <vector>
 #include "log.h"
 #include "profiler.h"
 #include "settings.h"
 #include "network/networkpacket.h"
 #include "util/serialize.h"
+#include "constants.h"
+#include "debug.h"
+#include "exceptions.h"
+#include "network/address.h"
+#include "network/networkexceptions.h"
+#include "network/socket.h"
+#include "util/basic_macros.h"
+#include "util/container.h"
+#include "util/string.h"
 
 namespace con
 {

@@ -19,24 +19,35 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "itemdef.h"
-
-#include "nodedef.h"
+#include <assert.h>
+#include <stddef.h>
 #include "tool.h"
 #include "inventory.h"
+#include "debug.h"
+#include "exceptions.h"
+#include "itemstackmetadata.h"
+#include "texture_override.h"
+#include "util/basic_macros.h"
+#include "util/string.h"
 #ifndef SERVER
-#include "client/mapblock_mesh.h"
-#include "client/mesh.h"
 #include "client/wieldmesh.h"
 #include "client/client.h"
 #endif
+#include <map>
+#include <set>
+#include <memory>
+#include <sstream>
+#include <thread>
+#include <unordered_map>
+#include <utility>
 #include "log.h"
 #include "settings.h"
 #include "util/serialize.h"
-#include "util/container.h"
-#include "util/thread.h"
 #include "util/pointedthing.h"
-#include <map>
-#include <set>
+
+namespace irr::video {
+class ITexture;
+}  // namespace irr::video
 
 TouchInteraction::TouchInteraction()
 {

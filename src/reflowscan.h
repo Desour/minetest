@@ -19,12 +19,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "util/container.h"
 #include "irrlichttypes_bloated.h"
 
 class NodeDefManager;
 class Map;
 class MapBlock;
+template <typename Value> class UniqueQueue;
 
 class ReflowScan {
 public:

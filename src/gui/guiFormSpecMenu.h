@@ -19,11 +19,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <ICursorControl.h> // gui::ECURSOR_ICON
+#include <stddef.h>
 #include <optional>
 #include <utility>
 #include <stack>
 #include <unordered_set>
-
+#include <array>
+#include <functional>
+#include <list>
+#include <map>
+#include <string>
+#include <unordered_map>
+#include <vector>
 #include "irrlichttypes_extrabloated.h"
 #include "irr_ptr.h"
 #include "inventory.h"
@@ -32,19 +40,24 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "guiInventoryList.h"
 #include "guiScrollBar.h"
 #include "guiTable.h"
-#include "network/networkprotocol.h"
-#include "client/joystick_controller.h"
 #include "util/string.h"
-#include "util/enriched_string.h"
 #include "StyleSpec.h"
-#include <ICursorControl.h> // gui::ECURSOR_ICON
-#include <IGUIStaticText.h>
+#include "SColor.h"
+#include "rect.h"
 
-class InventoryManager;
 class ISimpleTextureSource;
 class Client;
 class GUIScrollContainer;
 class ISoundManager;
+class JoystickController;
+namespace irr {
+struct SEvent;
+}  // namespace irr
+namespace irr::gui {
+class IGUICheckBox;
+class IGUIFont;
+class IGUIStaticText;
+}  // namespace irr::gui
 
 enum FormspecFieldType {
 	f_Button,

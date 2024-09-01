@@ -19,10 +19,27 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <set>
+#include <memory>
+#include <optional>
+#include <queue>
+#include <string>
+#include <unordered_map>
+#include <vector>
 #include "environment.h"
 #include "util/numeric.h" // IntervalLimiter
 #include "activeobjectmgr.h" // client::ActiveObjectMgr
-#include <set>
+#include "irr_v3d.h"
+
+class Client;
+class DistanceSortedActiveObject;
+class ITextureSource;
+class Map;
+namespace irr::core {
+template <class T> class line3d;
+}  // namespace irr::core
+struct Pointabilities;
+struct PointedThing;
 
 #ifdef SERVER
 #error Do not include in server builds

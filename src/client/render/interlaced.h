@@ -19,7 +19,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #pragma once
-#include "stereo.h"
+
+#include "client/render/pipeline.h"
+#include "irrTypes.h"
+
+class Client;
+namespace irr::video {
+class ITexture;
+}  // namespace irr::video
 
 class InitInterlacedMaskStep : public TrivialRenderStep
 {

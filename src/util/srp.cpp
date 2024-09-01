@@ -33,16 +33,13 @@
 	#include <windows.h>
 	#include <wincrypt.h>
 #else
-	#include <ctime>
 
 #endif
 
+#include <config.h>
 #include <cstdlib>
 #include <cstring>
 #include <cstdio>
-#include <cstdint>
-
-#include <config.h>
 
 #if USE_SYSTEM_GMP
 	#include <gmp.h>
@@ -51,8 +48,8 @@
 #endif
 
 #include "my_sha256.h"
-
 #include "srp.h"
+
 //#define CSRP_USE_SHA1
 #define CSRP_USE_SHA256
 

@@ -18,11 +18,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "mods.h"
+#include <memory>
+#include <ostream>
 #include "filesys.h"
 #include "log.h"
 #include "scripting_server.h"
 #include "content/subgames.h"
 #include "porting.h"
+#include "content/mods.h"
 
 /**
  * Manage server mods

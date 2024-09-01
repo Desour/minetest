@@ -19,6 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <lua.h>
 #include "lua_api/l_base.h"
 
 class ModApiServer : public ModApiBase

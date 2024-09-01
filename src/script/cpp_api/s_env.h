@@ -19,14 +19,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "cpp_api/s_base.h"
-#include "irr_v3d.h"
-#include "mapnode.h"
 #include <unordered_set>
 #include <vector>
+#include <string>
+#include <utility>
+#include "cpp_api/s_base.h"
+#include "irr_v3d.h"
 
 class ServerEnvironment;
 struct ScriptCallbackState;
+class ServerActiveObject;
+struct MapNode;
 
 class ScriptApiEnv : virtual public ScriptApiBase
 {

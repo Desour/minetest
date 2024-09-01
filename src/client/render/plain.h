@@ -19,8 +19,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #pragma once
-#include "core.h"
+#include <memory>
 #include "pipeline.h"
+#include "irr_v2d.h"
+
+class Client;
 
 /**
  * Implements a pipeline step that renders the 3D scene

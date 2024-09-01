@@ -29,21 +29,21 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 	- etc.
 */
 
-#include <list>
-#include <queue>
-#include <map>
 #include <atomic>
 #include <mutex>
 #include <optional>
+#include <vector>
 #include "irr_v3d.h"
 #include "util/basic_macros.h"
-#include "line3d.h"
 
 class IGameDef;
 class Map;
 struct PointedThing;
 class RaycastState;
 struct Pointabilities;
+namespace irr::core {
+template <class T> class line3d;
+}  // namespace irr::core
 
 class Environment
 {

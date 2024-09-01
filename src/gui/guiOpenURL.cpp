@@ -16,15 +16,29 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
 #include "guiOpenURL.h"
-#include "guiButton.h"
-#include "guiEditBoxWithScrollbar.h"
 #include <IGUIEditBox.h>
 #include <IGUIFont.h>
 #include <IVideoDriver.h>
-#include "client/renderingengine.h"
+#include <exception>
+#include <ostream>
+#include <stdexcept>
+#include "guiButton.h"
+#include "guiEditBoxWithScrollbar.h"
 #include "porting.h"
 #include "gettext.h"
 #include "util/colorize.h"
+#include "EGUIAlignment.h"
+#include "IEventReceiver.h"
+#include "IGUISkin.h"
+#include "Keycodes.h"
+#include "SColor.h"
+#include "client/fontengine.h"
+#include "dimension2d.h"
+#include "gui/modalMenu.h"
+#include "irrlicht_changes/static_text.h"
+#include "log.h"
+#include "rect.h"
+#include "util/string.h"
 
 namespace {
 	constexpr int ID_url = 256;

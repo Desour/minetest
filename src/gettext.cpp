@@ -17,18 +17,18 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <locale.h>
+#include <stdlib.h>
 #include <string>
-#include <cstring>
 #include <iostream>
 #include "gettext.h"
 #include "util/string.h"
-#include "porting.h"
 #include "log.h"
 
 #if USE_GETTEXT && defined(_MSC_VER)
 #include <windows.h>
-#include <map>
 #include <direct.h>
+#include <map>
 #include "filesys.h"
 
 #define setlocale(category, localename) \

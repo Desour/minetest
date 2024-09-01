@@ -39,11 +39,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 	//#include <OpenAL/alext.h>
 #else
 	#include <AL/al.h>
-	#include <AL/alc.h>
-	#include <AL/alext.h>
 #endif
 
 #include <utility>
+#include <ostream>
 
 namespace sound {
 

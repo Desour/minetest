@@ -19,8 +19,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irrlichttypes.h"
 #include <string>
+#include "irrlichttypes.h"
 
 #ifdef SERVER
 #error Do not include in server builds
@@ -29,7 +29,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 class InputHandler;
 class ChatBackend;
 class RenderingEngine;
-struct SubgameSpec;
 struct GameStartData;
 
 struct Jitter {

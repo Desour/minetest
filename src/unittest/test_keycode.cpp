@@ -17,11 +17,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <string.h>
 #include "test.h"
-
-#include <string>
-#include "exceptions.h"
 #include "client/keycode.h"
+#include "IEventReceiver.h"
+#include "Keycodes.h"
+
+class IGameDef;
 
 class TestKeycode : public TestBase {
 public:

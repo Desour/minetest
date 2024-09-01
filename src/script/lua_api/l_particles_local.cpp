@@ -19,14 +19,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "lua_api/l_particles_local.h"
+#include <lauxlib.h>
+#include <stddef.h>
+#include <vector>
 #include "common/c_content.h"
 #include "common/c_converter.h"
 #include "lua_api/l_internal.h"
-#include "lua_api/l_object.h"
 #include "lua_api/l_particleparams.h"
 #include "client/particles.h"
 #include "client/client.h"
 #include "client/clientevent.h"
+#include "irrTypes.h"
+#include "mapnode.h"
+#include "particles.h"
+#include "tileanimation.h"
 
 int ModApiParticlesLocal::l_add_particle(lua_State *L)
 {

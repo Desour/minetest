@@ -19,6 +19,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <cwchar>
+#include <stdexcept>
+#include <string>
+#include <utility>
 #include "config.h" // for USE_GETTEXT
 #include "porting.h"
 #include "util/string.h"

@@ -20,20 +20,31 @@
  */
 
 #include "guiKeyChangeMenu.h"
-#include "debug.h"
-#include "guiButton.h"
-#include "serialization.h"
-#include <string>
 #include <IGUICheckBox.h>
-#include <IGUIEditBox.h>
 #include <IGUIButton.h>
 #include <IGUIStaticText.h>
-#include <IGUIFont.h>
 #include <IVideoDriver.h>
+#include <string.h>
+#include <string>
+#include <ostream>
+#include <utility>
+#include "debug.h"
+#include "guiButton.h"
 #include "settings.h"
-#include <algorithm>
-
 #include "mainmenumanager.h"  // for g_gamecallback
+#include "EGUIElementTypes.h"
+#include "IEventReceiver.h"
+#include "Keycodes.h"
+#include "SColor.h"
+#include "gettext.h"
+#include "gui/modalMenu.h"
+#include "irrlicht_changes/static_text.h"
+#include "log.h"
+#include "rect.h"
+
+namespace irr::gui {
+class IGUISkin;
+}  // namespace irr::gui
 
 #define KMaxButtonPerColumns 12
 

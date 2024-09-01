@@ -17,9 +17,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <vector>
 #include "test.h"
-
 #include "mesh_compare.h"
+#include "S3DVertex.h"
+#include "SColor.h"
+
+class IGameDef;
 
 // This is a self-test to ensure proper functionality of the vertex
 // building functions (`Triangle`, `Quad`) and its validation function

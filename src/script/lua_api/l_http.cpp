@@ -17,17 +17,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <assert.h>
+#include <lauxlib.h>
+#include <sstream>
+#include <string>
+#include <vector>
 #include "lua_api/l_internal.h"
 #include "common/c_converter.h"
-#include "common/c_content.h"
 #include "lua_api/l_http.h"
 #include "cpp_api/s_security.h"
 #include "httpfetch.h"
-#include "settings.h"
-#include "debug.h"
 #include "log.h"
-
-#include <iomanip>
+#include "common/c_internal.h"
+#include "irrTypes.h"
 
 #define HTTP_API(name) \
 	lua_pushstring(L, #name); \

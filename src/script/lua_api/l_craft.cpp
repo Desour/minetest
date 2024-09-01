@@ -19,12 +19,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 
 #include "lua_api/l_craft.h"
+#include <lauxlib.h>
+#include <stddef.h>
+#include <ostream>
+#include <utility>
 #include "lua_api/l_internal.h"
 #include "lua_api/l_item.h"
 #include "common/c_converter.h"
 #include "common/c_content.h"
 #include "server.h"
 #include "craftdef.h"
+#include "gamedef.h"
+#include "inventory.h"
+#include "irrTypes.h"
+#include "log.h"
 
 struct EnumString ModApiCraft::es_CraftMethod[] =
 {

@@ -19,10 +19,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <SColor.h>
+#include <stddef.h>
 #include <string>
 #include <string_view>
 #include <vector>
-#include <SColor.h>
 
 using namespace irr;
 

@@ -18,13 +18,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "numeric.h"
-
-#include "log.h"
-#include "constants.h" // BS, MAP_BLOCKSIZE
-#include "noise.h" // PseudoRandom, PcgRandom
-#include "threading/mutex_auto_lock.h"
 #include <cstring>
 #include <cmath>
+#include "constants.h" // BS, MAP_BLOCKSIZE
+#include "noise.h" // PseudoRandom, PcgRandom
+#include "matrix4.h"
+#include "util/basic_macros.h"
 
 
 // myrand

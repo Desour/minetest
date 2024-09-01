@@ -18,6 +18,21 @@
  */
 
 #include "guiPathSelectMenu.h"
+#include <locale.h>
+#include "IEventReceiver.h"
+#include "IGUIFileOpenDialog.h"
+#include "dimension2d.h"
+#include "gui/guiFormSpecMenu.h"
+#include "gui/modalMenu.h"
+#include "irrString.h"
+#include "irrlichttypes_extrabloated.h"
+#include "position2d.h"
+#include "rect.h"
+#include "util/string.h"
+
+namespace irr::gui {
+class IGUISkin;
+}  // namespace irr::gui
 
 GUIFileSelectMenu::GUIFileSelectMenu(gui::IGUIEnvironment* env,
 		gui::IGUIElement* parent, s32 id, IMenuManager *menumgr,

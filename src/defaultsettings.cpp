@@ -17,12 +17,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <fstream>
+#include <string>
 #include "settings.h"
 #include "porting.h"
 #include "filesys.h"
 #include "config.h"
 #include "constants.h"
-#include "porting.h"
 #include "mapgen/mapgen.h" // Mapgen::setDefaultSettings
 #include "util/string.h"
 

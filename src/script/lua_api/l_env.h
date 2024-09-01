@@ -19,9 +19,26 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <lauxlib.h>
+#include <lua.h>
+#include <optional>
+#include <set>
+#include <string>
+#include <vector>
 #include "lua_api/l_base.h"
 #include "serverenvironment.h"
 #include "raycast.h"
+#include "common/c_types.h"
+#include "irr_v3d.h"
+#include "mapnode.h"
+
+class MMVManip;
+class NodeDefManager;
+class ServerScripting;
+namespace irr::core {
+template <class T> class line3d;
+}  // namespace irr::core
+struct Pointabilities;
 
 // base class containing helpers
 class ModApiEnvBase : public ModApiBase {

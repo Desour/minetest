@@ -23,6 +23,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "mapgen.h"
 #include "noise.h"
+#include "irrlichttypes_bloated.h"
+#include "mapnode.h"
+#include "util/string.h"
+
+class EmergeParams;
+class Settings;
+struct BlockMakeData;
 
 #define MGV6_AVERAGE_MUD_AMOUNT 4
 #define MGV6_DESERT_STONE_BASE -32

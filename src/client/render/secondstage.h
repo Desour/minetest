@@ -19,8 +19,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #pragma once
-#include "stereo.h"
+#include <vector>
 #include "pipeline.h"
+#include "SMaterial.h"
+#include "irr_v2d.h"
+
+class Client;
 
 /**
  *  Step to apply post-processing filter to the rendered image

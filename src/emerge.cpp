@@ -19,14 +19,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 
+#include <assert.h>
+#include <stddef.h>
+#include <map>
+#include <memory>
+#include <queue>
+#include <sstream>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 #include "emerge_internal.h"
-
-#include <iostream>
-
-#include "util/container.h"
 #include "config.h"
 #include "constants.h"
-#include "environment.h"
 #include "irrlicht_changes/printing.h"
 #include "filesys.h"
 #include "log.h"
@@ -36,13 +41,29 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "mapgen/mg_ore.h"
 #include "mapgen/mg_decoration.h"
 #include "mapgen/mg_schematic.h"
-#include "nodedef.h"
 #include "profiler.h"
 #include "scripting_server.h"
 #include "scripting_emerge.h"
 #include "server.h"
 #include "settings.h"
 #include "voxel.h"
+#include "common/c_types.h"
+#include "cpp_api/s_base.h"
+#include "debug.h"
+#include "emerge.h"
+#include "exceptions.h"
+#include "irrlichttypes_bloated.h"
+#include "map.h"
+#include "mapgen/mapgen.h"
+#include "porting.h"
+#include "serverenvironment.h"
+#include "threading/event.h"
+#include "threading/mutex_auto_lock.h"
+#include "threading/thread.h"
+#include "util/basic_macros.h"
+#include "util/metricsbackend.h"
+#include "util/numeric.h"
+#include "util/string.h"
 
 EmergeParams::~EmergeParams()
 {

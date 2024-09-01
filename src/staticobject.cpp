@@ -18,6 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "staticobject.h"
+#include <utility>
 #include "util/serialize.h"
 #include "server/serveractiveobject.h"
 

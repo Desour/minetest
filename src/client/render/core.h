@@ -20,19 +20,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 #include "irrlichttypes_extrabloated.h"
-
-namespace irr
-{
-	class IrrlichtDevice;
-}
+#include "SColor.h"
 
 class ShadowRenderer;
-class Camera;
 class Client;
 class Hud;
-class Minimap;
 class RenderPipeline;
-class RenderTarget;
 
 class RenderingCore
 {

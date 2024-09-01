@@ -18,12 +18,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "serverinventorymgr.h"
+#include <ostream>
+#include <utility>
 #include "map.h"
 #include "nodemetadata.h"
 #include "player_sao.h"
 #include "remoteplayer.h"
 #include "server.h"
 #include "serverenvironment.h"
+#include "constants.h"
+#include "debug.h"
+#include "log.h"
 
 ServerInventoryManager::ServerInventoryManager() : InventoryManager()
 {

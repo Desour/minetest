@@ -21,14 +21,20 @@
 
 #pragma once
 
-#include "irrlichttypes_extrabloated.h"
-#include "modalMenu.h"
-#include "gettext.h"
-#include "client/keycode.h"
 #include <string>
 #include <vector>
+#include "irrlichttypes_extrabloated.h"
+#include "modalMenu.h"
+#include "client/keycode.h"
 
 class ISimpleTextureSource;
+namespace irr {
+struct SEvent;
+}  // namespace irr
+namespace irr::gui {
+class IGUIButton;
+class IGUIStaticText;
+}  // namespace irr::gui
 
 struct key_setting
 {

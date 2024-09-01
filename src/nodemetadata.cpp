@@ -18,15 +18,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "nodemetadata.h"
+#include <sstream>
+#include <utility>
 #include "exceptions.h"
-#include "gamedef.h"
 #include "inventory.h"
 #include "irrlicht_changes/printing.h"
 #include "log.h"
 #include "debug.h"
 #include "util/serialize.h"
 #include "constants.h" // MAP_BLOCKSIZE
-#include <sstream>
+#include "util/string.h"
 
 /*
 	NodeMetadata

@@ -19,6 +19,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "luaentity_sao.h"
+#include <assert.h>
+#include <bits/std_abs.h>
+#include <cmath>
+#include <queue>
+#include <sstream>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 #include "collision.h"
 #include "constants.h"
 #include "inventory.h"
@@ -27,6 +36,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "scripting_server.h"
 #include "server.h"
 #include "serverenvironment.h"
+#include "irrMath.h"
+#include "log.h"
+#include "server/serveractiveobject.h"
+#include "server/unit_sao.h"
+#include "tool.h"
+#include "util/numeric.h"
+#include "util/serialize.h"
 
 LuaEntitySAO::LuaEntitySAO(ServerEnvironment *env, v3f pos, const std::string &data)
 	: UnitSAO(env, pos)

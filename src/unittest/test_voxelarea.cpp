@@ -19,6 +19,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "test.h"
 #include "voxel.h"
+#include "irr_v3d.h"
+
+class IGameDef;
 
 class TestVoxelArea : public TestBase
 {

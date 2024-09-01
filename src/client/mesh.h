@@ -19,9 +19,18 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "SMaterialLayer.h"
+#include <stddef.h>
+#include <vector>
 #include "irrlichttypes_extrabloated.h"
-#include "nodedef.h"
+#include "SColor.h"
+
+namespace irr::scene {
+class IAnimatedMesh;
+class IAnimatedMeshSceneNode;
+}  // namespace irr::scene
+namespace irr::video {
+class SMaterialLayer;
+}  // namespace irr::video
 
 /*!
  * Applies shading to a color based on the surface's

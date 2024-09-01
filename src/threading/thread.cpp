@@ -24,6 +24,11 @@ DEALINGS IN THE SOFTWARE.
 */
 
 #include "threading/thread.h"
+#include <assert.h>
+#include <bits/types/struct_sched_param.h>
+#include <pthread.h>
+#include <sched.h>
+#include <system_error>
 #include "threading/mutex_auto_lock.h"
 #include "log.h"
 #include "porting.h"

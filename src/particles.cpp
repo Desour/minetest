@@ -19,6 +19,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "particles.h"
 #include <type_traits>
+#include <cmath>
+#include "util/numeric.h"
+#include "util/serialize.h"
 
 using namespace ParticleParamTypes;
 

@@ -19,9 +19,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <SColor.h>
+#include <string>
+#include <string_view>
+#include <vector>
 #include "util/pointer.h"
 #include "networkprotocol.h"
-#include <SColor.h>
+#include "irrlichttypes_bloated.h"
 
 class NetworkPacket
 {

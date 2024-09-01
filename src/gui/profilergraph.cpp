@@ -18,10 +18,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <math.h>
+#include <string>
 #include "porting.h"
 #include "profilergraph.h"
 #include "IVideoDriver.h"
 #include "util/string.h"
+#include "IGUIFont.h"
+#include "SColor.h"
+#include "irr_v2d.h"
+#include "rect.h"
 
 void ProfilerGraph::put(const Profiler::GraphValues &values)
 {

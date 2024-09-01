@@ -18,6 +18,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "tile.h"
+#include "EMaterialTypes.h"
+#include "SMaterial.h"
+#include "SMaterialLayer.h"
 
 // Sets everything else except the texture in the material
 void TileLayer::applyMaterialOptions(video::SMaterial &material) const

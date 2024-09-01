@@ -7,8 +7,17 @@
 
 #include "IGUISkin.h"
 #include "irrString.h"
-#include <string>
-#include "ITexture.h"
+#include "EGUIAlignment.h"
+#include "SColor.h"
+#include "irrTypes.h"
+#include "position2d.h"
+#include "rect.h"
+
+namespace irr::gui {
+class IGUIElement;
+class IGUIFont;
+class IGUISpriteBank;
+}  // namespace irr::gui
 
 namespace irr
 {

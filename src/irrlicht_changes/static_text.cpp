@@ -5,14 +5,12 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "static_text.h"
-
 #include <IGUIFont.h>
 #include <IVideoDriver.h>
 #include <rect.h>
 #include <SColor.h>
-
+#include <string>
 #include "CGUITTFont.h"
-#include "util/string.h"
 
 namespace irr
 {

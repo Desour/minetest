@@ -24,11 +24,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include "mapgen.h"
+#include "irrlichttypes_bloated.h"
+#include "noise.h"
+#include "util/string.h"
+
+class EmergeParams;
+class Settings;
+struct BlockMakeData;
 
 ///////////// Mapgen Fractal flags
 #define MGFRACTAL_TERRAIN     0x01
-
-class BiomeManager;
 
 extern FlagDesc flagdesc_mapgen_fractal[];
 

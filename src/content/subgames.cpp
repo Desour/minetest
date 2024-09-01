@@ -18,15 +18,18 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include <common/c_internal.h>
+#include <stdlib.h>
+#include <sstream>
 #include "content/subgames.h"
 #include "porting.h"
 #include "filesys.h"
 #include "settings.h"
 #include "log.h"
 #include "util/strfnd.h"
-#include "defaultsettings.h" // for set_default_settings
 #include "map_settings_manager.h"
 #include "util/string.h"
+#include "constants.h"
+#include "exceptions.h"
 
 #ifndef SERVER
 #include "client/texturepaths.h"

@@ -17,19 +17,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <stddef.h>
 #include <cctype>
 #include <fstream>
-#include <json/json.h>
 #include <algorithm>
+#include <sstream>
+#include <utility>
 #include "content/mods.h"
 #include "database/database.h"
 #include "filesys.h"
 #include "log.h"
-#include "content/subgames.h"
 #include "settings.h"
-#include "porting.h"
-#include "convert_json.h"
 #include "script/common/c_internal.h"
+#include "exceptions.h"
 
 void ModSpec::checkAndLog() const
 {

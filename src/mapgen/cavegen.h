@@ -20,13 +20,23 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <stddef.h>
+#include "irr_v3d.h"
+#include "mapnode.h"
+#include "voxel.h"
+
 #define VMANIP_FLAG_CAVE VOXELFLAG_CHECKED1
 
 typedef u16 biome_t;  // copy from mg_biome.h to avoid an unnecessary include
 
 class GenerateNotifier;
-
 class BiomeGen;
+class BiomeManager;
+class MMVManip;
+class NodeDefManager;
+class Noise;
+class PseudoRandom;
+struct NoiseParams;
 
 /*
 	CavesNoiseIntersection is a cave digging algorithm that carves smooth,

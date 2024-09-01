@@ -17,13 +17,21 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <stdlib.h>
+#include <map>
+#include <vector>
 #include "test.h"
-
 #include "gamedef.h"
 #include "voxelalgorithms.h"
 #include "util/numeric.h"
 #include "dummymap.h"
 #include "nodedef.h"
+#include "irrlichttypes_bloated.h"
+#include "line3d.h"
+#include "map.h"
+#include "mapblock.h"
+#include "mapnode.h"
+#include "voxel.h"
 
 class TestVoxelAlgorithms : public TestBase {
 public:

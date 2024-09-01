@@ -22,8 +22,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <map>
 #include <set>
 #include <string>
+#include <string_view>
+#include <unordered_map>
+#include <vector>
 #include "database.h"
 #include "irrlichttypes.h"
+#include "irr_v3d.h"
+#include "util/string.h"
+
+class PlayerSAO;
+class RemotePlayer;
 
 class Database_Dummy : public MapDatabase, public PlayerDatabase, public ModStorageDatabase
 {

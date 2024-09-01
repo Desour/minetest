@@ -18,13 +18,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include <inttypes.h>
+#include <stddef.h>
+#include <iostream>
+#include <vector>
 #include "config.h"
+#include "debug.h"
+#include "util/basic_macros.h"
+#include "util/enriched_string.h"
 #if USE_CURSES
 #include "version.h"
 #include "terminal_chat_console.h"
-#include "porting.h"
 #include "settings.h"
-#include "util/numeric.h"
 #include "util/string.h"
 #include "chat_interface.h"
 

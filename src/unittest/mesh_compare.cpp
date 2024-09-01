@@ -21,6 +21,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <algorithm>
 #include <map>
 #include <stdexcept>
+#include <iterator>
+#include <utility>
+#include "S3DVertex.h"
+#include "irrTypes.h"
 
 static std::vector<Triangle> expandMesh(const std::vector<video::S3DVertex> &vertices, const std::vector<u16> &indices)
 {

@@ -17,17 +17,26 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
 #include "guiPasswordChange.h"
+#include <IGUIEditBox.h>
+#include <IGUIStaticText.h>
+#include <IVideoDriver.h>
+#include <stddef.h>
+#include <ostream>
 #include "client/client.h"
 #include "guiButton.h"
-#include <IGUICheckBox.h>
-#include <IGUIEditBox.h>
-#include <IGUIButton.h>
-#include <IGUIStaticText.h>
-#include <IGUIFont.h>
-#include <IVideoDriver.h>
-
-#include "porting.h"
 #include "gettext.h"
+#include "IEventReceiver.h"
+#include "Keycodes.h"
+#include "SColor.h"
+#include "gui/modalMenu.h"
+#include "irrlicht_changes/static_text.h"
+#include "log.h"
+#include "rect.h"
+#include "util/string.h"
+
+namespace irr::gui {
+class IGUISkin;
+}  // namespace irr::gui
 
 const int ID_oldPassword = 256;
 const int ID_newPassword1 = 257;

@@ -21,13 +21,18 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include "mapgen.h"
+#include "irr_v2d.h"
+#include "noise.h"
+#include "util/string.h"
+
+class EmergeParams;
+class Settings;
+struct BlockMakeData;
 
 /////// Mapgen Flat flags
 #define MGFLAT_LAKES 0x01
 #define MGFLAT_HILLS 0x02
 #define MGFLAT_CAVERNS 0x04
-
-class BiomeManager;
 
 extern FlagDesc flagdesc_mapgen_flat[];
 

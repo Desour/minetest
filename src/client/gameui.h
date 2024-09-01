@@ -20,12 +20,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <string>
 #include "irrlichttypes.h"
-#include <IGUIEnvironment.h>
-#include "gui/guiFormSpecMenu.h"
-#include "util/enriched_string.h"
-#include "util/pointedthing.h"
-#include "game.h"
+#include "SColor.h"
+#include "rect.h"
+
+class EnrichedString;
+class GUIFormSpecMenu;
+namespace irr::gui {
+class IGUIStaticText;
+}  // namespace irr::gui
+struct CameraOrientation;
+struct PointedThing;
+struct RunStats;
 
 using namespace irr;
 class Client;

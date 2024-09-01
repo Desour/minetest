@@ -18,16 +18,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "player.h"
-
+#include <assert.h>
+#include <bits/std_abs.h>
 #include <cmath>
+#include <algorithm>
 #include "threading/mutex_auto_lock.h"
-#include "util/numeric.h"
 #include "hud.h"
 #include "constants.h"
-#include "gamedef.h"
-#include "settings.h"
-#include "log.h"
-#include "porting.h"  // strlcpy
+#include "util/string.h"
+
+class IItemDefManager;
 
 
 bool is_valid_player_name(std::string_view name) {

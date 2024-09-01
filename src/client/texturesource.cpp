@@ -18,14 +18,34 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "texturesource.h"
-
 #include <IVideoDriver.h>
+#include <assert.h>
+#include <string.h>
+#include <deque>
+#include <list>
+#include <map>
+#include <ostream>
+#include <set>
+#include <thread>
+#include <unordered_map>
+#include <utility>
 #include "util/thread.h"
 #include "imagefilters.h"
 #include "guiscalingfilter.h"
 #include "renderingengine.h"
 #include "texturepaths.h"
 #include "imagesource.h"
+#include "ITexture.h"
+#include "debug.h"
+#include "dimension2d.h"
+#include "exceptions.h"
+#include "irrlichttypes_extrabloated.h"
+#include "log.h"
+#include "path.h"
+#include "position2d.h"
+#include "settings.h"
+#include "threading/mutex_auto_lock.h"
+#include "util/container.h"
 
 
 // Stores internal information about a texture.

@@ -18,7 +18,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "localplayer.h"
+#include <stddef.h>
 #include <cmath>
+#include <algorithm>
 #include "mtevent.h"
 #include "collision.h"
 #include "nodedef.h"
@@ -27,6 +29,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "map.h"
 #include "client.h"
 #include "content_cao.h"
+#include "debug.h"
+#include "gamedef.h"
+#include "irrMath.h"
+#include "itemgroup.h"
+#include "mapnode.h"
+#include "util/basic_macros.h"
+#include "util/numeric.h"
 
 /*
 	PlayerSettings

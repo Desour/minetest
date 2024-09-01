@@ -22,7 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "sound_openal.h"
-
+#include <utility>
 #include "sound_singleton.h"
 #include "proxy_sound_manager.h"
 

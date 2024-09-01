@@ -19,11 +19,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "inventorymanager.h"
 #include <cassert>
 #include <functional>
 #include <memory>
 #include <unordered_map>
+#include <string>
+#include "inventorymanager.h"
+#include "inventory.h"
 
 class IItemDefManager;
 class ServerEnvironment;

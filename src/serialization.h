@@ -19,10 +19,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irrlichttypes.h"
-#include "exceptions.h"
+#include <stddef.h>
 #include <iostream>
 #include <string_view>
+#include "irrlichttypes.h"
 
 /*
 	Map format serialization version

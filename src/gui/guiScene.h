@@ -19,9 +19,25 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <array>
 #include "irrlichttypes_extrabloated.h"
 #include "ICameraSceneNode.h"
 #include "StyleSpec.h"
+#include "SColor.h"
+#include "rect.h"
+
+namespace irr {
+struct SEvent;
+}  // namespace irr
+namespace irr::scene {
+class IAnimatedMesh;
+class IAnimatedMeshSceneNode;
+class ISceneNode;
+}  // namespace irr::scene
+namespace irr::video {
+class ITexture;
+class IVideoDriver;
+}  // namespace irr::video
 
 using namespace irr;
 

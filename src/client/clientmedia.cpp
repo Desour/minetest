@@ -18,6 +18,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "clientmedia.h"
+#include <assert.h>
+#include <sstream>
+#include <algorithm>
+#include <utility>
 #include "gettext.h"
 #include "httpfetch.h"
 #include "client.h"
@@ -30,7 +34,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "util/serialize.h"
 #include "util/sha1.h"
 #include "util/string.h"
-#include <sstream>
+#include "cmake_config.h"
+#include "debug.h"
+#include "exceptions.h"
+#include "network/address.h"
+#include "network/networkprotocol.h"
 
 static std::string getMediaCacheDir()
 {

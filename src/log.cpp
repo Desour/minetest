@@ -18,16 +18,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "log.h"
-
+#include <assert.h>
 #include "threading/mutex_auto_lock.h"
-#include "debug.h"
 #include "gettime.h"
-#include "porting.h"
 #include "settings.h"
-#include "config.h"
 #include "exceptions.h"
-#include "util/numeric.h"
-#include "log.h"
 #include "filesys.h"
 
 #ifdef __ANDROID__

@@ -19,24 +19,29 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <assert.h>
+#include <stddef.h>
 #include <iostream>
 #include <set>
 #include <map>
-
+#include <unordered_map>
+#include <utility>
+#include <vector>
 #include "irrlichttypes_bloated.h"
 #include "mapblock.h"
 #include "mapnode.h"
 #include "constants.h"
 #include "voxel.h"
-#include "modifiedstate.h"
 #include "util/numeric.h"
 #include "nodetimer.h"
 #include "debug.h"
+#include "util/basic_macros.h"
 
 class MapSector;
 class NodeMetadata;
 class IGameDef;
-class IRollbackManager;
+class NodeDefManager;
+enum ModifiedState : u16;
 
 /*
 	MapEditEvent

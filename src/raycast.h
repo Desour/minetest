@@ -19,8 +19,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <optional>
+#include <queue>
+#include <vector>
 #include "voxelalgorithms.h"
 #include "util/pointedthing.h"
+#include "irrlichttypes_bloated.h"
+#include "line3d.h"
+#include "util/pointabilities.h"
 
 //! Sorts PointedThings based on their distance.
 struct RaycastSort

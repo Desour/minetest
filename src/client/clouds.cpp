@@ -17,20 +17,29 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <assert.h>
+#include <stddef.h>
+#include <cmath>
+#include <iostream>
+#include <string>
+#include <vector>
 #include "client/renderingengine.h"
 #include "client/shader.h"
 #include "clouds.h"
 #include "constants.h"
-#include "debug.h"
-#include "irrlicht_changes/printing.h"
 #include "noise.h"
 #include "profiler.h"
 #include "settings.h"
-#include <cmath>
+#include "EHardwareBufferFlags.h"
+#include "EMaterialTypes.h"
+#include "EVideoTypes.h"
+#include "IVideoDriver.h"
+#include "S3DVertex.h"
+#include "client/tile.h"
+#include "irrMath.h"
+#include "log.h"
+#include "util/numeric.h"
 
-
-// Menu clouds are created later
-class Clouds;
 Clouds *g_menuclouds = NULL;
 scene::ISceneManager *g_menucloudsmgr = NULL;
 

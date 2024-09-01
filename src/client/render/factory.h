@@ -21,7 +21,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include <string>
-#include "core.h"
+
+class Client;
+class Hud;
+class RenderingCore;
+namespace irr {
+class IrrlichtDevice;
+}  // namespace irr
 
 RenderingCore *createRenderingCore(const std::string &stereo_mode, IrrlichtDevice *device,
 		Client *client, Hud *hud);

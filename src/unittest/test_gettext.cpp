@@ -1,6 +1,8 @@
+#include <string>
 #include "test.h"
-#include "porting.h"
 #include "gettext.h"
+
+class IGameDef;
 
 class TestGettext : public TestBase
 {

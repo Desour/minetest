@@ -19,7 +19,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <stdlib.h>
 #include <stack>
+#include <cmath>
+#include <map>
+#include <ostream>
 #include "treegen.h"
 #include "irr_v3d.h"
 #include "util/pointer.h"
@@ -28,6 +32,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "mapblock.h"
 #include "noise.h"
 #include "voxelalgorithms.h"
+#include "log.h"
+#include "map.h"
+#include "matrix4.h"
+#include "voxel.h"
 
 namespace treegen
 {

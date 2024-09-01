@@ -20,12 +20,23 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irrlichttypes_bloated.h"
 #include <IMaterialRendererServices.h>
 #include <string>
+#include <array>
+#include <cstddef>
+#include <iosfwd>
+#include <string_view>
+#include <type_traits>
+#include "irrlichttypes_bloated.h"
 #include "nodedef.h"
+#include "EMaterialTypes.h"
+#include "SColor.h"
+#include "client/tile.h"
+#include "matrix4.h"
 
-class IGameDef;
+namespace irr::video {
+class SMaterial;
+}  // namespace irr::video
 
 /*
 	shader.{h,cpp}: Shader handling stuff.
@@ -57,10 +68,6 @@ struct ShaderInfo {
 /*
 	Setter of constants for shaders
 */
-
-namespace irr::video {
-	class IMaterialRendererServices;
-}
 
 
 class IShaderConstantSetter {

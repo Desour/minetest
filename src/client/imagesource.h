@@ -19,9 +19,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include <IImage.h>
 #include <string>
+#include <map>
+#include <set>
+#include <string_view>
 #include "settings.h"
+#include "SColor.h"
+
+namespace irr::video {
+class IImage;
+}  // namespace irr::video
 
 // This file is only used for internal generation of images.
 // Use texturesource.h to handle textures.

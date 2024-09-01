@@ -21,11 +21,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include "mapgen.h"
+#include "irr_v2d.h"
+#include "noise.h"
+#include "util/string.h"
+
+class EmergeParams;
+class Settings;
+struct BlockMakeData;
 
 ///////// Mapgen V5 flags
 #define MGV5_CAVERNS 0x01
-
-class BiomeManager;
 
 extern FlagDesc flagdesc_mapgen_v5[];
 

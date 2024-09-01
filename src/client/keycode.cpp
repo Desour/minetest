@@ -18,12 +18,18 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "keycode.h"
+#include <stdlib.h>
+#include <string.h>
+#include <sstream>
+#include <unordered_map>
+#include <utility>
 #include "settings.h"
 #include "log.h"
 #include "debug.h"
 #include "util/hex.h"
 #include "util/string.h"
-#include "util/basic_macros.h"
+#include "IEventReceiver.h"
+#include "Keycodes.h"
 
 struct table_key {
 	const char *Name;

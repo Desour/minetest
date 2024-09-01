@@ -25,6 +25,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "common/c_converter.h"
 #include "client/client.h"
 #include "client/sound.h"
+#include "irr_v3d.h"
+#include "sound.h"
 
 /* ModApiClientSound */
 

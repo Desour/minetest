@@ -18,16 +18,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "content_nodemeta.h"
+#include <assert.h>
+#include <stddef.h>
+#include <sstream>
+#include <string>
 #include "nodemetadata.h"
 #include "nodetimer.h"
 #include "inventory.h"
 #include "log.h"
 #include "debug.h"
-#include "serialization.h"
 #include "util/serialize.h"
 #include "util/string.h"
 #include "constants.h" // MAP_BLOCKSIZE
-#include <sstream>
+#include "exceptions.h"
+#include "irr_v3d.h"
 
 #define NODEMETA_GENERIC 1
 #define NODEMETA_SIGN 14

@@ -20,13 +20,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "mapgen_singlenode.h"
+#include <assert.h>
+#include <string>
 #include "voxel.h"
-#include "mapblock.h"
 #include "mapnode.h"
 #include "map.h"
 #include "nodedef.h"
-#include "voxelalgorithms.h"
 #include "emerge.h"
+#include "constants.h"
+#include "irrlichttypes_bloated.h"
+#include "light.h"
+#include "mapgen/mapgen.h"
 
 
 MapgenSinglenode::MapgenSinglenode(MapgenParams *params, EmergeParams *emerge)

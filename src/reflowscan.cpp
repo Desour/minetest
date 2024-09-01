@@ -18,10 +18,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "reflowscan.h"
+#include <string.h>
 #include "map.h"
 #include "mapblock.h"
 #include "nodedef.h"
-#include "util/timetaker.h"
+#include "constants.h"
+#include "mapnode.h"
+#include "util/container.h"
 
 
 ReflowScan::ReflowScan(Map *map, const NodeDefManager *ndef) :

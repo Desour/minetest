@@ -17,6 +17,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 #include "common/c_content.h"
+#include <SColor.h>
+#include <assert.h>
+#include <json/value.h>
+#include <lauxlib.h>
+#include <math.h>
+#include <string.h>
+#include <initializer_list>
+#include <iostream>
+#include <map>
+#include <optional>
+#include <string_view>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
 #include "common/c_converter.h"
 #include "common/c_types.h"
 #include "nodedef.h"
@@ -29,15 +43,29 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "server.h"
 #include "log.h"
 #include "tool.h"
-#include "porting.h"
-#include "mapgen/mg_schematic.h"
 #include "noise.h"
 #include "server/player_sao.h"
 #include "util/pointedthing.h"
 #include "debug.h" // For FATAL_ERROR
-#include <SColor.h>
-#include <json/json.h>
 #include "mapgen/treegen.h"
+#include "activeobject.h"
+#include "constants.h"
+#include "content/mods.h"
+#include "exceptions.h"
+#include "gamedef.h"
+#include "hud.h"
+#include "inventory.h"
+#include "itemdef.h"
+#include "itemstackmetadata.h"
+#include "json-forwards.h"
+#include "light.h"
+#include "lua_api/l_base.h"
+#include "mapnode.h"
+#include "server/serveractiveobject.h"
+#include "sound.h"
+#include "util/basic_macros.h"
+#include "util/numeric.h"
+#include "util/string.h"
 
 struct EnumString es_TileAnimationType[] =
 {

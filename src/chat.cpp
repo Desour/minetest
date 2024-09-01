@@ -18,16 +18,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "chat.h"
-
+#include <assert.h>
+#include <limits.h>
+#include <wctype.h>
 #include <algorithm>
-#include <cctype>
-#include <sstream>
-
-#include "config.h"
+#include <cstdlib>
+#include <string_view>
+#include <utility>
 #include "debug.h"
 #include "util/strfnd.h"
 #include "util/string.h"
 #include "util/numeric.h"
+#include "settings.h"
+#include "util/basic_macros.h"
 
 ChatBuffer::ChatBuffer(u32 scrollback):
 	m_scrollback(scrollback)

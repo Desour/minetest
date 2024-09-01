@@ -19,12 +19,22 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <string>
 #include "irrlichttypes_extrabloated.h"
-#include "modalMenu.h"
-#include "chat.h"
-#include "config.h"
+#include "SColor.h"
 
 class Client;
+class ChatBackend;
+class IMenuManager;
+namespace irr {
+struct SEvent;
+}  // namespace irr
+namespace irr::gui {
+class IGUIFont;
+}  // namespace irr::gui
+namespace irr::video {
+class ITexture;
+}  // namespace irr::video
 
 class GUIChatConsole : public gui::IGUIElement
 {

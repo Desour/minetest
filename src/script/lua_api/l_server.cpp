@@ -18,6 +18,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "lua_api/l_server.h"
+#include <assert.h>
+#include <lauxlib.h>
+#include <stddef.h>
+#include <sys/socket.h>
+#include <algorithm>
+#include <optional>
+#include <ostream>
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
 #include "lua_api/l_internal.h"
 #include "common/c_converter.h"
 #include "common/c_content.h"
@@ -30,7 +41,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "remoteplayer.h"
 #include "log.h"
 #include "filesys.h"
-#include <algorithm>
+#include "clientdynamicinfo.h"
+#include "common/c_internal.h"
+#include "common/c_types.h"
+#include "content/mods.h"
+#include "content/subgames.h"
+#include "debug.h"
+#include "exceptions.h"
+#include "gamedef.h"
+#include "irr_v2d.h"
+#include "network/address.h"
+#include "network/connection.h"
+#include "network/networkprotocol.h"
+#include "serverenvironment.h"
+#include "util/string.h"
 
 // request_shutdown()
 int ModApiServer::l_request_shutdown(lua_State *L)

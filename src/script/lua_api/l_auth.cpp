@@ -18,14 +18,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "lua_api/l_auth.h"
+#include <lauxlib.h>
+#include <string>
+#include <vector>
 #include "lua_api/l_internal.h"
 #include "common/c_converter.h"
-#include "common/c_content.h"
-#include "cpp_api/s_base.h"
-#include "server.h"
 #include "environment.h"
 #include "database/database.h"
-#include <algorithm>
+#include "serverenvironment.h"
 
 // common start: ensure auth db
 AuthDatabase *ModApiAuth::getAuthDb(lua_State *L)

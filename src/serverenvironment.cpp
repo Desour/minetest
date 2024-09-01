@@ -17,15 +17,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <assert.h>
+#include <stddef.h>
 #include <algorithm>
 #include <stack>
 #include <utility>
+#include <atomic>
+#include <fstream>
+#include <iterator>
+#include <sstream>
 #include "serverenvironment.h"
 #include "settings.h"
 #include "log.h"
 #include "mapblock.h"
 #include "nodedef.h"
-#include "nodemetadata.h"
 #include "gamedef.h"
 #include "porting.h"
 #include "profiler.h"
@@ -33,16 +38,32 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "remoteplayer.h"
 #include "scripting_server.h"
 #include "server.h"
-#include "util/serialize.h"
 #include "util/numeric.h"
 #include "util/basic_macros.h"
 #include "util/pointedthing.h"
-#include "threading/mutex_auto_lock.h"
 #include "filesys.h"
 #include "gameparams.h"
 #include "database/database-dummy.h"
 #include "database/database-files.h"
 #include "database/database-sqlite3.h"
+#include "cmake_config.h"
+#include "constants.h"
+#include "database/database.h"
+#include "debug.h"
+#include "exceptions.h"
+#include "inventory.h"
+#include "line3d.h"
+#include "metadata.h"
+#include "modifiedstate.h"
+#include "network/networkprotocol.h"
+#include "object_properties.h"
+#include "server/serveractiveobject.h"
+#include "server/unit_sao.h"
+#include "servermap.h"
+#include "staticobject.h"
+#include "util/pointabilities.h"
+#include "util/string.h"
+#include "util/timetaker.h"
 #if USE_POSTGRESQL
 #include "database/database-postgresql.h"
 #endif

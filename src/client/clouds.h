@@ -23,12 +23,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "irr_ptr.h"
 #include "irrlichttypes_extrabloated.h"
 #include "skyparams.h"
-#include <iostream>
+#include "ISceneNode.h"
+#include "SColor.h"
+#include "SMaterial.h"
 
 class IShaderSource;
-
 // Menu clouds
 class Clouds;
+
 extern Clouds *g_menuclouds;
 
 // Scene manager used for menu clouds

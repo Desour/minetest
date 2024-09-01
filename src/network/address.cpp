@@ -18,37 +18,26 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "address.h"
-
-#include <cstdio>
-#include <iostream>
-#include <cstdlib>
+#include <assert.h>
 #include <cstring>
 #include <cerrno>
-#include <sstream>
-#include <iomanip>
 #include "network/networkexceptions.h"
-#include "util/string.h"
-#include "util/numeric.h"
-#include "constants.h"
-#include "debug.h"
 #include "settings.h"
-#include "log.h"
 
 #ifdef _WIN32
 #include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
+
 #define LAST_SOCKET_ERR() WSAGetLastError()
 typedef SOCKET socket_t;
 typedef int socklen_t;
 #else
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <fcntl.h>
 #include <netdb.h>
-#include <unistd.h>
 #include <arpa/inet.h>
+
 #define LAST_SOCKET_ERR() (errno)
 typedef int socket_t;
 #endif

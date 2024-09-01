@@ -18,12 +18,23 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "lua_api/l_mapgen.h"
+#include <assert.h>
+#include <lauxlib.h>
+#include <stddef.h>
+#include <map>
+#include <memory>
+#include <set>
+#include <sstream>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 #include "lua_api/l_internal.h"
 #include "lua_api/l_vmanip.h"
 #include "common/c_converter.h"
 #include "common/c_content.h"
 #include "cpp_api/s_security.h"
-#include "util/serialize.h"
 #include "server.h"
 #include "environment.h"
 #include "emerge_internal.h"
@@ -31,12 +42,29 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "mapgen/mg_ore.h"
 #include "mapgen/mg_decoration.h"
 #include "mapgen/mg_schematic.h"
-#include "mapgen/mapgen_v5.h"
-#include "mapgen/mapgen_v7.h"
 #include "mapgen/treegen.h"
 #include "filesys.h"
 #include "settings.h"
 #include "log.h"
+#include "common/c_internal.h"
+#include "constants.h"
+#include "emerge.h"
+#include "gamedef.h"
+#include "irr_v2d.h"
+#include "map.h"
+#include "map_settings_manager.h"
+#include "mapgen/mapgen.h"
+#include "mapnode.h"
+#include "nodedef.h"
+#include "noise.h"
+#include "objdef.h"
+#include "serverenvironment.h"
+#include "servermap.h"
+#include "util/numeric.h"
+#include "util/string.h"
+#include "voxel.h"
+
+template <typename Value> class UniqueQueue;
 
 struct EnumString ModApiMapgen::es_BiomeTerrainType[] =
 {

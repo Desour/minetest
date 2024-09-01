@@ -18,22 +18,37 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "mapblock_mesh.h"
+#include <assert.h>
+#include <stddef.h>
+#include <array>
+#include <cmath>
+#include <sstream>
+#include <unordered_map>
 #include "client.h"
-#include "mapblock.h"
-#include "map.h"
 #include "noise.h"
-#include "profiler.h"
 #include "shader.h"
-#include "mesh.h"
 #include "minimap.h"
 #include "content_mapblock.h"
-#include "util/directiontables.h"
 #include "client/meshgen/collector.h"
-#include "client/renderingengine.h"
-#include <array>
-#include <algorithm>
-#include <cmath>
 #include "client/texturesource.h"
+#include "EHardwareBufferFlags.h"
+#include "S3DVertex.h"
+#include "SMaterial.h"
+#include "SMaterialLayer.h"
+#include "constants.h"
+#include "irrMath.h"
+#include "light.h"
+#include "mapnode.h"
+#include "nodedef.h"
+#include "porting.h"
+#include "settings.h"
+#include "util/basic_macros.h"
+#include "util/numeric.h"
+#include "util/string.h"
+
+namespace irr::video {
+class ITexture;
+}  // namespace irr::video
 
 /*
 	MeshMakeData

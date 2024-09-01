@@ -17,14 +17,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <stddef.h>
+#include <fstream>
+#include <string>
 #include "test.h"
+#include "filesys.h"
 
-#include <sstream>
-
-#include "log.h"
-#include "serialization.h"
-#include "nodedef.h"
-#include "noise.h"
+class IGameDef;
 
 class TestFileSys : public TestBase
 {

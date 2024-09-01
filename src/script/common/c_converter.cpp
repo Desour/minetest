@@ -19,18 +19,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 extern "C" {
 #include <lua.h>
-#include <lauxlib.h>
 }
 
+#include <set>
+#include <cmath>
+#include <ostream>
 #include "util/numeric.h"
-#include "util/serialize.h"
 #include "util/string.h"
 #include "log.h"
 #include "common/c_converter.h"
 #include "common/c_internal.h"
 #include "constants.h"
-#include <set>
-#include <cmath>
+#include "common/c_types.h"
+#include "util/basic_macros.h"
 
 
 #define CHECK_TYPE(index, name, type) do { \

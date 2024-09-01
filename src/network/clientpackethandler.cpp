@@ -17,8 +17,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <assert.h>
+#include <libintl.h>
+#include <memory>
+#include <ctime>
+#include <map>
+#include <queue>
+#include <sstream>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 #include "client/client.h"
-
 #include "util/base64.h"
 #include "client/camera.h"
 #include "client/mesh_generator_thread.h"
@@ -46,7 +57,27 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "gettext.h"
 #include "skyparams.h"
 #include "particles.h"
-#include <memory>
+#include "SColor.h"
+#include "client/clientenvironment.h"
+#include "client/clientobject.h"
+#include "constants.h"
+#include "debug.h"
+#include "exceptions.h"
+#include "gameparams.h"
+#include "hud.h"
+#include "inventory.h"
+#include "irrlichttypes_bloated.h"
+#include "itemdef.h"
+#include "lighting.h"
+#include "map.h"
+#include "mapblock.h"
+#include "mapnode.h"
+#include "network/networkprotocol.h"
+#include "nodemetadata.h"
+#include "sound.h"
+#include "util/string.h"
+
+struct SRPUser;
 
 const char *accessDeniedStrings[SERVER_ACCESSDENIED_MAX] = {
 	N_("Invalid password"),

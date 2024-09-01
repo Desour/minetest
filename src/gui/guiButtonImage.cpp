@@ -18,13 +18,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "guiButtonImage.h"
-
+#include <utility>
 #include "client/guiscalingfilter.h"
-#include "debug.h"
 #include "IGUIEnvironment.h"
-#include "IGUIImage.h"
-#include "IVideoDriver.h"
 #include "StyleSpec.h"
+#include "gui/guiAnimatedImage.h"
+#include "gui/guiButton.h"
+
+class ISimpleTextureSource;
+namespace irr::gui {
+class IGUIElement;
+}  // namespace irr::gui
+namespace irr::video {
+class IVideoDriver;
+}  // namespace irr::video
 
 using namespace irr;
 using namespace gui;

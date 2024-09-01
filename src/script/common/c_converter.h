@@ -28,12 +28,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <vector>
 #include <string_view>
-
+#include <string>
 #include "irrlichttypes_bloated.h"
-#include "common/c_types.h"
+#include "SColor.h"
 
 extern "C" {
 #include <lua.h>
+#include <stddef.h>
 }
 
 std::string        getstringfield_default(lua_State *L, int table,

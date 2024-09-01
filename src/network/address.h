@@ -30,8 +30,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <ostream>
 #include <cstring>
+#include <string>
 #include "irrlichttypes.h"
-#include "networkexceptions.h"
 
 struct IPv6AddressBytes
 {

@@ -18,7 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "metricsbackend.h"
-#include "util/thread.h"
+#include "threading/mutex_auto_lock.h"
 #if USE_PROMETHEUS
 #include <prometheus/exposer.h>
 #include <prometheus/registry.h>

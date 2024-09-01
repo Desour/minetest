@@ -17,12 +17,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <assert.h>
+#include <stdlib.h>
 #include <array>
-
 #include "voxelalgorithms.h"
 #include "nodedef.h"
 #include "mapblock.h"
 #include "map.h"
+#include "constants.h"
+#include "irrlichttypes_bloated.h"
+#include "light.h"
+#include "mapnode.h"
+#include "util/numeric.h"
+#include "voxel.h"
 
 namespace voxalgo
 {

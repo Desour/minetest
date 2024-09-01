@@ -19,16 +19,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "itemdef.h"
-#include "irrlichttypes.h"
-#include "itemstackmetadata.h"
+#include <stddef.h>
 #include <istream>
-#include <ostream>
 #include <string>
 #include <vector>
 #include <cassert>
-
-struct ToolCapabilities;
+#include <memory>
+#include <optional>
+#include "itemdef.h"
+#include "irrlichttypes.h"
+#include "itemstackmetadata.h"
+#include "irr_v3d.h"
+#include "metadata.h"
+#include "tool.h"
 
 struct ItemStack
 {

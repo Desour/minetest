@@ -18,6 +18,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "scripting_server.h"
+#include <assert.h>
+#include <lauxlib.h>
+#include <memory>
+#include <ostream>
+#include <utility>
 #include "server.h"
 #include "log.h"
 #include "settings.h"
@@ -46,9 +51,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "lua_api/l_settings.h"
 #include "lua_api/l_http.h"
 #include "lua_api/l_storage.h"
+#include "common/c_packer.h"
 
 extern "C" {
-#include <lualib.h>
 }
 
 ServerScripting::ServerScripting(Server* server):

@@ -20,9 +20,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "client/hud.h"
+#include <bits/std_abs.h>
+#include <stdlib.h>
 #include <string>
-#include <iostream>
 #include <cmath>
+#include <algorithm>
+#include <optional>
+#include <sstream>
 #include "settings.h"
 #include "util/numeric.h"
 #include "log.h"
@@ -42,6 +46,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "gui/touchcontrols.h"
 #include "util/enriched_string.h"
 #include "irrlicht_changes/CGUITTFont.h"
+#include "EVideoTypes.h"
+#include "SMaterialLayer.h"
+#include "client/texturesource.h"
+#include "constants.h"
+#include "hud.h"
+#include "irrlichttypes_bloated.h"
+#include "itemdef.h"
+#include "itemstackmetadata.h"
+#include "tool.h"
+#include "util/basic_macros.h"
+#include "util/string.h"
 
 #define OBJECT_CROSSHAIR_LINE_SIZE 8
 #define CROSSHAIR_LINE_SIZE 10

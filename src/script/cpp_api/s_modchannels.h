@@ -19,7 +19,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <string>
 #include "cpp_api/s_base.h"
+#include "irrTypes.h"
 
 enum ModChannelSignal : u8;
 

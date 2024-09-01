@@ -19,15 +19,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "util/numeric.h"
+#include <assert.h>
+#include <stdlib.h>
 #include <cmath>
+#include <string>
+#include <vector>
+#include "util/numeric.h"
 #include "map.h"
 #include "mapgen.h"
-#include "mapgen_v5.h"
-#include "mapgen_v6.h"
-#include "mapgen_v7.h"
 #include "mg_biome.h"
 #include "cavegen.h"
+#include "constants.h"
+#include "nodedef.h"
+#include "noise.h"
+#include "util/basic_macros.h"
 
 // TODO Remove this. Cave liquids are now defined and located using biome definitions
 static NoiseParams nparams_caveliquids(0, 1, v3f(150.0, 150.0, 150.0), 776, 3, 0.6, 2.0);

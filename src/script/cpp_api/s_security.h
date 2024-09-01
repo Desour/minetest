@@ -19,7 +19,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <lua.h>
+#include <stddef.h>
+#include <string>
 #include "cpp_api/s_base.h"
+#include "common/c_types.h"
+
+class ScriptApiSecurity;
 
 
 #define CHECK_SECURE_PATH_INTERNAL(L, path, write_required, ptr) \

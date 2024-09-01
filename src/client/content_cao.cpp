@@ -22,6 +22,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <ICameraSceneNode.h>
 #include <IMeshManipulator.h>
 #include <IAnimatedMeshSceneNode.h>
+#include <quaternion.h>
+#include <bits/std_abs.h>
+#include <algorithm>
+#include <cmath>
+#include <optional>
+#include <sstream>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 #include "client/client.h"
 #include "client/renderingengine.h"
 #include "client/sound.h"
@@ -34,8 +43,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "collision.h"
 #include "content_cso.h"
 #include "clientobject.h"
-#include "environment.h"
-#include "itemdef.h"
 #include "localplayer.h"
 #include "map.h"
 #include "mesh.h"
@@ -43,14 +50,31 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "settings.h"
 #include "tool.h"
 #include "wieldmesh.h"
-#include <algorithm>
-#include <cmath>
 #include "client/shader.h"
 #include "client/minimap.h"
-#include <quaternion.h>
+#include "EHardwareBufferFlags.h"
+#include "IAnimatedMesh.h"
+#include "IBoneSceneNode.h"
+#include "ISceneNode.h"
+#include "ITexture.h"
+#include "S3DVertex.h"
+#include "SMaterial.h"
+#include "SMaterialLayer.h"
+#include "client/clientenvironment.h"
+#include "client/shadows/dynamicshadowsrender.h"
+#include "client/tile.h"
+#include "debug.h"
+#include "dimension2d.h"
+#include "inventory.h"
+#include "irrMath.h"
+#include "light.h"
+#include "log.h"
+#include "mapnode.h"
+#include "player.h"
+#include "sound.h"
 
-class Settings;
-struct ToolCapabilities;
+class ClientSimpleObject;
+class IItemDefManager;
 
 std::unordered_map<u16, ClientActiveObject::Factory> ClientActiveObject::m_types;
 

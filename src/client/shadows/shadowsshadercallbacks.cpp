@@ -19,6 +19,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "client/shadows/shadowsshadercallbacks.h"
 #include "client/renderingengine.h"
+#include "EVideoTypes.h"
+#include "IMaterialRendererServices.h"
+#include "IVideoDriver.h"
+#include "client/shadows/dynamicshadows.h"
+#include "client/shadows/dynamicshadowsrender.h"
+#include "matrix4.h"
 
 void ShadowConstantSetter::onSetConstants(video::IMaterialRendererServices *services)
 {

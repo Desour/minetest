@@ -19,13 +19,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <stddef.h>
 #include <cassert>
 #include <unordered_set>
 #include <optional>
+#include <queue>
+#include <string>
 #include "irrlichttypes_bloated.h"
 #include "activeobject.h"
 #include "itemgroup.h"
-#include "util/container.h"
 
 
 /*

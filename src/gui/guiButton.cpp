@@ -3,8 +3,10 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "guiButton.h"
-
-
+#include <stddef.h>
+#include <algorithm>
+#include <cmath>
+#include <list>
 #include "client/guiscalingfilter.h"
 #include "IGUISkin.h"
 #include "IGUIEnvironment.h"
@@ -14,6 +16,15 @@
 #include "porting.h"
 #include "StyleSpec.h"
 #include "util/numeric.h"
+#include "EGUIAlignment.h"
+#include "IEventReceiver.h"
+#include "IGUISpriteBank.h"
+#include "IGUIStaticText.h"
+#include "Keycodes.h"
+#include "dimension2d.h"
+#include "gui/guiSkin.h"
+#include "irrArray.h"
+#include "irrlichttypes_extrabloated.h"
 
 using namespace irr;
 using namespace gui;

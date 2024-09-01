@@ -20,10 +20,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <quaternion.h>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include "object_properties.h"
 #include "serveractiveobject.h"
-#include <quaternion.h>
 #include "util/numeric.h"
+#include "activeobject.h"
+#include "irrMath.h"
+#include "irrlichttypes_bloated.h"
+#include "itemgroup.h"
+#include "matrix4.h"
+
+class ServerEnvironment;
 
 class UnitSAO : public ServerActiveObject
 {

@@ -19,10 +19,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <lua.h>
 #include <string>
 #include <vector>
-
 #include "lua_api/l_base.h"
+#include "common/c_types.h"
 
 struct CraftReplacements;
 

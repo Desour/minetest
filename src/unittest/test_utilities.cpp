@@ -17,14 +17,25 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "test.h"
-
+#include <stddef.h>
 #include <cmath>
+#include <initializer_list>
+#include <string>
+#include <string_view>
+#include <vector>
+#include "test.h"
 #include "util/enriched_string.h"
 #include "util/numeric.h"
 #include "util/string.h"
 #include "util/base64.h"
 #include "util/colorize.h"
+#include "SColor.h"
+#include "constants.h"
+#include "irrMath.h"
+#include "irr_v3d.h"
+#include "matrix4.h"
+
+class IGameDef;
 
 class TestUtilities : public TestBase {
 public:

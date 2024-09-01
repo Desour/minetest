@@ -18,9 +18,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "cpp_api/s_server.h"
+#include <lauxlib.h>
+#include <ostream>
 #include "cpp_api/s_internal.h"
 #include "common/c_converter.h"
 #include "util/numeric.h" // myrand
+#include "common/c_internal.h"
+#include "common/c_types.h"
+#include "debug.h"
+#include "log.h"
 
 bool ScriptApiServer::getAuth(const std::string &playername,
 		std::string *dst_password,

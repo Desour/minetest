@@ -18,10 +18,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "lua_api/l_rollback.h"
+#include <lauxlib.h>
+#include <time.h>
+#include <list>
+#include <string>
 #include "lua_api/l_internal.h"
 #include "common/c_converter.h"
 #include "server.h"
 #include "rollback_interface.h"
+#include "irr_v3d.h"
 
 
 void push_RollbackNode(lua_State *L, RollbackNode &node)

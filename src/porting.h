@@ -32,7 +32,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "config.h"
 #include "irrlichttypes.h" // u64
 #include "debug.h"
-#include "constants.h"
 #include "util/timetaker.h" // TimePrecision
 
 #ifdef _MSC_VER
@@ -50,8 +49,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 	#define setenv(n,v,o) _putenv_s(n,v)
 	#define unsetenv(n) _putenv_s(n,"")
 #else
-	#include <unistd.h>
-	#include <cstdlib> // setenv
 
 	#define sleep_ms(x) usleep((x)*1000)
 	#define sleep_us(x) usleep(x)
@@ -76,7 +73,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #endif
 
 #ifndef _WIN32 // POSIX
-	#include <sys/time.h>
 	#include <ctime>
     #if defined(__MACH__) && defined(__APPLE__)
         #include <TargetConditionals.h>

@@ -5,12 +5,11 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "guiSkin.h"
-
 #include "IGUIFont.h"
 #include "IGUISpriteBank.h"
 #include "IGUIElement.h"
 #include "IVideoDriver.h"
-#include "IAttributes.h"
+#include "vector2d.h"
 
 namespace irr
 {

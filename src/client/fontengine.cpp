@@ -18,14 +18,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "fontengine.h"
+#include <assert.h>
+#include <stdlib.h>
 #include <cmath>
+#include <algorithm>
+#include <ostream>
+#include <utility>
 #include "client/renderingengine.h"
-#include "config.h"
-#include "porting.h"
-#include "filesys.h"
-#include "gettext.h"
 #include "irrlicht_changes/CGUITTFont.h"
 #include "util/numeric.h" // rangelim
+#include "debug.h"
+#include "irrlicht.h"
+#include "log.h"
+#include "settings.h"
 
 /** reference to access font engine, has to be initialized by main */
 FontEngine *g_fontengine = nullptr;

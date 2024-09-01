@@ -17,7 +17,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <stddef.h>
 #include <sstream>
+#include <algorithm>
+#include <cmath>
 #include "clientiface.h"
 #include "debug.h"
 #include "network/connection.h"
@@ -34,6 +37,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "util/srp.h"
 #include "util/string.h"
 #include "face_position_cache.h"
+#include "exceptions.h"
+#include "irrMath.h"
+#include "network/networkexceptions.h"
+#include "network/networkpacket.h"
+#include "server/serveractiveobject.h"
+#include "skyparams.h"
+#include "util/numeric.h"
+
+struct SRPVerifier;
 
 static std::string string_sanitize_ascii(const std::string &s, u32 max_length)
 {

@@ -6,6 +6,7 @@
 
 namespace con
 {
+class PeerHandler;
 
 IConnection *createMTP(float timeout, bool ipv6, PeerHandler *handler)
 {

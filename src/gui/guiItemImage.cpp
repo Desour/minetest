@@ -20,6 +20,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "guiItemImage.h"
 #include "client/client.h"
 #include "inventory.h"
+#include "EGUIElementTypes.h"
+#include "IGUIFont.h"
+#include "SColor.h"
+#include "client/hud.h"
+#include "rect.h"
+
+class IItemDefManager;
 
 GUIItemImage::GUIItemImage(gui::IGUIEnvironment *env, gui::IGUIElement *parent,
 	s32 id, const core::rect<s32> &rectangle, const std::string &item_name,

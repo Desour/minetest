@@ -19,10 +19,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irrlichttypes.h"
-#include <ITexture.h>
 #include <vector>
-#include <SMaterial.h>
+#include "irrlichttypes.h"
+#include "SColor.h"
+
+namespace irr::video {
+class ITexture;
+class SMaterial;
+}  // namespace irr::video
 
 enum MaterialType{
 	TILE_MATERIAL_BASIC,

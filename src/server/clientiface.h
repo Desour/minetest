@@ -19,27 +19,27 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <assert.h>
+#include <vector>
+#include <set>
+#include <unordered_set>
+#include <memory>
+#include <ostream>
+#include <string>
+#include <unordered_map>
+#include <utility>
 #include "irr_v3d.h"                   // for irrlicht datatypes
-
 #include "constants.h"
 #include "serialization.h"             // for SER_FMT_VER_INVALID
-#include "network/networkpacket.h"
 #include "network/networkprotocol.h"
 #include "network/address.h"
 #include "porting.h"
 #include "threading/mutex_auto_lock.h"
 #include "clientdynamicinfo.h"
 
-#include <list>
-#include <vector>
-#include <set>
-#include <unordered_set>
-#include <memory>
-#include <mutex>
-
-class MapBlock;
 class ServerEnvironment;
 class EmergeManager;
+class NetworkPacket;
 
 /*
  * State Transitions

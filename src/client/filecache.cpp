@@ -19,14 +19,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "filecache.h"
-
-#include "network/networkprotocol.h"
-#include "log.h"
-#include "filesys.h"
 #include <string>
 #include <iostream>
 #include <fstream>
-#include <cstdlib>
+#include "log.h"
+#include "filesys.h"
 
 void FileCache::createDir()
 {

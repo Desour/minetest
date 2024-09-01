@@ -19,13 +19,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irrlichttypes.h"
-#include "filecache.h"
-#include "util/basic_macros.h"
 #include <map>
 #include <set>
 #include <vector>
 #include <unordered_map>
+#include <string>
+#include "irrlichttypes.h"
+#include "filecache.h"
+#include "util/basic_macros.h"
 
 class Client;
 struct HTTPFetchResult;

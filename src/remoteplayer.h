@@ -20,11 +20,18 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <ctime>
+#include <string>
 #include "player.h"
 #include "skyparams.h"
 #include "lighting.h"
+#include "constants.h"
+#include "inventory.h"
+#include "irr_v2d.h"
+#include "network/networkprotocol.h"
 
 class PlayerSAO;
+class IItemDefManager;
 
 enum RemotePlayerChatResult
 {

@@ -21,10 +21,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "cpp_api/s_base.h"
 #include "cpp_api/s_item.h"
-#include "irr_v3d.h"
 
 struct MoveAction;
 struct ItemStack;
+class ServerActiveObject;
 
 class ScriptApiNodemeta
 		: virtual public ScriptApiBase,

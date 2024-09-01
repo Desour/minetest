@@ -19,12 +19,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irrlichttypes_bloated.h"
+#include <assert.h>
+#include <stddef.h>
 #include <string>
 #include <sstream>
 #include <vector>
 #include <map>
+#include "irrlichttypes_bloated.h"
 #include "debug.h"
+#include "log.h"
 
 class ServerActiveObject;
 

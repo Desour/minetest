@@ -17,12 +17,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "test.h"
-
+#include <string.h>
+#include <time.h>
 #include <cmath>
+#include "test.h"
 #include "util/numeric.h"
 #include "exceptions.h"
 #include "noise.h"
+#include "irrTypes.h"
+#include "util/basic_macros.h"
+
+class IGameDef;
 
 class TestRandom : public TestBase {
 public:

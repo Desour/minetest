@@ -18,12 +18,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include <cstdio>
-#include <cstdlib>
+#include <ostream>
+#include <utility>
 
 extern "C" {
 #include <lua.h>
 #include <lauxlib.h>
-#include <lualib.h>
 }
 
 #include "server.h"
@@ -34,6 +34,11 @@ extern "C" {
 #include "common/c_internal.h"
 #include "common/c_packer.h"
 #include "lua_api/l_base.h"
+#include "debug.h"
+#include "exceptions.h"
+#include "settings.h"
+#include "threading/mutex_auto_lock.h"
+#include "util/string.h"
 
 /******************************************************************************/
 AsyncEngine::~AsyncEngine()

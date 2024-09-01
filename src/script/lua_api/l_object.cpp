@@ -18,8 +18,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "lua_api/l_object.h"
-#include <cmath>
 #include <lua.h>
+#include <cmath>
+#include <cstddef>
+#include <functional>
+#include <optional>
+#include <ostream>
+#include <string>
+#include <string_view>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 #include "lua_api/l_internal.h"
 #include "lua_api/l_inventory.h"
 #include "lua_api/l_item.h"
@@ -33,12 +42,28 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "remoteplayer.h"
 #include "server.h"
 #include "hud.h"
-#include "scripting_server.h"
 #include "server/luaentity_sao.h"
 #include "server/player_sao.h"
 #include "server/serverinventorymgr.h"
-#include "server/unit_sao.h"
-#include "util/string.h"
+#include "SColor.h"
+#include "activeobject.h"
+#include "common/c_internal.h"
+#include "common/c_types.h"
+#include "constants.h"
+#include "cpp_api/s_base.h"
+#include "inventory.h"
+#include "inventorymanager.h"
+#include "irrMath.h"
+#include "irrlichttypes_bloated.h"
+#include "itemgroup.h"
+#include "lighting.h"
+#include "metadata.h"
+#include "object_properties.h"
+#include "quaternion.h"
+#include "serverenvironment.h"
+#include "settings.h"
+#include "skyparams.h"
+#include "util/numeric.h"
 
 using object_t = ServerActiveObject::object_t;
 

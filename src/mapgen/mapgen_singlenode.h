@@ -22,6 +22,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include "mapgen.h"
+#include "irr_v2d.h"
+#include "mapnode.h"
+
+class EmergeParams;
+class Settings;
+struct BlockMakeData;
 
 struct MapgenSinglenodeParams : public MapgenParams
 {

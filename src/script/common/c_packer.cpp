@@ -21,13 +21,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <cstring>
 #include <cmath>
 #include <cassert>
-#include <unordered_set>
 #include <unordered_map>
+#include <algorithm>
+#include <ostream>
+#include <utility>
 #include "c_packer.h"
 #include "c_internal.h"
 #include "log.h"
 #include "debug.h"
 #include "threading/mutex_auto_lock.h"
+#include "common/c_types.h"
 
 extern "C" {
 #include <lauxlib.h>

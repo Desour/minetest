@@ -18,11 +18,32 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "guiScene.h"
-
 #include <SViewFrustum.h>
 #include <IAnimatedMeshSceneNode.h>
 #include <IVideoDriver.h>
 #include "porting.h"
+#include "EGUIElementTypes.h"
+#include "EMaterialTypes.h"
+#include "EVideoTypes.h"
+#include "IAttributes.h"
+#include "IEventReceiver.h"
+#include "IGUISkin.h"
+#include "ISceneNode.h"
+#include "SMaterial.h"
+#include "SMaterialLayer.h"
+#include "SceneParameters.h"
+#include "dimension2d.h"
+#include "gui/StyleSpec.h"
+#include "irrMath.h"
+#include "line3d.h"
+#include "matrix4.h"
+
+namespace irr::scene {
+class IAnimatedMesh;
+}  // namespace irr::scene
+namespace irr::video {
+class ITexture;
+}  // namespace irr::video
 
 GUIScene::GUIScene(gui::IGUIEnvironment *env, scene::ISceneManager *smgr,
 		   gui::IGUIElement *parent, core::recti rect, s32 id)

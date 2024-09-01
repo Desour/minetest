@@ -22,6 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "server.h"
 #include "networkprotocol.h"
+#include "irrTypes.h"
 
 class NetworkPacket;
 // Note: don't forward-declare Server here (#14324)

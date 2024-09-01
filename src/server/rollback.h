@@ -19,15 +19,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <time.h>
 #include <string>
-#include "irr_v3d.h"
-#include "rollback_interface.h"
 #include <list>
 #include <vector>
+#include "irr_v3d.h"
+#include "rollback_interface.h"
 #include "sqlite3.h"
 
 class IGameDef;
-
 struct ActionRow;
 struct Entity;
 

@@ -18,11 +18,27 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "collision.h"
+#include <assert.h>
+#include <bits/std_abs.h>
+#include <stdlib.h>
 #include <cmath>
-#include "mapblock.h"
+#include <algorithm>
+#include <functional>
+#include <ostream>
+#include <string>
+#include <utility>
 #include "map.h"
 #include "nodedef.h"
 #include "gamedef.h"
+#include "activeobject.h"
+#include "client/clientobject.h"
+#include "constants.h"
+#include "environment.h"
+#include "itemgroup.h"
+#include "log.h"
+#include "mapnode.h"
+#include "util/basic_macros.h"
+#include "util/numeric.h"
 #ifndef SERVER
 #include "client/clientenvironment.h"
 #include "client/localplayer.h"

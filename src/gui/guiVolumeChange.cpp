@@ -18,19 +18,28 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
 #include "guiVolumeChange.h"
-#include "debug.h"
+#include <IGUICheckBox.h>
+#include <IVideoDriver.h>
+#include <stddef.h>
+#include <string>
+#include <ostream>
 #include "guiButton.h"
 #include "guiScrollBar.h"
-#include "serialization.h"
-#include <string>
-#include <IGUICheckBox.h>
-#include <IGUIButton.h>
-#include <IGUIStaticText.h>
-#include <IGUIFont.h>
-#include <IVideoDriver.h>
 #include "settings.h"
-
 #include "gettext.h"
+#include "EGUIElementTypes.h"
+#include "IEventReceiver.h"
+#include "Keycodes.h"
+#include "SColor.h"
+#include "gui/modalMenu.h"
+#include "irr_ptr.h"
+#include "irrlicht_changes/static_text.h"
+#include "log.h"
+#include "rect.h"
+
+namespace irr::gui {
+class IGUISkin;
+}  // namespace irr::gui
 
 const int ID_soundText = 263;
 const int ID_soundExitButton = 264;

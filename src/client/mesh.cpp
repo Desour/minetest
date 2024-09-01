@@ -18,13 +18,21 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "mesh.h"
-#include "debug.h"
-#include "log.h"
-#include <cmath>
-#include <iostream>
-#include <IAnimatedMesh.h>
 #include <SAnimatedMesh.h>
 #include <IAnimatedMeshSceneNode.h>
+#include <assert.h>
+#include <cmath>
+#include "debug.h"
+#include "EMaterialTypes.h"
+#include "S3DVertex.h"
+#include "SMaterial.h"
+#include "SMaterialLayer.h"
+#include "constants.h"
+#include "irrMath.h"
+
+namespace irr::scene {
+class IAnimatedMesh;
+}  // namespace irr::scene
 
 inline static void applyShadeFactor(video::SColor& color, float factor)
 {

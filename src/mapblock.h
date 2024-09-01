@@ -19,7 +19,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <assert.h>
 #include <vector>
+#include <functional>
+#include <iosfwd>
+#include <string>
 #include "irr_v3d.h"
 #include "mapnode.h"
 #include "exceptions.h"
@@ -29,10 +33,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "nodetimer.h"
 #include "modifiedstate.h"
 #include "util/numeric.h" // getContainerPos
-#include "settings.h"
+#include "aabbox3d.h"
 
-class Map;
-class NodeMetadataList;
 class IGameDef;
 class MapBlockMesh;
 class VoxelManipulator;

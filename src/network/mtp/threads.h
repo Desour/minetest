@@ -25,13 +25,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 /********************************************/
 
 #include <cassert>
+#include <queue>
 #include "threading/thread.h"
 #include "network/mtp/internal.h"
+#include "irrTypes.h"
+#include "network/mtp/impl.h"
+#include "network/networkprotocol.h"
+#include "porting.h"
+#include "threading/semaphore.h"
+#include "util/pointer.h"
+
+class Address;
 
 namespace con
 {
-
-class Connection;
 
 struct OutgoingPacket
 {

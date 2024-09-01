@@ -19,19 +19,18 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irrlichttypes.h"
-#include "itemgroup.h"
-#include "json-forwards.h"
-#include "common/c_types.h"
 #include <SColor.h>
-
+#include <json/value.h>
 #include <string>
 #include <iostream>
 #include <map>
 #include <unordered_map>
 #include <optional>
+#include <utility>
+#include "irrlichttypes.h"
+#include "itemgroup.h"
+#include "common/c_types.h"
 
-struct ItemDefinition;
 class IItemDefManager;
 
 struct ToolGroupCap

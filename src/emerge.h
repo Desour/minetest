@@ -21,12 +21,24 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <map>
 #include <mutex>
+#include <ostream>
+#include <set>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 #include "network/networkprotocol.h"
 #include "irr_v3d.h"
 #include "util/container.h"
 #include "util/metricsbackend.h"
 #include "mapgen/mapgen.h" // for MapgenParams
 #include "map.h"
+#include "irr_v2d.h"
+#include "log.h"
+#include "util/basic_macros.h"
+
+class BiomeGen;
+class EmergeManager;
 
 #define BLOCK_EMERGE_ALLOW_GEN   (1 << 0)
 #define BLOCK_EMERGE_FORCE_QUEUE (1 << 1)
@@ -38,14 +50,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 class EmergeThread;
 class NodeDefManager;
-class Settings;
 class MapSettingsManager;
 class BiomeManager;
 class OreManager;
 class DecorationManager;
 class SchematicManager;
 class Server;
-class ModApiMapgen;
 
 // Structure containing inputs/outputs for chunk generation
 struct BlockMakeData {

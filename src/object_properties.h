@@ -22,11 +22,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <optional>
 #include <tuple>
 #include <string>
-#include "irrlichttypes_bloated.h"
 #include <iostream>
-#include <map>
 #include <vector>
+#include "irrlichttypes_bloated.h"
 #include "util/pointabilities.h"
+#include "SColor.h"
 
 struct ObjectProperties
 {

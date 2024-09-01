@@ -18,8 +18,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "cpp_api/s_mainmenu.h"
+#include <lauxlib.h>
+#include <lua.h>
+#include <unordered_map>
+#include <utility>
 #include "cpp_api/s_internal.h"
 #include "common/c_converter.h"
+#include "common/c_internal.h"
+#include "gui/guiMainMenu.h"
 
 void ScriptApiMainMenu::setMainMenuData(const MainMenuDataForScript *data)
 {

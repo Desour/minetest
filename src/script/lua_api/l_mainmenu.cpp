@@ -18,28 +18,47 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "lua_api/l_mainmenu.h"
+#include <lauxlib.h>
+#include <libintl.h>
+#include <stddef.h>
+#include <algorithm>
+#include <memory>
+#include <ostream>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 #include "lua_api/l_internal.h"
 #include "common/c_content.h"
-#include "cpp_api/s_async.h"
 #include "scripting_mainmenu.h"
 #include "gui/guiEngine.h"
 #include "gui/guiMainMenu.h"
 #include "gui/guiKeyChangeMenu.h"
 #include "gui/guiPathSelectMenu.h"
-#include "version.h"
 #include "porting.h"
 #include "filesys.h"
-#include "convert_json.h"
 #include "content/content.h"
 #include "content/subgames.h"
 #include "mapgen/mapgen.h"
 #include "settings.h"
-#include "client/client.h"
 #include "client/renderingengine.h"
 #include "network/networkprotocol.h"
 #include "content/mod_configuration.h"
-#include "threading/mutex_auto_lock.h"
 #include "common/c_converter.h"
+#include "EDeviceTypes.h"
+#include "IVideoDriver.h"
+#include "clientdynamicinfo.h"
+#include "common/c_types.h"
+#include "content/mods.h"
+#include "debug.h"
+#include "exceptions.h"
+#include "gameparams.h"
+#include "gui/guiFormSpecMenu.h"
+#include "gui/guiTable.h"
+#include "irr_ptr.h"
+#include "irrlichttypes_extrabloated.h"
+#include "log.h"
+#include "util/string.h"
 
 /******************************************************************************/
 std::string ModApiMainMenu::getTextData(lua_State *L, const std::string &name)

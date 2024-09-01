@@ -18,10 +18,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <assert.h>
+#include <string.h>
 #include <fstream>
+#include <map>
+#include <sstream>
+#include <typeinfo>
+#include <unordered_map>
 #include "mg_schematic.h"
 #include "server.h"
-#include "mapgen.h"
 #include "emerge.h"
 #include "map.h"
 #include "mapblock.h"
@@ -32,6 +37,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "filesys.h"
 #include "voxelalgorithms.h"
 #include "porting.h"
+#include "debug.h"
+#include "mapgen/mg_decoration.h"
+#include "servermap.h"
+#include "util/pointer.h"
+#include "voxel.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 

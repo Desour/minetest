@@ -17,7 +17,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <assert.h>
+#include <stddef.h>
 #include <algorithm>
+#include <functional>
+#include <map>
+#include <memory>
+#include <utility>
 #include "lua_api/l_env.h"
 #include "lua_api/l_internal.h"
 #include "lua_api/l_nodemeta.h"
@@ -42,7 +48,30 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "server/luaentity_sao.h"
 #include "server/player_sao.h"
 #include "util/string.h"
-#include "translation.h"
+#include "common/c_internal.h"
+#include "constants.h"
+#include "cpp_api/s_base.h"
+#include "cpp_api/s_item.h"
+#include "cpp_api/s_node.h"
+#include "debug.h"
+#include "emerge.h"
+#include "gamedef.h"
+#include "inventory.h"
+#include "irrMath.h"
+#include "irrlichttypes_bloated.h"
+#include "line3d.h"
+#include "map.h"
+#include "mapgen/mapgen.h"
+#include "noise.h"
+#include "server/serveractiveobject.h"
+#include "servermap.h"
+#include "threading/mutex_auto_lock.h"
+#include "util/basic_macros.h"
+#include "util/numeric.h"
+#include "util/pointabilities.h"
+#include "voxel.h"
+
+class IItemDefManager;
 #ifndef SERVER
 #include "client/client.h"
 #endif

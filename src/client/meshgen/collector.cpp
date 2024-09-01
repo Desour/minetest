@@ -19,8 +19,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "collector.h"
 #include <stdexcept>
-#include "log.h"
+#include <algorithm>
 #include "client/mesh.h"
+#include "S3DVertex.h"
+#include "vector2d.h"
 
 void MeshCollector::append(const TileSpec &tile, const video::S3DVertex *vertices,
 		u32 numVertices, const u16 *indices, u32 numIndices)

@@ -17,6 +17,18 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <assert.h>
+#include <stddef.h>
+#include <strings.h>
+#include <algorithm>
+#include <memory>
+#include <optional>
+#include <sstream>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 #include "chatmessage.h"
 #include "server.h"
 #include "log.h"
@@ -29,7 +41,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "scripting_server.h"
 #include "settings.h"
 #include "tool.h"
-#include "version.h"
 #include "irrlicht_changes/printing.h"
 #include "network/connection.h"
 #include "network/networkprotocol.h"
@@ -39,9 +50,28 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "util/auth.h"
 #include "util/base64.h"
 #include "util/pointedthing.h"
-#include "util/serialize.h"
 #include "util/srp.h"
 #include "clientdynamicinfo.h"
+#include "constants.h"
+#include "exceptions.h"
+#include "inventory.h"
+#include "inventorymanager.h"
+#include "irr_v3d.h"
+#include "itemdef.h"
+#include "map.h"
+#include "mapnode.h"
+#include "network/address.h"
+#include "network/networkexceptions.h"
+#include "network/networkpacket.h"
+#include "player.h"
+#include "serialization.h"
+#include "server/clientiface.h"
+#include "server/serveractiveobject.h"
+#include "serverenvironment.h"
+#include "util/numeric.h"
+#include "util/string.h"
+
+struct SRPVerifier;
 
 void Server::handleCommand_Deprecated(NetworkPacket* pkt)
 {

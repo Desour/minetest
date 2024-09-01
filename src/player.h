@@ -19,17 +19,18 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "irrlichttypes_bloated.h"
-#include "inventory.h"
-#include "constants.h"
-#include "network/networkprotocol.h"
-#include "util/basic_macros.h"
-#include "util/string.h"
-#include <list>
+#include <stddef.h>
 #include <mutex>
 #include <functional>
 #include <tuple>
 #include <string>
+#include <string_view>
+#include <vector>
+#include "irrlichttypes_bloated.h"
+#include "inventory.h"
+#include "util/basic_macros.h"
+
+class IItemDefManager;
 
 #define PLAYERNAME_SIZE 20
 
@@ -153,7 +154,6 @@ public:
 	};
 };
 
-class Map;
 struct CollisionInfo;
 struct HudElement;
 class Environment;

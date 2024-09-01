@@ -17,10 +17,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <utility>
 #include "test.h"
-
-#include "exceptions.h"
 #include "irr_ptr.h"
+#include "IReferenceCounted.h"
+
+class IGameDef;
 
 class TestIrrPtr : public TestBase
 {

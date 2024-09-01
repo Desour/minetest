@@ -18,17 +18,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include <cstdlib>
 #include <IEventReceiver.h>
-#include <IGUIComboBox.h>
-#include <IGUIEditBox.h>
+#include <algorithm>
 #include "client/renderingengine.h"
 #include "modalMenu.h"
-#include "gettext.h"
 #include "gui/guiInventoryList.h"
 #include "porting.h"
 #include "settings.h"
 #include "touchcontrols.h"
+#include "EGUIElementTypes.h"
+#include "IVideoDriver.h"
+#include "Keycodes.h"
+#include "debug.h"
+#include "position2d.h"
 
 PointerAction PointerAction::fromEvent(const SEvent &event) {
 	switch (event.EventType) {

@@ -18,7 +18,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "profiler.h"
+#include <math.h>
+#include <string.h>
+#include <algorithm>
 #include "porting.h"
+#include "util/numeric.h"
 
 static Profiler main_profiler;
 Profiler *g_profiler = &main_profiler;

@@ -18,17 +18,25 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "inventorymanager.h"
+#include <assert.h>
+#include <algorithm>
+#include <memory>
+#include <sstream>
+#include <utility>
 #include "debug.h"
 #include "log.h"
 #include "serverenvironment.h"
 #include "scripting_server.h"
 #include "server/serveractiveobject.h"
-#include "settings.h"
 #include "craftdef.h"
 #include "rollback_interface.h"
 #include "util/strfnd.h"
-#include "util/basic_macros.h"
 #include "inventory.h"
+#include "exceptions.h"
+#include "gamedef.h"
+#include "util/string.h"
+
+class IItemDefManager;
 
 #define PLAYER_TO_SA(p)   p->getEnv()->getScriptIface()
 

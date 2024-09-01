@@ -19,6 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "scripting_client.h"
+#include <ostream>
 #include "client/client.h"
 #include "cpp_api/s_internal.h"
 #include "lua_api/l_client.h"
@@ -30,12 +31,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "lua_api/l_particles_local.h"
 #include "lua_api/l_storage.h"
 #include "lua_api/l_util.h"
-#include "lua_api/l_item.h"
 #include "lua_api/l_nodemeta.h"
 #include "lua_api/l_localplayer.h"
 #include "lua_api/l_camera.h"
 #include "lua_api/l_settings.h"
 #include "lua_api/l_client_sound.h"
+#include "log.h"
 
 ClientScripting::ClientScripting(Client *client):
 	ScriptApiBase(ScriptingType::Client)

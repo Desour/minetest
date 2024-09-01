@@ -20,13 +20,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "ban.h"
 #include <fstream>
-#include "threading/mutex_auto_lock.h"
 #include <sstream>
-#include <set>
+#include <unordered_map>
+#include <utility>
+#include "threading/mutex_auto_lock.h"
 #include "util/strfnd.h"
 #include "util/string.h"
 #include "log.h"
 #include "filesys.h"
+#include "exceptions.h"
 
 BanManager::BanManager(const std::string &banfilepath):
 		m_banfilepath(banfilepath)

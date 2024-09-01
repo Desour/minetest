@@ -18,14 +18,18 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "cpp_api/s_player.h"
+#include <lua.h>
+#include <unordered_map>
+#include <utility>
 #include "cpp_api/s_internal.h"
 #include "common/c_converter.h"
 #include "common/c_content.h"
-#include "debug.h"
 #include "inventorymanager.h"
 #include "lua_api/l_inventory.h"
 #include "lua_api/l_item.h"
 #include "util/string.h"
+#include "common/c_internal.h"
+#include "inventory.h"
 
 void ScriptApiPlayer::on_newplayer(ServerActiveObject *player)
 {

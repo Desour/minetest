@@ -20,10 +20,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <string>
 #include "cpp_api/s_base.h"
-#include "mapnode.h"
 #include "util/string.h"
-#include "util/pointedthing.h"
+#include "irr_v3d.h"
+
+struct MapNode;
+struct PointedThing;
 
 #ifdef _CRT_MSVCP_CURRENT
 #include <cstdint>

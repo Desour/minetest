@@ -18,6 +18,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "mesh_generator_thread.h"
+#include <ctime>
+#include <ostream>
+#include <string>
+#include <unordered_map>
+#include <utility>
 #include "settings.h"
 #include "profiler.h"
 #include "client.h"
@@ -25,6 +30,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "map.h"
 #include "util/directiontables.h"
 #include "porting.h"
+#include "client/mapblock_mesh.h"
+#include "constants.h"
+#include "log.h"
+#include "mapnode.h"
+#include "threading/thread.h"
+#include "util/basic_macros.h"
+#include "util/numeric.h"
 
 // Data placeholder used for copying from non-existent blocks
 static struct BlockPlaceholder {

@@ -17,14 +17,24 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include <fstream>
+#include <queue>
+#include <string>
+#include <utility>
 #include "environment.h"
-#include "collision.h"
 #include "raycast.h"
-#include "scripting_server.h"
-#include "server.h"
 #include "daynightratio.h"
-#include "emerge.h"
+#include "constants.h"
+#include "irr_aabb3d.h"
+#include "line3d.h"
+#include "map.h"
+#include "mapnode.h"
+#include "nodedef.h"
+#include "settings.h"
+#include "threading/mutex_auto_lock.h"
+#include "util/numeric.h"
+#include "util/pointabilities.h"
+#include "util/pointedthing.h"
+#include "voxelalgorithms.h"
 
 
 Environment::Environment(IGameDef *gamedef):

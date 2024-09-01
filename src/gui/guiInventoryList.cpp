@@ -18,10 +18,22 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "guiInventoryList.h"
+#include <IVideoDriver.h>
+#include <ostream>
 #include "guiFormSpecMenu.h"
 #include "client/hud.h"
 #include "client/client.h"
-#include <IVideoDriver.h>
+#include "EGUIElementTypes.h"
+#include "IEventReceiver.h"
+#include "gui/modalMenu.h"
+#include "inventory.h"
+#include "log.h"
+#include "position2d.h"
+#include "rect.h"
+
+namespace irr::gui {
+class IGUIFont;
+}  // namespace irr::gui
 
 GUIInventoryList::GUIInventoryList(gui::IGUIEnvironment *env,
 	gui::IGUIElement *parent,

@@ -18,10 +18,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #pragma once
-#include "irrlichttypes_extrabloated.h"
-#include <IMaterialRendererServices.h>
 #include <IShaderConstantSetCallBack.h>
+#include "irrlichttypes_extrabloated.h"
 #include "client/shader.h"
+
+namespace irr::video {
+class IMaterialRendererServices;
+class SMaterial;
+}  // namespace irr::video
 
 // Used by main game rendering
 

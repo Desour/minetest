@@ -17,6 +17,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <assert.h>
+#include <stddef.h>
+#include <exception>
+#include <map>
+#include <memory>
+#include <set>
+#include <sstream>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 #include "map.h"
 #include "mapsector.h"
 #include "filesys.h"
@@ -32,15 +43,29 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "rollback_interface.h"
 #include "reflowscan.h"
 #include "emerge.h"
-#include "mapgen/mapgen_v6.h"
-#include "mapgen/mg_biome.h"
 #include "config.h"
-#include "server.h"
 #include "database/database.h"
 #include "database/database-dummy.h"
 #include "database/database-sqlite3.h"
 #include "script/scripting_server.h"
 #include "irrlicht_changes/printing.h"
+#include "constants.h"
+#include "debug.h"
+#include "exceptions.h"
+#include "irrlichttypes_bloated.h"
+#include "map_settings_manager.h"
+#include "mapblock.h"
+#include "mapgen/mapgen.h"
+#include "mapnode.h"
+#include "modifiedstate.h"
+#include "nodedef.h"
+#include "serverenvironment.h"
+#include "servermap.h"
+#include "util/container.h"
+#include "util/metricsbackend.h"
+#include "util/numeric.h"
+#include "util/serialize.h"
+#include "util/timetaker.h"
 #if USE_LEVELDB
 #include "database/database-leveldb.h"
 #endif

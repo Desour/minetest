@@ -23,9 +23,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "sound_data.h"
-
-#include "sound_constants.h"
+#include <stddef.h>
+#include <vorbis/vorbisfile.h>
 #include <algorithm>
+#include <iterator>
+#include <optional>
+#include <ostream>
+#include "sound_constants.h"
+#include "client/sound/ogg_file.h"
+#include "log.h"
 
 namespace sound {
 

@@ -20,6 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "modchannels.h"
 #include <algorithm>
 #include <cassert>
+#include <utility>
 #include "util/basic_macros.h"
 
 bool ModChannel::registerConsumer(session_t peer_id)

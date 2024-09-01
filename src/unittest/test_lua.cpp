@@ -18,10 +18,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <stdexcept>
+#include <exception>
+#include <string>
 #include "test.h"
 #include "config.h"
 
-#include <stdexcept>
+class IGameDef;
 
 extern "C" {
 #if USE_LUAJIT
@@ -30,6 +33,7 @@ extern "C" {
 	#include <lua.h>
 #endif
 #include <lauxlib.h>
+#include <lua.h>
 }
 
 /*

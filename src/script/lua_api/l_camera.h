@@ -19,6 +19,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <lauxlib.h>
+#include <lua.h>
 #include "l_base.h"
 
 class Camera;

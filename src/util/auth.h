@@ -19,6 +19,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <string>
+
 /// Gets the base64 encoded legacy password db entry.
 std::string translate_password(const std::string &name,
 	const std::string &password);

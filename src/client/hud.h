@@ -21,9 +21,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include <vector>
-#include <IGUIFont.h>
+#include <string>
 #include "irr_aabb3d.h"
 #include "../hud.h"
+#include "irrlicht.h"
+#include "irrlichttypes_extrabloated.h"
 
 class Client;
 class ITextureSource;

@@ -18,12 +18,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "guiEngine.h"
-
+#include <ICameraSceneNode.h>
+#include <IGUIStaticText.h>
+#include <stdlib.h>
+#include <algorithm>
+#include <fstream>
 #include "client/fontengine.h"
 #include "client/guiscalingfilter.h"
 #include "client/renderingengine.h"
 #include "client/shader.h"
-#include "client/tile.h"
 #include "config.h"
 #include "content/content.h"
 #include "content/mods.h"
@@ -35,11 +38,22 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "porting.h"
 #include "scripting_mainmenu.h"
 #include "settings.h"
-#include "sound.h"
-#include "version.h"
-#include <ICameraSceneNode.h>
-#include <IGUIStaticText.h>
 #include "client/imagefilters.h"
+#include "EVideoTypes.h"
+#include "ITexture.h"
+#include "IVideoDriver.h"
+#include "SColor.h"
+#include "common/c_types.h"
+#include "dimension2d.h"
+#include "exceptions.h"
+#include "gui/guiFormSpecMenu.h"
+#include "irrlichttypes_extrabloated.h"
+#include "position2d.h"
+#include "rect.h"
+#include "util/basic_macros.h"
+
+class IMenuManager;
+class JoystickController;
 
 #if USE_SOUND
 	#include "client/sound/sound_openal.h"

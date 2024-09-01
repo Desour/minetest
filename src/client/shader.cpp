@@ -18,30 +18,41 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include <fstream>
-#include <iterator>
+#include <IGPUProgrammingServices.h>
+#include <IMaterialRendererServices.h>
+#include <IShaderConstantSetCallBack.h>
+#include <EShaderTypes.h>
+#include <mt_opengl.h>
+#include <assert.h>
+#include <libintl.h>
+#include <string.h>
+#include <memory>
+#include <sstream>
+#include <thread>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 #include "shader.h"
-#include "irrlichttypes_extrabloated.h"
 #include "irr_ptr.h"
 #include "debug.h"
 #include "filesys.h"
 #include "util/container.h"
-#include "util/thread.h"
 #include "settings.h"
-#include <ICameraSceneNode.h>
-#include <IGPUProgrammingServices.h>
-#include <IMaterialRenderer.h>
-#include <IMaterialRendererServices.h>
-#include <IShaderConstantSetCallBack.h>
 #include "client/renderingengine.h"
-#include <EShaderTypes.h>
 #include "gettext.h"
 #include "log.h"
-#include "gamedef.h"
 #include "client/tile.h"
-#include "config.h"
-
-#include <mt_opengl.h>
+#include "EDriverFeatures.h"
+#include "EDriverTypes.h"
+#include "EPrimitiveTypes.h"
+#include "EVideoTypes.h"
+#include "IVideoDriver.h"
+#include "SMaterial.h"
+#include "exceptions.h"
+#include "porting.h"
+#include "threading/mutex_auto_lock.h"
+#include "util/basic_macros.h"
+#include "util/string.h"
 
 /*
 	A cache from shader name to shader path

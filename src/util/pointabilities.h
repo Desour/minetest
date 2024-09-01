@@ -20,8 +20,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 #include <string>
 #include <unordered_map>
-#include "itemgroup.h"
 #include <optional>
+#include <iosfwd>
+#include "itemgroup.h"
 #include "irrlichttypes.h"
 
 enum class PointabilityType : u8

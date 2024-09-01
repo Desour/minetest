@@ -18,10 +18,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "imagesource.h"
-
 #include <IFileSystem.h>
+#include <assert.h>
+#include <math.h>
+#include <algorithm>
+#include <cstddef>
+#include <initializer_list>
+#include <ostream>
+#include <utility>
 #include "settings.h"
-#include "mesh.h"
 #include "util/strfnd.h"
 #include "renderingengine.h"
 #include "util/base64.h"
@@ -29,6 +34,17 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "imagefilters.h"
 #include "texturepaths.h"
 #include "util/numeric.h"
+#include "IReadFile.h"
+#include "IVideoDriver.h"
+#include "debug.h"
+#include "dimension2d.h"
+#include "exceptions.h"
+#include "irrMath.h"
+#include "irrlichttypes_extrabloated.h"
+#include "log.h"
+#include "position2d.h"
+#include "rect.h"
+#include "util/string.h"
 
 
 ////////////////////////////////

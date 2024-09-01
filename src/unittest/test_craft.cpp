@@ -17,9 +17,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 #include "test.h"
-
 #include "craftdef.h"
+#include "debug.h"
+#include "gamedef.h"
+#include "inventory.h"
+#include "itemdef.h"
 
 class TestCraft : public TestBase
 {

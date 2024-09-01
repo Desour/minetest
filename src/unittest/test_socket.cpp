@@ -17,11 +17,20 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
+#include <netinet/in.h>
+#include <string.h>
+#include <ostream>
+#include <string>
 #include "test.h"
-
 #include "log.h"
 #include "settings.h"
 #include "network/socket.h"
+#include "constants.h"
+#include "network/address.h"
+#include "network/networkexceptions.h"
+#include "porting.h"
+
+class IGameDef;
 
 class TestSocket : public TestBase {
 public:

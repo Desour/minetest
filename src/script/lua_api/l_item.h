@@ -19,9 +19,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <lauxlib.h>
+#include <lua.h>
 #include "lua_api/l_base.h"
 #include "inventory.h"  // ItemStack
 #include "util/pointer.h"
+#include "util/basic_macros.h"
 
 class LuaItemStack : public ModApiBase, public IntrusiveReferenceCounted {
 private:

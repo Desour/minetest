@@ -17,19 +17,19 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include <iostream>
+#include <IFileSystem.h>
+#include <assert.h>
+#include <libintl.h>
+#include <string.h>
+#include <time.h>
 #include <algorithm>
 #include <sstream>
 #include <cmath>
-#include <IFileSystem.h>
-#include <json/json.h>
 #include "client.h"
 #include "network/clientopcodes.h"
 #include "network/connection.h"
 #include "network/networkpacket.h"
-#include "threading/mutex_auto_lock.h"
 #include "client/clientevent.h"
-#include "client/gameui.h"
 #include "client/renderingengine.h"
 #include "client/sound.h"
 #include "client/texturepaths.h"
@@ -37,7 +37,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "client/particles.h"
 #include "client/localplayer.h"
 #include "util/auth.h"
-#include "util/directiontables.h"
 #include "util/pointedthing.h"
 #include "util/serialize.h"
 #include "util/string.h"
@@ -60,11 +59,43 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "serialization.h"
 #include "guiscalingfilter.h"
 #include "script/scripting_client.h"
-#include "game.h"
 #include "chatmessage.h"
 #include "translation.h"
 #include "content/mod_configuration.h"
 #include "mapnode.h"
+#include "IAnimatedMesh.h"
+#include "IReadFile.h"
+#include "IVideoDriver.h"
+#include "SColor.h"
+#include "client/camera.h"
+#include "client/clientenvironment.h"
+#include "client/clientobject.h"
+#include "client/shadows/dynamicshadowsrender.h"
+#include "client/texturesource.h"
+#include "client/tile.h"
+#include "clientdynamicinfo.h"
+#include "cmake_config.h"
+#include "constants.h"
+#include "cpp_api/s_base.h"
+#include "database/database.h"
+#include "debug.h"
+#include "exceptions.h"
+#include "gettime.h"
+#include "inventory.h"
+#include "irrMath.h"
+#include "itemdef.h"
+#include "log.h"
+#include "map.h"
+#include "network/networkexceptions.h"
+#include "nodedef.h"
+#include "nodemetadata.h"
+#include "player.h"
+#include "porting.h"
+#include "settings.h"
+#include "texture_override.h"
+
+class ICraftDefManager;
+struct SRPUser;
 
 extern gui::IGUIEnvironment* guienv;
 

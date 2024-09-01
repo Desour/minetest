@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <string>
 #include <vector>
+#include <string_view>
 
 // Texture paths get cached and this clears the Cache.
 void clearTextureNameCache();

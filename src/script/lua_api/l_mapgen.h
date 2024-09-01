@@ -19,13 +19,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <lua.h>
 #include "lua_api/l_base.h"
 #include "irr_v3d.h"
+#include "common/c_types.h"
+
+class EmergeManager;
 
 typedef u16 biome_t;  // copy from mg_biome.h to avoid an unnecessary include
 
 class MMVManip;
-class BiomeManager;
 class BiomeGen;
 class Mapgen;
 

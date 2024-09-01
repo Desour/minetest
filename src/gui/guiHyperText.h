@@ -24,6 +24,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <unordered_map>
 #include <string>
 #include "irrlichttypes_extrabloated.h"
+#include "irrlicht.h"
 
 using namespace irr;
 

@@ -18,13 +18,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "lua_api/l_inventory.h"
+#include <stddef.h>
+#include <string>
 #include "lua_api/l_internal.h"
 #include "lua_api/l_item.h"
 #include "common/c_converter.h"
 #include "common/c_content.h"
 #include "server.h"
 #include "server/serverinventorymgr.h"
-#include "remoteplayer.h"
+#include "inventory.h"
+#include "irr_v3d.h"
 
 /*
 	InvRef

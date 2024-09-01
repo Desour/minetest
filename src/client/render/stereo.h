@@ -19,9 +19,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #pragma once
-#include "core.h"
-#include "plain.h"
 #include "pipeline.h"
+#include "matrix4.h"
 
 
 /**

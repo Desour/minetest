@@ -31,29 +31,24 @@ extern "C" {
 #include <lua.h>
 }
 
-#include <iostream>
 #include <vector>
 #include <array>
-
+#include <string>
 #include "irrlichttypes_bloated.h"
-#include "util/string.h"
 #include "itemgroup.h"
-#include "itemdef.h"
 #include "util/pointabilities.h"
 #include "c_types.h"
-// We do an explicit path include because by default c_content.h include src/client/hud.h
-// prior to the src/hud.h, which is not good on server only build
-#include "../../hud.h"
-#include "content/mods.h"
+#include "tileanimation.h"
+#include "tool.h"
 
-namespace Json { class Value; }
-
+namespace Json {
+class Value;
+}  // namespace Json
 struct MapNode;
 class NodeDefManager;
 struct PointedThing;
 struct ItemStack;
 struct ItemDefinition;
-struct ToolCapabilities;
 struct ObjectProperties;
 struct SoundSpec;
 struct ServerPlayingSound;
@@ -63,14 +58,20 @@ struct NodeBox;
 struct ContentFeatures;
 struct TileDef;
 class IGameDef;
-struct DigParams;
-struct HitParams;
-struct EnumString;
 struct NoiseParams;
-class Schematic;
 class ServerActiveObject;
 struct collisionMoveResult;
-namespace treegen { struct TreeDef; }
+namespace treegen {
+struct TreeDef;
+}  // namespace treegen
+class IItemDefManager;
+enum HudElementStat : u8;
+namespace irr::video {
+class SColor;
+}  // namespace irr::video
+struct FlagDesc;
+struct HudElement;
+struct ModSpec;
 
 extern struct EnumString es_TileAnimationType[];
 

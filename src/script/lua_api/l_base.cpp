@@ -18,14 +18,22 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "lua_api/l_base.h"
-#include "lua_api/l_internal.h"
+#include <stddef.h>
+#include <algorithm>
+#include <sstream>
+#include <vector>
 #include "cpp_api/s_base.h"
 #include "content/mods.h"
 #include "profiler.h"
 #include "server.h"
-#include <algorithm>
-#include <cmath>
-#include <sstream>
+#include "common/c_internal.h"
+#include "debug.h"
+#include "irrTypes.h"
+#include "log.h"
+#include "porting.h"
+#include "util/numeric.h"
+
+class IGameDef;
 
 ScriptApiBase *ModApiBase::getScriptApiBase(lua_State *L)
 {

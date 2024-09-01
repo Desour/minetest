@@ -18,23 +18,40 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "particles.h"
+#include <assert.h>
 #include <cmath>
 #include <array>
+#include <algorithm>
+#include <ostream>
+#include <string>
+#include <utility>
 #include "client.h"
 #include "collision.h"
 #include "client/content_cao.h"
 #include "client/clientevent.h"
-#include "client/renderingengine.h"
 #include "util/numeric.h"
 #include "light.h"
 #include "localplayer.h"
-#include "environment.h"
 #include "clientmap.h"
 #include "mapnode.h"
 #include "nodedef.h"
-#include "client.h"
 #include "settings.h"
 #include "profiler.h"
+#include "EMaterialTypes.h"
+#include "EVideoTypes.h"
+#include "ITexture.h"
+#include "IVideoDriver.h"
+#include "S3DVertex.h"
+#include "SMaterialLayer.h"
+#include "client/clientenvironment.h"
+#include "client/texturesource.h"
+#include "client/tile.h"
+#include "constants.h"
+#include "irrMath.h"
+#include "log.h"
+#include "player.h"
+#include "threading/mutex_auto_lock.h"
+#include "tileanimation.h"
 
 ClientParticleTexture::ClientParticleTexture(const ServerParticleTexture& p, ITextureSource *tsrc)
 {
