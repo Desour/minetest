@@ -4,8 +4,10 @@
 
 #pragma once
 
-#include <jpeglib.h> // use system lib
+#include <cstddef> // IWYU pragma: keep (required by jpeglib.h)
+#include <cstdio> // IWYU pragma: keep (required by jpeglib.h)
 #include <jmorecfg.h>
+#include <jpeglib.h> // use system lib
 #include "IImageLoader.h"
 #include "path.h"
 

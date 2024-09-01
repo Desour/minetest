@@ -5,7 +5,6 @@
 #include "CImageLoaderJPG.h"
 #include <setjmp.h>
 #include <string.h>
-#include <cstdio>
 #include "IReadFile.h"
 #include "CImage.h"
 #include "os.h"

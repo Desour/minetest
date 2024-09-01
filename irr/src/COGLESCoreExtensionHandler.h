@@ -7,8 +7,11 @@
 // Can be included from different ES versions
 // (this is also the reason why this file is header-only as correct OGL ES headers have to be included first)
 
+#include "SDL_opengl.h"
 #include "irrMath.h"
 #include "COpenGLCoreFeature.h"
+#include "irrString.h"
+#include "os.h"
 
 namespace irr
 {

@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
 #include "CAttributes.h"
+#include "IAttribute.h"
 
 namespace irr
 {
