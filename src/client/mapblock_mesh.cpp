@@ -890,6 +890,8 @@ bool MapBlockMesh::animate(bool faraway, float time, int crack,
 void MapBlockMesh::updateTransparentBuffers(v3f camera_pos, v3s16 block_pos,
 		bool group_by_buffers)
 {
+	const s32 num_split_strains = 10;
+
 	// nothing to do if the entire block is opaque
 	if (m_transparent_triangles.empty())
 		return;
@@ -904,16 +906,31 @@ void MapBlockMesh::updateTransparentBuffers(v3f camera_pos, v3s16 block_pos,
 	m_transparent_buffers_consolidated = false;
 	m_transparent_buffers.clear();
 
-	std::vector<std::pair<scene::SMeshBuffer *, std::vector<u16>>> ordered_strains;
-	std::unordered_map<scene::SMeshBuffer *, size_t> strain_idxs;
+	size_t fist_splitstrain_k = 0;
 
-	if (group_by_buffers) {
+	if (num_split_strains >= 0) {
 		// find (reversed) order for strains, by iterating front-to-back
 		// (if a buffer A has a triangle nearer than all triangles of another
 		// buffer B, A should be drawn in front of (=after) B)
+		// first num_split_strains are not grouped
 		scene::SMeshBuffer *current_buffer = nullptr;
-		for (auto it = triangle_refs.rbegin(); it != triangle_refs.rend(); ++it) {
-			const auto &t = m_transparent_triangles[*it];
+		s32 num_split_strains_left = num_split_strains;
+		ssize_t k;
+		for (k = triangle_refs.size() - 1; k >= 0; --k) {
+			const auto &t = m_transparent_triangles[triangle_refs[k]];
+			if (current_buffer == t.buffer)
+				continue;
+			if (num_split_strains_left == 0)
+				break;
+			num_split_strains_left--;
+			current_buffer = t.buffer;
+		}
+		fist_splitstrain_k = k + 1;
+		// the rest is grouped. determine order of groups
+		std::vector<std::pair<scene::SMeshBuffer *, std::vector<u16>>> ordered_strains;
+		std::unordered_map<scene::SMeshBuffer *, size_t> strain_idxs;
+		for (; k >= 0; --k) {
+			const auto &t = m_transparent_triangles[triangle_refs[k]];
 			if (current_buffer == t.buffer)
 				continue;
 			current_buffer = t.buffer;
@@ -922,37 +939,50 @@ void MapBlockMesh::updateTransparentBuffers(v3f camera_pos, v3s16 block_pos,
 			if (is_new)
 				ordered_strains.emplace_back(current_buffer, std::vector<u16>{});
 		}
-	}
 
-	// find order for triangles, by iterating back-to-front
-	scene::SMeshBuffer *current_buffer = nullptr;
-	std::vector<u16> *current_strain = nullptr;
-	for (auto i : triangle_refs) {
-		const auto &t = m_transparent_triangles[i];
-		if (current_buffer != t.buffer) {
-			current_buffer = t.buffer;
-			if (group_by_buffers) {
+		// find order for triangles, by iterating back-to-front
+		current_buffer = nullptr;
+		std::vector<u16> *current_strain = nullptr;
+		for (size_t k = 0; k < fist_splitstrain_k; ++k) {
+			const auto &t = m_transparent_triangles[triangle_refs[k]];
+			if (current_buffer != t.buffer) {
+				current_buffer = t.buffer;
 				auto it = strain_idxs.find(current_buffer);
 				assert(it != strain_idxs.end());
 				current_strain = &ordered_strains[it->second].second;
-			} else {
-				ordered_strains.emplace_back(current_buffer, std::vector<u16>{});
-				current_strain = &ordered_strains.back().second;
 			}
+			current_strain->push_back(t.p1);
+			current_strain->push_back(t.p2);
+			current_strain->push_back(t.p3);
 		}
-		current_strain->push_back(t.p1);
-		current_strain->push_back(t.p2);
-		current_strain->push_back(t.p3);
-	}
 
-	m_transparent_buffers.reserve(ordered_strains.size());
-	if (group_by_buffers) {
+		m_transparent_buffers.reserve(ordered_strains.size()
+				+ num_split_strains - num_split_strains_left);
 		// the order was reversed
 		for (auto it = ordered_strains.rbegin(); it != ordered_strains.rend(); ++it)
 			m_transparent_buffers.emplace_back(it->first, std::move(it->second));
-	} else {
-		for (auto it = ordered_strains.begin(); it != ordered_strains.end(); ++it)
-			m_transparent_buffers.emplace_back(it->first, std::move(it->second));
+	}
+
+	// now the split strains
+	scene::SMeshBuffer *current_buffer = nullptr;
+	std::vector<u16> current_strain;
+
+	for (size_t k = fist_splitstrain_k; k < triangle_refs.size(); ++k) {
+		const auto &t = m_transparent_triangles[triangle_refs[k]];
+		if (current_buffer != t.buffer) {
+			if (current_buffer != nullptr) {
+				m_transparent_buffers.emplace_back(current_buffer, std::move(current_strain));
+				current_strain.clear();
+			}
+			current_buffer = t.buffer;
+		}
+		current_strain.push_back(t.p1);
+		current_strain.push_back(t.p2);
+		current_strain.push_back(t.p3);
+	}
+
+	if (!current_strain.empty()) {
+		m_transparent_buffers.emplace_back(current_buffer, std::move(current_strain));
 	}
 }
 
