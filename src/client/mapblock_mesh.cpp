@@ -890,7 +890,7 @@ bool MapBlockMesh::animate(bool faraway, float time, int crack,
 void MapBlockMesh::updateTransparentBuffers(v3f camera_pos, v3s16 block_pos,
 		bool group_by_buffers)
 {
-	const s32 num_split_strains = 10;
+	const s32 num_split_strains = 100;
 
 	// nothing to do if the entire block is opaque
 	if (m_transparent_triangles.empty())
@@ -929,7 +929,7 @@ void MapBlockMesh::updateTransparentBuffers(v3f camera_pos, v3s16 block_pos,
 		// the rest is grouped. determine order of groups
 		std::vector<std::pair<scene::SMeshBuffer *, std::vector<u16>>> ordered_strains;
 		std::unordered_map<scene::SMeshBuffer *, size_t> strain_idxs;
-		for (; k >= 0; --k) {
+		for (k = triangle_refs.size() - 1; k >= 0; --k) {
 			const auto &t = m_transparent_triangles[triangle_refs[k]];
 			if (current_buffer == t.buffer)
 				continue;
@@ -956,11 +956,13 @@ void MapBlockMesh::updateTransparentBuffers(v3f camera_pos, v3s16 block_pos,
 			current_strain->push_back(t.p3);
 		}
 
-		m_transparent_buffers.reserve(ordered_strains.size()
-				+ num_split_strains - num_split_strains_left);
+		// m_transparent_buffers.reserve(ordered_strains.size()
+				// + num_split_strains - num_split_strains_left);
 		// the order was reversed
-		for (auto it = ordered_strains.rbegin(); it != ordered_strains.rend(); ++it)
-			m_transparent_buffers.emplace_back(it->first, std::move(it->second));
+		for (auto it = ordered_strains.rbegin(); it != ordered_strains.rend(); ++it) {
+			if (!it->second.empty())
+				m_transparent_buffers.emplace_back(it->first, std::move(it->second));
+		}
 	}
 
 	// now the split strains
