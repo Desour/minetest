@@ -915,7 +915,7 @@ void MapBlockMesh::updateTransparentBuffers(v3f camera_pos, v3s16 block_pos,
 		// first num_split_strains are not grouped
 		scene::SMeshBuffer *current_buffer = nullptr;
 		s32 num_split_strains_left = num_split_strains;
-		ssize_t k;
+		s32 k;
 		for (k = triangle_refs.size() - 1; k >= 0; --k) {
 			const auto &t = m_transparent_triangles[triangle_refs[k]];
 			if (current_buffer == t.buffer)
