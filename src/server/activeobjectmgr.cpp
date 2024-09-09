@@ -18,6 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include <log.h>
+#include <tracy/Tracy.hpp>
 #include "mapblock.h"
 #include "profiler.h"
 #include "activeobjectmgr.h"
@@ -49,6 +50,8 @@ void ActiveObjectMgr::clearIf(const std::function<bool(ServerActiveObject *, u16
 void ActiveObjectMgr::step(
 		float dtime, const std::function<void(ServerActiveObject *)> &f)
 {
+	ZoneScoped;
+
 	size_t count = 0;
 
 	for (auto &ao_it : m_active_objects.iter()) {

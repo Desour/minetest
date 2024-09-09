@@ -41,6 +41,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "database/database-sqlite3.h"
 #include "script/scripting_server.h"
 #include "irrlicht_changes/printing.h"
+#include <tracy/Tracy.hpp>
 #if USE_LEVELDB
 #include "database/database-leveldb.h"
 #endif
@@ -475,6 +476,8 @@ void ServerMap::reportMetrics(u64 save_time_us, u32 saved_blocks, u32 all_blocks
 
 void ServerMap::save(ModifiedState save_level)
 {
+	ZoneScoped;
+
 	if (!m_map_saving_enabled) {
 		warningstream<<"Not saving map, saving disabled."<<std::endl;
 		return;
@@ -762,6 +765,8 @@ void ServerMap::deleteDetachedBlocks()
 
 void ServerMap::step()
 {
+	ZoneScoped;
+
 	// Delete from memory blocks removed by deleteBlocks() only when pointers
 	// to them are (probably) no longer in use
 	deleteDetachedBlocks();
@@ -853,6 +858,8 @@ void ServerMap::transforming_liquid_add(v3s16 p)
 void ServerMap::transformLiquids(std::map<v3s16, MapBlock*> &modified_blocks,
 		ServerEnvironment *env)
 {
+	ZoneScoped;
+
 	u32 loopcount = 0;
 	u32 initial_size = m_transforming_liquid.size();
 

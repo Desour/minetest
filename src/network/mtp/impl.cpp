@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <cerrno>
 #include <algorithm>
 #include <cmath>
+#include <tracy/Tracy.hpp>
 #include "network/mtp/internal.h"
 #include "serialization.h"
 #include "log.h"
@@ -1392,6 +1393,8 @@ bool Connection::deletePeer(session_t peer_id, bool timeout)
 
 ConnectionEventPtr Connection::waitEvent(u32 timeout_ms)
 {
+	ZoneScoped;
+
 	try {
 		return m_event_queue.pop_front(timeout_ms);
 	} catch(ItemNotFoundException &ex) {
@@ -1441,6 +1444,8 @@ void Connection::Disconnect()
 
 bool Connection::ReceiveTimeoutMs(NetworkPacket *pkt, u32 timeout_ms)
 {
+	ZoneScoped;
+
 	/*
 		Note that this function can potentially wait infinitely if non-data
 		events keep happening before the timeout expires.

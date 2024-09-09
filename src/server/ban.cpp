@@ -23,6 +23,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "threading/mutex_auto_lock.h"
 #include <sstream>
 #include <set>
+#include <tracy/Tracy.hpp>
 #include "util/strfnd.h"
 #include "util/string.h"
 #include "log.h"
@@ -68,6 +69,8 @@ void BanManager::load()
 
 void BanManager::save()
 {
+	ZoneScoped;
+
 	MutexAutoLock lock(m_mutex);
 	infostream << "BanManager: saving to " << m_banfilepath << std::endl;
 	std::ostringstream ss(std::ios_base::binary);

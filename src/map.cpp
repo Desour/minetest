@@ -32,6 +32,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "rollback_interface.h"
 #include "environment.h"
 #include "irrlicht_changes/printing.h"
+#include <tracy/Tracy.hpp>
 
 /*
 	Map
@@ -291,6 +292,8 @@ struct TimeOrderedMapBlock {
 void Map::timerUpdate(float dtime, float unload_timeout, s32 max_loaded_blocks,
 		std::vector<v3s16> *unloaded_blocks)
 {
+	ZoneScoped;
+
 	bool save_before_unloading = maySaveBlocks();
 
 	// Profile modified reasons
