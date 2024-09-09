@@ -46,6 +46,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "lua_api/l_settings.h"
 #include "lua_api/l_http.h"
 #include "lua_api/l_storage.h"
+#include <tracy/Tracy.hpp>
 
 extern "C" {
 #include <lualib.h>
@@ -130,6 +131,8 @@ void ServerScripting::initAsync()
 
 void ServerScripting::stepAsync()
 {
+	ZoneScoped;
+
 	asyncEngine.step(getStack());
 }
 

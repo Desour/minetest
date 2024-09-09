@@ -19,6 +19,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <algorithm>
 #include <stack>
+#include <tracy/Tracy.hpp>
 #include <utility>
 #include "serverenvironment.h"
 #include "settings.h"
@@ -336,6 +337,8 @@ void ActiveBlockList::update(std::vector<PlayerSAO*> &active_players,
 	std::set<v3s16> &blocks_added,
 	std::set<v3s16> &extra_blocks_added)
 {
+	ZoneScoped;
+
 	/*
 		Create the new list
 	*/
@@ -623,6 +626,8 @@ bool ServerEnvironment::removePlayerFromDatabase(const std::string &name)
 
 void ServerEnvironment::saveLoadedPlayers(bool force)
 {
+	ZoneScoped;
+
 	for (RemotePlayer *player : m_players) {
 		if (force || player->checkModified() || (player->getPlayerSAO() &&
 				player->getPlayerSAO()->getMeta().isModified())) {
@@ -691,6 +696,8 @@ PlayerSAO *ServerEnvironment::loadPlayer(RemotePlayer *player, bool *new_player,
 
 void ServerEnvironment::saveMeta()
 {
+	ZoneScoped;
+
 	if (!m_meta_loaded)
 		return;
 
@@ -905,6 +912,8 @@ public:
 	}
 	void apply(MapBlock *block, int &blocks_scanned, int &abms_run, int &blocks_cached)
 	{
+		ZoneScoped;
+
 		if (m_aabms.empty())
 			return;
 
@@ -1020,6 +1029,8 @@ public:
 
 void ServerEnvironment::activateBlock(MapBlock *block, u32 additional_dtime)
 {
+	ZoneScoped;
+
 	// Reset usage timer immediately, otherwise a block that becomes active
 	// again at around the same time as it would normally be unloaded will
 	// get unloaded incorrectly. (I think this still leaves a small possibility
@@ -1346,6 +1357,8 @@ void ServerEnvironment::clearObjects(ClearObjectsMode mode)
 
 void ServerEnvironment::step(float dtime)
 {
+	ZoneScoped;
+
 	ScopeProfiler sp2(g_profiler, "ServerEnv::step()", SPT_AVG);
 	const auto start_time = porting::getTimeUs();
 
@@ -1505,6 +1518,8 @@ void ServerEnvironment::step(float dtime)
 	}
 
 	if (m_active_block_modifier_interval.step(dtime, m_cache_abm_interval)) {
+		ZoneScopedN("abms");
+
 		ScopeProfiler sp(g_profiler, "SEnv: modify in blocks avg per interval", SPT_AVG);
 		TimeTaker timer("modify in active blocks per interval");
 
@@ -1607,6 +1622,8 @@ void ServerEnvironment::step(float dtime)
 		Manage particle spawner expiration
 	*/
 	if (m_particle_management_interval.step(dtime, 1.0)) {
+		ZoneScopedN("particle-spawner expiration");
+
 		for (auto i = m_particle_spawners.begin(); i != m_particle_spawners.end(); ) {
 			// non expiring spawners
 			if (i->second == PARTICLE_SPAWNER_NO_EXPIRY) {
@@ -1713,6 +1730,8 @@ u16 ServerEnvironment::addActiveObject(std::unique_ptr<ServerActiveObject> objec
 
 void ServerEnvironment::invalidateActiveObjectObserverCaches()
 {
+	ZoneScoped;
+
 	m_ao_manager.invalidateActiveObjectObserverCaches();
 }
 
@@ -1966,6 +1985,8 @@ u16 ServerEnvironment::addActiveObjectRaw(std::unique_ptr<ServerActiveObject> ob
 */
 void ServerEnvironment::removeRemovedObjects()
 {
+	ZoneScoped;
+
 	ScopeProfiler sp(g_profiler, "ServerEnvironment::removeRemovedObjects()", SPT_AVG);
 
 	auto clear_cb = [this](ServerActiveObject *obj, u16 id) {
@@ -2133,6 +2154,8 @@ void ServerEnvironment::activateObjects(MapBlock *block, u32 dtime_s)
 */
 void ServerEnvironment::deactivateFarObjects(const bool _force_delete)
 {
+	ZoneScoped;
+
 	auto cb_deactivate = [this, _force_delete](ServerActiveObject *obj, u16 id) {
 		// force_delete might be overridden per object
 		bool force_delete = _force_delete;
