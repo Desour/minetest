@@ -20,6 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "mapblock.h"
 
 #include <sstream>
+#include <tracy/Tracy.hpp>
 #include "map.h"
 #include "light.h"
 #include "nodedef.h"
@@ -132,6 +133,8 @@ bool MapBlock::saveStaticObject(u16 id, const StaticObject &obj, u32 reason)
 // This method is only for Server, don't call it on client
 void MapBlock::step(float dtime, const std::function<bool(v3s16, MapNode, f32)> &on_timer_cb)
 {
+	ZoneScoped;
+
 	// Run script callbacks for elapsed node_timers
 	std::vector<NodeTimer> elapsed_timers = m_node_timers.step(dtime);
 	if (!elapsed_timers.empty()) {

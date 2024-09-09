@@ -26,11 +26,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "lua_api/l_env.h"
 #include "server.h"
 #include "script/common/c_content.h"
+#include <tracy/Tracy.hpp>
 
 
 void ScriptApiEnv::environment_OnGenerated(v3s16 minp, v3s16 maxp,
 	u32 blockseed)
 {
+	ZoneScoped;
+
 	SCRIPTAPI_PRECHECKHEADER
 
 	// Get core.registered_on_generateds
@@ -45,6 +48,8 @@ void ScriptApiEnv::environment_OnGenerated(v3s16 minp, v3s16 maxp,
 
 void ScriptApiEnv::environment_Step(float dtime)
 {
+	ZoneScoped;
+
 	SCRIPTAPI_PRECHECKHEADER
 	//infostream << "scriptapi_environment_step" << std::endl;
 
@@ -58,6 +63,8 @@ void ScriptApiEnv::environment_Step(float dtime)
 
 void ScriptApiEnv::player_event(ServerActiveObject *player, const std::string &type)
 {
+	ZoneScoped;
+
 	SCRIPTAPI_PRECHECKHEADER
 
 	if (player == NULL)
@@ -75,6 +82,8 @@ void ScriptApiEnv::player_event(ServerActiveObject *player, const std::string &t
 
 void ScriptApiEnv::initializeEnvironment(ServerEnvironment *env)
 {
+	ZoneScoped;
+
 	SCRIPTAPI_PRECHECKHEADER
 	verbosestream << "ScriptApiEnv: Environment initialized" << std::endl;
 	setEnv(env);
@@ -218,6 +227,8 @@ void ScriptApiEnv::initializeEnvironment(ServerEnvironment *env)
 void ScriptApiEnv::on_emerge_area_completion(
 	v3s16 blockpos, int action, ScriptCallbackState *state)
 {
+	ZoneScoped;
+
 	Server *server = getServer();
 
 	// This function should be executed with envlock held.
@@ -259,6 +270,8 @@ void ScriptApiEnv::on_emerge_area_completion(
 
 void ScriptApiEnv::check_for_falling(v3s16 p)
 {
+	ZoneScoped;
+
 	SCRIPTAPI_PRECHECKHEADER
 
 	int error_handler = PUSH_ERROR_HANDLER(L);
@@ -272,6 +285,8 @@ void ScriptApiEnv::check_for_falling(v3s16 p)
 void ScriptApiEnv::on_liquid_transformed(
 	const std::vector<std::pair<v3s16, MapNode>> &list)
 {
+	ZoneScoped;
+
 	SCRIPTAPI_PRECHECKHEADER
 
 	// Get core.registered_on_liquid_transformed
@@ -302,6 +317,8 @@ void ScriptApiEnv::on_liquid_transformed(
 
 void ScriptApiEnv::on_mapblocks_changed(const std::unordered_set<v3s16> &set)
 {
+	ZoneScoped;
+
 	SCRIPTAPI_PRECHECKHEADER
 
 	// Get core.registered_on_mapblocks_changed
