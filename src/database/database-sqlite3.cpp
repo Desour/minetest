@@ -36,6 +36,7 @@ SQLite format specification:
 #include "remoteplayer.h"
 #include "irrlicht_changes/printing.h"
 #include "server/player_sao.h"
+#include "util/tracy_wrapper.h"
 
 #include <cassert>
 
@@ -430,6 +431,8 @@ bool PlayerDatabaseSQLite3::playerDataExists(const std::string &name)
 
 void PlayerDatabaseSQLite3::savePlayer(RemotePlayer *player)
 {
+	ZoneScoped;
+
 	PlayerSAO* sao = player->getPlayerSAO();
 	sanity_check(sao);
 
