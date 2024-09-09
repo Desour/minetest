@@ -46,6 +46,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <unordered_set>
 #include <optional>
 #include <string_view>
+#include "util/tracy_wrapper.h"
 
 class ChatEvent;
 struct ChatEventChat;
@@ -428,7 +429,7 @@ public:
 	Address m_bind_addr;
 
 	// Environment mutex (envlock)
-	std::mutex m_env_mutex;
+	TracyLockable(std::mutex, m_env_mutex);
 
 protected:
 	/* Do not add more members here, this is only required to make unit tests work. */

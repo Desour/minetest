@@ -363,7 +363,7 @@ Server::~Server()
 		m_emerge->stopThreads();
 
 	if (m_env) {
-		MutexAutoLock envlock(m_env_mutex);
+		std::unique_lock envlock(m_env_mutex);
 
 		infostream << "Server: Executing shutdown hooks" << std::endl;
 		try {
@@ -472,7 +472,7 @@ void Server::init()
 	}
 
 	//lock environment
-	MutexAutoLock envlock(m_env_mutex);
+	std::unique_lock envlock(m_env_mutex);
 
 	// Create the Map (loads map_meta.txt, overriding configured mapgen params)
 	auto startup_server_map = std::make_unique<ServerMap>(m_path_world, this,
@@ -663,7 +663,7 @@ void Server::AsyncRunStep(float dtime, bool initial_step)
 	}
 
 	{
-		MutexAutoLock lock(m_env_mutex);
+		std::unique_lock lock(m_env_mutex);
 		float max_lag = m_env->getMaxLagEstimate();
 		constexpr float lag_warn_threshold = 2.0f;
 
@@ -696,7 +696,7 @@ void Server::AsyncRunStep(float dtime, bool initial_step)
 	static const float map_timer_and_unload_dtime = 2.92;
 	if(m_map_timer_and_unload_interval.step(dtime, map_timer_and_unload_dtime))
 	{
-		MutexAutoLock lock(m_env_mutex);
+		std::unique_lock lock(m_env_mutex);
 		// Run Map's timers and unload unused data
 		ScopeProfiler sp(g_profiler, "Server: map timer and unload");
 		m_env->getMap().timerUpdate(map_timer_and_unload_dtime,
@@ -714,7 +714,7 @@ void Server::AsyncRunStep(float dtime, bool initial_step)
 	*/
 	if (m_admin_chat) {
 		if (!m_admin_chat->command_queue.empty()) {
-			MutexAutoLock lock(m_env_mutex);
+			std::unique_lock lock(m_env_mutex);
 			while (!m_admin_chat->command_queue.empty()) {
 				ChatEvent *evt = m_admin_chat->command_queue.pop_frontNoEx();
 				handleChatInterfaceEvent(evt);
@@ -735,7 +735,7 @@ void Server::AsyncRunStep(float dtime, bool initial_step)
 	{
 		m_liquid_transform_timer -= m_liquid_transform_every;
 
-		MutexAutoLock lock(m_env_mutex);
+		std::unique_lock lock(m_env_mutex);
 
 		ScopeProfiler sp(g_profiler, "Server: liquid transform");
 
@@ -796,7 +796,7 @@ void Server::AsyncRunStep(float dtime, bool initial_step)
 	*/
 	{
 		//infostream<<"Server: Checking added and deleted active objects"<<std::endl;
-		MutexAutoLock envlock(m_env_mutex);
+		std::unique_lock envlock(m_env_mutex);
 
 		// This guarantees that each object recomputes its cache only once per server step,
 		// unless get_effective_observers is called.
@@ -843,7 +843,7 @@ void Server::AsyncRunStep(float dtime, bool initial_step)
 	{
 		ZoneScopedN("Send object messages");
 
-		MutexAutoLock envlock(m_env_mutex);
+		std::unique_lock envlock(m_env_mutex);
 		ScopeProfiler sp(g_profiler, "Server: send SAO messages");
 
 		// Key = object id
@@ -947,7 +947,7 @@ void Server::AsyncRunStep(float dtime, bool initial_step)
 		ZoneScopedN("Send queued-for-sending map edit events");
 
 		// We will be accessing the environment
-		MutexAutoLock lock(m_env_mutex);
+		std::unique_lock lock(m_env_mutex);
 
 		// Single change sending is disabled if queue size is big
 		bool disable_single_change_sending = false;
@@ -1054,7 +1054,7 @@ void Server::AsyncRunStep(float dtime, bool initial_step)
 			g_settings->getFloat("server_map_save_interval");
 		if (counter >= save_interval) {
 			counter = 0.0;
-			MutexAutoLock lock(m_env_mutex);
+			std::unique_lock lock(m_env_mutex);
 
 			ScopeProfiler sp(g_profiler, "Server: map saving (sum)");
 
@@ -1212,7 +1212,7 @@ void Server::ProcessData(NetworkPacket *pkt)
 	ZoneScoped;
 	{
 	// Environment is locked first.
-	MutexAutoLock envlock(m_env_mutex);
+	std::unique_lock envlock(m_env_mutex);
 
 	ZoneScopedN("ProcessData (with envlock)");
 
@@ -2403,7 +2403,7 @@ void Server::SendBlocks(float dtime)
 {
 	ZoneScoped;
 
-	MutexAutoLock envlock(m_env_mutex);
+	std::unique_lock envlock(m_env_mutex);
 	//TODO check if one big lock could be faster then multiple small ones
 
 	std::vector<PrioritySortedBlockTransfer> queue;
@@ -2737,7 +2737,7 @@ void Server::stepPendingDynMediaCallbacks(float dtime)
 {
 	ZoneScoped;
 
-	MutexAutoLock lock(m_env_mutex);
+	std::unique_lock lock(m_env_mutex);
 
 	for (auto it = m_pending_dyn_media.begin(); it != m_pending_dyn_media.end();) {
 		it->second.expiry_timer -= dtime;
@@ -2980,7 +2980,7 @@ void Server::DeleteClient(session_t peer_id, ClientDeletionReason reason)
 			}
 		}
 		{
-			MutexAutoLock env_lock(m_env_mutex);
+			std::unique_lock env_lock(m_env_mutex);
 			m_clients.DeleteClient(peer_id);
 		}
 	}
@@ -4173,7 +4173,7 @@ Translations *Server::getTranslationLanguage(const std::string &lang_code)
 
 std::unordered_map<std::string, std::string> Server::getMediaList()
 {
-	MutexAutoLock env_lock(m_env_mutex);
+	std::unique_lock env_lock(m_env_mutex);
 
 	std::unordered_map<std::string, std::string> ret;
 	for (auto &it : m_media) {

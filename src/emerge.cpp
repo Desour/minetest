@@ -294,7 +294,7 @@ bool EmergeManager::enqueueBlockEmergeEx(
 	bool entry_already_exists = false;
 
 	{
-		MutexAutoLock queuelock(m_queue_mutex);
+		std::unique_lock queuelock(m_queue_mutex);
 
 		if (!pushBlockEmergeData(blockpos, peer_id, flags,
 				callback, callback_param, &entry_already_exists))
@@ -315,7 +315,7 @@ bool EmergeManager::enqueueBlockEmergeEx(
 
 bool EmergeManager::isBlockInQueue(v3s16 pos)
 {
-	MutexAutoLock queuelock(m_queue_mutex);
+	std::unique_lock queuelock(m_queue_mutex);
 	return m_blocks_enqueued.find(pos) != m_blocks_enqueued.end();
 }
 
@@ -485,7 +485,7 @@ bool EmergeThread::pushBlock(const v3s16 &pos)
 
 void EmergeThread::cancelPendingItems()
 {
-	MutexAutoLock queuelock(m_emerge->m_queue_mutex);
+	std::unique_lock queuelock(m_emerge->m_queue_mutex);
 
 	while (!m_block_queue.empty()) {
 		BlockEmergeData bedata;
@@ -520,7 +520,7 @@ void EmergeThread::runCompletionCallbacks(const v3s16 &pos, EmergeAction action,
 
 bool EmergeThread::popBlockEmerge(v3s16 *pos, BlockEmergeData *bedata)
 {
-	MutexAutoLock queuelock(m_emerge->m_queue_mutex);
+	std::unique_lock queuelock(m_emerge->m_queue_mutex);
 
 	if (m_block_queue.empty())
 		return false;
@@ -537,7 +537,7 @@ bool EmergeThread::popBlockEmerge(v3s16 *pos, BlockEmergeData *bedata)
 EmergeAction EmergeThread::getBlockOrStartGen(const v3s16 pos,
 	bool allow_disk, bool allow_gen, MapBlock **block, BlockMakeData *bmdata)
 {
-	MutexAutoLock envlock(m_server->m_env_mutex);
+	std::unique_lock envlock(m_server->m_env_mutex);
 
 	// 1). Attempt to fetch block from memory
 	*block = m_map->getBlockNoCreateNoEx(pos);
@@ -562,7 +562,7 @@ EmergeAction EmergeThread::getBlockOrStartGen(const v3s16 pos,
 MapBlock *EmergeThread::finishGen(v3s16 pos, BlockMakeData *bmdata,
 	std::map<v3s16, MapBlock *> *modified_blocks)
 {
-	MutexAutoLock envlock(m_server->m_env_mutex);
+	std::unique_lock envlock(m_server->m_env_mutex);
 	ScopeProfiler sp(g_profiler,
 		"EmergeThread: after Mapgen::makeChunk", SPT_AVG);
 
@@ -754,7 +754,7 @@ retry:
 			MapEditEvent event;
 			event.type = MEET_OTHER;
 			event.setModifiedBlocks(modified_blocks);
-			MutexAutoLock envlock(m_server->m_env_mutex);
+			std::unique_lock envlock(m_server->m_env_mutex);
 			m_map->dispatchEvent(event);
 		}
 		modified_blocks.clear();
