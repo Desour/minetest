@@ -18,6 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include <sstream>
+#include <tracy/Tracy.hpp>
 #include "clientiface.h"
 #include "debug.h"
 #include "network/connection.h"
@@ -100,6 +101,8 @@ void RemoteClient::GetNextBlocks (
 		float dtime,
 		std::vector<PrioritySortedBlockTransfer> &dest)
 {
+	ZoneScoped;
+
 	// Increment timers
 	m_nothing_to_send_pause_timer -= dtime;
 	m_map_send_completion_timer += dtime;
@@ -459,6 +462,8 @@ void RemoteClient::SetBlockNotSent(v3s16 p)
 
 void RemoteClient::SetBlocksNotSent(const std::vector<v3s16> &blocks)
 {
+	ZoneScoped;
+
 	m_nothing_to_send_pause_timer = 0;
 
 	for (v3s16 p : blocks) {
@@ -705,6 +710,8 @@ bool ClientInterface::isUserLimitReached()
 
 void ClientInterface::step(float dtime)
 {
+	ZoneScoped;
+
 	m_print_info_timer += dtime;
 	if (m_print_info_timer >= 30.0f) {
 		m_print_info_timer = 0.0f;

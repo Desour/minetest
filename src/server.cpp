@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <iostream>
 #include <queue>
 #include <algorithm>
+#include <tracy/Tracy.hpp>
 #include "network/connection.h"
 #include "network/networkprotocol.h"
 #include "network/serveropcodes.h"
@@ -840,6 +841,8 @@ void Server::AsyncRunStep(float dtime, bool initial_step)
 		Send object messages
 	*/
 	{
+		ZoneScopedN("Send object messages");
+
 		MutexAutoLock envlock(m_env_mutex);
 		ScopeProfiler sp(g_profiler, "Server: send SAO messages");
 
@@ -941,6 +944,8 @@ void Server::AsyncRunStep(float dtime, bool initial_step)
 		Send queued-for-sending map edit events.
 	*/
 	{
+		ZoneScopedN("Send queued-for-sending map edit events");
+
 		// We will be accessing the environment
 		MutexAutoLock lock(m_env_mutex);
 
@@ -1196,14 +1201,20 @@ PlayerSAO* Server::StageTwoClientInit(session_t peer_id)
 
 inline void Server::handleCommand(NetworkPacket *pkt)
 {
+	ZoneScoped;
+
 	const ToServerCommandHandler &opHandle = toServerCommandTable[pkt->getCommand()];
 	(this->*opHandle.handler)(pkt);
 }
 
 void Server::ProcessData(NetworkPacket *pkt)
 {
+	ZoneScoped;
+	{
 	// Environment is locked first.
 	MutexAutoLock envlock(m_env_mutex);
+
+	ZoneScopedN("ProcessData (with envlock)");
 
 	ScopeProfiler sp(g_profiler, "Server: Process network packet (sum)");
 	u32 peer_id = pkt->getPeerId();
@@ -1257,6 +1268,7 @@ void Server::ProcessData(NetworkPacket *pkt)
 		actionstream << "Server::ProcessData(): PacketError: "
 				<< "what=" << e.what()
 				<< std::endl;
+	}
 	}
 }
 
@@ -2011,6 +2023,8 @@ void Server::SendPlayerFormspecPrepend(session_t peer_id)
 
 void Server::SendActiveObjectRemoveAdd(RemoteClient *client, PlayerSAO *playersao)
 {
+	ZoneScoped;
+
 	// Radius inside which objects are active
 	static thread_local const s16 radius =
 		g_settings->getS16("active_object_send_range_blocks") * MAP_BLOCKSIZE;
@@ -2300,6 +2314,8 @@ void Server::sendNodeChangePkt(NetworkPacket &pkt, v3s16 block_pos,
 
 void Server::sendMetadataChanged(const std::unordered_set<v3s16> &positions, float far_d_nodes)
 {
+	ZoneScoped;
+
 	NodeMetadataList meta_updates_list(false);
 	std::ostringstream os(std::ios::binary);
 
@@ -2353,6 +2369,8 @@ void Server::sendMetadataChanged(const std::unordered_set<v3s16> &positions, flo
 void Server::SendBlockNoLock(session_t peer_id, MapBlock *block, u8 ver,
 		u16 net_proto_version, SerializedBlockCache *cache)
 {
+	ZoneScoped;
+
 	thread_local const int net_compression_level = rangelim(g_settings->getS16("map_compression_level_net"), -1, 9);
 	std::string s, *sptr = nullptr;
 
@@ -2383,6 +2401,8 @@ void Server::SendBlockNoLock(session_t peer_id, MapBlock *block, u8 ver,
 
 void Server::SendBlocks(float dtime)
 {
+	ZoneScoped;
+
 	MutexAutoLock envlock(m_env_mutex);
 	//TODO check if one big lock could be faster then multiple small ones
 
@@ -2715,6 +2735,8 @@ void Server::sendRequestedMedia(session_t peer_id,
 
 void Server::stepPendingDynMediaCallbacks(float dtime)
 {
+	ZoneScoped;
+
 	MutexAutoLock lock(m_env_mutex);
 
 	for (auto it = m_pending_dyn_media.begin(); it != m_pending_dyn_media.end();) {

@@ -22,6 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "emerge_internal.h"
 
 #include <iostream>
+#include <tracy/Tracy.hpp>
 
 #include "util/container.h"
 #include "config.h"
@@ -287,6 +288,8 @@ bool EmergeManager::enqueueBlockEmergeEx(
 	EmergeCompletionCallback callback,
 	void *callback_param)
 {
+	ZoneScoped;
+
 	EmergeThread *thread = NULL;
 	bool entry_already_exists = false;
 
