@@ -47,6 +47,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <unordered_set>
 #include <optional>
 #include <string_view>
+#include "util/tracy_wrapper.h"
 
 class ChatEvent;
 struct ChatEventChat;
@@ -434,7 +435,7 @@ public:
 		EnvAutoLock(Server *server): m_lock(server->m_env_mutex) {}
 
 	private:
-		std::lock_guard<ordered_mutex> m_lock;
+		std::lock_guard<LockableBase(ordered_mutex)> m_lock;
 	};
 
 protected:
@@ -614,7 +615,7 @@ private:
 	*/
 
 	// Environment mutex (envlock)
-	ordered_mutex m_env_mutex;
+	TracyLockable(ordered_mutex, m_env_mutex);
 
 	// World directory
 	std::string m_path_world;

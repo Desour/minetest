@@ -300,7 +300,7 @@ bool EmergeManager::enqueueBlockEmergeEx(
 	bool entry_already_exists = false;
 
 	{
-		MutexAutoLock queuelock(m_queue_mutex);
+		std::unique_lock queuelock(m_queue_mutex);
 
 		if (!pushBlockEmergeData(blockpos, peer_id, flags,
 				callback, callback_param, &entry_already_exists))
@@ -327,7 +327,7 @@ size_t EmergeManager::getQueueSize()
 
 bool EmergeManager::isBlockInQueue(v3s16 pos)
 {
-	MutexAutoLock queuelock(m_queue_mutex);
+	std::unique_lock queuelock(m_queue_mutex);
 	return m_blocks_enqueued.find(pos) != m_blocks_enqueued.end();
 }
 
@@ -497,7 +497,7 @@ bool EmergeThread::pushBlock(v3s16 pos)
 
 void EmergeThread::cancelPendingItems()
 {
-	MutexAutoLock queuelock(m_emerge->m_queue_mutex);
+	std::unique_lock queuelock(m_emerge->m_queue_mutex);
 
 	while (!m_block_queue.empty()) {
 		BlockEmergeData bedata;
@@ -532,7 +532,7 @@ void EmergeThread::runCompletionCallbacks(v3s16 pos, EmergeAction action,
 
 bool EmergeThread::popBlockEmerge(v3s16 *pos, BlockEmergeData *bedata)
 {
-	MutexAutoLock queuelock(m_emerge->m_queue_mutex);
+	std::unique_lock queuelock(m_emerge->m_queue_mutex);
 
 	if (m_block_queue.empty())
 		return false;
