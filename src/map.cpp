@@ -773,6 +773,8 @@ MMVManip::MMVManip(Map *map):
 void MMVManip::initialEmerge(v3s16 blockpos_min, v3s16 blockpos_max,
 	bool load_if_inexistent)
 {
+	ZoneScoped;
+
 	TimeTaker timer1("initialEmerge", &emerge_time);
 
 	assert(m_map);

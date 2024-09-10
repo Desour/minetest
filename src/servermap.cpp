@@ -213,6 +213,8 @@ bool ServerMap::blockpos_over_mapgen_limit(v3s16 p)
 
 bool ServerMap::initBlockMake(v3s16 blockpos, BlockMakeData *data)
 {
+	ZoneScoped;
+
 	s16 csize = getMapgenParams()->chunksize;
 	v3s16 bpmin = EmergeManager::getContainingChunk(blockpos, csize);
 	v3s16 bpmax = bpmin + v3s16(1, 1, 1) * (csize - 1);
@@ -279,6 +281,8 @@ bool ServerMap::initBlockMake(v3s16 blockpos, BlockMakeData *data)
 void ServerMap::finishBlockMake(BlockMakeData *data,
 	std::map<v3s16, MapBlock*> *changed_blocks)
 {
+	ZoneScoped;
+
 	v3s16 bpmin = data->blockpos_min;
 	v3s16 bpmax = data->blockpos_max;
 
@@ -403,6 +407,8 @@ MapBlock * ServerMap::createBlock(v3s16 p)
 
 MapBlock * ServerMap::emergeBlock(v3s16 p, bool create_blank)
 {
+	ZoneScoped;
+
 	{
 		MapBlock *block = getBlockNoCreateNoEx(p);
 		if (block)
@@ -618,12 +624,16 @@ MapDatabase *ServerMap::createDatabase(
 
 void ServerMap::beginSave()
 {
+	ZoneScoped;
+
 	MutexAutoLock dblock(m_db.mutex);
 	m_db.dbase->beginSave();
 }
 
 void ServerMap::endSave()
 {
+	ZoneScoped;
+
 	MutexAutoLock dblock(m_db.mutex);
 	m_db.dbase->endSave();
 }
@@ -637,6 +647,8 @@ bool ServerMap::saveBlock(MapBlock *block)
 
 bool ServerMap::saveBlock(MapBlock *block, MapDatabase *db, int compression_level)
 {
+	ZoneScoped;
+
 	v3s16 p3d = block->getPos();
 
 	// Format used for writing
@@ -661,6 +673,8 @@ bool ServerMap::saveBlock(MapBlock *block, MapDatabase *db, int compression_leve
 
 void ServerMap::loadBlock(const std::string &blob, v3s16 p3d, bool save_after_load)
 {
+	ZoneScoped;
+
 	ScopeProfiler sp(g_profiler, "ServerMap: load block", SPT_AVG, PRECISION_MICRO);
 	MapBlock *block = nullptr;
 	bool created_new = false;

@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "exceptions.h"
 #include "mapblock.h"
 #include "serialization.h"
+#include "util/tracy_wrapper.h"
 
 MapSector::MapSector(Map *parent, v2s16 pos, IGameDef *gamedef):
 		m_parent(parent),
@@ -69,6 +70,8 @@ MapBlock *MapSector::getBlockNoCreateNoEx(s16 y)
 
 std::unique_ptr<MapBlock> MapSector::createBlankBlockNoInsert(s16 y)
 {
+	ZoneScoped;
+
 	assert(getBlockBuffered(y) == nullptr); // Pre-condition
 
 	if (blockpos_over_max_limit(v3s16(0, y, 0)))
