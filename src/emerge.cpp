@@ -532,6 +532,8 @@ void EmergeThread::runCompletionCallbacks(v3s16 pos, EmergeAction action,
 
 bool EmergeThread::popBlockEmerge(v3s16 *pos, BlockEmergeData *bedata)
 {
+	ZoneScoped;
+
 	std::unique_lock queuelock(m_emerge->m_queue_mutex);
 
 	if (m_block_queue.empty())
@@ -549,6 +551,8 @@ bool EmergeThread::popBlockEmerge(v3s16 *pos, BlockEmergeData *bedata)
 EmergeAction EmergeThread::getBlockOrStartGen(const v3s16 pos, bool allow_gen,
 	 const std::string *from_db, MapBlock **block, BlockMakeData *bmdata)
 {
+	ZoneScoped;
+
 	//TimeTaker tt("", nullptr, PRECISION_MICRO);
 	Server::EnvAutoLock envlock(m_server);
 	//g_profiler->avg("EmergeThread: lock wait time [us]", tt.stop());
@@ -592,6 +596,8 @@ EmergeAction EmergeThread::getBlockOrStartGen(const v3s16 pos, bool allow_gen,
 MapBlock *EmergeThread::finishGen(v3s16 pos, BlockMakeData *bmdata,
 	std::map<v3s16, MapBlock *> *modified_blocks)
 {
+	ZoneScoped;
+
 	Server::EnvAutoLock envlock(m_server);
 	ScopeProfiler sp(g_profiler,
 		"EmergeThread: after Mapgen::makeChunk", SPT_AVG);
@@ -679,6 +685,8 @@ bool EmergeThread::initScripting()
 
 void *EmergeThread::run()
 {
+	ZoneScoped;
+
 	BEGIN_DEBUG_EXCEPTION_HANDLER
 
 	v3s16 pos;
@@ -709,6 +717,8 @@ void *EmergeThread::run()
 			continue;
 		}
 
+		ZoneScopedN("EmergeThread do it");
+
 		g_profiler->add(m_name + ": processed [#]", 1);
 
 		if (blockpos_over_max_limit(pos))
@@ -738,6 +748,8 @@ void *EmergeThread::run()
 			m_trans_liquid = &bmdata.transforming_liquid;
 
 			{
+				ZoneScopedN("EmergeThread: Mapgen::makeChunk");
+
 				ScopeProfiler sp(g_profiler,
 					"EmergeThread: Mapgen::makeChunk", SPT_AVG);
 
