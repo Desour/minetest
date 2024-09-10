@@ -23,6 +23,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "nodedef.h"
 #include "mapblock.h"
 #include "map.h"
+#include "util/tracy_wrapper.h"
 
 namespace voxalgo
 {
@@ -258,6 +259,8 @@ void unspread_light(Map *map, const NodeDefManager *nodemgr, LightBank bank,
 	UnlightQueue &from_nodes, ReLightQueue &light_sources,
 	std::map<v3s16, MapBlock*> &modified_blocks)
 {
+	ZoneScoped;
+
 	// Stores data popped from from_nodes
 	u8 current_light;
 	ChangingLight current;
@@ -358,6 +361,8 @@ void spread_light(Map *map, const NodeDefManager *nodemgr, LightBank bank,
 	LightQueue &light_sources,
 	std::map<v3s16, MapBlock*> &modified_blocks)
 {
+	ZoneScoped;
+
 	// The light the current node can provide to its neighbors.
 	u8 spreading_light;
 	// The ChangingLight for the current node.
@@ -430,6 +435,8 @@ struct SunlightPropagationData{
  */
 bool is_sunlight_above(Map *map, v3s16 pos, const NodeDefManager *ndef)
 {
+	ZoneScoped;
+
 	bool sunlight = true;
 	mapblock_v3 source_block_pos;
 	relative_v3 source_rel_pos;
@@ -470,6 +477,8 @@ void update_lighting_nodes(Map *map,
 	const std::vector<std::pair<v3s16, MapNode>> &oldnodes,
 	std::map<v3s16, MapBlock*> &modified_blocks)
 {
+	ZoneScoped;
+
 	const NodeDefManager *ndef = map->getNodeDefManager();
 	// For node getter functions
 	bool is_valid_position;
@@ -692,6 +701,8 @@ bool is_light_locally_correct(Map *map, const NodeDefManager *ndef,
 void update_block_border_lighting(Map *map, MapBlock *block,
 	std::map<v3s16, MapBlock*> &modified_blocks)
 {
+	ZoneScoped;
+
 	const NodeDefManager *ndef = map->getNodeDefManager();
 	// Since invalid light is not common, do not allocate
 	// memory if not needed.
@@ -781,6 +792,8 @@ void update_block_border_lighting(Map *map, MapBlock *block,
 void fill_with_sunlight(MMVManip *vm, const NodeDefManager *ndef, v2s16 offset,
 	bool light[MAP_BLOCKSIZE][MAP_BLOCKSIZE])
 {
+	ZoneScoped;
+
 	// Distance in array between two nodes on top of each other.
 	s16 ystride = vm->m_area.getExtent().X;
 	// Cache the ignore node.
@@ -832,6 +845,8 @@ void fill_with_sunlight(MMVManip *vm, const NodeDefManager *ndef, v2s16 offset,
 void is_sunlight_above_block(Map *map, mapblock_v3 pos,
 	const NodeDefManager *ndef, bool light[MAP_BLOCKSIZE][MAP_BLOCKSIZE])
 {
+	ZoneScoped;
+
 	mapblock_v3 source_block_pos = pos + v3s16(0, 1, 0);
 	// Get or load source block.
 	// It might take a while to load, but correcting incorrect
@@ -875,6 +890,8 @@ void is_sunlight_above_block(Map *map, mapblock_v3 pos,
 bool propagate_block_sunlight(Map *map, const NodeDefManager *ndef,
 	SunlightPropagationData *data, UnlightQueue *unlight, ReLightQueue *relight)
 {
+	ZoneScoped;
+
 	bool modified = false;
 	// Get the block.
 	MapBlock *block = map->getBlockNoCreateNoEx(data->target_block);
@@ -976,6 +993,8 @@ void finish_bulk_light_update(Map *map, mapblock_v3 minblock,
 	mapblock_v3 maxblock, UnlightQueue unlight[2], ReLightQueue relight[2],
 	std::map<v3s16, MapBlock*> *modified_blocks)
 {
+	ZoneScoped;
+
 	const NodeDefManager *ndef = map->getNodeDefManager();
 
 	// --- STEP 1: Do unlighting
@@ -1041,6 +1060,8 @@ void finish_bulk_light_update(Map *map, mapblock_v3 minblock,
 void blit_back_with_light(Map *map, MMVManip *vm,
 	std::map<v3s16, MapBlock*> *modified_blocks)
 {
+	ZoneScoped;
+
 	const NodeDefManager *ndef = map->getNodeDefManager();
 
 	if (vm->m_area.hasEmptyExtent())
@@ -1151,6 +1172,8 @@ void blit_back_with_light(Map *map, MMVManip *vm,
 void fill_with_sunlight(MapBlock *block, const NodeDefManager *ndef,
 	bool light[MAP_BLOCKSIZE][MAP_BLOCKSIZE])
 {
+	ZoneScoped;
+
 	// For each column of nodes:
 	for (s16 z = 0; z < MAP_BLOCKSIZE; z++)
 	for (s16 x = 0; x < MAP_BLOCKSIZE; x++) {
@@ -1180,6 +1203,8 @@ void fill_with_sunlight(MapBlock *block, const NodeDefManager *ndef,
 void repair_block_light(Map *map, MapBlock *block,
 	std::map<v3s16, MapBlock*> *modified_blocks)
 {
+	ZoneScoped;
+
 	if (!block)
 		return;
 	const NodeDefManager *ndef = map->getNodeDefManager();

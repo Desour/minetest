@@ -22,6 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "common/c_converter.h"
 #include "lua_api/l_vmanip.h"
 #include "emerge.h"
+#include "util/tracy_wrapper.h"
 
 void ScriptApiMapgen::on_mods_loaded()
 {
@@ -47,6 +48,8 @@ void ScriptApiMapgen::on_shutdown()
 
 void ScriptApiMapgen::on_generated(BlockMakeData *bmdata, u32 seed)
 {
+	ZoneScoped;
+
 	SCRIPTAPI_PRECHECKHEADER
 
 	v3s16 minp = bmdata->blockpos_min * MAP_BLOCKSIZE;
