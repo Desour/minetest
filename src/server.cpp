@@ -1202,11 +1202,10 @@ inline void Server::handleCommand(NetworkPacket *pkt)
 void Server::ProcessData(NetworkPacket *pkt)
 {
 	ZoneScoped;
-	{
+
 	// Environment is locked first.
 	std::unique_lock envlock(m_env_mutex);
-
-	ZoneScopedN("ProcessData (with envlock)");
+	LockMark(m_env_mutex);
 
 	ScopeProfiler sp(g_profiler, "Server: Process network packet (sum)");
 	u32 peer_id = pkt->getPeerId();
@@ -1260,7 +1259,6 @@ void Server::ProcessData(NetworkPacket *pkt)
 		actionstream << "Server::ProcessData(): PacketError: "
 				<< "what=" << e.what()
 				<< std::endl;
-	}
 	}
 }
 

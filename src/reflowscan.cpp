@@ -22,6 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "mapblock.h"
 #include "nodedef.h"
 #include "util/timetaker.h"
+#include "util/tracy_wrapper.h"
 
 
 ReflowScan::ReflowScan(Map *map, const NodeDefManager *ndef) :
@@ -32,6 +33,8 @@ ReflowScan::ReflowScan(Map *map, const NodeDefManager *ndef) :
 
 void ReflowScan::scan(MapBlock *block, UniqueQueue<v3s16> *liquid_queue)
 {
+	ZoneScoped;
+
 	m_block_pos = block->getPos();
 	m_rel_block_pos = block->getPosRelative();
 	m_liquid_queue = liquid_queue;
