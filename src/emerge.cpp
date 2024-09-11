@@ -679,11 +679,11 @@ void *EmergeThread::run()
 			continue;
 
 		bool allow_gen = bedata.flags & BLOCK_EMERGE_ALLOW_GEN;
-		bool allow_disk = true;
+		bool disk_tried = false;
 		EMERGE_DBG_OUT("pos=" << pos << " allow_gen=" << allow_gen);
 
 retry:
-		action = getBlockOrStartGen(pos, allow_disk, allow_gen, &block, &bmdata);
+		action = getBlockOrStartGen(pos, !disk_tried, allow_gen, &block, &bmdata);
 
 		/* Try to load it */
 		if (action == EMERGE_FROM_DISK) {
@@ -699,11 +699,18 @@ retry:
 				m_map->loadBlock(data, pos);
 			}
 			// We took our shot, check again:
-			allow_disk = false;
+			disk_tried = true;
 			goto retry;
 		}
 
-		/* Generate it*/
+		/* The block was already in memory */
+		if (action == EMERGE_FROM_MEMORY) {
+			// great, but correct the status in case we just loaded it
+			if (disk_tried)
+				action = EMERGE_FROM_DISK;
+		}
+
+		/* Generate it */
 		if (action == EMERGE_GENERATED) {
 			bool error = false;
 			m_trans_liquid = &bmdata.transforming_liquid;

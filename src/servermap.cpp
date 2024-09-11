@@ -727,7 +727,7 @@ void ServerMap::loadBlock(const std::string &blob, v3s16 p3d, bool save_after_lo
 	if (save_after_load)
 		saveBlock(block);
 
-	// We just loaded it from, so it's up-to-date.
+	// We just loaded it, so it's up-to-date.
 	block->resetModified();
 }
 
