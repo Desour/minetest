@@ -79,8 +79,8 @@ private:
 
 	bool popBlockEmerge(v3s16 *pos, BlockEmergeData *bedata);
 
-	EmergeAction getBlockOrStartGen(
-		const v3s16 &pos, bool allow_gen, MapBlock **block, BlockMakeData *data);
+	EmergeAction getBlockOrStartGen(v3s16 pos, bool allow_disk, bool allow_gen,
+		MapBlock **block, BlockMakeData *data);
 	MapBlock *finishGen(v3s16 pos, BlockMakeData *bmdata,
 		std::map<v3s16, MapBlock *> *modified_blocks);
 
