@@ -46,6 +46,7 @@ class DecorationManager;
 class SchematicManager;
 class Server;
 class ModApiMapgen;
+struct MapDatabaseHolder;
 
 // Structure containing inputs/outputs for chunk generation
 struct BlockMakeData {
@@ -173,6 +174,8 @@ public:
 	SchematicManager *getWritableSchematicManager();
 
 	void initMapgens(MapgenParams *mgparams);
+	/// @param holder non-owned reference that must stay alive
+	void initMap(MapDatabaseHolder *holder);
 
 	void startThreads();
 	void stopThreads();
@@ -205,6 +208,9 @@ private:
 	std::vector<Mapgen *> m_mapgens;
 	std::vector<EmergeThread *> m_threads;
 	bool m_threads_active = false;
+
+	// The map database
+	MapDatabaseHolder *m_db = nullptr;
 
 	std::mutex m_queue_mutex;
 	std::map<v3s16, BlockEmergeData> m_blocks_enqueued;

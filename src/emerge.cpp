@@ -31,6 +31,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "filesys.h"
 #include "log.h"
 #include "servermap.h"
+#include "database/database.h"
 #include "mapblock.h"
 #include "mapgen/mg_biome.h"
 #include "mapgen/mg_ore.h"
@@ -185,10 +186,16 @@ SchematicManager *EmergeManager::getWritableSchematicManager()
 	return schemmgr;
 }
 
+void EmergeManager::initMap(MapDatabaseHolder *holder)
+{
+	FATAL_ERROR_IF(m_db, "Map database already initialized.");
+	assert(holder->db);
+	m_db = holder;
+}
 
 void EmergeManager::initMapgens(MapgenParams *params)
 {
-	FATAL_ERROR_IF(!m_mapgens.empty(), "Mapgen already initialised.");
+	FATAL_ERROR_IF(!m_mapgens.empty(), "Mapgen already initialized.");
 
 	mgparams = params;
 
@@ -524,8 +531,8 @@ bool EmergeThread::popBlockEmerge(v3s16 *pos, BlockEmergeData *bedata)
 }
 
 
-EmergeAction EmergeThread::getBlockOrStartGen(
-	const v3s16 &pos, bool allow_gen, MapBlock **block, BlockMakeData *bmdata)
+EmergeAction EmergeThread::getBlockOrStartGen(const v3s16 pos,
+	bool allow_disk, bool allow_gen, MapBlock **block, BlockMakeData *bmdata)
 {
 	MutexAutoLock envlock(m_server->m_env_mutex);
 
@@ -535,9 +542,8 @@ EmergeAction EmergeThread::getBlockOrStartGen(
 		if ((*block)->isGenerated())
 			return EMERGE_FROM_MEMORY;
 	} else {
-		// 2). Attempt to load block from disk if it was not in the memory
-		*block = m_map->loadBlock(pos);
-		if (*block && (*block)->isGenerated())
+		// 2). We should attempt loading it
+		if (allow_disk)
 			return EMERGE_FROM_DISK;
 	}
 
@@ -673,9 +679,31 @@ void *EmergeThread::run()
 			continue;
 
 		bool allow_gen = bedata.flags & BLOCK_EMERGE_ALLOW_GEN;
+		bool allow_disk = true;
 		EMERGE_DBG_OUT("pos=" << pos << " allow_gen=" << allow_gen);
 
-		action = getBlockOrStartGen(pos, allow_gen, &block, &bmdata);
+retry:
+		action = getBlockOrStartGen(pos, allow_disk, allow_gen, &block, &bmdata);
+
+		/* Try to load it */
+		if (action == EMERGE_FROM_DISK) {
+			auto &m_db = *m_emerge->m_db;
+			std::string data;
+			{
+				ScopeProfiler sp(g_profiler, "EmergeThread: load block - async (sum)");
+				MutexAutoLock dblock(m_db.mutex);
+				m_db.loadBlock(pos, data);
+			}
+			if (!data.empty()) {
+				MutexAutoLock envlock(m_server->m_env_mutex);
+				m_map->loadBlock(data, pos);
+			}
+			// We took our shot, check again:
+			allow_disk = false;
+			goto retry;
+		}
+
+		/* Generate it*/
 		if (action == EMERGE_GENERATED) {
 			bool error = false;
 			m_trans_liquid = &bmdata.transforming_liquid;

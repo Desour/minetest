@@ -33,8 +33,21 @@ class IRollbackManager;
 class EmergeManager;
 class ServerEnvironment;
 struct BlockMakeData;
-
 class MetricsBackend;
+
+// FIXME: this struct sucks
+struct MapDatabaseHolder {
+	/// Lock, to be taken for any operation
+	std::mutex mutex;
+	/// Main database
+	MapDatabase *dbase = nullptr;
+	/// Fallback database for read operations
+	MapDatabase *dbase_ro = nullptr;
+
+	/// Load a block, taking dbase_ro into account.
+	/// @note call locked
+	void loadBlock(v3s16 blockpos, std::string &ret);
+};
 
 /*
 	ServerMap
@@ -75,7 +88,7 @@ public:
 	MapBlock *createBlock(v3s16 p);
 
 	/*
-		Forcefully get a block from somewhere.
+		Forcefully get a block from somewhere (blocking!).
 		- Memory
 		- Load from disk
 		- Create blank filled with CONTENT_IGNORE
@@ -114,9 +127,11 @@ public:
 
 	bool saveBlock(MapBlock *block) override;
 	static bool saveBlock(MapBlock *block, MapDatabase *db, int compression_level = -1);
-	MapBlock* loadBlock(v3s16 p);
-	// Database version
-	void loadBlock(std::string *blob, v3s16 p3d, MapSector *sector, bool save_after_load=false);
+
+	// Load block in a synchronous fashion
+	MapBlock *loadBlock(v3s16 p);
+	// Load a block that was already read from disk. Used by EmergeManager.
+	void loadBlock(const std::string &blob, v3s16 p, bool save_after_load=false);
 
 	// Blocks are removed from the map but not deleted from memory until
 	// deleteDetachedBlocks() is called, since pointers to them may still exist
@@ -185,8 +200,8 @@ private:
 		This is reset to false when written on disk.
 	*/
 	bool m_map_metadata_changed = true;
-	MapDatabase *dbase = nullptr;
-	MapDatabase *dbase_ro = nullptr;
+
+	MapDatabaseHolder m_db;
 
 	// Map metrics
 	MetricGaugePtr m_loaded_blocks_gauge;
