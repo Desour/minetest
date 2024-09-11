@@ -659,6 +659,9 @@ bool ServerMap::saveBlock(MapBlock *block, MapDatabase *db, int compression_leve
 void ServerMap::loadBlock(const std::string &blob, v3s16 p3d, bool save_after_load)
 {
 	ScopeProfiler sp(g_profiler, "ServerMap: load block", SPT_AVG, PRECISION_MICRO);
+	MapBlock *block = nullptr;
+	bool created_new = false;
+
 	try {
 		std::istringstream is(blob, std::ios_base::binary);
 
@@ -671,7 +674,6 @@ void ServerMap::loadBlock(const std::string &blob, v3s16 p3d, bool save_after_lo
 		v2s16 p2d(p3d.X, p3d.Z);
 		MapSector *sector = createSector(p2d);
 
-		MapBlock *block = nullptr;
 		std::unique_ptr<MapBlock> block_created_new;
 		block = sector->getBlockNoCreateNoEx(p3d.Y);
 		if (!block) {
@@ -687,18 +689,9 @@ void ServerMap::loadBlock(const std::string &blob, v3s16 p3d, bool save_after_lo
 		// If it's a new block, insert it to the map
 		if (block_created_new) {
 			sector->insertBlock(std::move(block_created_new));
-			ReflowScan scanner(this, m_emerge->ndef);
-			scanner.scan(block, &m_transforming_liquid);
+			created_new = true;
 		}
-
-		if (save_after_load)
-			saveBlock(block);
-
-		// We just loaded it from, so it's up-to-date.
-		block->resetModified();
-	}
-	catch(SerializationError &e)
-	{
+	} catch (SerializationError &e) {
 		errorstream<<"Invalid block data in database"
 				<<" ("<<p3d.X<<","<<p3d.Y<<","<<p3d.Z<<")"
 				<<" (SerializationError): "<<e.what()<<std::endl;
@@ -713,27 +706,13 @@ void ServerMap::loadBlock(const std::string &blob, v3s16 p3d, bool save_after_lo
 			throw SerializationError("Invalid block data in database");
 		}
 	}
-}
 
-MapBlock* ServerMap::loadBlock(v3s16 blockpos)
-{
-	MapBlock *block = getBlockNoCreateNoEx(blockpos);
-	if (block)
-		return block;
+	assert(block);
 
-	std::string data;
-	{
-		ScopeProfiler sp(g_profiler, "ServerMap: load block - sync (sum)");
-		MutexAutoLock dblock(m_db.mutex);
-		m_db.loadBlock(blockpos, data);
-	}
+	if (created_new) {
+		ReflowScan scanner(this, m_emerge->ndef);
+		scanner.scan(block, &m_transforming_liquid);
 
-	if (!data.empty())
-		loadBlock(data, blockpos);
-
-	block = getBlockNoCreateNoEx(blockpos);
-	// FIXME: need to move this
-	if (block) {
 		std::map<v3s16, MapBlock*> modified_blocks;
 		// Fix lighting if necessary
 		voxalgo::update_block_border_lighting(this, block, modified_blocks);
@@ -744,7 +723,27 @@ MapBlock* ServerMap::loadBlock(v3s16 blockpos)
 			dispatchEvent(event);
 		}
 	}
-	return block;
+
+	if (save_after_load)
+		saveBlock(block);
+
+	// We just loaded it from, so it's up-to-date.
+	block->resetModified();
+}
+
+MapBlock* ServerMap::loadBlock(v3s16 blockpos)
+{
+	std::string data;
+	{
+		ScopeProfiler sp(g_profiler, "ServerMap: load block - sync (sum)");
+		MutexAutoLock dblock(m_db.mutex);
+		m_db.loadBlock(blockpos, data);
+	}
+
+	if (!data.empty())
+		loadBlock(data, blockpos);
+
+	return getBlockNoCreateNoEx(blockpos);
 }
 
 bool ServerMap::deleteBlock(v3s16 blockpos)
