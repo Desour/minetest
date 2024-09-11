@@ -189,7 +189,7 @@ SchematicManager *EmergeManager::getWritableSchematicManager()
 void EmergeManager::initMap(MapDatabaseHolder *holder)
 {
 	FATAL_ERROR_IF(m_db, "Map database already initialized.");
-	assert(holder->db);
+	assert(holder->dbase);
 	m_db = holder;
 }
 
