@@ -55,7 +55,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 	Helpers
 */
 
-void MapDatabaseHolder::loadBlock(v3s16 blockpos, std::string &ret)
+void MapDatabaseAccessor::loadBlock(v3s16 blockpos, std::string &ret)
 {
 	ret.clear();
 	dbase->loadBlock(blockpos, &ret);
