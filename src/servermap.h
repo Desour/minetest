@@ -35,8 +35,8 @@ class ServerEnvironment;
 struct BlockMakeData;
 class MetricsBackend;
 
-// FIXME: this struct sucks
-struct MapDatabaseHolder {
+// TODO: this could wrap all calls to MapDatabase, including locking
+struct MapDatabaseAccessor {
 	/// Lock, to be taken for any operation
 	std::mutex mutex;
 	/// Main database
@@ -201,7 +201,7 @@ private:
 	*/
 	bool m_map_metadata_changed = true;
 
-	MapDatabaseHolder m_db;
+	MapDatabaseAccessor m_db;
 
 	// Map metrics
 	MetricGaugePtr m_loaded_blocks_gauge;
