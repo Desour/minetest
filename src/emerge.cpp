@@ -712,7 +712,7 @@ retry:
 				m_db.loadBlock(pos, data);
 			}
 			if (!data.empty()) {
-				MutexAutoLock envlock(m_server->m_env_mutex);
+				std::unique_lock envlock(m_server->m_env_mutex);
 				m_map->loadBlock(data, pos);
 			}
 			// We took our shot, check again:
