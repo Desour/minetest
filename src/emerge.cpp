@@ -479,7 +479,7 @@ void EmergeThread::signal()
 }
 
 
-bool EmergeThread::pushBlock(const v3s16 &pos)
+bool EmergeThread::pushBlock(v3s16 pos)
 {
 	m_block_queue.push(pos);
 	return true;
@@ -504,7 +504,7 @@ void EmergeThread::cancelPendingItems()
 }
 
 
-void EmergeThread::runCompletionCallbacks(const v3s16 &pos, EmergeAction action,
+void EmergeThread::runCompletionCallbacks(v3s16 pos, EmergeAction action,
 	const EmergeCallbackList &callbacks)
 {
 	m_emerge->reportCompletedEmerge(action);
@@ -537,20 +537,39 @@ bool EmergeThread::popBlockEmerge(v3s16 *pos, BlockEmergeData *bedata)
 }
 
 
-EmergeAction EmergeThread::getBlockOrStartGen(const v3s16 pos,
-	bool allow_disk, bool allow_gen, MapBlock **block, BlockMakeData *bmdata)
+EmergeAction EmergeThread::getBlockOrStartGen(const v3s16 pos, bool allow_gen,
+	 const std::string *from_db, MapBlock **block, BlockMakeData *bmdata)
 {
 	MutexAutoLock envlock(m_server->m_env_mutex);
+
+	auto block_ok = [] (MapBlock *b) {
+		return b && b->isGenerated();
+	};
 
 	// 1). Attempt to fetch block from memory
 	*block = m_map->getBlockNoCreateNoEx(pos);
 	if (*block) {
-		if ((*block)->isGenerated())
+		if (block_ok(*block))
 			return EMERGE_FROM_MEMORY;
 	} else {
-		// 2). We should attempt loading it
-		if (allow_disk)
+		if (!from_db) {
+			// 2). We should attempt loading it
 			return EMERGE_FROM_DISK;
+		}
+		// 2). Second invocation, we have the data
+		if (!from_db->empty()) {
+			*block = m_map->getBlockNoCreateNoEx(pos);
+			if (*block) {
+				// someone else was faster, don't load it to prevent data loss
+				verbosestream << "getBlockOrStartGen: block loading raced" << std::endl;
+				if (block_ok(*block))
+					return EMERGE_FROM_MEMORY;
+			} else {
+				*block = m_map->loadBlock(*from_db, pos);
+				if (block_ok(*block))
+					return EMERGE_FROM_DISK;
+			}
+		}
 	}
 
 	// 3). Attempt to start generation
@@ -655,7 +674,8 @@ void *EmergeThread::run()
 	BEGIN_DEBUG_EXCEPTION_HANDLER
 
 	v3s16 pos;
-	std::map<v3s16, MapBlock *> modified_blocks;
+	std::map<v3s16, MapBlock*> modified_blocks;
+	std::string databuf;
 
 	m_map    = &m_server->m_env->getServerMap();
 	m_emerge = m_server->getEmergeManager();
@@ -681,39 +701,27 @@ void *EmergeThread::run()
 			continue;
 		}
 
+		g_profiler->add(m_name + ": processed [#]", 1);
+
 		if (blockpos_over_max_limit(pos))
 			continue;
 
 		bool allow_gen = bedata.flags & BLOCK_EMERGE_ALLOW_GEN;
-		bool disk_tried = false;
 		EMERGE_DBG_OUT("pos=" << pos << " allow_gen=" << allow_gen);
 
-retry:
-		action = getBlockOrStartGen(pos, !disk_tried, allow_gen, &block, &bmdata);
+		action = getBlockOrStartGen(pos, allow_gen, nullptr, &block, &bmdata);
 
 		/* Try to load it */
 		if (action == EMERGE_FROM_DISK) {
 			auto &m_db = *m_emerge->m_db;
-			std::string data;
 			{
 				ScopeProfiler sp(g_profiler, "EmergeThread: load block - async (sum)");
 				MutexAutoLock dblock(m_db.mutex);
-				m_db.loadBlock(pos, data);
+				m_db.loadBlock(pos, databuf);
 			}
-			if (!data.empty()) {
-				MutexAutoLock envlock(m_server->m_env_mutex);
-				m_map->loadBlock(data, pos);
-			}
-			// We took our shot, check again:
-			disk_tried = true;
-			goto retry;
-		}
-
-		/* The block was already in memory */
-		if (action == EMERGE_FROM_MEMORY) {
-			// great, but correct the status in case we just loaded it
-			if (disk_tried)
-				action = EMERGE_FROM_DISK;
+			// actually load it, then decide again
+			action = getBlockOrStartGen(pos, allow_gen, &databuf, &block, &bmdata);
+			databuf.clear();
 		}
 
 		/* Generate it */

@@ -669,7 +669,7 @@ void ServerMap::deSerializeBlock(MapBlock *block, std::istream &is)
 	block->deSerialize(is, version, true);
 }
 
-void ServerMap::loadBlock(const std::string &blob, v3s16 p3d, bool save_after_load)
+MapBlock *ServerMap::loadBlock(const std::string &blob, v3s16 p3d, bool save_after_load)
 {
 	ScopeProfiler sp(g_profiler, "ServerMap: load block", SPT_AVG, PRECISION_MICRO);
 	MapBlock *block = nullptr;
@@ -734,6 +734,8 @@ void ServerMap::loadBlock(const std::string &blob, v3s16 p3d, bool save_after_lo
 
 	// We just loaded it, so it's up-to-date.
 	block->resetModified();
+
+	return block;
 }
 
 MapBlock* ServerMap::loadBlock(v3s16 blockpos)
@@ -746,8 +748,7 @@ MapBlock* ServerMap::loadBlock(v3s16 blockpos)
 	}
 
 	if (!data.empty())
-		loadBlock(data, blockpos);
-
+		return loadBlock(data, blockpos);
 	return getBlockNoCreateNoEx(blockpos);
 }
 

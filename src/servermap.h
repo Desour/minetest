@@ -130,8 +130,9 @@ public:
 
 	// Load block in a synchronous fashion
 	MapBlock *loadBlock(v3s16 p);
-	// Load a block that was already read from disk. Used by EmergeManager.
-	void loadBlock(const std::string &blob, v3s16 p, bool save_after_load=false);
+	/// Load a block that was already read from disk. Used by EmergeManager.
+	/// @return non-null block (but can be blank)
+	MapBlock *loadBlock(const std::string &blob, v3s16 p, bool save_after_load=false);
 
 	// Helper for deserializing blocks from disk
 	// @throws SerializationError
