@@ -133,6 +133,10 @@ public:
 	// Load a block that was already read from disk. Used by EmergeManager.
 	void loadBlock(const std::string &blob, v3s16 p, bool save_after_load=false);
 
+	// Helper for deserializing blocks from disk
+	// @throws SerializationError
+	static void deSerializeBlock(MapBlock *block, std::istream &is);
+
 	// Blocks are removed from the map but not deleted from memory until
 	// deleteDetachedBlocks() is called, since pointers to them may still exist
 	// when deleteBlock() is called.

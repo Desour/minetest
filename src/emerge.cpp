@@ -193,6 +193,12 @@ void EmergeManager::initMap(MapDatabaseAccessor *holder)
 	m_db = holder;
 }
 
+void EmergeManager::initMap(std::nullptr_t)
+{
+	FATAL_ERROR_IF(m_threads_active, "Thread are still active.");
+	m_db = nullptr;
+}
+
 void EmergeManager::initMapgens(MapgenParams *params)
 {
 	FATAL_ERROR_IF(!m_mapgens.empty(), "Mapgen already initialized.");

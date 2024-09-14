@@ -392,7 +392,6 @@ Server::~Server()
 		// Note that this also deletes and saves the map.
 		delete m_env;
 		m_env = nullptr;
-		m_emerge.reset();
 	}
 
 	// Write any changes before deletion.

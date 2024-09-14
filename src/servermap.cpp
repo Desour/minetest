@@ -174,6 +174,8 @@ ServerMap::~ServerMap()
 				 << ", exception: " << e.what() << std::endl;
 	}
 
+	m_emerge->initMap(nullptr);
+
 	{
 		MutexAutoLock dblock(m_db.mutex);
 		delete m_db.dbase;
@@ -656,6 +658,17 @@ bool ServerMap::saveBlock(MapBlock *block, MapDatabase *db, int compression_leve
 	return ret;
 }
 
+void ServerMap::deSerializeBlock(MapBlock *block, std::istream &is)
+{
+	ScopeProfiler sp(g_profiler, "ServerMap: deSer block", SPT_AVG, PRECISION_MICRO);
+
+	u8 version = readU8(is);
+	if (is.fail())
+		throw SerializationError("Failed to read MapBlock version");
+
+	block->deSerialize(is, version, true);
+}
+
 void ServerMap::loadBlock(const std::string &blob, v3s16 p3d, bool save_after_load)
 {
 	ScopeProfiler sp(g_profiler, "ServerMap: load block", SPT_AVG, PRECISION_MICRO);
@@ -663,14 +676,6 @@ void ServerMap::loadBlock(const std::string &blob, v3s16 p3d, bool save_after_lo
 	bool created_new = false;
 
 	try {
-		std::istringstream is(blob, std::ios_base::binary);
-
-		u8 version = readU8(is);
-
-		if(is.fail())
-			throw SerializationError("ServerMap::loadBlock(): Failed"
-					" to read MapBlock version");
-
 		v2s16 p2d(p3d.X, p3d.Z);
 		MapSector *sector = createSector(p2d);
 
@@ -682,8 +687,8 @@ void ServerMap::loadBlock(const std::string &blob, v3s16 p3d, bool save_after_lo
 		}
 
 		{
-			ScopeProfiler sp(g_profiler, "ServerMap: deSer block", SPT_AVG, PRECISION_MICRO);
-			block->deSerialize(is, version, true);
+			std::istringstream iss(blob, std::ios_base::binary);
+			deSerializeBlock(block, iss);
 		}
 
 		// If it's a new block, insert it to the map

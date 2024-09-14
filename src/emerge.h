@@ -176,6 +176,8 @@ public:
 	void initMapgens(MapgenParams *mgparams);
 	/// @param holder non-owned reference that must stay alive
 	void initMap(MapDatabaseAccessor *holder);
+	/// resets the reference
+	void initMap(std::nullptr_t);
 
 	void startThreads();
 	void stopThreads();
