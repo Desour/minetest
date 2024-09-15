@@ -174,7 +174,7 @@ ServerMap::~ServerMap()
 				 << ", exception: " << e.what() << std::endl;
 	}
 
-	m_emerge->initMap(nullptr);
+	m_emerge->resetMap();
 
 	{
 		MutexAutoLock dblock(m_db.mutex);

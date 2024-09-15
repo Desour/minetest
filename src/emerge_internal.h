@@ -83,7 +83,8 @@ private:
 	 * Try to get a block from memory and decide what to do.
 	 *
 	 * @param pos block position
-	 * @param from_db serialized block data (second call after EMERGE_FROM_DISK)
+	 * @param from_db serialized block data, optional
+	 *                (for second call after EMERGE_FROM_DISK was returned)
 	 * @param allow_gen allow invoking mapgen?
 	 * @param block output pointer for block
 	 * @param data info for mapgen

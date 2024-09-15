@@ -177,7 +177,7 @@ public:
 	/// @param holder non-owned reference that must stay alive
 	void initMap(MapDatabaseAccessor *holder);
 	/// resets the reference
-	void initMap(std::nullptr_t);
+	void resetMap();
 
 	void startThreads();
 	void stopThreads();

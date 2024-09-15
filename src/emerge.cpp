@@ -193,9 +193,9 @@ void EmergeManager::initMap(MapDatabaseAccessor *holder)
 	m_db = holder;
 }
 
-void EmergeManager::initMap(std::nullptr_t)
+void EmergeManager::resetMap()
 {
-	FATAL_ERROR_IF(m_threads_active, "Thread are still active.");
+	FATAL_ERROR_IF(m_threads_active, "Threads are still active.");
 	m_db = nullptr;
 }
 
@@ -549,8 +549,13 @@ EmergeAction EmergeThread::getBlockOrStartGen(const v3s16 pos, bool allow_gen,
 	// 1). Attempt to fetch block from memory
 	*block = m_map->getBlockNoCreateNoEx(pos);
 	if (*block) {
-		if (block_ok(*block))
+		if (block_ok(*block)) {
+			// if we just read it from the db but the block exists that means
+			// someone else was faster. don't touch it to prevent data loss.
+			if (from_db)
+				verbosestream << "getBlockOrStartGen: block loading raced" << std::endl;
 			return EMERGE_FROM_MEMORY;
+		}
 	} else {
 		if (!from_db) {
 			// 2). We should attempt loading it
@@ -558,17 +563,9 @@ EmergeAction EmergeThread::getBlockOrStartGen(const v3s16 pos, bool allow_gen,
 		}
 		// 2). Second invocation, we have the data
 		if (!from_db->empty()) {
-			*block = m_map->getBlockNoCreateNoEx(pos);
-			if (*block) {
-				// someone else was faster, don't load it to prevent data loss
-				verbosestream << "getBlockOrStartGen: block loading raced" << std::endl;
-				if (block_ok(*block))
-					return EMERGE_FROM_MEMORY;
-			} else {
-				*block = m_map->loadBlock(*from_db, pos);
-				if (block_ok(*block))
-					return EMERGE_FROM_DISK;
-			}
+			*block = m_map->loadBlock(*from_db, pos);
+			if (block_ok(*block))
+				return EMERGE_FROM_DISK;
 		}
 	}
 
