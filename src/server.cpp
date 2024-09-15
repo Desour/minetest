@@ -626,6 +626,10 @@ void Server::AsyncRunStep(float dtime, bool initial_step)
 	if ((dtime == 0.0f) && !initial_step)
 		return;
 
+	// see explanation inside
+	if (dtime >= getStepSettings().steplen)
+		yieldToOtherThreads();
+
 	ScopeProfiler sp(g_profiler, "Server::AsyncRunStep()", SPT_AVG);
 
 	/*
@@ -655,7 +659,7 @@ void Server::AsyncRunStep(float dtime, bool initial_step)
 	{
 		EnvAutoLock lock(this);
 		float max_lag = m_env->getMaxLagEstimate();
-		constexpr float lag_warn_threshold = 2.0f;
+		constexpr float lag_warn_threshold = 1.0f;
 
 		// Decrease value gradually, halve it every minute.
 		if (m_max_lag_decrease.step(dtime, 0.5f)) {
@@ -1110,6 +1114,43 @@ void Server::Receive(float timeout)
 		} catch (ClientNotFoundException &e) {
 			infostream << "Server: ClientNotFoundException" << std::endl;
 		}
+	}
+}
+
+void Server::yieldToOtherThreads()
+{
+	/*
+	 * Problem: the server thread and emerge thread compete for the envlock.
+	 * While the emerge thread needs it just once or twice for every processed item
+	 * the server thread uses it much more generously.
+	 * This is usually not a problem as the server sleeps between steps, which leaves
+	 * enough chance. But if the server is overloaded it's busy all the time and
+	 * - even with a fair envlock - the emerge thread can't get up to speed.
+	 * This generally has a much worse impact on gameplay than server lag itself
+	 * ever would.
+	 *
+	 * Workaround: If we detect that the server is overloaded, introduce some careful
+	 * artificial sleeps to leave the emerge thread(s) enough chance to do their job.
+	 *
+	 * In the future the emerge code could be reworked to exclusively use a result
+	 * queue, thereby avoiding this problem.
+	 */
+
+	// magic number so this isn't activated too quickly
+	constexpr size_t MIN_EMERGE_QUEUE_SIZE = 24;
+	size_t qs = m_emerge->getQueueSize();
+	if (qs < MIN_EMERGE_QUEUE_SIZE)
+		return;
+
+	// yield up to 10% of the steplen, but only if we actually make progress
+	int sleep_count = std::max<int>(1, getStepSettings().steplen * 1000 * 0.1f);
+	ScopeProfiler sp(g_profiler, "Server::yieldToOtherThreads()", SPT_AVG);
+	while (sleep_count-- > 0) {
+		sleep_ms(1);
+		size_t qs2 = m_emerge->getQueueSize();
+		if (qs2 >= qs)
+			break;
+		qs = qs2;
 	}
 }
 

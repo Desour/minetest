@@ -585,6 +585,8 @@ private:
 
 	void handleChatInterfaceEvent(ChatEvent *evt);
 
+	void yieldToOtherThreads();
+
 	// This returns the answer to the sender of wmessage, or "" if there is none
 	std::wstring handleChat(const std::string &name, std::wstring wmessage_input,
 		bool check_shout_priv = false, RemotePlayer *player = nullptr);
@@ -606,8 +608,6 @@ private:
 		Call with env and con locked.
 	*/
 	PlayerSAO *emergePlayer(const char *name, session_t peer_id, u16 proto_version);
-
-	void handlePeerChanges();
 
 	/*
 		Variables
