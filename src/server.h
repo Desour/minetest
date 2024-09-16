@@ -434,7 +434,7 @@ public:
 		EnvAutoLock(Server *server): m_lock(server->m_env_mutex) {}
 
 	private:
-		OrderedMutexAutoLock m_lock;
+		std::lock_guard<ordered_mutex> m_lock;
 	};
 
 protected:
