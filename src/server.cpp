@@ -627,8 +627,7 @@ void Server::AsyncRunStep(float dtime, bool initial_step)
 		return;
 
 	// see explanation inside
-	if (dtime >= getStepSettings().steplen)
-		yieldToOtherThreads();
+	yieldToOtherThreads(dtime);
 
 	ScopeProfiler sp(g_profiler, "Server::AsyncRunStep()", SPT_AVG);
 
@@ -1117,7 +1116,7 @@ void Server::Receive(float timeout)
 	}
 }
 
-void Server::yieldToOtherThreads()
+void Server::yieldToOtherThreads(float dtime)
 {
 	/*
 	 * Problem: the server thread and emerge thread compete for the envlock.
@@ -1136,19 +1135,26 @@ void Server::yieldToOtherThreads()
 	 * queue, thereby avoiding this problem.
 	 */
 
-	// magic number so this isn't activated too quickly
-	constexpr size_t MIN_EMERGE_QUEUE_SIZE = 24;
+	if (dtime < getStepSettings().steplen)
+		return;
+
+	// don't activate workaround too quickly
+	constexpr size_t MIN_EMERGE_QUEUE_SIZE = 32;
 	size_t qs = m_emerge->getQueueSize();
 	if (qs < MIN_EMERGE_QUEUE_SIZE)
 		return;
 
-	// yield up to 10% of the steplen, but only if we actually make progress
-	int sleep_count = std::max<int>(1, getStepSettings().steplen * 1000 * 0.1f);
+	// give the thread a chance to run for every 28ms (on average)
+	// this was experimentally determined
+	const float QUANTUM = 28.0f / 1000;
+	int sleep_count = std::max<int>(1, dtime / QUANTUM);
+
 	ScopeProfiler sp(g_profiler, "Server::yieldToOtherThreads()", SPT_AVG);
 	while (sleep_count-- > 0) {
 		sleep_ms(1);
+		// abort if we don't make progress
 		size_t qs2 = m_emerge->getQueueSize();
-		if (qs2 >= qs)
+		if (qs2 >= qs || qs2 == 0)
 			break;
 		qs = qs2;
 	}

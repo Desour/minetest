@@ -585,7 +585,7 @@ private:
 
 	void handleChatInterfaceEvent(ChatEvent *evt);
 
-	void yieldToOtherThreads();
+	void yieldToOtherThreads(float dtime);
 
 	// This returns the answer to the sender of wmessage, or "" if there is none
 	std::wstring handleChat(const std::string &name, std::wstring wmessage_input,
