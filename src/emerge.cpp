@@ -734,7 +734,7 @@ void *EmergeThread::run()
 			auto &m_db = *m_emerge->m_db;
 			{
 				ScopeProfiler sp(g_profiler, "EmergeThread: load block - async (sum)");
-				MutexAutoLock dblock(m_db.mutex);
+				std::lock_guard dblock(m_db.mutex);
 				m_db.loadBlock(pos, databuf);
 			}
 			// actually load it, then decide again

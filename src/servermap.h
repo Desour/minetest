@@ -25,6 +25,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "map.h"
 #include "util/container.h"
 #include "util/metricsbackend.h"
+#include "util/tracy_wrapper.h"
 #include "map_settings_manager.h"
 
 class Settings;
@@ -38,7 +39,7 @@ class MetricsBackend;
 // TODO: this could wrap all calls to MapDatabase, including locking
 struct MapDatabaseAccessor {
 	/// Lock, to be taken for any operation
-	std::mutex mutex;
+	TracyLockable(std::mutex, mutex);
 	/// Main database
 	MapDatabase *dbase = nullptr;
 	/// Fallback database for read operations

@@ -178,7 +178,7 @@ ServerMap::~ServerMap()
 	m_emerge->resetMap();
 
 	{
-		MutexAutoLock dblock(m_db.mutex);
+		std::lock_guard dblock(m_db.mutex);
 		delete m_db.dbase;
 		m_db.dbase = nullptr;
 		delete m_db.dbase_ro;
@@ -575,7 +575,7 @@ void ServerMap::save(ModifiedState save_level)
 
 void ServerMap::listAllLoadableBlocks(std::vector<v3s16> &dst)
 {
-	MutexAutoLock dblock(m_db.mutex);
+	std::lock_guard dblock(m_db.mutex);
 	m_db.dbase->listAllLoadableBlocks(dst);
 	if (m_db.dbase_ro)
 		m_db.dbase_ro->listAllLoadableBlocks(dst);
@@ -628,7 +628,7 @@ void ServerMap::beginSave()
 {
 	ZoneScoped;
 
-	MutexAutoLock dblock(m_db.mutex);
+	std::lock_guard dblock(m_db.mutex);
 	m_db.dbase->beginSave();
 }
 
@@ -636,14 +636,14 @@ void ServerMap::endSave()
 {
 	ZoneScoped;
 
-	MutexAutoLock dblock(m_db.mutex);
+	std::lock_guard dblock(m_db.mutex);
 	m_db.dbase->endSave();
 }
 
 bool ServerMap::saveBlock(MapBlock *block)
 {
 	// FIXME: serialization happens under mutex
-	MutexAutoLock dblock(m_db.mutex);
+	std::lock_guard dblock(m_db.mutex);
 	return saveBlock(block, m_db.dbase, m_map_compression_level);
 }
 
@@ -762,7 +762,7 @@ MapBlock* ServerMap::loadBlock(v3s16 blockpos)
 	std::string data;
 	{
 		ScopeProfiler sp(g_profiler, "ServerMap: load block - sync (sum)");
-		MutexAutoLock dblock(m_db.mutex);
+		std::lock_guard dblock(m_db.mutex);
 		m_db.loadBlock(blockpos, data);
 	}
 
@@ -773,7 +773,7 @@ MapBlock* ServerMap::loadBlock(v3s16 blockpos)
 
 bool ServerMap::deleteBlock(v3s16 blockpos)
 {
-	MutexAutoLock dblock(m_db.mutex);
+	std::lock_guard dblock(m_db.mutex);
 	if (!m_db.dbase->deleteBlock(blockpos))
 		return false;
 
