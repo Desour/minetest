@@ -855,6 +855,8 @@ void MMVManip::initialEmerge(v3s16 blockpos_min, v3s16 blockpos_max,
 void MMVManip::blitBackAll(std::map<v3s16, MapBlock*> *modified_blocks,
 	bool overwrite_generated)
 {
+	ZoneScoped;
+
 	if(m_area.getExtent() == v3s16(0,0,0))
 		return;
 	assert(m_map);

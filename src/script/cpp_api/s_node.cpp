@@ -25,6 +25,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "server.h"
 #include "environment.h"
 #include "util/pointedthing.h"
+#include <tracy/Tracy.hpp>
 
 
 // Should be ordered exactly like enum NodeDrawType in nodedef.h
@@ -232,6 +233,8 @@ void ScriptApiNode::node_after_destruct(v3s16 p, MapNode node)
 
 bool ScriptApiNode::node_on_timer(v3s16 p, MapNode node, f32 dtime)
 {
+	ZoneScoped;
+
 	SCRIPTAPI_PRECHECKHEADER
 
 	int error_handler = PUSH_ERROR_HANDLER(L);
