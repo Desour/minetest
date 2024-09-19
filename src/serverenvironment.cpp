@@ -253,6 +253,8 @@ std::string LBMManager::createIntroductionTimesString()
 void LBMManager::applyLBMs(ServerEnvironment *env, MapBlock *block,
 		const u32 stamp, const float dtime_s)
 {
+	ZoneScoped;
+
 	// Precondition, we need m_lbm_lookup to be initialized
 	FATAL_ERROR_IF(!m_query_mode,
 		"attempted to query on non fully set up LBMManager");
@@ -2084,6 +2086,8 @@ std::unique_ptr<ServerActiveObject> ServerEnvironment::createSAO(ActiveObjectTyp
 */
 void ServerEnvironment::activateObjects(MapBlock *block, u32 dtime_s)
 {
+	ZoneScoped;
+
 	if (block == NULL)
 		return;
 
