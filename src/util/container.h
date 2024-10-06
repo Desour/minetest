@@ -24,7 +24,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "exceptions.h"
 #include "threading/mutex_auto_lock.h"
 #include "threading/semaphore.h"
-#include "debug.h"
 #include <list>
 #include <vector>
 #include <map>
