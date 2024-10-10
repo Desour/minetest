@@ -25,6 +25,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <set>
 #include <map>
 
+struct ConvexPolygon;
+
 struct MapDrawControl
 {
 	// Wanted drawing range
@@ -158,9 +160,8 @@ private:
 	void updateTransparentMeshBuffers();
 
 	// helper for renderPostFx
-	std::vector<std::pair<std::vector<v2f>, video::SColor>>
+	std::vector<std::pair<ConvexPolygon, video::SColor>>
 	getPostFxPolygons();
-
 
 	// Orders blocks by distance to the camera
 	class MapBlockComparer
