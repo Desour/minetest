@@ -24,7 +24,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #if IS_CLIENT_BUILD
 #include "irrString.h"
 #endif
-#include "translation.h"
 #include <cstdlib>
 #include <string>
 #include <string_view>
@@ -657,10 +656,7 @@ std::vector<std::basic_string<T> > split(const std::basic_string<T> &s, T delim)
 
 std::wstring translate_string(std::wstring_view s, Translations *translations);
 
-inline std::wstring translate_string(std::wstring_view s)
-{
-	return translate_string(s, g_client_translations);
-}
+std::wstring translate_string(std::wstring_view s);
 
 inline std::wstring unescape_translate(std::wstring_view s)
 {

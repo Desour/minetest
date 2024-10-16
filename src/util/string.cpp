@@ -932,6 +932,11 @@ std::wstring translate_string(std::wstring_view s, Translations *translations)
 	return res;
 }
 
+std::wstring translate_string(std::wstring_view s)
+{
+	return translate_string(s, g_client_translations);
+}
+
 static const std::array<std::wstring_view, 30> disallowed_dir_names = {
 	// Problematic filenames from here:
 	// https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#file-and-directory-names
