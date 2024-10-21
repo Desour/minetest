@@ -10,6 +10,8 @@
 struct MeshMakeData;
 struct MeshCollector;
 
+#define VMANIP_FLAG_MESHGEN_IGNORE VOXELFLAG_CHECKED1
+
 struct LightPair {
 	u8 lightDay;
 	u8 lightNight;

@@ -1768,7 +1768,11 @@ void MapblockMeshGenerator::generate()
 	for (cur_node.p.Z = 0; cur_node.p.Z < data->side_length; cur_node.p.Z++)
 	for (cur_node.p.Y = 0; cur_node.p.Y < data->side_length; cur_node.p.Y++)
 	for (cur_node.p.X = 0; cur_node.p.X < data->side_length; cur_node.p.X++) {
-		cur_node.n = data->m_vmanip.getNodeNoEx(blockpos_nodes + cur_node.p);
+		v3s16 p_abs = blockpos_nodes + cur_node.p;
+		if (!data->m_vmanip.m_area.contains(p_abs) ||
+				data->m_vmanip.getFlagsRefUnsafe(p_abs) & VMANIP_FLAG_MESHGEN_IGNORE)
+			continue;
+		cur_node.n = data->m_vmanip.getNodeNoEx(p_abs);
 		cur_node.f = &nodedef->get(cur_node.n);
 		drawNode();
 	}

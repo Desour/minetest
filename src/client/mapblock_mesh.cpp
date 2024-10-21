@@ -625,17 +625,21 @@ MapBlockMesh::MapBlockMesh(Client *client, MeshMakeData *data, v3s16 camera_offs
 
 	v3f offset = intToFloat((data->m_blockpos - mesh_grid.getMeshPos(data->m_blockpos)) * MAP_BLOCKSIZE, BS);
 	MeshCollector collector(m_bounding_sphere_center, offset);
-	/*
-		Add special graphics:
-		- torches
-		- flowing water
-		- fences
-		- whatever
-	*/
+
+	{ //tmp
+		v3s16 p = v3s16(0, 0, 0);
+		for (p.Y = 0; p.Y < data->side_length; p.Y++) {
+			v3s16 p_abs = data->m_blockpos * MAP_BLOCKSIZE + p;
+			if (!data->m_vmanip.m_area.contains(p_abs))
+				continue;
+			data->m_vmanip.getFlagsRefUnsafe(p_abs) |= VMANIP_FLAG_MESHGEN_IGNORE;
+		}
+	}
 
 	{
 		MapblockMeshGenerator(data, &collector,
-			client->getSceneManager()->getMeshManipulator()).generate();
+				client->getSceneManager()->getMeshManipulator())
+			.generate();
 	}
 
 	/*
