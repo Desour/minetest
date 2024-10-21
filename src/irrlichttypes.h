@@ -8,9 +8,9 @@
  * IrrlichtMt already includes stdint.h in irrTypes.h. This works everywhere
  * we need it to (including recent MSVC), so should be fine here too.
  */
-#include <cstdint>
+#include <cstdint> // IWYU pragma: export
 
-#include <irrTypes.h>
+#include <irrTypes.h> // IWYU pragma: export
 
 using namespace irr;
 

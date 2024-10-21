@@ -4,24 +4,29 @@
 
 #include "collector.h"
 #include <stdexcept>
-#include "log.h"
 #include "client/mesh.h"
 
 void MeshCollector::append(const TileSpec &tile, const video::S3DVertex *vertices,
 		u32 numVertices, const u16 *indices, u32 numIndices)
 {
+	append(tile, vertices, numVertices, indices, numIndices, v3s16());
+}
+
+void MeshCollector::append(const TileSpec &tile, const video::S3DVertex *vertices,
+		u32 numVertices, const u16 *indices, u32 numIndices, v3s16 node_pos)
+{
 	for (int layernum = 0; layernum < MAX_TILE_LAYERS; layernum++) {
 		const TileLayer *layer = &tile.layers[layernum];
 		if (layer->texture_id == 0)
 			continue;
-		append(*layer, vertices, numVertices, indices, numIndices, layernum,
-				tile.world_aligned);
+		append(*layer, vertices, numVertices, indices, numIndices, node_pos,
+				layernum, tile.world_aligned);
 	}
 }
 
 void MeshCollector::append(const TileLayer &layer, const video::S3DVertex *vertices,
-		u32 numVertices, const u16 *indices, u32 numIndices, u8 layernum,
-		bool use_scale)
+		u32 numVertices, const u16 *indices, u32 numIndices, v3s16 node_pos,
+		u8 layernum, bool use_scale)
 {
 	PreMeshBuffer &p = findBuffer(layer, layernum, numVertices);
 
@@ -39,24 +44,46 @@ void MeshCollector::append(const TileLayer &layer, const video::S3DVertex *verti
 
 	for (u32 i = 0; i < numIndices; i++)
 		p.indices.push_back(indices[i] + vertex_count);
+
+	if (!p.vertices_node_poss.empty()
+			&& p.vertices_node_poss.back().first == node_pos) {
+		p.vertices_node_poss.back().second += numVertices;
+	} else {
+		p.vertices_node_poss.emplace_back(node_pos, numVertices);
+	}
+
+	if (!p.indices_node_poss.empty()
+			&& p.indices_node_poss.back().first == node_pos) {
+		p.indices_node_poss.back().second += numIndices;
+	} else {
+		p.indices_node_poss.emplace_back(node_pos, numIndices);
+	}
 }
 
 void MeshCollector::append(const TileSpec &tile, const video::S3DVertex *vertices,
 		u32 numVertices, const u16 *indices, u32 numIndices, v3f pos,
 		video::SColor c, u8 light_source)
 {
+	append(tile, vertices, numVertices, indices, numIndices, v3s16(),
+			pos, c, light_source);
+}
+
+void MeshCollector::append(const TileSpec &tile, const video::S3DVertex *vertices,
+		u32 numVertices, const u16 *indices, u32 numIndices, v3s16 node_pos, v3f pos,
+		video::SColor c, u8 light_source)
+{
 	for (int layernum = 0; layernum < MAX_TILE_LAYERS; layernum++) {
 		const TileLayer *layer = &tile.layers[layernum];
 		if (layer->texture_id == 0)
 			continue;
-		append(*layer, vertices, numVertices, indices, numIndices, pos, c,
-				light_source, layernum, tile.world_aligned);
+		append(*layer, vertices, numVertices, indices, numIndices, node_pos,
+				pos, c, light_source, layernum, tile.world_aligned);
 	}
 }
 
 void MeshCollector::append(const TileLayer &layer, const video::S3DVertex *vertices,
-		u32 numVertices, const u16 *indices, u32 numIndices, v3f pos,
-		video::SColor c, u8 light_source, u8 layernum, bool use_scale)
+		u32 numVertices, const u16 *indices, u32 numIndices, v3s16 node_pos,
+		v3f pos, video::SColor c, u8 light_source, u8 layernum, bool use_scale)
 {
 	PreMeshBuffer &p = findBuffer(layer, layernum, numVertices);
 
@@ -78,6 +105,20 @@ void MeshCollector::append(const TileLayer &layer, const video::S3DVertex *verti
 
 	for (u32 i = 0; i < numIndices; i++)
 		p.indices.push_back(indices[i] + vertex_count);
+
+	if (!p.vertices_node_poss.empty()
+			&& p.vertices_node_poss.back().first == node_pos) {
+		p.vertices_node_poss.back().second += numVertices;
+	} else {
+		p.vertices_node_poss.emplace_back(node_pos, numVertices);
+	}
+
+	if (!p.indices_node_poss.empty()
+			&& p.indices_node_poss.back().first == node_pos) {
+		p.indices_node_poss.back().second += numIndices;
+	} else {
+		p.indices_node_poss.emplace_back(node_pos, numIndices);
+	}
 }
 
 PreMeshBuffer &MeshCollector::findBuffer(
