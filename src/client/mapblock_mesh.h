@@ -62,6 +62,7 @@ class MeshTriangle
 public:
 	scene::SMeshBuffer *buffer;
 	u16 p1, p2, p3;
+	v3s16 node_pos;
 	v3f centroid;
 	float areaSQ;
 
@@ -227,7 +228,17 @@ private:
 		TileLayer tile;
 	};
 
+	// node positions for indices/vertices, run-length encoded
+	// (same as in PreMeshBuffer)
+	struct RLENodePoss {
+		v3s16 p;
+		u32 cnt_i;
+		u32 cnt_v;
+	};
+
+
 	irr_ptr<scene::IMesh> m_mesh[MAX_TILE_LAYERS];
+	std::vector<std::vector<RLENodePoss>> m_mesh_node_poss[MAX_TILE_LAYERS];
 	std::vector<MinimapMapblock*> m_minimap_mapblocks;
 	ITextureSource *m_tsrc;
 	IShaderSource *m_shdrsrc;

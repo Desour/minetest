@@ -653,6 +653,7 @@ MapBlockMesh::MapBlockMesh(Client *client, MeshMakeData *data, v3s16 camera_offs
 
 	for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) {
 		scene::SMesh *mesh = static_cast<scene::SMesh *>(m_mesh[layer].get());
+		auto *mesh_node_poss = &m_mesh_node_poss[layer];
 
 		for(u32 i = 0; i < collector.prebuffers[layer].size(); i++)
 		{
@@ -743,18 +744,38 @@ MapBlockMesh::MapBlockMesh(Client *client, MeshMakeData *data, v3s16 camera_offs
 
 			scene::SMeshBuffer *buf = new scene::SMeshBuffer();
 			buf->Material = material;
+			// std::vector<RLENodePoss> node_poss = std::move(p.node_poss); //TODO: use same type
+			std::vector<RLENodePoss> node_poss;
+			node_poss.reserve(p.node_poss.size());
+			for (const auto &ps : p.node_poss) {
+				node_poss.push_back({ps.p, ps.cnt_i, ps.cnt_v});
+			}
 			if (p.layer.isTransparent()) {
 				buf->append(&p.vertices[0], p.vertices.size(), nullptr, 0);
 
 				MeshTriangle t;
 				t.buffer = buf;
 				m_transparent_triangles.reserve(p.indices.size() / 3);
+				size_t next_node_pos_i = 0;
+				u32 cur_node_pos_end = 0;
+				v3s16 cur_node_pos;
 				for (u32 i = 0; i < p.indices.size(); i += 3) {
+					if (i >= cur_node_pos_end) {
+						cur_node_pos = node_poss[next_node_pos_i].p;
+						cur_node_pos_end += node_poss[next_node_pos_i].cnt_i;
+						assert(node_poss[next_node_pos_i].cnt_i >= 3);
+						next_node_pos_i += 1;
+					}
 					t.p1 = p.indices[i];
 					t.p2 = p.indices[i + 1];
 					t.p3 = p.indices[i + 2];
+					t.node_pos = cur_node_pos;
 					t.updateAttributes();
 					m_transparent_triangles.push_back(t);
+				}
+
+				for (auto &ps : p.node_poss) {
+					ps.cnt_i = 0;
 				}
 			} else {
 				buf->append(&p.vertices[0], p.vertices.size(),
@@ -762,6 +783,7 @@ MapBlockMesh::MapBlockMesh(Client *client, MeshMakeData *data, v3s16 camera_offs
 			}
 			mesh->addMeshBuffer(buf);
 			buf->drop();
+			mesh_node_poss->push_back(std::move(node_poss));
 		}
 
 		if (mesh) {
