@@ -45,18 +45,12 @@ void MeshCollector::append(const TileLayer &layer, const video::S3DVertex *verti
 	for (u32 i = 0; i < numIndices; i++)
 		p.indices.push_back(indices[i] + vertex_count);
 
-	if (!p.vertices_node_poss.empty()
-			&& p.vertices_node_poss.back().first == node_pos) {
-		p.vertices_node_poss.back().second += numVertices;
+	if (!p.node_poss.empty()
+			&& p.node_poss.back().p == node_pos) {
+		p.node_poss.back().cnt_i += numIndices;
+		p.node_poss.back().cnt_v += numVertices;
 	} else {
-		p.vertices_node_poss.emplace_back(node_pos, numVertices);
-	}
-
-	if (!p.indices_node_poss.empty()
-			&& p.indices_node_poss.back().first == node_pos) {
-		p.indices_node_poss.back().second += numIndices;
-	} else {
-		p.indices_node_poss.emplace_back(node_pos, numIndices);
+		p.node_poss.push_back({node_pos, numIndices, numVertices});
 	}
 }
 
@@ -106,18 +100,12 @@ void MeshCollector::append(const TileLayer &layer, const video::S3DVertex *verti
 	for (u32 i = 0; i < numIndices; i++)
 		p.indices.push_back(indices[i] + vertex_count);
 
-	if (!p.vertices_node_poss.empty()
-			&& p.vertices_node_poss.back().first == node_pos) {
-		p.vertices_node_poss.back().second += numVertices;
+	if (!p.node_poss.empty()
+			&& p.node_poss.back().p == node_pos) {
+		p.node_poss.back().cnt_i += numIndices;
+		p.node_poss.back().cnt_v += numVertices;
 	} else {
-		p.vertices_node_poss.emplace_back(node_pos, numVertices);
-	}
-
-	if (!p.indices_node_poss.empty()
-			&& p.indices_node_poss.back().first == node_pos) {
-		p.indices_node_poss.back().second += numIndices;
-	} else {
-		p.indices_node_poss.emplace_back(node_pos, numIndices);
+		p.node_poss.push_back({node_pos, numIndices, numVertices});
 	}
 }
 

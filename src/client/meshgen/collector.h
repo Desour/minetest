@@ -12,12 +12,17 @@
 
 struct PreMeshBuffer
 {
+	// node positions for indices/vertices, run-length encoded
+	struct RLENodePoss {
+		v3s16 p;
+		u32 cnt_i;
+		u32 cnt_v;
+	};
+
 	TileLayer layer;
 	std::vector<u16> indices;
 	std::vector<video::S3DVertex> vertices;
-	// node positions for indices/vertices, run-length encoded
-	std::vector<std::pair<v3s16, u16>> indices_node_poss; // TODO: not both needed
-	std::vector<std::pair<v3s16, u16>> vertices_node_poss;
+	std::vector<RLENodePoss> node_poss;
 
 	PreMeshBuffer() = default;
 	explicit PreMeshBuffer(const TileLayer &layer) : layer(layer) {}
