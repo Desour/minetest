@@ -65,8 +65,7 @@ private:
 
 // current node
 	struct {
-		v3s16 p; // relative to blockpos_nodes
-		v3s16 p_abs;
+		v3s16 p;
 		v3f origin;
 		MapNode n;
 		const ContentFeatures *f;
