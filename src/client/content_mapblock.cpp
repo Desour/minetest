@@ -138,7 +138,7 @@ void MapblockMeshGenerator::drawQuad(v3f *coords, const v3s16 &normal,
 			applyFacesShading(vertices[j].Color, normal2);
 		vertices[j].TCoords = tcoords[j];
 	}
-	collector->append(cur_node.tile, vertices, 4, quad_indices, 6);
+	collector->append(cur_node.tile, vertices, 4, quad_indices, 6, cur_node.p);
 }
 
 static std::array<video::S3DVertex, 24> setupCuboidVertices(const aabb3f &box, const f32 *txc, TileSpec *tiles, int tilecount) {
@@ -235,7 +235,7 @@ void MapblockMeshGenerator::drawCuboid(const aabb3f &box,
 		QuadDiagonal diagonal = face_lighter(k, &vertices[4 * k]);
 		const u16 *indices = diagonal == QuadDiagonal::Diag13 ? quad_indices_13 : quad_indices_02;
 		int tileindex = MYMIN(k, tilecount - 1);
-		collector->append(tiles[tileindex], &vertices[4 * k], 4, indices, 6);
+		collector->append(tiles[tileindex], &vertices[4 * k], 4, indices, 6, cur_node.p);
 	}
 }
 
@@ -705,7 +705,7 @@ void MapblockMeshGenerator::drawLiquidSides()
 			pos += cur_node.origin;
 			vertices[j] = video::S3DVertex(pos.X, pos.Y, pos.Z, face.dir.X, face.dir.Y, face.dir.Z, cur_node.color, vertex.u, v);
 		};
-		collector->append(cur_liquid.tile, vertices, 4, quad_indices, 6);
+		collector->append(cur_liquid.tile, vertices, 4, quad_indices, 6, cur_node.p);
 	}
 }
 
@@ -786,7 +786,7 @@ void MapblockMeshGenerator::drawLiquidTop()
 
 	std::swap(vertices[0].TCoords, vertices[2].TCoords);
 
-	collector->append(cur_liquid.tile_top, vertices, 4, quad_indices, 6);
+	collector->append(cur_liquid.tile_top, vertices, 4, quad_indices, 6, cur_node.p);
 }
 
 void MapblockMeshGenerator::drawLiquidBottom()
@@ -804,7 +804,7 @@ void MapblockMeshGenerator::drawLiquidBottom()
 		vertices[i].Pos += cur_node.origin;
 	}
 
-	collector->append(cur_liquid.tile_top, vertices, 4, quad_indices, 6);
+	collector->append(cur_liquid.tile_top, vertices, 4, quad_indices, 6, cur_node.p);
 }
 
 void MapblockMeshGenerator::drawLiquidNode()
@@ -1701,13 +1701,13 @@ void MapblockMeshGenerator::drawMeshNode()
 				vertex.Pos += cur_node.origin;
 			}
 			collector->append(cur_node.tile, vertices, vertex_count,
-				buf->getIndices(), buf->getIndexCount());
+				buf->getIndices(), buf->getIndexCount(), cur_node.p);
 		} else {
 			// Don't modify the mesh, it may not be private here.
 			// Instead, let the collector process colors, etc.
 			collector->append(cur_node.tile, vertices, vertex_count,
-				buf->getIndices(), buf->getIndexCount(), cur_node.origin,
-				cur_node.color, cur_node.f->light_source);
+				buf->getIndices(), buf->getIndexCount(), cur_node.p,
+				cur_node.origin, cur_node.color, cur_node.f->light_source);
 		}
 	}
 	if (private_mesh)

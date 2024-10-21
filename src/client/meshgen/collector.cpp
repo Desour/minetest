@@ -7,12 +7,6 @@
 #include "client/mesh.h"
 
 void MeshCollector::append(const TileSpec &tile, const video::S3DVertex *vertices,
-		u32 numVertices, const u16 *indices, u32 numIndices)
-{
-	append(tile, vertices, numVertices, indices, numIndices, v3s16());
-}
-
-void MeshCollector::append(const TileSpec &tile, const video::S3DVertex *vertices,
 		u32 numVertices, const u16 *indices, u32 numIndices, v3s16 node_pos)
 {
 	for (int layernum = 0; layernum < MAX_TILE_LAYERS; layernum++) {
@@ -52,14 +46,6 @@ void MeshCollector::append(const TileLayer &layer, const video::S3DVertex *verti
 	} else {
 		p.node_poss.push_back({node_pos, numIndices, numVertices});
 	}
-}
-
-void MeshCollector::append(const TileSpec &tile, const video::S3DVertex *vertices,
-		u32 numVertices, const u16 *indices, u32 numIndices, v3f pos,
-		video::SColor c, u8 light_source)
-{
-	append(tile, vertices, numVertices, indices, numIndices, v3s16(),
-			pos, c, light_source);
 }
 
 void MeshCollector::append(const TileSpec &tile, const video::S3DVertex *vertices,
