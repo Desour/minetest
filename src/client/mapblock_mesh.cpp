@@ -589,6 +589,16 @@ void PartialMeshBuffer::draw(video::IVideoDriver *driver) const
 	MapBlockMesh
 */
 
+using RLENodePoss = PreMeshBuffer::RLENodePoss;
+
+struct MapBlockMesh::MeshBufExtraInfo
+{
+	std::vector<RLENodePoss> node_poss;
+	TileLayer layer;
+	// for transparent layers, which don't store indices in the meshbuf
+	std::vector<u16> unused_indices;
+};
+
 MapBlockMesh::MapBlockMesh(Client *client, MeshMakeData *data, v3s16 camera_offset):
 	m_tsrc(client->getTextureSource()),
 	m_shdrsrc(client->getShaderSource()),
@@ -653,7 +663,7 @@ MapBlockMesh::MapBlockMesh(Client *client, MeshMakeData *data, v3s16 camera_offs
 
 	for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) {
 		scene::SMesh *mesh = static_cast<scene::SMesh *>(m_mesh[layer].get());
-		auto *mesh_node_poss = &m_mesh_node_poss[layer];
+		auto *mesh_extra_info = &m_mesh_extra_info[layer];
 
 		for(u32 i = 0; i < collector.prebuffers[layer].size(); i++)
 		{
@@ -744,12 +754,7 @@ MapBlockMesh::MapBlockMesh(Client *client, MeshMakeData *data, v3s16 camera_offs
 
 			scene::SMeshBuffer *buf = new scene::SMeshBuffer();
 			buf->Material = material;
-			// std::vector<RLENodePoss> node_poss = std::move(p.node_poss); //TODO: use same type
-			std::vector<RLENodePoss> node_poss;
-			node_poss.reserve(p.node_poss.size());
-			for (const auto &ps : p.node_poss) {
-				node_poss.push_back({ps.p, ps.cnt_i, ps.cnt_v});
-			}
+			std::vector<u16> unused_indices;
 			if (p.layer.isTransparent()) {
 				buf->append(&p.vertices[0], p.vertices.size(), nullptr, 0);
 
@@ -761,29 +766,27 @@ MapBlockMesh::MapBlockMesh(Client *client, MeshMakeData *data, v3s16 camera_offs
 				v3s16 cur_node_pos;
 				for (u32 i = 0; i < p.indices.size(); i += 3) {
 					if (i >= cur_node_pos_end) {
-						cur_node_pos = node_poss[next_node_pos_i].p;
-						cur_node_pos_end += node_poss[next_node_pos_i].cnt_i;
+						cur_node_pos = p.node_poss[next_node_pos_i].p;
+						cur_node_pos_end += p.node_poss[next_node_pos_i].cnt_i;
 						assert(node_poss[next_node_pos_i].cnt_i >= 3);
 						next_node_pos_i += 1;
 					}
 					t.p1 = p.indices[i];
 					t.p2 = p.indices[i + 1];
 					t.p3 = p.indices[i + 2];
-					t.node_pos = cur_node_pos;
+					t.node_pos = cur_node_pos; // FIXME: unused
 					t.updateAttributes();
 					m_transparent_triangles.push_back(t);
 				}
-
-				for (auto &ps : p.node_poss) {
-					ps.cnt_i = 0;
-				}
+				unused_indices = std::move(p.indices);
 			} else {
 				buf->append(&p.vertices[0], p.vertices.size(),
 					&p.indices[0], p.indices.size());
 			}
 			mesh->addMeshBuffer(buf);
 			buf->drop();
-			mesh_node_poss->push_back(std::move(node_poss));
+			mesh_extra_info->push_back({std::move(p.node_poss), p.layer,
+					std::move(unused_indices)});
 		}
 
 		if (mesh) {
@@ -813,6 +816,32 @@ MapBlockMesh::~MapBlockMesh()
 		delete block;
 
 	porting::TrackFreedMemory(sz);
+}
+
+std::array<std::vector<PreMeshBuffer>, MAX_TILE_LAYERS> MapBlockMesh::reincarnate() const
+{
+	std::array<std::vector<PreMeshBuffer>, MAX_TILE_LAYERS> prebuffers;
+
+	for (size_t layer_i = 0; layer_i < MAX_TILE_LAYERS; ++layer_i) {
+		size_t num_meshbufs = m_mesh[layer_i]->getMeshBufferCount();
+
+		prebuffers[layer_i].resize(num_meshbufs);
+		for (size_t meshbuf_i = 0; meshbuf_i < num_meshbufs; ++meshbuf_i) {
+			auto *meshbuf = static_cast<scene::SMeshBuffer *>(
+					m_mesh[layer_i]->getMeshBuffer(meshbuf_i));
+			auto &extra_info = m_mesh_extra_info[layer_i][meshbuf_i];
+
+			PreMeshBuffer &pb = prebuffers[layer_i][meshbuf_i];
+			pb.layer = extra_info.layer;
+			pb.indices = extra_info.unused_indices.empty() ?
+					meshbuf->Indices->Data :
+					extra_info.unused_indices;
+			pb.vertices = meshbuf->Vertices->Data;
+			pb.node_poss = extra_info.node_poss;
+		}
+	}
+
+	return prebuffers;
 }
 
 bool MapBlockMesh::animate(bool faraway, float time, int crack,

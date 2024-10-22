@@ -17,6 +17,7 @@ class Client;
 class NodeDefManager;
 class IShaderSource;
 class ITextureSource;
+struct PreMeshBuffer;
 
 /*
 	Mesh making stuff
@@ -169,6 +170,9 @@ public:
 	MapBlockMesh(Client *client, MeshMakeData *data, v3s16 camera_offset);
 	~MapBlockMesh();
 
+	// Transforms mesh back to prebuffers
+	std::array<std::vector<PreMeshBuffer>, MAX_TILE_LAYERS> reincarnate() const;
+
 	// Main animation function, parameters:
 	//   faraway: whether the block is far away from the camera (~50 nodes)
 	//   time: the global animation time, 0 .. 60 (repeats every minute)
@@ -228,17 +232,12 @@ private:
 		TileLayer tile;
 	};
 
-	// node positions for indices/vertices, run-length encoded
-	// (same as in PreMeshBuffer)
-	struct RLENodePoss {
-		v3s16 p;
-		u32 cnt_i;
-		u32 cnt_v;
-	};
+	// Node positions and TileLayer. Used for reincarnating to PreMeshBuffers.
+	struct MeshBufExtraInfo;
 
 
 	irr_ptr<scene::IMesh> m_mesh[MAX_TILE_LAYERS];
-	std::vector<std::vector<RLENodePoss>> m_mesh_node_poss[MAX_TILE_LAYERS];
+	std::vector<MeshBufExtraInfo> m_mesh_extra_info[MAX_TILE_LAYERS];
 	std::vector<MinimapMapblock*> m_minimap_mapblocks;
 	ITextureSource *m_tsrc;
 	IShaderSource *m_shdrsrc;
