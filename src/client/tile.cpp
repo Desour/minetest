@@ -49,3 +49,54 @@ void TileLayer::applyMaterialOptionsWithShaders(video::SMaterial &material) cons
 		material.TextureLayers[1].TextureWrapV = video::ETC_CLAMP_TO_EDGE;
 	}
 }
+
+#include "filesys.h"
+#include "log.h"
+#include "client/client.h"
+#include "settings.h"
+#include "json/json.h"
+#include "convert_json.h"
+#include "nodedef.h"
+
+void dump_nodedefs(Client *client)
+{
+	std::string dump_nodedefs_path = g_settings->get("secure.dump_nodedefs_path");
+	if (dump_nodedefs_path.empty())
+		return;
+
+	if (fs::PathExists(dump_nodedefs_path)) {
+		actionstream << "Didn't dump nodedefs, file already exits: "
+				<< dump_nodedefs_path << std::endl;
+		return;
+	}
+	auto os = open_ofstream(dump_nodedefs_path.c_str(), true);
+	if (!os.good())
+		return;
+
+	Json::Value json_root;
+
+	auto *nodedefmgr = client->getNodeDefManager();
+
+	for (content_t id = 0; id < CONTENT_MAX; ++id) {
+		auto &f = nodedefmgr->get(id);
+		if (id > CONTENT_UNKNOWN && f.name == "unknown") {
+			break;
+		}
+
+		Json::Value json_f;
+		json_f["id"] = id;
+		json_f["name"] = f.name;
+		Json::Value json_minimap_color;
+		json_minimap_color["r"] = f.minimap_color.getRed();
+		json_minimap_color["g"] = f.minimap_color.getGreen();
+		json_minimap_color["b"] = f.minimap_color.getBlue();
+		json_minimap_color["a"] = f.minimap_color.getAlpha();
+		json_f["minimap_color"] = std::move(json_minimap_color);
+
+		json_root.append(std::move(json_f));
+	}
+
+	fastWriteJson(json_root, os);
+
+	actionstream << "Dumped nodedefs to: " << dump_nodedefs_path << std::endl;
+}

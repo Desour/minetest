@@ -1814,6 +1814,9 @@ void Client::showUpdateProgressTexture(void *args, u32 progress, u32 max_progres
 		}
 }
 
+// defined in tile.cpp (because recompiling client.cpp takes 20 seconds)
+void dump_nodedefs(Client *client);
+
 void Client::afterContentReceived()
 {
 	infostream<<"Client::afterContentReceived() started"<<std::endl;
@@ -1870,6 +1873,8 @@ void Client::afterContentReceived()
 
 	if (m_mods_loaded)
 		m_script->on_client_ready(m_env.getLocalPlayer());
+
+	dump_nodedefs(this);
 
 	m_rendering_engine->draw_load_screen(wstrgettext("Done!"), guienv, m_tsrc, 0, 100);
 	infostream<<"Client::afterContentReceived() done"<<std::endl;

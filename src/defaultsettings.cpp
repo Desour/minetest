@@ -495,6 +495,7 @@ void set_default_settings()
 	settings->setDefault("secure.enable_security", "true");
 	settings->setDefault("secure.trusted_mods", "");
 	settings->setDefault("secure.http_mods", "");
+	settings->setDefault("secure.dump_nodedefs_path", "");
 
 	// Physics
 	settings->setDefault("movement_acceleration_default", "3");

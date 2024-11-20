@@ -1719,6 +1719,9 @@ enable_client_modding (Client modding) bool false
 #    Replaces the default main menu with a custom one.
 main_menu_script (Main menu script) string
 
+#    Nodedefs will be dumped by the client into this file (.json), if nonexistent.
+secure.dump_nodedefs_path (Path to dump nodedefs) path
+
 [**Mod Security]
 
 #    Prevent mods from doing insecure things like running shell commands.
