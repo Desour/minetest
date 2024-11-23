@@ -589,7 +589,6 @@ add_library(EngineCommon OBJECT
 )
 add_dependencies(EngineCommon GenerateVersion)
 target_link_libraries(EngineCommon
-	sha256
 	OpenSSL::Crypto
 )
 get_target_property(
@@ -673,7 +672,6 @@ if(BUILD_CLIENT)
 		${GMP_LIBRARY}
 		${JSON_LIBRARY}
 		${LUA_BIT_LIBRARY}
-		sha256
 		OpenSSL::Crypto
 		${FREETYPE_LIBRARY}
 		${PLATFORM_LIBS}
@@ -761,7 +759,6 @@ if(BUILD_SERVER)
 		${JSON_LIBRARY}
 		${LUA_LIBRARY}
 		${LUA_BIT_LIBRARY}
-		sha256
 		OpenSSL::Crypto
 		${GMP_LIBRARY}
 		${PLATFORM_LIBS}
