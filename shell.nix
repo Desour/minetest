@@ -21,5 +21,6 @@ pkgs.mkShell {
     pkgs.gettext
     pkgs.freetype
     pkgs.sqlite
+    pkgs.openssl
   ];
 }
