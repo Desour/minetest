@@ -298,7 +298,7 @@ static unsigned char *hash(SRP_HashAlgorithm alg, const unsigned char *d, size_t
 static size_t hash_length(SRP_HashAlgorithm alg)
 {
 	const EVP_MD *type = hashalg_to_ssl_evp_type(alg);
-	return type ? EVP_MD_get_size(type) : 0;
+	return type ? EVP_MD_size(type) : 0;
 }
 
 inline static int mpz_num_bytes(const mpz_t op)
