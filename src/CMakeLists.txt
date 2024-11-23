@@ -590,6 +590,7 @@ add_library(EngineCommon OBJECT
 add_dependencies(EngineCommon GenerateVersion)
 target_link_libraries(EngineCommon
 	sha256
+	OpenSSL::Crypto
 )
 get_target_property(
 	IRRLICHT_INCLUDES IrrlichtMt::IrrlichtMt INTERFACE_INCLUDE_DIRECTORIES)
@@ -673,6 +674,7 @@ if(BUILD_CLIENT)
 		${JSON_LIBRARY}
 		${LUA_BIT_LIBRARY}
 		sha256
+		OpenSSL::Crypto
 		${FREETYPE_LIBRARY}
 		${PLATFORM_LIBS}
 		# on Android, Luanti depends on SDL2 directly
@@ -760,6 +762,7 @@ if(BUILD_SERVER)
 		${LUA_LIBRARY}
 		${LUA_BIT_LIBRARY}
 		sha256
+		OpenSSL::Crypto
 		${GMP_LIBRARY}
 		${PLATFORM_LIBS}
 	)

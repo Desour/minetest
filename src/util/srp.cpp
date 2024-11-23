@@ -50,7 +50,9 @@
 	#include <mini-gmp.h>
 #endif
 
-#include "my_sha256.h"
+#include <openssl/sha.h> // SHA256_DIGEST_LENGTH
+#include <openssl/evp.h>
+
 #include "porting.h"
 
 #include "srp.h"
@@ -200,12 +202,6 @@ static NGConstant *new_ng(SRP_NGType ng_type, const char *n_hex, const char *g_h
 	return ng;
 }
 
-typedef union {
-	// SHA_CTX sha;
-	SHA256_CTX sha256;
-	// SHA512_CTX sha512;
-} HashCTX;
-
 struct SRPVerifier {
 	SRP_HashAlgorithm hash_alg;
 	NGConstant *ng;
@@ -240,100 +236,69 @@ struct SRPUser {
 	unsigned char session_key[CSRP_MAX_HASH];
 };
 
-static int hash_init(SRP_HashAlgorithm alg, HashCTX *c)
+static const EVP_MD *hashalg_to_ssl_evp_type(SRP_HashAlgorithm alg)
 {
 	switch (alg) {
 #ifdef CSRP_USE_SHA1
-		case SRP_SHA1: return SHA1_Init(&c->sha);
+		case SRP_SHA1: return EVP_sha1();
 #endif
-		/*
-		case SRP_SHA224: return SHA224_Init(&c->sha256);
-		*/
+#if 0
+		case SRP_SHA224: return EVP_sha224();
+#endif
 #ifdef CSRP_USE_SHA256
-		case SRP_SHA256: return SHA256_Init(&c->sha256);
+		case SRP_SHA256: return EVP_sha256();
 #endif
-		/*
-		case SRP_SHA384: return SHA384_Init(&c->sha512);
-		case SRP_SHA512: return SHA512_Init(&c->sha512);
-		*/
-		default: return -1;
+#if 0
+		case SRP_SHA384: return EVP_sha384();
+		case SRP_SHA512: return EVP_sha512();
+#endif
+	default: return nullptr;
 	};
 }
-static int hash_update( SRP_HashAlgorithm alg, HashCTX *c, const void *data, size_t len )
+
+static bool hashalg_supported(SRP_HashAlgorithm alg)
 {
 	switch (alg) {
 #ifdef CSRP_USE_SHA1
-		case SRP_SHA1: return SHA1_Update(&c->sha, data, len);
+		case SRP_SHA1: return true;
 #endif
-		/*
-		case SRP_SHA224: return SHA224_Update(&c->sha256, data, len);
-		*/
+#if 0
+		case SRP_SHA224: return true;
+#endif
 #ifdef CSRP_USE_SHA256
-		case SRP_SHA256: return SHA256_Update(&c->sha256, data, len);
+		case SRP_SHA256: return true;
 #endif
-		/*
-		case SRP_SHA384: return SHA384_Update(&c->sha512, data, len);
-		case SRP_SHA512: return SHA512_Update(&c->sha512, data, len);
-		*/
-		default: return -1;
+#if 0
+		case SRP_SHA384: return true;
+		case SRP_SHA512: return true;
+#endif
+	default: return false;
 	};
 }
-static int hash_final( SRP_HashAlgorithm alg, HashCTX *c, unsigned char *md )
+
+static int hash_init(SRP_HashAlgorithm alg, EVP_MD_CTX *c)
 {
-	switch (alg) {
-#ifdef CSRP_USE_SHA1
-		case SRP_SHA1: return SHA1_Final(md, &c->sha);
-#endif
-		/*
-		case SRP_SHA224: return SHA224_Final(md, &c->sha256);
-		*/
-#ifdef CSRP_USE_SHA256
-		case SRP_SHA256: return SHA256_Final(md, &c->sha256);
-#endif
-		/*
-		case SRP_SHA384: return SHA384_Final(md, &c->sha512);
-		case SRP_SHA512: return SHA512_Final(md, &c->sha512);
-		*/
-		default: return -1;
-	};
+	const EVP_MD *type = hashalg_to_ssl_evp_type(alg);
+	return type ? EVP_DigestInit(c, type) : -1;
+}
+static int hash_update(SRP_HashAlgorithm alg, EVP_MD_CTX *c, const void *data, size_t len)
+{
+	return hashalg_supported(alg) ? EVP_DigestUpdate(c, data, len) : -1;
+}
+static int hash_final( SRP_HashAlgorithm alg, EVP_MD_CTX *c, unsigned char *md )
+{
+	return hashalg_supported(alg) ? EVP_DigestFinal(c, md, nullptr) : -1;
 }
 static unsigned char *hash(SRP_HashAlgorithm alg, const unsigned char *d, size_t n, unsigned char *md)
 {
-	switch (alg) {
-#ifdef CSRP_USE_SHA1
-		case SRP_SHA1: return SHA1(d, n, md);
-#endif
-		/*
-		case SRP_SHA224: return SHA224( d, n, md );
-		*/
-#ifdef CSRP_USE_SHA256
-		case SRP_SHA256: return SHA256(d, n, md);
-#endif
-		/*
-		case SRP_SHA384: return SHA384( d, n, md );
-		case SRP_SHA512: return SHA512( d, n, md );
-		*/
-		default: return 0;
-	};
+	const EVP_MD *type = hashalg_to_ssl_evp_type(alg);
+	auto success = type ? EVP_Digest(d, n, md, nullptr, type, nullptr) : 0;
+	return success ? md : nullptr;
 }
 static size_t hash_length(SRP_HashAlgorithm alg)
 {
-	switch (alg) {
-#ifdef CSRP_USE_SHA1
-		case SRP_SHA1: return SHA_DIGEST_LENGTH;
-#endif
-		/*
-		case SRP_SHA224: return SHA224_DIGEST_LENGTH;
-		*/
-#ifdef CSRP_USE_SHA256
-		case SRP_SHA256: return SHA256_DIGEST_LENGTH;
-#endif
-		/*
-		case SRP_SHA384: return SHA384_DIGEST_LENGTH;
-		case SRP_SHA512: return SHA512_DIGEST_LENGTH;
-		*/
-		default: return 0;
-	};
+	const EVP_MD *type = hashalg_to_ssl_evp_type(alg);
+	return type ? EVP_MD_get_size(type) : 0;
 }
 
 inline static int mpz_num_bytes(const mpz_t op)
@@ -418,21 +383,23 @@ static int calculate_x(mpz_t result, SRP_HashAlgorithm alg, const unsigned char 
 	size_t password_len)
 {
 	unsigned char ucp_hash[CSRP_MAX_HASH];
-	HashCTX ctx;
-	hash_init(alg, &ctx);
+	EVP_MD_CTX *ctx = EVP_MD_CTX_new();
+	hash_init(alg, ctx);
 
 	srp_dbg_data((char *)username, strlen(username), "Username for x: ");
 	srp_dbg_data((char *)password, password_len, "Password for x: ");
-	hash_update(alg, &ctx, username, strlen(username));
-	hash_update(alg, &ctx, ":", 1);
-	hash_update(alg, &ctx, password, password_len);
+	hash_update(alg, ctx, username, strlen(username));
+	hash_update(alg, ctx, ":", 1);
+	hash_update(alg, ctx, password, password_len);
 
-	hash_final(alg, &ctx, ucp_hash);
+	hash_final(alg, ctx, ucp_hash);
+
+	EVP_MD_CTX_free(ctx);
 
 	return H_ns(result, alg, salt, salt_len, ucp_hash, hash_length(alg));
 }
 
-static SRP_Result update_hash_n(SRP_HashAlgorithm alg, HashCTX *ctx, const mpz_t n)
+static SRP_Result update_hash_n(SRP_HashAlgorithm alg, EVP_MD_CTX *ctx, const mpz_t n)
 {
 	size_t len = mpz_num_bytes(n);
 	unsigned char *n_bytes = (unsigned char *)malloc(len);
@@ -462,7 +429,7 @@ static SRP_Result calculate_M(SRP_HashAlgorithm alg, NGConstant *ng, unsigned ch
 	unsigned char H_g[CSRP_MAX_HASH];
 	unsigned char H_I[CSRP_MAX_HASH];
 	unsigned char H_xor[CSRP_MAX_HASH];
-	HashCTX ctx;
+	EVP_MD_CTX *ctx = EVP_MD_CTX_new();
 	size_t i = 0;
 	size_t hash_len = hash_length(alg);
 
@@ -474,31 +441,33 @@ static SRP_Result calculate_M(SRP_HashAlgorithm alg, NGConstant *ng, unsigned ch
 	for (i = 0; i < hash_len; i++)
 		H_xor[i] = H_N[i] ^ H_g[i];
 
-	hash_init(alg, &ctx);
+	hash_init(alg, ctx);
 
-	hash_update(alg, &ctx, H_xor, hash_len);
-	hash_update(alg, &ctx, H_I, hash_len);
-	hash_update(alg, &ctx, s_bytes, s_len);
-	if (!update_hash_n(alg, &ctx, A)) return SRP_ERR;
-	if (!update_hash_n(alg, &ctx, B)) return SRP_ERR;
-	hash_update(alg, &ctx, K, hash_len);
+	hash_update(alg, ctx, H_xor, hash_len);
+	hash_update(alg, ctx, H_I, hash_len);
+	hash_update(alg, ctx, s_bytes, s_len);
+	if (!update_hash_n(alg, ctx, A)) return SRP_ERR;
+	if (!update_hash_n(alg, ctx, B)) return SRP_ERR;
+	hash_update(alg, ctx, K, hash_len);
 
-	hash_final(alg, &ctx, dest);
+	hash_final(alg, ctx, dest);
+	EVP_MD_CTX_free(ctx);
 	return SRP_OK;
 }
 
 static SRP_Result calculate_H_AMK(SRP_HashAlgorithm alg, unsigned char *dest,
 	const mpz_t A, const unsigned char *M, const unsigned char *K)
 {
-	HashCTX ctx;
+	EVP_MD_CTX *ctx = EVP_MD_CTX_new();
 
-	hash_init(alg, &ctx);
+	hash_init(alg, ctx);
 
-	if (!update_hash_n(alg, &ctx, A)) return SRP_ERR;
-	hash_update(alg, &ctx, M, hash_length(alg));
-	hash_update(alg, &ctx, K, hash_length(alg));
+	if (!update_hash_n(alg, ctx, A)) return SRP_ERR;
+	hash_update(alg, ctx, M, hash_length(alg));
+	hash_update(alg, ctx, K, hash_length(alg));
 
-	hash_final(alg, &ctx, dest);
+	hash_final(alg, ctx, dest);
+	EVP_MD_CTX_free(ctx);
 	return SRP_OK;
 }
 
