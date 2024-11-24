@@ -1808,9 +1808,42 @@ void MapblockMeshGenerator::drawNode()
 	}
 }
 
+#include "porting.h"
+
+static std::mutex s_meshgen_repeat_counters_mutex;
+static std::unordered_map<v3s16, u32> s_meshgen_repeat_counters;
+
 void MapblockMeshGenerator::generate()
 {
 	ZoneScoped;
+
+	{
+		auto lock = std::lock_guard(s_meshgen_repeat_counters_mutex);
+
+		{
+			auto [it, _did_insert] = s_meshgen_repeat_counters.emplace(data->m_blockpos, 0);
+			it->second += 1;
+		}
+
+		static u64 s_t_last_print = porting::getTimeMs();
+		u64 t_now = porting::getTimeMs();
+		if (t_now >= s_t_last_print + 1'000) {
+			// print a histogram
+			std::vector<u32> hist; // frequency of each counter val
+			for (const auto &p : s_meshgen_repeat_counters) {
+				if (hist.size() <= p.second) {
+					hist.insert(hist.end(), p.second + 1 - hist.size(), 0);
+				}
+				hist.at(p.second) += 1;
+			}
+			errorstream << "=================\n";
+			for (size_t i = 0; i < hist.size(); ++i) {
+				errorstream << i << ": " << hist[i] << "\n";
+			}
+
+			s_t_last_print = t_now;
+		}
+	}
 
 	for (cur_node.p.Z = 0; cur_node.p.Z < data->m_side_length; cur_node.p.Z++)
 	for (cur_node.p.Y = 0; cur_node.p.Y < data->m_side_length; cur_node.p.Y++)
