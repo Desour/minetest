@@ -731,7 +731,7 @@ void postProcessNodeMesh(scene::SMesh *mesh, const ContentFeatures &f,
 			if (apply_scale && tile->world_aligned) {
 				u32 n = buf->getVertexCount();
 				for (u32 k = 0; k != n; ++k)
-					buf->getTCoords(k) /= layer->scale;
+					buf->getTCoords(k) /= layer->scale; //TODO
 			}
 		}
 	}

@@ -9494,6 +9494,8 @@ Long form:
     --   `glasslike_framed_optional`.
     --
     -- Supported by solid (TODO: what's solid?) nodes and nodeboxes only.
+    --
+    -- Setting a different value in `overlay_tiles` is not supported. (TODO: test)
 
     scale = int,
     -- Make the tile span several (exactly `scale`) nodes, instead of just one,
@@ -9503,7 +9505,9 @@ Long form:
     --
     -- Note that as the effect is applied on a per-mapblock (TODO: meshchunk?)
     -- basis, `16` should be equally divisible by `scale` or you may get wrong
-    -- results.
+    -- results. (TODO: easy to fix?.)
+    --
+    -- Not supported if used with `visual_scale ~= 1`. (TODO: test)
 
     color = ColorSpec,
     -- The texture's color will be multiplied with this color.
@@ -9814,8 +9818,12 @@ Used by `core.register_node`.
     -- on the node.
 
     tiles = {tile definition 1, def2, def3, def4, def5, def6},
-    -- Textures of node; +Y, -Y, +X, -X, +Z, -Z
+    -- Textures of node.
+    -- UV mapping depends on drawtype, see [Node drawtypes].
+    -- For `normal` nodes: +Y, -Y, +X, -X, +Z, -Z
     -- List can be shortened to needed length.
+    -- 6 is maximum.
+    -- See [Tile definition].
 
     overlay_tiles = {tile definition 1, def2, def3, def4, def5, def6},
     -- Same as `tiles`, but these textures are drawn on top of the base

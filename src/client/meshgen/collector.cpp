@@ -8,31 +8,34 @@
 #include "client/mesh.h"
 
 void MeshCollector::append(const TileSpec &tile, const video::S3DVertex *vertices,
-		u32 numVertices, const u16 *indices, u32 numIndices)
+		u32 numVertices, const u16 *indices, u32 numIndices, v3s16 node_pos)
 {
 	for (int layernum = 0; layernum < MAX_TILE_LAYERS; layernum++) {
 		const TileLayer *layer = &tile.layers[layernum];
 		if (layer->texture_id == 0)
 			continue;
-		append(*layer, vertices, numVertices, indices, numIndices, layernum,
-				tile.world_aligned);
+		append(*layer, vertices, numVertices, indices, numIndices, node_pos,
+				layernum, tile.world_aligned);
 	}
 }
 
 void MeshCollector::append(const TileLayer &layer, const video::S3DVertex *vertices,
-		u32 numVertices, const u16 *indices, u32 numIndices, u8 layernum,
-		bool use_scale)
+		u32 numVertices, const u16 *indices, u32 numIndices, v3s16 node_pos,
+		u8 layernum, bool use_scale)
 {
 	PreMeshBuffer &p = findBuffer(layer, layernum, numVertices);
 
-	f32 scale = 1.0f;
-	if (use_scale)
-		scale = 1.0f / layer.scale;
+	f32 uv_scale = 1.0f;
+	v3f uv_offset = v3f();
+	if (use_scale) {
+		uv_scale = 1.0f / layer.scale;
+		uv_offset = v3f();
+	}
 
 	u32 vertex_count = p.vertices.size();
 	for (u32 i = 0; i < numVertices; i++) {
 		p.vertices.emplace_back(vertices[i].Pos + offset, vertices[i].Normal,
-				vertices[i].Color, scale * vertices[i].TCoords);
+				vertices[i].Color, uv_scale * vertices[i].TCoords);
 		m_bounding_radius_sq = std::max(m_bounding_radius_sq,
 				(vertices[i].Pos - m_center_pos).getLengthSQ());
 	}
@@ -42,21 +45,21 @@ void MeshCollector::append(const TileLayer &layer, const video::S3DVertex *verti
 }
 
 void MeshCollector::append(const TileSpec &tile, const video::S3DVertex *vertices,
-		u32 numVertices, const u16 *indices, u32 numIndices, v3f pos,
-		video::SColor c, u8 light_source)
+		u32 numVertices, const u16 *indices, u32 numIndices, v3s16 node_pos,
+		v3f pos, video::SColor c, u8 light_source) //TODO: remove this
 {
 	for (int layernum = 0; layernum < MAX_TILE_LAYERS; layernum++) {
 		const TileLayer *layer = &tile.layers[layernum];
 		if (layer->texture_id == 0)
 			continue;
-		append(*layer, vertices, numVertices, indices, numIndices, pos, c,
-				light_source, layernum, tile.world_aligned);
+		append(*layer, vertices, numVertices, indices, numIndices, node_pos,
+				pos, c, light_source, layernum, tile.world_aligned);
 	}
 }
 
 void MeshCollector::append(const TileLayer &layer, const video::S3DVertex *vertices,
-		u32 numVertices, const u16 *indices, u32 numIndices, v3f pos,
-		video::SColor c, u8 light_source, u8 layernum, bool use_scale)
+		u32 numVertices, const u16 *indices, u32 numIndices, v3s16 node_pos,
+		v3f pos, video::SColor c, u8 light_source, u8 layernum, bool use_scale)
 {
 	PreMeshBuffer &p = findBuffer(layer, layernum, numVertices);
 

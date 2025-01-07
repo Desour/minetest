@@ -133,10 +133,13 @@ void MapblockMeshGenerator::drawQuad(v3f *coords, const v3s16 &normal,
 			applyFacesShading(vertices[j].Color, normal2);
 		vertices[j].TCoords = tcoords[j];
 	}
-	collector->append(cur_node.tile, vertices, 4, quad_indices, 6);
+	collector->append(cur_node.tile, vertices, 4, quad_indices, 6,
+			blockpos_nodes + cur_node.p);
 }
 
-static std::array<video::S3DVertex, 24> setupCuboidVertices(const aabb3f &box, const f32 *txc, TileSpec *tiles, int tilecount) {
+static std::array<video::S3DVertex, 24> setupCuboidVertices(const aabb3f &box,
+		const f32 *txc, TileSpec *tiles, int tilecount)
+{
 	v3f min = box.MinEdge;
 	v3f max = box.MaxEdge;
 
@@ -230,7 +233,8 @@ void MapblockMeshGenerator::drawCuboid(const aabb3f &box,
 		QuadDiagonal diagonal = face_lighter(k, &vertices[4 * k]);
 		const u16 *indices = diagonal == QuadDiagonal::Diag13 ? quad_indices_13 : quad_indices_02;
 		int tileindex = MYMIN(k, tilecount - 1);
-		collector->append(tiles[tileindex], &vertices[4 * k], 4, indices, 6);
+		collector->append(tiles[tileindex], &vertices[4 * k], 4, indices, 6,
+				blockpos_nodes + cur_node.p);
 	}
 }
 
@@ -326,7 +330,6 @@ static inline int lightDiff(LightPair a, LightPair b)
 void MapblockMeshGenerator::drawAutoLightedCuboid(aabb3f box, const f32 *txc,
 	TileSpec *tiles, int tile_count, u8 mask)
 {
-	bool scale = std::fabs(cur_node.f->visual_scale - 1.0f) > 1e-3f;
 	f32 texture_coord_buf[24];
 	f32 dx1 = box.MinEdge.X;
 	f32 dy1 = box.MinEdge.Y;
@@ -334,20 +337,14 @@ void MapblockMeshGenerator::drawAutoLightedCuboid(aabb3f box, const f32 *txc,
 	f32 dx2 = box.MaxEdge.X;
 	f32 dy2 = box.MaxEdge.Y;
 	f32 dz2 = box.MaxEdge.Z;
-	if (scale) {
-		if (!txc) { // generate texture coords before scaling
-			generateCuboidTextureCoords(box, texture_coord_buf);
-			txc = texture_coord_buf;
-		}
-		box.MinEdge *= cur_node.f->visual_scale;
-		box.MaxEdge *= cur_node.f->visual_scale;
-	}
-	box.MinEdge += cur_node.origin;
-	box.MaxEdge += cur_node.origin;
-	if (!txc) {
+	if (!txc) { // generate texture coords before transforming
 		generateCuboidTextureCoords(box, texture_coord_buf);
 		txc = texture_coord_buf;
 	}
+	box.MinEdge *= cur_node.f->visual_scale;
+	box.MaxEdge *= cur_node.f->visual_scale;
+	box.MinEdge += cur_node.origin;
+	box.MaxEdge += cur_node.origin;
 	if (!tiles) {
 		tiles = &cur_node.tile;
 		tile_count = 1;
@@ -440,9 +437,9 @@ void MapblockMeshGenerator::drawSolidNode()
 	cur_node.origin = intToFloat(cur_node.p, BS);
 	auto box = aabb3f(v3f(-0.5 * BS), v3f(0.5 * BS));
 	f32 texture_coord_buf[24];
+	generateCuboidTextureCoords(box, texture_coord_buf);
 	box.MinEdge += cur_node.origin;
 	box.MaxEdge += cur_node.origin;
-	generateCuboidTextureCoords(box, texture_coord_buf);
 	if (data->m_smooth_lighting) {
 		LightPair lights[6][4];
 		for (int face = 0; face < 6; ++face) {
@@ -700,7 +697,8 @@ void MapblockMeshGenerator::drawLiquidSides()
 			pos += cur_node.origin;
 			vertices[j] = video::S3DVertex(pos.X, pos.Y, pos.Z, face.dir.X, face.dir.Y, face.dir.Z, cur_node.color, vertex.u, v);
 		};
-		collector->append(cur_liquid.tile, vertices, 4, quad_indices, 6);
+		collector->append(cur_liquid.tile, vertices, 4, quad_indices, 6,
+				blockpos_nodes + cur_node.p);
 	}
 }
 
@@ -781,7 +779,8 @@ void MapblockMeshGenerator::drawLiquidTop()
 
 	std::swap(vertices[0].TCoords, vertices[2].TCoords);
 
-	collector->append(cur_liquid.tile_top, vertices, 4, quad_indices, 6);
+	collector->append(cur_liquid.tile_top, vertices, 4, quad_indices, 6,
+			blockpos_nodes + cur_node.p);
 }
 
 void MapblockMeshGenerator::drawLiquidBottom()
@@ -799,7 +798,8 @@ void MapblockMeshGenerator::drawLiquidBottom()
 		vertices[i].Pos += cur_node.origin;
 	}
 
-	collector->append(cur_liquid.tile_top, vertices, 4, quad_indices, 6);
+	collector->append(cur_liquid.tile_top, vertices, 4, quad_indices, 6,
+			blockpos_nodes + cur_node.p);
 }
 
 void MapblockMeshGenerator::drawLiquidNode()
@@ -1694,12 +1694,17 @@ void MapblockMeshGenerator::drawMeshNode()
 				vertex.Pos += cur_node.origin;
 			}
 			collector->append(cur_node.tile, vertices, vertex_count,
-				buf->getIndices(), buf->getIndexCount());
+				buf->getIndices(), buf->getIndexCount(),
+				blockpos_nodes + cur_node.p);
 		} else {
 			// Let the collector process colors, etc.
+			// This has the advantage that we have an extra append() overload
+			// just for this, and more complexity in the collector.
+			// And maybe this is also some us faster, for all the mesh nodes if
+			// the smooth lighting is off.
 			collector->append(cur_node.tile, vertices, vertex_count,
-				buf->getIndices(), buf->getIndexCount(), cur_node.origin,
-				cur_node.color, cur_node.f->light_source);
+				buf->getIndices(), buf->getIndexCount(), blockpos_nodes + cur_node.p,
+				cur_node.origin, cur_node.color, cur_node.f->light_source);
 		}
 	}
 	mesh->drop();

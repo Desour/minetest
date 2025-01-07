@@ -32,22 +32,26 @@ struct MeshCollector
 	// offset: offset added to vertices
 	MeshCollector(const v3f center_pos, v3f offset = v3f()) : m_center_pos(center_pos), offset(offset) {}
 
-	void append(const TileSpec &material,
-			const video::S3DVertex *vertices, u32 numVertices,
-			const u16 *indices, u32 numIndices);
-	void append(const TileSpec &material,
+	void append(const TileSpec &tile,
 			const video::S3DVertex *vertices, u32 numVertices,
 			const u16 *indices, u32 numIndices,
+			v3s16 node_pos);
+	void append(const TileSpec &tile,
+			const video::S3DVertex *vertices, u32 numVertices,
+			const u16 *indices, u32 numIndices,
+			v3s16 node_pos,
 			v3f pos, video::SColor c, u8 light_source);
 
 private:
-	void append(const TileLayer &material,
+	void append(const TileLayer &layer,
 			const video::S3DVertex *vertices, u32 numVertices,
 			const u16 *indices, u32 numIndices,
+			v3s16 node_pos,
 			u8 layernum, bool use_scale = false);
-	void append(const TileLayer &material,
+	void append(const TileLayer &layer,
 			const video::S3DVertex *vertices, u32 numVertices,
 			const u16 *indices, u32 numIndices,
+			v3s16 node_pos,
 			v3f pos, video::SColor c, u8 light_source,
 			u8 layernum, bool use_scale = false);
 
