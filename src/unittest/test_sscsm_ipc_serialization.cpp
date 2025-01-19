@@ -25,7 +25,8 @@ static T serialize_and_deserialize(const T &val)
 
 namespace {
 
-struct B {
+struct B
+{
 	std::vector<u32> bv;
 	s8 bi;
 
@@ -34,14 +35,28 @@ struct B {
 		return bv == other.bv && bi == other.bi;
 	}
 };
-struct A {
+
+struct A
+{
 	s16 ai;
 	std::vector<B> av;
 	B ab;
 
 	bool operator==(const A &other) const
 	{
-		return ai == other.ai && av == other.av && ab == other. ab;
+		return ai == other.ai && av == other.av && ab == other.ab;
+	}
+};
+
+struct C
+{
+	u8 c1;
+	u8 c2;
+	u8 c3;
+
+	bool operator==(const C &other) const
+	{
+		return c1 == other.c1 && c2 == other.c2 && c3 == other.c3;
 	}
 };
 }
@@ -49,17 +64,25 @@ struct A {
 namespace sscsm {
 
 template <>
-struct Serializer<B> : MakeSerializerSimpleStruct<B,
+struct Serializer<B> : SerializerSimpleStruct<B,
 		&B::bv,
 		&B::bi
 	>
 {};
 
 template <>
-struct Serializer<A> : MakeSerializerSimpleStruct<A,
+struct Serializer<A> : SerializerSimpleStruct<A,
 		&A::ai,
 		&A::av,
 		&A::ab
+	>
+{};
+
+template <>
+struct Serializer<C> : SerializerSimpleStruct<C,
+		&C::c1,
+		&C::c2,
+		&C::c3
 	>
 {};
 
@@ -114,6 +137,15 @@ SECTION("Serializer") {
     SECTION("simple struct") {
 		auto val1 = A{123, {B{{4}, 0}, B{{}, 5}}, B{{123, 2, 3}, 4}};
 		serialize_and_deserialize(val1);
+
+		auto cval1 = C{1, 2, 3};
+		serialize_and_deserialize(cval1);
+
+		std::vector<u8> buf_cval1;
+		buf_cval1.resize(Serializer<C>::static_size);
+		Serializer<C>::serialize(cval1, 0, buf_cval1);
+		auto buf_cval1_sv = std::string_view(reinterpret_cast<char *>(buf_cval1.data()), buf_cval1.size());
+		CHECK(buf_cval1_sv == "\x01\x02\x03");
 	}
 
 	//TODO: pair, tuple, unordered_map, enum, tagged union, optional, variant

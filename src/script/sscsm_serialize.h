@@ -9,6 +9,7 @@
 #include <limits>
 
 #include "tool.h" //tmp
+#include <type_traits> //tmp
 
 namespace sscsm
 {
@@ -34,7 +35,7 @@ inline void check_container_size(size_t n)
 /** Serialization for the SSCSM IPC channel.
  *
  * Made to be:
- * * easy to use: helpers for common cases exist (TODO)
+ * * easy to use: helpers for common cases exist (SerializerSimpleStruct)
  * * lightweight: size checks only needed for dynamically sized parts (see below)
  * * secure: other side is the enlonged arm of the server
  * * used only for local IPC: no endianness conversion needed, host size_t used
@@ -97,6 +98,7 @@ struct Serializer
 	 */
 	static void serialize(const T &val, size_t static_offset, std::vector<u8> &buf)
 	{
+		static_assert(false, "Not specialized.");
 	}
 
 	/** Deserializes a value of type T.
@@ -109,9 +111,8 @@ struct Serializer
 	 */
 	static T deSerialize(const u8 *static_begin, const u8 **dyn_begin, const u8 *dyn_end)
 	{
+		static_assert(false, "Not specialized.");
 	}
-
-	static_assert(false, "Not specialized.");
 };
 
 // Primitive types
@@ -163,7 +164,7 @@ struct Serializer<std::vector<T>>
 		Serializer<size_t>::serialize(n, static_offset, buf);
 
 		size_t old_buf_size = buf.size();
-		buf.resize(old_buf_size + n * elem_size);
+		buf.resize(old_buf_size + n * elem_size); // TODO: is this exact, like reserve? if yes, replace with insert()
 		for (size_t i = 0; i < n; ++i) {
 			Serializer<T>::serialize(val[i], old_buf_size + i * elem_size, buf);
 		}
@@ -178,10 +179,9 @@ struct Serializer<std::vector<T>>
 		check_container_size<elem_size>(n);
 
 		const u8 *my_dyn_begin = *dyn_begin;
-		const u8 *my_dyn_end = my_dyn_begin + n * elem_size;
-		if (my_dyn_end > dyn_end)
+		if (n * elem_size > static_cast<size_t>(dyn_end - my_dyn_begin))
 			throw IPCSerializationError("Out of bounds.");
-		*dyn_begin = my_dyn_end;
+		*dyn_begin = my_dyn_begin + n * elem_size;
 
 		ret.reserve(n);
 		for (size_t i = 0; i < n; ++i) {
@@ -221,9 +221,9 @@ struct Serializer<std::string>
 			return "";
 
 		const u8 *my_dyn_begin = *dyn_begin;
-		const u8 *my_dyn_end = my_dyn_begin + n * elem_size;
-		if (my_dyn_end > dyn_end)
+		if (n * elem_size > static_cast<size_t>(dyn_end - my_dyn_begin))
 			throw IPCSerializationError("Out of bounds.");
+		const u8 *my_dyn_end = my_dyn_begin + n * elem_size;
 		*dyn_begin = my_dyn_end;
 
 		return std::string(reinterpret_cast<const char *>(my_dyn_begin),
@@ -236,49 +236,38 @@ struct Serializer<std::string>
 template <typename T>
 struct MemberPointerTypes
 {
+	static_assert(false, "Not a member pointer.");
 };
 
 template <typename T, typename U>
 struct MemberPointerTypes<T U::*>
 {
-	using ClassType = U;
-	using MemberType = T;
-};
-
-template <typename T, typename U, T U::* v>
-struct Dings
-{
 	using Class = U;
 	using Member = T;
-	static constexpr T U::* value = v;
 };
 
-template <typename T, typename U>
-auto make_Dings(T U::* v)
-{
-}
+template <typename T>
+using MemberPointerMember = typename MemberPointerTypes<T>::Member;
 
-template <auto... val>
-auto asx()
-{}
-
-// template <typename T, typename U>
-// make_Dings() -> Dings<T, U, v>;
-
-// template <typename T, template<typename B> typename A>
-// template <typename T, typename... MemberTs, MemberTs... MemberPtrs>
-template <typename T, typename... Ms>
+template <typename T, auto... MPs>
 struct SerializerSimpleStruct
 {
+	static_assert((... && std::is_same_v<
+			MemberPointerMember<decltype(MPs)>,
+			std::remove_reference_t<decltype(T{}.*MPs)>
+		>), "asdad");
+
+	template <typename U>
+	using MemberSerializer = Serializer<typename MemberPointerTypes<U>::Member>;
+
 	static constexpr size_t static_size =
-			// (... + Serializer<typename MemberPointerTypes<typename MemberTs::value_type>::MemberType>::static_size);
-			(... + Serializer<typename Ms::Member>::static_size);
+			(... + MemberSerializer<decltype(MPs)>::static_size);
 
 	static void serialize(const T &val, size_t static_offset, std::vector<u8> &buf)
 	{
 		(... , (
-			Serializer<typename Ms::Member>::serialize(val.*Ms::value, static_offset, buf),
-			static_offset += Serializer<typename Ms::Member>::static_size
+			MemberSerializer<decltype(MPs)>::serialize(val.*MPs, static_offset, buf),
+			static_offset += MemberSerializer<decltype(MPs)>::static_size
 		));
 	}
 
@@ -287,57 +276,16 @@ struct SerializerSimpleStruct
 		T ret{};
 
 		(... , (
-			ret.*Ms::value = Serializer<typename Ms::Member>::deSerialize(static_begin, dyn_begin, dyn_end),
-			static_begin += Serializer<typename Ms::Member>::static_size
+			ret.*MPs = MemberSerializer<decltype(MPs)>::deSerialize(static_begin, dyn_begin, dyn_end),
+			static_begin += MemberSerializer<decltype(MPs)>::static_size
 		));
 
 		return ret;
 	}
 };
 
-/*
-template <typename T, typename... MPs>
-SerializerSimpleStruct<T, MPs...> make_SerializerSimpleStruct(MPs ...)
-{
-}*/
-
-template <typename T, auto... MPs>
-using MakeSerializerSimpleStruct = SerializerSimpleStruct<T, Dings<
-	typename MemberPointerTypes<decltype(MPs)>::MemberType,
-	typename MemberPointerTypes<decltype(MPs)>::ClassType,
-	MPs
->...>;
-
 
 // Tmp
-
-template <>
-struct Serializer<ToolCapabilities>
-{
-	static constexpr size_t static_size = 0;
-
-	static void serialize(const ToolCapabilities &val, size_t static_offset, std::vector<u8> &buf)
-	{
-	}
-
-	static ToolCapabilities deSerialize(const u8 *static_begin, const u8 **dyn_begin, const u8 *dyn_end)
-	{
-		ToolCapabilities ret{};
-
-		const u8 *elem_static_begin = static_begin;
-
-		ret.full_punch_interval = Serializer<float>::deSerialize(elem_static_begin, dyn_begin, dyn_end);
-		elem_static_begin += Serializer<float>::static_size;
-
-		ret.max_drop_level = Serializer<int>::deSerialize(elem_static_begin, dyn_begin, dyn_end);
-		elem_static_begin += Serializer<int>::static_size;
-
-		ret.punch_attack_uses = Serializer<int>::deSerialize(elem_static_begin, dyn_begin, dyn_end);
-		elem_static_begin += Serializer<int>::static_size;
-
-		return ret;
-	}
-};
 
 template <>
 struct Serializer<DigParams>
@@ -405,29 +353,8 @@ struct DigParams2
 	{}
 };
 
-/*
-template <>
-struct Serializer<DigParams2> : decltype(SerializerSimpleStruct<DigParams2>{
-		&DigParams2::diggable,
-		&DigParams2::time,
-		&DigParams2::wear,
-		&DigParams2::main_group})
-{};
-*/
-
-/*
 template <>
 struct Serializer<DigParams2> : SerializerSimpleStruct<DigParams2,
-		Dings<bool, DigParams2, &DigParams2::diggable>,
-		Dings<float, DigParams2, &DigParams2::time>,
-		Dings<u32, DigParams2, &DigParams2::wear>,
-		Dings<std::string, DigParams2, &DigParams2::main_group>
-	>
-{};
-*/
-
-template <>
-struct Serializer<DigParams2> : MakeSerializerSimpleStruct<DigParams2,
 		&DigParams2::diggable,
 		&DigParams2::time,
 		&DigParams2::wear,
