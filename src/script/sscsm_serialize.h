@@ -191,6 +191,8 @@ template <> struct Serializer<size_t> : SerializerPrimitive<size_t> {};
 template <typename T, auto... MPs>
 struct SerializerSimpleStruct
 {
+	// The extra parentheses around MPs are needed for MSVC
+
 	static_assert((... && std::is_member_pointer_v<decltype((MPs))>),
 			"MPs needs to be member pointers");
 
