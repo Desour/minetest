@@ -137,6 +137,10 @@ struct Serializer
 	}
 };
 
+template <typename T>
+struct Serializer<const T> : Serializer<T>
+{};
+
 // Primitive types
 
 template <typename T>
@@ -180,7 +184,7 @@ template <> struct Serializer<size_t> : SerializerPrimitive<size_t> {};
 
 /** Auto-generate a Serializer specialization for a struct T.
  *
- * T needs to be default constructible.
+ * T needs to be default constructible. And the members must not be const.
  *
  * MPs are member pointers into T. The members are serialized in the given order.
  */
@@ -236,12 +240,26 @@ struct SerializerEnum
 
 // Containers
 
+// Don't use SerializerSimpleStruct, to allow const types
 template <typename T1, typename T2>
-struct Serializer<std::pair<T1, T2>> : SerializerSimpleStruct<std::pair<T1, T2>,
-		&std::pair<T1, T2>::first,
-		&std::pair<T1, T2>::second
-	>
-{};
+struct Serializer<std::pair<T1, T2>>
+{
+	static constexpr size_t static_size =
+			Serializer<T1>::static_size + Serializer<T2>::static_size;
+
+	static void serialize(const std::pair<T1, T2> &val, size_t static_offset, std::vector<u8> &buf)
+	{
+		Serializer<T1>::serialize(val.first, static_offset, buf);
+		Serializer<T2>::serialize(val.second, static_offset + Serializer<T1>::static_size, buf);
+	}
+
+	static std::pair<T1, T2> deSerialize(const u8 *static_begin, const u8 **dyn_begin, const u8 *dyn_end)
+	{
+		auto first = Serializer<T1>::deSerialize(static_begin, dyn_begin, dyn_end);
+		auto second = Serializer<T2>::deSerialize(static_begin + Serializer<T1>::static_size, dyn_begin, dyn_end);
+		return std::pair<T1, T2>(std::move(first), std::move(second));
+	}
+};
 
 template <>
 struct Serializer<std::string>
@@ -327,22 +345,13 @@ template <typename K, typename V>
 struct Serializer<std::unordered_map<K, V>>
 {
 	using T = std::unordered_map<K, V>;
+	using E = typename T::value_type;
 
 	static constexpr size_t static_size = Serializer<size_t>::static_size;
 
 	static void serialize(const T &val, size_t static_offset, std::vector<u8> &buf)
 	{
-		// `T::value_type` is `std::pair<const K, V>`, so hmm, maybe change std::pair speci
-
-		// different E than in deSerialize, to avoid copies. they should be
-		// serialized the same
-		// using E = std::pair<const K, V>;
-		// static_assert(std::is_same_v<typename T::value_type, E>);
-		// constexpr size_t elem_size = Serializer<E>::static_size;
-
-		constexpr size_t k_size = Serializer<K>::static_size;
-		constexpr size_t v_size = Serializer<V>::static_size;
-		constexpr size_t elem_size = k_size + v_size;
+		constexpr size_t elem_size = Serializer<E>::static_size;
 
 		size_t n = val.size();
 		Serializer<size_t>::serialize(n, static_offset, buf);
@@ -351,8 +360,7 @@ struct Serializer<std::unordered_map<K, V>>
 		buf.resize(old_buf_size + n * elem_size); // TODO: is this exact, like reserve? if yes, replace with insert()
 		size_t i = 0;
 		for (const auto &p : val) {
-			Serializer<K>::serialize(p.first, old_buf_size + i * elem_size, buf);
-			Serializer<V>::serialize(p.second, old_buf_size + i * elem_size + k_size, buf);
+			Serializer<E>::serialize(p, old_buf_size + i * elem_size, buf);
 			++i;
 		}
 	}
@@ -360,7 +368,6 @@ struct Serializer<std::unordered_map<K, V>>
 	static T deSerialize(const u8 *static_begin, const u8 **dyn_begin, const u8 *dyn_end)
 	{
 		T ret;
-		using E = std::pair<K, V>;
 		constexpr size_t elem_size = Serializer<E>::static_size;
 
 		size_t n = Serializer<size_t>::deSerialize(static_begin, dyn_begin, dyn_end);
@@ -373,8 +380,7 @@ struct Serializer<std::unordered_map<K, V>>
 
 		ret.reserve(n);
 		for (size_t i = 0; i < n; ++i) {
-			auto p = Serializer<E>::deSerialize(my_dyn_begin + i * elem_size, dyn_begin, dyn_end);
-			ret.emplace(std::move(p.first), std::move(p.second));
+			ret.emplace(Serializer<E>::deSerialize(my_dyn_begin + i * elem_size, dyn_begin, dyn_end));
 		}
 
 		return ret;

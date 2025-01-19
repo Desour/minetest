@@ -202,7 +202,7 @@ SECTION("Serializer") {
 		serialize_and_deserialize(E3::A);
     }
 
-	//TODO: tuple, unordered_map, tagged union, optional, variant
+	//TODO: tuple, tagged union, optional, variant
 }
 
 }
