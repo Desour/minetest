@@ -3,6 +3,7 @@
 
 #include "irrlichttypes.h"
 #include "exceptions.h"
+#include "debug.h"
 #include <vector>
 #include <string>
 #include <cstring>
@@ -119,7 +120,7 @@ struct Serializer
 	 */
 	static void serialize(const T &val, size_t static_offset, std::vector<u8> &buf)
 	{
-		static_assert(false, "Not specialized.");
+		FATAL_ERROR("Not specialized.");
 	}
 
 	/** Deserializes a value of type T.
@@ -132,7 +133,7 @@ struct Serializer
 	 */
 	static T deSerialize(const u8 *static_begin, const u8 **dyn_begin, const u8 *dyn_end)
 	{
-		static_assert(false, "Not specialized.");
+		FATAL_ERROR("Not specialized.");
 	}
 };
 
