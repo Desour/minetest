@@ -171,6 +171,7 @@ template <> struct Serializer<s64> : SerializerPrimitive<s64> {};
 template <> struct Serializer<f32> : SerializerPrimitive<f32> {};
 template <> struct Serializer<f64> : SerializerPrimitive<f64> {};
 
+// FIXME: find a way to reliably check whether size_t is a different type
 #if defined(__APPLE__)
 template <> struct Serializer<size_t> : SerializerPrimitive<size_t> {};
 #endif
@@ -195,7 +196,7 @@ struct SerializerSimpleStruct
 	static void serialize(const T &val, size_t static_offset, std::vector<u8> &buf)
 	{
 		(... , (
-			Serializer<MembPtrM<decltype((MPs))>>::serialize(val.*((decltype((MPs)))(MPs)), static_offset, buf),
+			Serializer<MembPtrM<decltype((MPs))>>::serialize(val.*MPs, static_offset, buf),
 			static_offset += Serializer<MembPtrM<decltype((MPs))>>::static_size
 		));
 	}
@@ -205,7 +206,7 @@ struct SerializerSimpleStruct
 		T ret{};
 
 		(... , (
-			ret.*((decltype((MPs)))(MPs)) = Serializer<MembPtrM<decltype((MPs))>>::deSerialize(static_begin, dyn_begin, dyn_end),
+			ret.*MPs = Serializer<MembPtrM<decltype((MPs))>>::deSerialize(static_begin, dyn_begin, dyn_end),
 			static_begin += Serializer<MembPtrM<decltype((MPs))>>::static_size
 		));
 

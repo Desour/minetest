@@ -132,6 +132,7 @@ SECTION("Serializer") {
 		serialize_and_deserialize((u16)234);
 		serialize_and_deserialize((s16)-234);
 		serialize_and_deserialize((s64)1248234989234);
+		serialize_and_deserialize((size_t)42128);
 		serialize_and_deserialize(false);
 		serialize_and_deserialize(true);
 	}
