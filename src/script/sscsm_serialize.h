@@ -196,7 +196,7 @@ struct SerializerSimpleStruct
 	static void serialize(const T &val, size_t static_offset, std::vector<u8> &buf)
 	{
 		(... , (
-			Serializer<MembPtrM<decltype((MPs))>>::serialize(val.*MPs, static_offset, buf),
+			Serializer<MembPtrM<decltype((MPs))>>::serialize(val.*(MPs), static_offset, buf),
 			static_offset += Serializer<MembPtrM<decltype((MPs))>>::static_size
 		));
 	}
@@ -206,7 +206,7 @@ struct SerializerSimpleStruct
 		T ret{};
 
 		(... , (
-			ret.*MPs = Serializer<MembPtrM<decltype((MPs))>>::deSerialize(static_begin, dyn_begin, dyn_end),
+			ret.*(MPs) = Serializer<MembPtrM<decltype((MPs))>>::deSerialize(static_begin, dyn_begin, dyn_end),
 			static_begin += Serializer<MembPtrM<decltype((MPs))>>::static_size
 		));
 
