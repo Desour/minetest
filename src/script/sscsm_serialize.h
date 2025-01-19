@@ -8,9 +8,6 @@
 #include <cstring>
 #include <limits>
 
-#include "tool.h" //tmp
-#include <type_traits> //tmp
-
 namespace sscsm
 {
 
@@ -234,40 +231,41 @@ struct Serializer<std::string>
 // Helpers
 
 template <typename T>
-struct MemberPointerTypes
+struct MembPtrTypes // TODO: move this to some util header
 {
 	static_assert(false, "Not a member pointer.");
 };
 
 template <typename T, typename U>
-struct MemberPointerTypes<T U::*>
+struct MembPtrTypes<T U::*>
 {
-	using Class = U;
-	using Member = T;
+	using C = U; // class
+	using M = T; // member
 };
 
 template <typename T>
-using MemberPointerMember = typename MemberPointerTypes<T>::Member;
+using MembPtrM = typename MembPtrTypes<T>::M;
 
+template <typename T>
+using MembPtrC = typename MembPtrTypes<T>::C;
+
+/** Auto-generate a Serializer specialization for T.
+ *
+ * T needs to be default constructible.
+ *
+ * MPs are member pointers into T. The members are serialized in the given order.
+ */
 template <typename T, auto... MPs>
 struct SerializerSimpleStruct
 {
-	static_assert((... && std::is_same_v<
-			MemberPointerMember<decltype(MPs)>,
-			std::remove_reference_t<decltype(T{}.*MPs)>
-		>), "asdad");
-
-	template <typename U>
-	using MemberSerializer = Serializer<typename MemberPointerTypes<U>::Member>;
-
 	static constexpr size_t static_size =
-			(... + MemberSerializer<decltype(MPs)>::static_size);
+			(... + Serializer<MembPtrM<decltype(MPs)>>::static_size);
 
 	static void serialize(const T &val, size_t static_offset, std::vector<u8> &buf)
 	{
 		(... , (
-			MemberSerializer<decltype(MPs)>::serialize(val.*MPs, static_offset, buf),
-			static_offset += MemberSerializer<decltype(MPs)>::static_size
+			Serializer<MembPtrM<decltype(MPs)>>::serialize(val.*MPs, static_offset, buf),
+			static_offset += Serializer<MembPtrM<decltype(MPs)>>::static_size
 		));
 	}
 
@@ -276,90 +274,12 @@ struct SerializerSimpleStruct
 		T ret{};
 
 		(... , (
-			ret.*MPs = MemberSerializer<decltype(MPs)>::deSerialize(static_begin, dyn_begin, dyn_end),
-			static_begin += MemberSerializer<decltype(MPs)>::static_size
+			ret.*MPs = Serializer<MembPtrM<decltype(MPs)>>::deSerialize(static_begin, dyn_begin, dyn_end),
+			static_begin += Serializer<MembPtrM<decltype(MPs)>>::static_size
 		));
 
 		return ret;
 	}
 };
-
-
-// Tmp
-
-template <>
-struct Serializer<DigParams>
-{
-	static constexpr size_t static_size = 0
-			+ Serializer<bool>::static_size
-			+ Serializer<float>::static_size
-			+ Serializer<u32>::static_size
-			+ Serializer<std::string>::static_size;
-
-	static void serialize(const DigParams &val, size_t static_offset, std::vector<u8> &buf)
-	{
-		size_t elem_static_offset = static_offset;
-
-		Serializer<bool>::serialize(val.diggable, elem_static_offset, buf);
-		elem_static_offset += Serializer<bool>::static_size;
-
-		Serializer<float>::serialize(val.time, elem_static_offset, buf);
-		elem_static_offset += Serializer<float>::static_size;
-
-		Serializer<u32>::serialize(val.wear, elem_static_offset, buf);
-		elem_static_offset += Serializer<u32>::static_size;
-
-		Serializer<std::string>::serialize(val.main_group, elem_static_offset, buf);
-		elem_static_offset += Serializer<std::string>::static_size;
-	}
-
-	static DigParams deSerialize(const u8 *static_begin, const u8 **dyn_begin, const u8 *dyn_end)
-	{
-		DigParams ret{};
-
-		const u8 *elem_static_begin = static_begin;
-
-		ret.diggable = Serializer<bool>::deSerialize(elem_static_begin, dyn_begin, dyn_end);
-		elem_static_begin += Serializer<bool>::static_size;
-
-		ret.time = Serializer<float>::deSerialize(elem_static_begin, dyn_begin, dyn_end);
-		elem_static_begin += Serializer<float>::static_size;
-
-		ret.wear = Serializer<u32>::deSerialize(elem_static_begin, dyn_begin, dyn_end);
-		elem_static_begin += Serializer<u32>::static_size;
-
-		ret.main_group = Serializer<std::string>::deSerialize(elem_static_begin, dyn_begin, dyn_end);
-		elem_static_begin += Serializer<std::string>::static_size;
-
-		return ret;
-	}
-};
-
-struct DigParams2
-{
-	bool diggable;
-	// Digging time in seconds
-	float time;
-	// Caused wear
-	u32 wear; // u32 because wear could be 65536 (single-use tool)
-	std::string main_group;
-
-	DigParams2(bool a_diggable = false, float a_time = 0.0f, u32 a_wear = 0,
-			const std::string &a_main_group = ""):
-		diggable(a_diggable),
-		time(a_time),
-		wear(a_wear),
-		main_group(a_main_group)
-	{}
-};
-
-template <>
-struct Serializer<DigParams2> : SerializerSimpleStruct<DigParams2,
-		&DigParams2::diggable,
-		&DigParams2::time,
-		&DigParams2::wear,
-		&DigParams2::main_group
-	>
-{};
 
 }
