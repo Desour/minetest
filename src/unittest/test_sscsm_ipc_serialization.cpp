@@ -174,6 +174,13 @@ SECTION("Serializer") {
 		serialize_and_deserialize(v4);
 	}
 
+    SECTION("std::unordered_map") {
+		std::unordered_map<u16, s16> m0 = {};
+		serialize_and_deserialize(m0);
+		std::unordered_map<u16, s16> m1 = {{3, 5}, {123, 15}};
+		serialize_and_deserialize(m1);
+	}
+
     SECTION("simple struct") {
 		auto val1 = A{123, {B{{4}, 0}, B{{}, 5}}, B{{123, 2, 3}, 4}};
 		serialize_and_deserialize(val1);

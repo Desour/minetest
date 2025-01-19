@@ -257,7 +257,7 @@ struct Serializer<std::string>
 			return;
 
 		size_t old_buf_size = buf.size();
-		buf.resize(old_buf_size + n);
+		buf.resize(old_buf_size + n); // TODO: is this exact, like reserve? if yes, replace with insert()
 		memcpy(&buf[old_buf_size], val.data(), n);
 	}
 
@@ -317,6 +317,64 @@ struct Serializer<std::vector<T>>
 		ret.reserve(n);
 		for (size_t i = 0; i < n; ++i) {
 			ret.push_back(Serializer<T>::deSerialize(my_dyn_begin + i * elem_size, dyn_begin, dyn_end));
+		}
+
+		return ret;
+	}
+};
+
+template <typename K, typename V>
+struct Serializer<std::unordered_map<K, V>>
+{
+	using T = std::unordered_map<K, V>;
+
+	static constexpr size_t static_size = Serializer<size_t>::static_size;
+
+	static void serialize(const T &val, size_t static_offset, std::vector<u8> &buf)
+	{
+		// `T::value_type` is `std::pair<const K, V>`, so hmm, maybe change std::pair speci
+
+		// different E than in deSerialize, to avoid copies. they should be
+		// serialized the same
+		// using E = std::pair<const K, V>;
+		// static_assert(std::is_same_v<typename T::value_type, E>);
+		// constexpr size_t elem_size = Serializer<E>::static_size;
+
+		constexpr size_t k_size = Serializer<K>::static_size;
+		constexpr size_t v_size = Serializer<V>::static_size;
+		constexpr size_t elem_size = k_size + v_size;
+
+		size_t n = val.size();
+		Serializer<size_t>::serialize(n, static_offset, buf);
+
+		size_t old_buf_size = buf.size();
+		buf.resize(old_buf_size + n * elem_size); // TODO: is this exact, like reserve? if yes, replace with insert()
+		size_t i = 0;
+		for (const auto &p : val) {
+			Serializer<K>::serialize(p.first, old_buf_size + i * elem_size, buf);
+			Serializer<V>::serialize(p.second, old_buf_size + i * elem_size + k_size, buf);
+			++i;
+		}
+	}
+
+	static T deSerialize(const u8 *static_begin, const u8 **dyn_begin, const u8 *dyn_end)
+	{
+		T ret;
+		using E = std::pair<K, V>;
+		constexpr size_t elem_size = Serializer<E>::static_size;
+
+		size_t n = Serializer<size_t>::deSerialize(static_begin, dyn_begin, dyn_end);
+		check_container_size<elem_size>(n);
+
+		const u8 *my_dyn_begin = *dyn_begin;
+		if (n * elem_size > static_cast<size_t>(dyn_end - my_dyn_begin))
+			throw IPCSerializationError("Out of bounds.");
+		*dyn_begin = my_dyn_begin + n * elem_size;
+
+		ret.reserve(n);
+		for (size_t i = 0; i < n; ++i) {
+			auto p = Serializer<E>::deSerialize(my_dyn_begin + i * elem_size, dyn_begin, dyn_end);
+			ret.emplace(std::move(p.first), std::move(p.second));
 		}
 
 		return ret;
