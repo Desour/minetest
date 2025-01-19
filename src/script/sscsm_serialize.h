@@ -118,7 +118,9 @@ struct Serializer
 	 *            to its end.
 	 */
 	static void serialize(const T &val, size_t static_offset, std::vector<u8> &buf)
-	{}
+	{
+		static_assert(false, "Not specialized.");
+	}
 
 	/** Deserializes a value of type T.
 	 *
@@ -129,7 +131,9 @@ struct Serializer
 	 * @return The deserialized value;
 	 */
 	static T deSerialize(const u8 *static_begin, const u8 **dyn_begin, const u8 *dyn_end)
-	{}
+	{
+		static_assert(false, "Not specialized.");
+	}
 };
 
 // Primitive types
@@ -165,6 +169,10 @@ template <> struct Serializer<s64> : SerializerPrimitive<s64> {};
 
 template <> struct Serializer<f32> : SerializerPrimitive<f32> {};
 template <> struct Serializer<f64> : SerializerPrimitive<f64> {};
+
+#if defined(__APPLE__)
+template <> struct Serializer<size_t> : SerializerPrimitive<size_t> {};
+#endif
 
 // Helpers
 
