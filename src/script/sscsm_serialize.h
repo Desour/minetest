@@ -44,12 +44,14 @@ public:
 template <size_t ELEM_SIZE>
 inline void check_container_size(size_t n)
 {
-	if constexpr (ELEM_SIZE <= 1)
-		return;
-
 	constexpr size_t max_n = std::numeric_limits<size_t>::max() / ELEM_SIZE;
 	if (n >= max_n)
 		throw IPCSerializationError("Container size too big.");
+}
+
+template <>
+inline void check_container_size<0>(size_t n)
+{
 }
 
 /** Serialization for the SSCSM IPC channel.
