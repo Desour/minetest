@@ -99,7 +99,6 @@ inline void check_container_size(size_t n)
  * }
  *
  * ```
- *
  */
 template <typename T>
 struct Serializer
@@ -115,10 +114,7 @@ struct Serializer
 	 * @param buf The buffer to write into. Dynamically sized parts need to go
 	 *            to its end.
 	 */
-	static void serialize(const T &val, size_t static_offset, std::vector<u8> &buf)
-	{
-		static_assert(false, "Not specialized.");
-	}
+	static void serialize(const T &val, size_t static_offset, std::vector<u8> &buf);
 
 	/** Deserializes a value of type T.
 	 *
@@ -128,10 +124,7 @@ struct Serializer
 	 * @param dyn_end End of the dynamic slice.
 	 * @return The deserialized value;
 	 */
-	static T deSerialize(const u8 *static_begin, const u8 **dyn_begin, const u8 *dyn_end)
-	{
-		static_assert(false, "Not specialized.");
-	}
+	static T deSerialize(const u8 *static_begin, const u8 **dyn_begin, const u8 *dyn_end);
 };
 
 // Primitive types
