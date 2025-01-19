@@ -175,17 +175,17 @@ template <> struct Serializer<f64> : SerializerPrimitive<f64> {};
 template <typename T, auto... MPs>
 struct SerializerSimpleStruct
 {
-	static_assert((... && std::is_member_pointer_v<decltype(MPs)>),
+	static_assert((... && std::is_member_pointer_v<decltype((MPs))>),
 			"MPs needs to be member pointers");
 
 	static constexpr size_t static_size =
-			(... + Serializer<MembPtrM<decltype(MPs)>>::static_size);
+			(... + Serializer<MembPtrM<decltype((MPs))>>::static_size);
 
 	static void serialize(const T &val, size_t static_offset, std::vector<u8> &buf)
 	{
 		(... , (
-			Serializer<MembPtrM<decltype(MPs)>>::serialize(val.*((decltype(MPs))MPs), static_offset, buf),
-			static_offset += Serializer<MembPtrM<decltype(MPs)>>::static_size
+			Serializer<MembPtrM<decltype((MPs))>>::serialize(val.*((decltype((MPs)))(MPs)), static_offset, buf),
+			static_offset += Serializer<MembPtrM<decltype((MPs))>>::static_size
 		));
 	}
 
@@ -194,8 +194,8 @@ struct SerializerSimpleStruct
 		T ret{};
 
 		(... , (
-			ret.*((decltype(MPs))MPs) = Serializer<MembPtrM<decltype(MPs)>>::deSerialize(static_begin, dyn_begin, dyn_end),
-			static_begin += Serializer<MembPtrM<decltype(MPs)>>::static_size
+			ret.*((decltype((MPs)))(MPs)) = Serializer<MembPtrM<decltype((MPs))>>::deSerialize(static_begin, dyn_begin, dyn_end),
+			static_begin += Serializer<MembPtrM<decltype((MPs))>>::static_size
 		));
 
 		return ret;
