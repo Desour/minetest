@@ -137,6 +137,11 @@ SECTION("Serializer") {
 		serialize_and_deserialize(true);
 	}
 
+    SECTION("std::pair") {
+		serialize_and_deserialize(std::make_pair(1, 2));
+		serialize_and_deserialize(std::make_pair(3, (u8)4));
+	}
+
     SECTION("std::string") {
 		using serializer = Serializer<std::string>;
 
@@ -190,7 +195,7 @@ SECTION("Serializer") {
 		serialize_and_deserialize(E3::A);
     }
 
-	//TODO: pair, tuple, unordered_map, enum, tagged union, optional, variant
+	//TODO: tuple, unordered_map, tagged union, optional, variant
 }
 
 }
