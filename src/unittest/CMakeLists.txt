@@ -14,6 +14,7 @@ set(unittest_SRCS
 	${CMAKE_CURRENT_SOURCE_DIR}/test_craft.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/test_datastructures.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/test_filesys.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/test_gettext.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/test_inventory.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/test_irrptr.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/test_logging.cpp
@@ -46,7 +47,6 @@ set(unittest_SRCS
 	${CMAKE_CURRENT_SOURCE_DIR}/test_voxelarea.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/test_voxelalgorithms.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/test_voxelmanipulator.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/test_gettext.cpp
 	PARENT_SCOPE)
 
 set(unittest_client_SRCS
@@ -57,4 +57,5 @@ set(unittest_client_SRCS
 	${CMAKE_CURRENT_SOURCE_DIR}/test_gameui.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/test_keycode.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/test_mesh_compare.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/test_sscsm_ipc_serialization.cpp
 	PARENT_SCOPE)

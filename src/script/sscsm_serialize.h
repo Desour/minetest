@@ -26,8 +26,7 @@ inline void check_container_size(size_t n)
 	if constexpr (ELEM_SIZE <= 1)
 		return;
 
-	// + 1 to avoid rounding down
-	constexpr size_t max_n = std::numeric_limits<size_t>::max() / ELEM_SIZE + 1;
+	constexpr size_t max_n = std::numeric_limits<size_t>::max() / ELEM_SIZE;
 	if (n >= max_n)
 		throw IPCSerializationError("Container size too big.");
 }
@@ -98,7 +97,6 @@ struct Serializer
 	 */
 	static void serialize(const T &val, size_t static_offset, std::vector<u8> &buf)
 	{
-		static_assert(false, "Not specialized.");
 	}
 
 	/** Deserializes a value of type T.
@@ -111,8 +109,9 @@ struct Serializer
 	 */
 	static T deSerialize(const u8 *static_begin, const u8 **dyn_begin, const u8 *dyn_end)
 	{
-		static_assert(false, "Not specialized.");
 	}
+
+	static_assert(false, "Not specialized.");
 };
 
 // Primitive types
@@ -158,14 +157,15 @@ struct Serializer<std::vector<T>>
 
 	static void serialize(const std::vector<T> &val, size_t static_offset, std::vector<u8> &buf)
 	{
+		constexpr size_t elem_size = Serializer<T>::static_size;
+
 		size_t n = val.size();
 		Serializer<size_t>::serialize(n, static_offset, buf);
 
-		size_t elem_size = Serializer<T>::static_size;
 		size_t old_buf_size = buf.size();
 		buf.resize(old_buf_size + n * elem_size);
 		for (size_t i = 0; i < n; ++i) {
-			Serializer<T>::serialize(val[i], old_buf_size + n * elem_size, buf);
+			Serializer<T>::serialize(val[i], old_buf_size + i * elem_size, buf);
 		}
 	}
 
@@ -282,7 +282,7 @@ struct SerializerSimpleStruct
 		));
 	}
 
-	static DigParams deSerialize(const u8 *static_begin, const u8 **dyn_begin, const u8 *dyn_end)
+	static T deSerialize(const u8 *static_begin, const u8 **dyn_begin, const u8 *dyn_end)
 	{
 		T ret{};
 
