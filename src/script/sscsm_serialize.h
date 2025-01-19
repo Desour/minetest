@@ -7,6 +7,7 @@
 #include <string>
 #include <cstring>
 #include <limits>
+#include <type_traits>
 
 
 // TODO: move this to some util header
@@ -172,6 +173,9 @@ template <> struct Serializer<f64> : SerializerPrimitive<f64> {};
 template <typename T, auto... MPs>
 struct SerializerSimpleStruct
 {
+	static_assert((... && std::is_member_pointer_v<decltype(MPs)>),
+			"MPs needs to be member pointers");
+
 	static constexpr size_t static_size =
 			(... + Serializer<MembPtrM<decltype(MPs)>>::static_size);
 
