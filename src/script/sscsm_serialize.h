@@ -163,7 +163,7 @@ template <> struct Serializer<f64> : SerializerPrimitive<f64> {};
 
 // Helpers
 
-/** Auto-generate a Serializer specialization for T.
+/** Auto-generate a Serializer specialization for a struct T.
  *
  * T needs to be default constructible.
  *
@@ -193,6 +193,26 @@ struct SerializerSimpleStruct
 		));
 
 		return ret;
+	}
+};
+
+/** Auto-generate a Serializer specialization for an enum E.
+ *
+ * It is serialized by static_casting to B.
+ */
+template <typename E, typename B>
+struct SerializerEnum
+{
+	static constexpr size_t static_size = Serializer<B>::static_size;
+
+	static void serialize(const E &val, size_t static_offset, std::vector<u8> &buf)
+	{
+		Serializer<B>::serialize(static_cast<B>(val), static_offset, buf);
+	}
+
+	static E deSerialize(const u8 *static_begin, const u8 **dyn_begin, const u8 *dyn_end)
+	{
+		return static_cast<E>(Serializer<B>::deSerialize(static_begin, dyn_begin, dyn_end));
 	}
 };
 

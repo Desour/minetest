@@ -59,6 +59,28 @@ struct C
 		return c1 == other.c1 && c2 == other.c2 && c3 == other.c3;
 	}
 };
+
+enum E1
+{
+	E1_A,
+	E1_B,
+	E1_C,
+};
+
+enum E2 : u16
+{
+	E2_A,
+	E2_B,
+	E2_C,
+};
+
+enum class E3
+{
+	A,
+	B,
+	C,
+};
+
 }
 
 namespace sscsm {
@@ -86,6 +108,18 @@ struct Serializer<C> : SerializerSimpleStruct<C,
 	>
 {};
 
+template <>
+struct Serializer<E1> : SerializerEnum<E1, int>
+{};
+
+template <>
+struct Serializer<E2> : SerializerEnum<E2, u16>
+{};
+
+template <>
+struct Serializer<E3> : SerializerEnum<E3, int>
+{};
+
 }
 
 TEST_CASE("sscsm_ipc_serialization") {
@@ -100,19 +134,6 @@ SECTION("Serializer") {
 		serialize_and_deserialize((s64)1248234989234);
 		serialize_and_deserialize(false);
 		serialize_and_deserialize(true);
-	}
-
-    SECTION("std::vector") {
-		std::vector<u8> v0 = {};
-		serialize_and_deserialize(v0);
-		std::vector<u8> v1 = {23, 1, 5, 2};
-		serialize_and_deserialize(v1);
-		std::vector<u16> v2 = {23, 1, 5, 51531};
-		serialize_and_deserialize(v2);
-		std::vector<s64> v3 = {231213523, 1, 5, 51531};
-		serialize_and_deserialize(v3);
-		std::vector<std::vector<u32>> v4 = {{231213523, 1, 5, 51531}, {}, {23, 1, 5, 2}};
-		serialize_and_deserialize(v4);
 	}
 
     SECTION("std::string") {
@@ -134,6 +155,19 @@ SECTION("Serializer") {
 		serialize_and_deserialize(std::string(""));
     }
 
+    SECTION("std::vector") {
+		std::vector<u8> v0 = {};
+		serialize_and_deserialize(v0);
+		std::vector<u8> v1 = {23, 1, 5, 2};
+		serialize_and_deserialize(v1);
+		std::vector<u16> v2 = {23, 1, 5, 51531};
+		serialize_and_deserialize(v2);
+		std::vector<s64> v3 = {231213523, 1, 5, 51531};
+		serialize_and_deserialize(v3);
+		std::vector<std::vector<u32>> v4 = {{231213523, 1, 5, 51531}, {}, {23, 1, 5, 2}};
+		serialize_and_deserialize(v4);
+	}
+
     SECTION("simple struct") {
 		auto val1 = A{123, {B{{4}, 0}, B{{}, 5}}, B{{123, 2, 3}, 4}};
 		serialize_and_deserialize(val1);
@@ -147,6 +181,13 @@ SECTION("Serializer") {
 		auto buf_cval1_sv = std::string_view(reinterpret_cast<char *>(buf_cval1.data()), buf_cval1.size());
 		CHECK(buf_cval1_sv == "\x01\x02\x03");
 	}
+
+    SECTION("enum") {
+		serialize_and_deserialize(E1_A);
+		serialize_and_deserialize(E1_B);
+		serialize_and_deserialize(E2_C);
+		serialize_and_deserialize(E3::A);
+    }
 
 	//TODO: pair, tuple, unordered_map, enum, tagged union, optional, variant
 }
