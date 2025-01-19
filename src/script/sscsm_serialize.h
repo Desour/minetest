@@ -8,6 +8,28 @@
 #include <cstring>
 #include <limits>
 
+
+// TODO: move this to some util header
+
+template <typename T>
+struct MembPtrTypes
+{
+};
+
+template <typename T, typename U>
+struct MembPtrTypes<T U::*>
+{
+	using C = U; // class
+	using M = T; // member
+};
+
+template <typename T>
+using MembPtrM = typename MembPtrTypes<T>::M;
+
+template <typename T>
+using MembPtrC = typename MembPtrTypes<T>::C;
+
+
 namespace sscsm
 {
 
@@ -146,48 +168,42 @@ template <> struct Serializer<s64> : SerializerPrimitive<s64> {};
 template <> struct Serializer<f32> : SerializerPrimitive<f32> {};
 template <> struct Serializer<f64> : SerializerPrimitive<f64> {};
 
-// Containers
+// Helpers
 
-template <typename T>
-struct Serializer<std::vector<T>>
+/** Auto-generate a Serializer specialization for T.
+ *
+ * T needs to be default constructible.
+ *
+ * MPs are member pointers into T. The members are serialized in the given order.
+ */
+template <typename T, auto... MPs>
+struct SerializerSimpleStruct
 {
-	static constexpr size_t static_size = Serializer<size_t>::static_size;
+	static constexpr size_t static_size =
+			(... + Serializer<MembPtrM<decltype(MPs)>>::static_size);
 
-	static void serialize(const std::vector<T> &val, size_t static_offset, std::vector<u8> &buf)
+	static void serialize(const T &val, size_t static_offset, std::vector<u8> &buf)
 	{
-		constexpr size_t elem_size = Serializer<T>::static_size;
-
-		size_t n = val.size();
-		Serializer<size_t>::serialize(n, static_offset, buf);
-
-		size_t old_buf_size = buf.size();
-		buf.resize(old_buf_size + n * elem_size); // TODO: is this exact, like reserve? if yes, replace with insert()
-		for (size_t i = 0; i < n; ++i) {
-			Serializer<T>::serialize(val[i], old_buf_size + i * elem_size, buf);
-		}
+		(... , (
+			Serializer<MembPtrM<decltype(MPs)>>::serialize(val.*MPs, static_offset, buf),
+			static_offset += Serializer<MembPtrM<decltype(MPs)>>::static_size
+		));
 	}
 
-	static std::vector<T> deSerialize(const u8 *static_begin, const u8 **dyn_begin, const u8 *dyn_end)
+	static T deSerialize(const u8 *static_begin, const u8 **dyn_begin, const u8 *dyn_end)
 	{
-		std::vector<T> ret;
-		constexpr size_t elem_size = Serializer<T>::static_size;
+		T ret{};
 
-		size_t n = Serializer<size_t>::deSerialize(static_begin, dyn_begin, dyn_end);
-		check_container_size<elem_size>(n);
-
-		const u8 *my_dyn_begin = *dyn_begin;
-		if (n * elem_size > static_cast<size_t>(dyn_end - my_dyn_begin))
-			throw IPCSerializationError("Out of bounds.");
-		*dyn_begin = my_dyn_begin + n * elem_size;
-
-		ret.reserve(n);
-		for (size_t i = 0; i < n; ++i) {
-			ret.push_back(Serializer<T>::deSerialize(my_dyn_begin + i * elem_size, dyn_begin, dyn_end));
-		}
+		(... , (
+			ret.*MPs = Serializer<MembPtrM<decltype(MPs)>>::deSerialize(static_begin, dyn_begin, dyn_end),
+			static_begin += Serializer<MembPtrM<decltype(MPs)>>::static_size
+		));
 
 		return ret;
 	}
 };
+
+// Containers
 
 template <>
 struct Serializer<std::string>
@@ -228,55 +244,42 @@ struct Serializer<std::string>
 	}
 };
 
-// Helpers
-
 template <typename T>
-struct MembPtrTypes // TODO: move this to some util header
+struct Serializer<std::vector<T>>
 {
-	static_assert(false, "Not a member pointer.");
-};
+	static constexpr size_t static_size = Serializer<size_t>::static_size;
 
-template <typename T, typename U>
-struct MembPtrTypes<T U::*>
-{
-	using C = U; // class
-	using M = T; // member
-};
-
-template <typename T>
-using MembPtrM = typename MembPtrTypes<T>::M;
-
-template <typename T>
-using MembPtrC = typename MembPtrTypes<T>::C;
-
-/** Auto-generate a Serializer specialization for T.
- *
- * T needs to be default constructible.
- *
- * MPs are member pointers into T. The members are serialized in the given order.
- */
-template <typename T, auto... MPs>
-struct SerializerSimpleStruct
-{
-	static constexpr size_t static_size =
-			(... + Serializer<MembPtrM<decltype(MPs)>>::static_size);
-
-	static void serialize(const T &val, size_t static_offset, std::vector<u8> &buf)
+	static void serialize(const std::vector<T> &val, size_t static_offset, std::vector<u8> &buf)
 	{
-		(... , (
-			Serializer<MembPtrM<decltype(MPs)>>::serialize(val.*MPs, static_offset, buf),
-			static_offset += Serializer<MembPtrM<decltype(MPs)>>::static_size
-		));
+		constexpr size_t elem_size = Serializer<T>::static_size;
+
+		size_t n = val.size();
+		Serializer<size_t>::serialize(n, static_offset, buf);
+
+		size_t old_buf_size = buf.size();
+		buf.resize(old_buf_size + n * elem_size); // TODO: is this exact, like reserve? if yes, replace with insert()
+		for (size_t i = 0; i < n; ++i) {
+			Serializer<T>::serialize(val[i], old_buf_size + i * elem_size, buf);
+		}
 	}
 
-	static T deSerialize(const u8 *static_begin, const u8 **dyn_begin, const u8 *dyn_end)
+	static std::vector<T> deSerialize(const u8 *static_begin, const u8 **dyn_begin, const u8 *dyn_end)
 	{
-		T ret{};
+		std::vector<T> ret;
+		constexpr size_t elem_size = Serializer<T>::static_size;
 
-		(... , (
-			ret.*MPs = Serializer<MembPtrM<decltype(MPs)>>::deSerialize(static_begin, dyn_begin, dyn_end),
-			static_begin += Serializer<MembPtrM<decltype(MPs)>>::static_size
-		));
+		size_t n = Serializer<size_t>::deSerialize(static_begin, dyn_begin, dyn_end);
+		check_container_size<elem_size>(n);
+
+		const u8 *my_dyn_begin = *dyn_begin;
+		if (n * elem_size > static_cast<size_t>(dyn_end - my_dyn_begin))
+			throw IPCSerializationError("Out of bounds.");
+		*dyn_begin = my_dyn_begin + n * elem_size;
+
+		ret.reserve(n);
+		for (size_t i = 0; i < n; ++i) {
+			ret.push_back(Serializer<T>::deSerialize(my_dyn_begin + i * elem_size, dyn_begin, dyn_end));
+		}
 
 		return ret;
 	}
