@@ -242,6 +242,11 @@ int main(int argc, char *argv[])
 #endif
 	}
 
+	if (!cmd_args.getFlag("server") || !cmd_args.getFlag("recompress")) {
+		errorstream << "Stopping here. Branch may corrupt worlds." << std::endl;
+		return 1;
+	}
+
 	GameStartData game_params;
 #if !CHECK_CLIENT_BUILD()
 	porting::attachOrCreateConsole();
@@ -1287,7 +1292,8 @@ static bool recompress_map_database(const GameParams &game_params, const Setting
 	db->beginSave();
 	std::istringstream iss(std::ios_base::binary);
 	std::ostringstream oss(std::ios_base::binary);
-	for (auto it = blocks.begin(); it != blocks.end(); ++it) {
+	size_t i = 0;
+	for (auto it = blocks.begin(); it != blocks.end(); ++it, ++i) {
 		if (kill) return false;
 
 		std::string data;
@@ -1310,7 +1316,14 @@ static bool recompress_map_database(const GameParams &game_params, const Setting
 			mb.serialize(oss, serialize_as_ver, true, -1);
 		}
 
-		db->saveBlock(*it, oss.str());
+		size_t size_old = data.size();
+		data = oss.str();
+		size_t size_new = data.size();
+		f32 factor = (f32)size_new / (f32)size_old;
+		if (false && (i % 1024 == 0 || size_old > 1000))
+			errorstream << "Reduced from " << size_old << "to " << size_new << " factor: " << factor << std::endl;
+
+		db->saveBlock(*it, std::move(data));
 		count++;
 
 		if (porting::getTimeS() - last_update_time >= 1) {
