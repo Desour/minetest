@@ -1320,7 +1320,7 @@ static bool recompress_map_database(const GameParams &game_params, const Setting
 		data = oss.str();
 		size_t size_new = data.size();
 		f32 factor = (f32)size_new / (f32)size_old;
-		if (false && (i % 1024 == 0 || size_old > 1000))
+		if (true && (i % 1024 == 0 || (size_old > 1000 && i % 16 == 0)))
 			errorstream << "Reduced from " << size_old << "to " << size_new << " factor: " << factor << std::endl;
 
 		db->saveBlock(*it, std::move(data));

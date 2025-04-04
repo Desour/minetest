@@ -597,7 +597,11 @@ Buffer<u8> MapNode::serializeBulk(int version,
 	sanity_check(content_width == 2);
 	sanity_check(params_width == 2);
 
+#if 0
 	Buffer<u8> databuf(nodecount * (content_width + params_width));
+#else
+	Buffer<u8> databuf(nodecount * (content_width + params_width + 1));
+#endif
 
 	// Writing to the buffer linearly is faster
 	u8 *p = &databuf[0];
@@ -606,16 +610,84 @@ Buffer<u8> MapNode::serializeBulk(int version,
 	for (u32 i = 0; i < nodecount; i++, p += 2)
 		writeU16(p, nodes[i].param0);
 		// writeU16(p, 0);
-#else
+#elif 0
 	for (u32 i = 0; i < nodecount; i++, p += 1)
 		writeU8(p, nodes[i].param0 & 0xff);
 	for (u32 i = 0; i < nodecount; i++, p += 1)
 		writeU8(p, 0);
+#else
+	// something like a move-to-front transformation
+	for (u32 i = 0; i < nodecount; i++, p += 2) {
+		std::map<u16, u16> map;
+		// std::vector<std::pair<u16, u16>> map;
+
+		std::optional<u16> atx = std::nullopt;
+		std::optional<u16> aty = std::nullopt;
+		std::optional<u16> atz = std::nullopt;
+
+		auto here = nodes[i].param0;
+		if (i % 16 != 0)
+			atx = nodes[i - 1].param0;
+		if ((i / 16) % 16 != 0)
+			aty = nodes[i - 16].param0;
+		if ((i / 16 / 16) % 16 != 0)
+			atz = nodes[i - 16 * 16].param0;
+
+		if (atx.has_value() && *atx < 3)
+			atx = std::nullopt;
+		if ((aty.has_value() && *aty < 3) || atx == aty)
+			aty = std::nullopt;
+		if ((atz.has_value() && *atz < 3) || atx == atz || aty == atz)
+			atz = std::nullopt;
+
+		if (atx.has_value()) {
+			map.emplace(*atx, 0);
+			map.emplace(0, *atx);
+		}
+		if (aty.has_value()) {
+			map.emplace(*aty, 1);
+			map.emplace(1, *aty);
+		}
+		if (atz.has_value()) {
+			map.emplace(*atz, 2);
+			map.emplace(2, *atz);
+		}
+
+		auto it = map.find(here);
+		if (it == map.end())
+			writeU16(p, here);
+		else {
+			writeU16(p, it->second);
+		}
+	}
 #endif
 
+#if 1
 	for (u32 i = 0; i < nodecount; i++, p++)
 		writeU8(p, nodes[i].param1);
 		// writeU8(p, 0);
+#elif 0
+	for (u32 i = 0; i < nodecount; i++, p++)
+		writeU8(p, nodes[i].param1 & 0x0f);
+	for (u32 i = 0; i < nodecount; i++, p++)
+		writeU8(p, (nodes[i].param1 >> 4) & 0x0f);
+#else
+	auto do_one = [&](auto &&get_val) {
+		for (u32 i = 0; i < nodecount; i++, p++) {
+			u8 is = get_val(nodes[i]);
+			u8 pred = 0;
+			if (i % 16 != 0)
+				pred = std::max(pred, get_val(nodes[i - 1]));
+			if ((i / 16) % 16 != 0)
+				pred = std::max(pred, get_val(nodes[i - 16]));
+			if ((i / 16 / 16) % 16 != 0)
+				pred = std::max(pred, get_val(nodes[i - 16 * 16]));
+			writeS8(p, (s8)is - (s8)pred);
+		}
+	};
+	do_one([&](MapNode n) -> u8 { return n.param1 & 0x0f; });
+	do_one([&](MapNode n) -> u8 { return (n.param1 >> 4) & 0x0f; });
+#endif
 
 	for (u32 i = 0; i < nodecount; i++, p++)
 		writeU8(p, nodes[i].param2);
