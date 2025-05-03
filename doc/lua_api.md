@@ -1589,7 +1589,6 @@ There are a bunch of different looking node types.
     * Uses models for nodes.
     * Tiles should hold model materials textures.
     * Only static meshes are implemented.
-    * For supported model formats see Irrlicht engine documentation.
 * `plantlike_rooted`
     * Enables underwater `plantlike` without air bubbles around the nodes.
     * Consists of a base cube at the coordinates of the node plus a
@@ -9755,9 +9754,10 @@ Long form:
     -- * "user": Client setting `world_aligned_mode` will be used, similar to
     --   `glasslike_framed_optional`.
     --
-    -- Supported by solid (TODO: what's solid?) nodes and nodeboxes only.
+    -- Only supported by drawtypes made of cuboids.
     --
-    -- Setting a different value in `overlay_tiles` is not supported. (TODO: test)
+    -- Setting a different value in the corresponding `overlay_tiles` tile is not
+    -- supported.
 
     scale = int,
     -- Make the tile span several (exactly `scale`) nodes, instead of just one,
@@ -9765,17 +9765,17 @@ Long form:
     --
     -- `0` (default) to disable.
     --
-    -- Note that as the effect is applied on a per-mapblock (TODO: meshchunk?)
-    -- basis, `16` should be equally divisible by `scale` or you may get wrong
-    -- results. (TODO: easy to fix?.)
+    -- Note that as the effect is applied on a per-meshgen-chunk basis,
+    -- `16` should be equally divisible by `scale` or you may get wrong results.
     --
-    -- Not supported if used with `visual_scale ~= 1`. (TODO: test)
+    -- Setting a different value in the corresponding `overlay_tiles` tile is not
+    -- supported.
 
     color = ColorSpec,
     -- The texture's color will be multiplied with this color.
     --
     -- Overrides the owning node's color in all cases (`color` nodedef field and
-    -- node palette color (? TODO)).
+    -- node palette color).
 
     animation = Tile animation definition,
     -- If given, tile will be animated over time.
@@ -10100,6 +10100,7 @@ Used by `core.register_node`.
 
     color = ColorSpec,
     -- The node's original color will be multiplied with this color.
+    -- Acts as a default for the `color` field of this node's TileDefs.
     -- If the node has a palette, then this setting only has an effect in
     -- the inventory and on the wield item.
 
