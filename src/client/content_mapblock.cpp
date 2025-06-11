@@ -861,6 +861,30 @@ void MapblockMeshGenerator::drawGlasslikeNode()
 	TileSpec tile;
 	useTile(&tile, 0, 0, 0);
 
+	static const v3s16 tile_dirs[6] = {
+		v3s16(0, 1, 0),
+		v3s16(0, -1, 0),
+		v3s16(1, 0, 0),
+		v3s16(-1, 0, 0),
+		v3s16(0, 0, 1),
+		v3s16(0, 0, -1)
+	};
+
+	u8 mask = 0;
+	for (int face = 0; face < 6; face++) {
+		// Check this neighbor
+		v3s16 dir = g_6dirs[face];
+		v3s16 neighbor_pos = blockpos_nodes + cur_node.p + dir;
+		MapNode neighbor = data->m_vmanip.getNodeNoExNoEmerge(neighbor_pos);
+		// Don't make face if neighbor is of same type
+		if (neighbor.getContent() == cur_node.n.getContent())
+			mask |= 1 << face;
+	}
+
+	static const aabb3f box(-BS / 2, -BS / 2, -BS / 2, BS / 2, BS / 2, BS / 2);
+	drawAutoLightedCuboid(box, tile, nullptr, mask);
+
+	/*
 	for (int face = 0; face < 6; face++) {
 		// Check this neighbor
 		v3s16 dir = g_6dirs[face];
@@ -894,7 +918,7 @@ void MapblockMeshGenerator::drawGlasslikeNode()
 			}
 		}
 		drawQuad(tile, vertices, dir);
-	}
+	}*/
 }
 
 void MapblockMeshGenerator::drawGlasslikeFramedNode()
