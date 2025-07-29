@@ -229,6 +229,7 @@ bool run_tests()
 	auto config = session.configData();
 	config.skipBenchmarks = true;
 	config.allowZeroTests = true;
+	config.rngSeed = 4228087218;
 	session.useConfigData(config);
 	auto exit_code = session.run();
 	// We count all the Catch tests as one test for Minetest's own logging
