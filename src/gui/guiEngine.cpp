@@ -114,6 +114,8 @@ GUIEngine::GUIEngine(JoystickController *joystick,
 	m_data(data),
 	m_kill(kill)
 {
+	ZoneScoped;
+
 	// Go back to our mainmenu fonts
 	// Delayed until mainmenu initialization because of #15883
 	g_fontengine->clearMediaFonts();
@@ -202,6 +204,8 @@ GUIEngine::GUIEngine(JoystickController *joystick,
 /******************************************************************************/
 std::string findLocaleFileWithExtension(const std::string &path)
 {
+	ZoneScoped;
+
 	if (fs::PathExists(path + ".mo"))
 		return path + ".mo";
 	if (fs::PathExists(path + ".po"))
@@ -215,6 +219,8 @@ std::string findLocaleFileWithExtension(const std::string &path)
 /******************************************************************************/
 std::string findLocaleFileInMods(const std::string &path, const std::string &filename_no_ext)
 {
+	ZoneScoped;
+
 	std::vector<ModSpec> mods = flattenMods(getModsInPath(path, "root", true));
 
 	for (const auto &mod : mods) {
@@ -231,6 +237,8 @@ std::string findLocaleFileInMods(const std::string &path, const std::string &fil
 Translations *GUIEngine::getContentTranslations(const std::string &path,
 		const std::string &domain, const std::string &lang_code)
 {
+	ZoneScoped;
+
 	if (domain.empty() || lang_code.empty())
 		return nullptr;
 
@@ -272,6 +280,8 @@ Translations *GUIEngine::getContentTranslations(const std::string &path,
 /******************************************************************************/
 bool GUIEngine::loadMainMenuScript()
 {
+	ZoneScoped;
+
 	// Set main menu path (for core.get_mainmenu_path())
 	m_scriptdir = g_settings->get("main_menu_path");
 	if (m_scriptdir.empty()) {
@@ -296,6 +306,8 @@ bool GUIEngine::loadMainMenuScript()
 /******************************************************************************/
 void GUIEngine::run()
 {
+	ZoneScoped;
+
 	IrrlichtDevice *device = m_rendering_engine->get_raw_device();
 	video::IVideoDriver *driver = device->getVideoDriver();
 

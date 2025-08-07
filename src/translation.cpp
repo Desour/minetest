@@ -6,6 +6,7 @@
 #include "log.h"
 #include "util/hex.h"
 #include "util/string.h"
+#include "util/tracy_wrapper.h"
 #include "gettext.h"
 #include <unordered_map>
 
@@ -628,6 +629,8 @@ void Translations::loadMoTranslation(const std::string &basefilename, const std:
 
 void Translations::loadTranslation(const std::string &filename, const std::string &data)
 {
+	ZoneScoped;
+
 	const char *trExtension[] = { ".tr", NULL };
 	const char *poExtension[] = { ".po", NULL };
 	const char *moExtension[] = { ".mo", NULL };

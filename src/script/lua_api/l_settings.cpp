@@ -11,6 +11,7 @@
 #include "noise.h"
 #include "log.h"
 #include "common/c_converter.h"
+#include "util/tracy_wrapper.h"
 
 
 /*
@@ -372,6 +373,7 @@ void LuaSettings::Register(lua_State* L)
 // Creates a LuaSettings and leaves it on top of the stack
 int LuaSettings::create_object(lua_State* L)
 {
+	ZoneScoped;
 	NO_MAP_LOCK_REQUIRED;
 	bool write_allowed = true;
 	const char* filename = luaL_checkstring(L, 1);

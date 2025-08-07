@@ -14,6 +14,7 @@
 #include "debug.h"
 #include "log.h"
 #include "util/serialize.h"
+#include "util/tracy_wrapper.h"
 #include "filesys.h"
 #include "noise.h"
 #include <cctype>
@@ -191,6 +192,8 @@ std::string Settings::getMultiline(std::istream &is, size_t *num_lines)
 
 bool Settings::readConfigFile(const char *filename)
 {
+	ZoneScoped;
+
 	std::ifstream is(filename);
 	if (!is.good())
 		return false;
@@ -201,6 +204,8 @@ bool Settings::readConfigFile(const char *filename)
 
 bool Settings::parseConfigLines(std::istream &is)
 {
+	ZoneScoped;
+
 	MutexAutoLock lock(m_mutex);
 
 	std::string line, name, value;

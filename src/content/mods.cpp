@@ -16,6 +16,7 @@
 #include "convert_json.h"
 #include "script/common/c_internal.h"
 #include "exceptions.h"
+#include "util/tracy_wrapper.h"
 
 void ModSpec::checkAndLog() const
 {
@@ -58,6 +59,8 @@ bool parseDependsString(std::string &dep, std::unordered_set<char> &symbols)
 bool parseModContents(ModSpec &spec)
 {
 	// NOTE: this function works in mutual recursion with getModsInPath
+
+	ZoneScoped;
 
 	spec.depends.clear();
 	spec.optdepends.clear();
@@ -151,6 +154,8 @@ std::map<std::string, ModSpec> getModsInPath(
 {
 	// NOTE: this function works in mutual recursion with parseModContents
 
+	ZoneScoped;
+
 	std::map<std::string, ModSpec> result;
 	std::vector<fs::DirListNode> dirlist = fs::GetDirListing(path);
 	std::string mod_path;
@@ -184,6 +189,8 @@ std::map<std::string, ModSpec> getModsInPath(
 
 std::vector<ModSpec> flattenMods(const std::map<std::string, ModSpec> &mods)
 {
+	ZoneScoped;
+
 	std::vector<ModSpec> result;
 	for (const auto &it : mods) {
 		const ModSpec &mod = it.second;

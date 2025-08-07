@@ -31,6 +31,7 @@
 #include "gettext.h"
 #include "log.h"
 #include "util/string.h"
+#include "util/tracy_wrapper.h"
 
 #include <cassert>
 #include <iostream>
@@ -350,6 +351,8 @@ int ModApiMainMenu::l_get_games(lua_State *L)
 /******************************************************************************/
 int ModApiMainMenu::l_get_content_info(lua_State *L)
 {
+	ZoneScoped;
+
 	std::string path = luaL_checkstring(L, 1);
 
 	CHECK_SECURE_PATH(L, path.c_str(), false)
@@ -521,6 +524,8 @@ int ModApiMainMenu::l_check_mod_configuration(lua_State *L)
 /******************************************************************************/
 int ModApiMainMenu::l_get_content_translation(lua_State *L)
 {
+	ZoneScoped;
+
 	GUIEngine* engine = getGuiEngine(L);
 	sanity_check(engine != NULL);
 

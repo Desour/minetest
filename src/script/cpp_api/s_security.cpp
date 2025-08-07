@@ -11,6 +11,7 @@
 #include "client/client.h"
 #endif
 #include "settings.h"
+#include "util/tracy_wrapper.h"
 
 #include <cerrno>
 #include <string>
@@ -718,6 +719,8 @@ bool ScriptApiSecurity::checkPathWithGamedef(lua_State *L,
 
 int ScriptApiSecurity::sl_g_dofile(lua_State *L)
 {
+	ZoneScoped;
+
 	int nret = sl_g_loadfile(L);
 	if (nret != 1) {
 		lua_error(L);
@@ -845,6 +848,8 @@ int ScriptApiSecurity::sl_g_require(lua_State *L)
 
 int ScriptApiSecurity::sl_io_open(lua_State *L)
 {
+	ZoneScoped;
+
 	bool with_mode = lua_gettop(L) > 1;
 
 	luaL_checktype(L, 1, LUA_TSTRING);

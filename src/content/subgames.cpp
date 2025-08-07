@@ -13,6 +13,7 @@
 #include "map_settings_manager.h"
 #include "util/string.h"
 #include "exceptions.h"
+#include "util/tracy_wrapper.h"
 
 // The maximum number of identical world names allowed
 #define MAX_WORLD_NAMES 100
@@ -283,6 +284,8 @@ std::string getWorldPathEnv()
 
 std::vector<WorldSpec> getAvailableWorlds()
 {
+	ZoneScoped;
+
 	std::vector<WorldSpec> worlds;
 	std::set<std::string> worldspaths;
 

@@ -96,6 +96,9 @@ pkgmgr = {}
 -- @param listing      Input. Flat array to insert located mods and modpacks
 -- @param modpack      Currently processing modpack or nil/"" if none (recursion)
 function pkgmgr.get_mods(path, virtual_path, listing, modpack)
+	tracy.ZoneBegin()
+	tracy.ZoneText("virtual_path: " .. virtual_path)
+
 	local mods = core.get_dir_list(path, true)
 	local added = {}
 	for _, name in ipairs(mods) do
@@ -165,10 +168,14 @@ function pkgmgr.get_mods(path, virtual_path, listing, modpack)
 			return a.virtual_path:lower() < b.virtual_path:lower()
 		end)
 	end
+
+	tracy.ZoneEnd()
 end
 
 --------------------------------------------------------------------------------
 function pkgmgr.reload_texture_packs()
+	tracy.ZoneBegin()
+
 	local txtpath = core.get_texturepath()
 	local txtpath_system = core.get_texturepath_share()
 	local retval = {}
@@ -187,6 +194,8 @@ function pkgmgr.reload_texture_packs()
 	end)
 
 	pkgmgr.texture_packs = retval
+
+	tracy.ZoneEnd()
 end
 
 --------------------------------------------------------------------------------
@@ -612,6 +621,8 @@ end
 
 --------------------------------------------------------------------------------
 function pkgmgr.preparemodlist(data)
+	tracy.ZoneBegin()
+
 	local retval = {}
 
 	local global_mods = {}
@@ -652,6 +663,7 @@ function pkgmgr.preparemodlist(data)
 	end
 
 	if data.worldpath == nil then
+		tracy.ZoneEnd()
 		return retval
 	end
 
@@ -695,6 +707,7 @@ function pkgmgr.preparemodlist(data)
 		end
 	end
 
+	tracy.ZoneEnd()
 	return retval
 end
 
@@ -752,20 +765,28 @@ end
 
 --------------------------------------------------------------------------------
 function pkgmgr.get_game_mods(gamespec, retval)
+	tracy.ZoneBegin()
+
 	if gamespec ~= nil and
 		gamespec.gamemods_path ~= nil and
 		gamespec.gamemods_path ~= "" then
 		pkgmgr.get_mods(gamespec.gamemods_path, ("games/%s/mods"):format(gamespec.id), retval)
 	end
+
+	tracy.ZoneEnd()
 end
 
 --------------------------------------------------------------------------------
 function pkgmgr.reload_games()
+	tracy.ZoneBegin()
+
 	pkgmgr.games = core.get_games()
 	table.sort(pkgmgr.games, function(a, b)
 		return a.title:lower() < b.title:lower()
 	end)
 	pkgmgr.update_translations(pkgmgr.games)
+
+	tracy.ZoneEnd()
 end
 
 --------------------------------------------------------------------------------
@@ -796,7 +817,11 @@ end
 
 --------------------------------------------------------------------------------
 function pkgmgr.update_translations(list)
+	tracy.ZoneBegin()
 	for _, item in ipairs(list) do
+		tracy.ZoneBeginN("update_translations[i]")
+		tracy.ZoneText("virtual_path: "..(item.virtual_path or "?").."\nname: "..(item.name or "?"))
+
 		local info = core.get_content_info(item.path)
 		assert(info.path)
 		assert(info.textdomain)
@@ -813,7 +838,10 @@ function pkgmgr.update_translations(list)
 			item.description = core.get_content_translation(info.path, info.textdomain,
 				core.translate(info.textdomain, info.description))
 		end
+
+		tracy.ZoneEnd()
 	end
+	tracy.ZoneEnd()
 end
 
 --------------------------------------------------------------------------------

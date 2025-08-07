@@ -80,6 +80,8 @@ ClientLauncher::~ClientLauncher()
 
 bool ClientLauncher::run(GameStartData &start_data, const Settings &cmd_args)
 {
+	ZoneScoped;
+
 	/* This function is called when a client must be started.
 	 * Covered cases:
 	 *   - Singleplayer (address but map provided)
@@ -280,6 +282,8 @@ void ClientLauncher::init_args(GameStartData &start_data, const Settings &cmd_ar
 
 bool ClientLauncher::init_engine()
 {
+	ZoneScoped;
+
 	receiver = new MyEventReceiver();
 	try {
 		m_rendering_engine = new RenderingEngine(receiver);
@@ -393,6 +397,8 @@ bool ClientLauncher::launch_game(std::string &error_message,
 		bool reconnect_requested, GameStartData &start_data,
 		const Settings &cmd_args)
 {
+	ZoneScoped;
+
 	// Prepare and check the start data to launch a game
 	std::string error_message_lua = error_message;
 	error_message.clear();

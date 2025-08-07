@@ -27,6 +27,7 @@
 #include "serialization.h" // SER_FMT_VER_HIGHEST_*
 #include "network/socket.h"
 #include "mapblock.h"
+#include "util/tracy_wrapper.h"
 #if USE_CURSES
 	#include "terminal_chat_console.h"
 #endif
@@ -123,6 +124,8 @@ static OptionList allowed_options;
 
 int main(int argc, char *argv[])
 {
+	ZoneScoped;
+
 	int retval;
 	debug_set_exception_handler();
 
@@ -833,6 +836,8 @@ static void init_log_streams(const Settings &cmd_args)
 
 static bool game_configure(GameParams *game_params, const Settings &cmd_args)
 {
+	ZoneScoped;
+
 	game_configure_port(game_params, cmd_args);
 
 	if (!game_configure_world(game_params, cmd_args)) {
