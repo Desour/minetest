@@ -617,6 +617,9 @@ target_link_libraries(EngineCommon
 if(USE_OPENSSL)
 	target_link_libraries(EngineCommon OpenSSL::Crypto)
 endif()
+if(BUILD_WITH_TRACY)
+	target_link_libraries(EngineCommon Tracy::TracyClient)
+endif()
 get_target_property(
 	IRRLICHT_INCLUDES IrrlichtMt::IrrlichtMt INTERFACE_INCLUDE_DIRECTORIES)
 target_include_directories(EngineCommon PRIVATE ${IRRLICHT_INCLUDES})
