@@ -254,7 +254,7 @@ public:
 		This is accessed by the map, which is inside the environment,
 		so it shouldn't be a problem.
 	*/
-	void onMapEditEvent(const MapEditEvent &event);
+	void onMapEditEvent(const MapEditEvent &event) override;
 
 	// Connection must be locked when called
 	std::string getStatusString();
@@ -321,26 +321,26 @@ public:
 	// IGameDef interface
 	bool isClient() override { return false; }
 	// Under envlock
-	virtual IItemDefManager* getItemDefManager();
-	virtual const NodeDefManager* getNodeDefManager();
-	virtual ICraftDefManager* getCraftDefManager();
-	virtual u16 allocateUnknownNodeId(const std::string &name);
-	IRollbackManager *getRollbackManager() { return m_rollback; }
-	virtual EmergeManager *getEmergeManager() { return m_emerge.get(); }
-	virtual ModStorageDatabase *getModStorageDatabase() { return m_mod_storage_database; }
+	IItemDefManager* getItemDefManager() override;
+	const NodeDefManager* getNodeDefManager() override;
+	ICraftDefManager* getCraftDefManager() override;
+	u16 allocateUnknownNodeId(const std::string &name) override;
+	IRollbackManager *getRollbackManager() override { return m_rollback; }
+	EmergeManager *getEmergeManager() { return m_emerge.get(); }
+	ModStorageDatabase *getModStorageDatabase() override { return m_mod_storage_database; }
 
 	IWritableItemDefManager* getWritableItemDefManager();
 	NodeDefManager* getWritableNodeDefManager();
 	IWritableCraftDefManager* getWritableCraftDefManager();
 
 	// Not under envlock
-	virtual const std::vector<ModSpec> &getMods() const;
-	virtual const ModSpec* getModSpec(const std::string &modname) const;
-	virtual const SubgameSpec* getGameSpec() const { return &m_gamespec; }
+	const std::vector<ModSpec> &getMods() const override;
+	const ModSpec* getModSpec(const std::string &modname) const override;
+	const SubgameSpec* getGameSpec() const override { return &m_gamespec; }
 	static std::string getBuiltinLuaPath();
-	virtual std::string getWorldPath() const { return m_path_world; }
-	virtual std::string getModDataPath() const { return m_path_mod_data; }
-	virtual ModIPCStore *getModIPCStore() { return &m_ipcstore; }
+	std::string getWorldPath() const override { return m_path_world; }
+	std::string getModDataPath() const override { return m_path_mod_data; }
+	ModIPCStore *getModIPCStore() override { return &m_ipcstore; }
 
 	inline bool isSingleplayer() const
 			{ return m_simple_singleplayer_mode; }
@@ -394,8 +394,8 @@ public:
 	void setLighting(RemotePlayer *player, const Lighting &lighting);
 
 	/* con::PeerHandler implementation. */
-	void peerAdded(con::IPeer *peer);
-	void deletingPeer(con::IPeer *peer, bool timeout);
+	void peerAdded(con::IPeer *peer) override;
+	void deletingPeer(con::IPeer *peer, bool timeout) override;
 
 	void DenySudoAccess(session_t peer_id);
 	void DenyAccess(session_t peer_id, AccessDeniedCode reason,
@@ -426,10 +426,10 @@ public:
 
 	void sendDetachedInventories(session_t peer_id, bool incremental);
 
-	bool joinModChannel(const std::string &channel);
-	bool leaveModChannel(const std::string &channel);
-	bool sendModChannelMessage(const std::string &channel, const std::string &message);
-	ModChannel *getModChannel(const std::string &channel);
+	bool joinModChannel(const std::string &channel) override;
+	bool leaveModChannel(const std::string &channel) override;
+	bool sendModChannelMessage(const std::string &channel, const std::string &message) override;
+	ModChannel *getModChannel(const std::string &channel) override;
 
 	// Send block to specific player only
 	bool SendBlock(session_t peer_id, const v3s16 &blockpos);
