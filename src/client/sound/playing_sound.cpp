@@ -54,7 +54,8 @@ PlayingSound::PlayingSound(ALuint source_id, std::shared_ptr<ISoundDataOpen> dat
 		auto [buf, buf_end, offset_in_buf] = m_data->getOrLoadBufferAt(m_next_sample_pos);
 		m_next_sample_pos = buf_end;
 
-		alSourcei(m_source_id, AL_BUFFER, buf);
+		// alSourcei(m_source_id, AL_BUFFER, buf);
+		alSourceQueueBuffers(m_source_id, 1, &buf);
 		alSourcei(m_source_id, AL_SAMPLE_OFFSET, offset_in_buf);
 
 		alSourcei(m_source_id, AL_LOOPING, m_looping ? AL_TRUE : AL_FALSE);
