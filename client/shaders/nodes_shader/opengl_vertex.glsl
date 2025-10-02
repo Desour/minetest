@@ -163,9 +163,8 @@ float snoise(vec3 p){
     vec4 k1 = perm(b.xyxy);
     vec4 k2 = perm(k1.xyxy + b.zzww);
 
-    vec4 c = k2 + a.zzzz;
-    vec4 k3 = perm(c);
-    vec4 k4 = perm(c + 1.0);
+    vec4 k3 = perm(k2 + a.zzzz);
+    vec4 k4 = perm(k2 + (a.zzzz + 1.0));
 
     vec4 o1 = fract(k3 * (1.0 / 41.0));
     vec4 o2 = fract(k4 * (1.0 / 41.0));

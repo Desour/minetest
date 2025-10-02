@@ -418,10 +418,8 @@ float getShadow(sampler2D shadowsampler, vec2 smTexCoord, float realDistance)
 // Simple, fast noise function.
 // See: https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
 //
-vec4 perm(vec4 x)
-{
-	return mod(((x * 34.0) + 1.0) * x, 289.0);
-}
+vec4 mod289(vec4 x){return x - floor(x * (1.0 / 289.0)) * 289.0;}
+vec4 perm(vec4 x){return mod289(((x * 34.0) + 1.0) * x);}
 
 #if 0
 float snoise(vec3 p)
@@ -465,14 +463,14 @@ float snoise(vec3 p){
     vec4 k1 = perm(b.xyxy);
     vec4 k2 = perm(k1.xyxy + b.zzww);
 
-    vec4 c = k2 + a.zzzz;
-    vec4 k3 = perm(c);
-    vec4 k4 = perm(c + 1.0);
+    vec4 k3 = perm(k2 + a.zzzz);
+    vec4 k4 = perm(k2 + (a.zzzz + 1.0));
+    //~ vec4 c = k2 + a.zzzz;
+    //~ vec4 k3 = perm(c);
+    //~ vec4 k4 = perm(c + 1.0);
 
     vec4 o1 = fract(k3 * (1.0 / 41.0));
     vec4 o2 = fract(k4 * (1.0 / 41.0));
-    //~ vec4 o1 = vec4(0.25);
-    //~ vec4 o2 = vec4(0.4);
 
     vec4 o3 = o2 * d.z + o1 * (1.0 - d.z);
     vec2 o4 = o3.yw * d.x + o3.xz * (1.0 - d.x);
@@ -491,8 +489,8 @@ vec3 snoise3d(vec3 p){
     vec4 k2 = perm(k1.xyxy + b.zzww);
 
     vec4 c = k2 + a.zzzz;
-    vec4 k3 = perm(c);
-    vec4 k4 = perm(c + 1.0);
+    vec4 k3 = perm(k2 + a.zzzz);
+    vec4 k4 = perm(k2 + (a.zzzz + 1.0));
 
     vec4 o1 = fract(k3 * (1.0 / 41.0));
     vec4 o2 = fract(k4 * (1.0 / 41.0));
@@ -516,12 +514,13 @@ vec3 snoise3d(vec3 p){
     //~ return vec3(o4.y, o4.x, 0.0);
 }
 
-#if MATERIAL_WAVING_LIQUID && ENABLE_WAVING_WATER
+#if MATERIAL_WAVING_LIQUID && ENABLE_WAVING_WATER && 1
 void main(void)
 {
-	//~ float o = snoise(waveInput);
-	//~ vec4 col = vec4(o, o, o, 1.0);
-	vec4 col = vec4(snoise3d(waveInput), 1.0);
+	float o = snoise(waveInput);
+	vec4 col = vec4(o, o, o, 1.0);
+	//~ vec4 col = vec4(snoise3d(waveInput), 1.0);
+
 	gl_FragData[0] = col;
 }
 #else
