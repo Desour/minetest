@@ -121,25 +121,34 @@ vec4 perm(vec4 x)
 
 float snoise(vec3 p)
 {
+	p.x = 0;
+
 	vec3 a = floor(p);
-	vec3 d = p - a;
-	d = d * d * (3.0 - 2.0 * d);
+	vec3 d = fract(p);
+	d.y = 0;
+	a.z = 0;
+	//~ d = d * d * (3.0 - 2.0 * d);
 
-	vec4 b = a.xxyy + vec4(0.0, 1.0, 0.0, 1.0);
-	vec4 k1 = perm(b.xyxy);
-	vec4 k2 = perm(k1.xyxy + b.zzww);
+	// a = (0, y, 0)
+	// d = (0, 0, z)
 
-	vec4 c = k2 + a.zzzz;
-	vec4 k3 = perm(c);
-	vec4 k4 = perm(c + 1.0);
+	//~ vec4 b = a.xxyy + vec4(0.0, 1.0, 0.0, 1.0);
+	//~ vec4 b = vec4(0);
+	//~ vec4 k2 = perm(b.zzww);
+	//~ vec4 k2 = vec4(0);
 
-	vec4 o1 = fract(k3 * (1.0 / 41.0));
+	//~ vec4 c = vec4(0);
+	vec4 k3 = vec4(0);
+	vec4 k4 = vec4(30);
+
+	vec4 o1 = vec4(0);
 	vec4 o2 = fract(k4 * (1.0 / 41.0));
 
-	vec4 o3 = o2 * d.z + o1 * (1.0 - d.z);
-	vec2 o4 = o3.yw * d.x + o3.xz * (1.0 - d.x);
+	//~ vec4 o3 = o2 * d.z + o1 * (1.0 - d.z);
+	vec4 o3 = mix(o2, o1, d.z);
 
-	return o4.y * d.y + o4.x * (1.0 - d.y);
+	//~ return o3.x;
+	return d.z;
 }
 
 #endif
