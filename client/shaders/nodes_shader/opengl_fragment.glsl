@@ -31,6 +31,8 @@ uniform float animationTimer;
 #endif
 
 
+varying vec3 waveInput;
+
 varying vec3 vNormal;
 varying vec3 vPosition;
 // World position in the visible world (i.e. relative to the cameraOffset.)
@@ -411,6 +413,118 @@ float getShadow(sampler2D shadowsampler, vec2 smTexCoord, float realDistance)
 #endif
 #endif
 
+
+//
+// Simple, fast noise function.
+// See: https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
+//
+vec4 perm(vec4 x)
+{
+	return mod(((x * 34.0) + 1.0) * x, 289.0);
+}
+
+#if 0
+float snoise(vec3 p)
+{
+	p.x = 0;
+
+	vec3 a = floor(p);
+	vec3 d = fract(p);
+	d.y = 0;
+	a.z = 0;
+	//~ d = d * d * (3.0 - 2.0 * d);
+
+	// a = (0, y, 0)
+	// d = (0, 0, z)
+
+	//~ vec4 b = a.xxyy + vec4(0.0, 1.0, 0.0, 1.0);
+	//~ vec4 b = vec4(0);
+	//~ vec4 k2 = perm(b.zzww);
+	//~ vec4 k2 = vec4(0);
+
+	//~ vec4 c = vec4(0);
+	vec4 k3 = vec4(0);
+	vec4 k4 = vec4(30);
+
+	vec4 o1 = vec4(0);
+	vec4 o2 = fract(k4 * (1.0 / 41.0));
+
+	//~ vec4 o3 = o2 * d.z + o1 * (1.0 - d.z);
+	vec4 o3 = mix(o2, o1, d.z);
+
+	//~ return o3.x;
+	return d.z;
+}
+#else
+float snoise(vec3 p){
+    vec3 a = floor(p);
+    vec3 d = p - a;
+    d = d * d * (3.0 - 2.0 * d);
+
+    vec4 b = a.xxyy + vec4(0.0, 1.0, 0.0, 1.0);
+    vec4 k1 = perm(b.xyxy);
+    vec4 k2 = perm(k1.xyxy + b.zzww);
+
+    vec4 c = k2 + a.zzzz;
+    vec4 k3 = perm(c);
+    vec4 k4 = perm(c + 1.0);
+
+    vec4 o1 = fract(k3 * (1.0 / 41.0));
+    vec4 o2 = fract(k4 * (1.0 / 41.0));
+    //~ vec4 o1 = vec4(0.25);
+    //~ vec4 o2 = vec4(0.4);
+
+    vec4 o3 = o2 * d.z + o1 * (1.0 - d.z);
+    vec2 o4 = o3.yw * d.x + o3.xz * (1.0 - d.x);
+
+    return o4.y * d.y + o4.x * (1.0 - d.y);
+}
+#endif
+
+vec3 snoise3d(vec3 p){
+    vec3 a = floor(p);
+    vec3 d = p - a;
+    d = d * d * (3.0 - 2.0 * d);
+
+    vec4 b = a.xxyy + vec4(0.0, 1.0, 0.0, 1.0);
+    vec4 k1 = perm(b.xyxy);
+    vec4 k2 = perm(k1.xyxy + b.zzww);
+
+    vec4 c = k2 + a.zzzz;
+    vec4 k3 = perm(c);
+    vec4 k4 = perm(c + 1.0);
+
+    vec4 o1 = fract(k3 * (1.0 / 41.0));
+    vec4 o2 = fract(k4 * (1.0 / 41.0));
+    //~ vec4 o1 = vec4(0.25);
+    //~ vec4 o2 = vec4(0.4);
+
+    //~ vec4 o3 = o2 * d.z + o1 * (1.0 - d.z);
+    //~ vec2 o4 = o3.yw * d.x + o3.xz * (1.0 - d.x);
+	//~ float o5 = o4.y * d.y + o4.x * (1.0 - d.y);
+
+    //~ return o5;
+
+    vec2 o4_1 = o1.yw * d.x + o1.xz * (1.0 - d.x);
+	float o5_1 = o4_1.y * d.y + o4_1.x * (1.0 - d.y);
+
+    vec2 o4_2 = o2.yw * d.x + o2.xz * (1.0 - d.x);
+	float o5_2 = o4_2.y * d.y + o4_2.x * (1.0 - d.y);
+
+    return vec3(o5_1, o5_2, 0.0);
+
+    //~ return vec3(o4.y, o4.x, 0.0);
+}
+
+#if MATERIAL_WAVING_LIQUID && ENABLE_WAVING_WATER
+void main(void)
+{
+	//~ float o = snoise(waveInput);
+	//~ vec4 col = vec4(o, o, o, 1.0);
+	vec4 col = vec4(snoise3d(waveInput), 1.0);
+	gl_FragData[0] = col;
+}
+#else
 void main(void)
 {
 	vec3 color;
@@ -572,3 +686,4 @@ void main(void)
 
 	gl_FragData[0] = col;
 }
+#endif
