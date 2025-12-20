@@ -12,6 +12,7 @@
 #include "util/basic_macros.h"
 #include "irr_v3d.h"
 
+// IWYU pragma: begin_exports
 #if defined(_WIN32)
 	#include <al.h>
 	#include <alc.h>
@@ -26,6 +27,7 @@
 	#include <AL/alc.h>
 	#include <AL/alext.h>
 #endif
+// IWYU pragma: end_exports
 
 #include <utility>
 
