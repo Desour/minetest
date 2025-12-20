@@ -14,10 +14,11 @@ namespace sound {
 struct ALExtensions
 {
 	/// Pass nullptr to not retrieve any device-specifics extensions.
-	/// (Not used at all so far.)
-	explicit ALExtensions(const ALCdevice *deviceHandle [[maybe_unused]]);
+	/// To retrieve AL extensions, there has to be a current context.
+	explicit ALExtensions(ALCdevice *alc_device [[maybe_unused]]);
 
-	// no macro for ALC_ENUMERATION_EXT (has no declarations)
+	// no macro for ALC_ENUMERATION_EXT (has no declarations I guess)
+	// TODO: remove. this is included in openal 1.1
 	bool have_ext_ALC_ENUMERATION_EXT = false;
 #ifdef ALC_ENUMERATE_ALL_EXT
 	bool have_ext_ALC_ENUMERATE_ALL_EXT = false;
