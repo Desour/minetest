@@ -12,6 +12,7 @@
 #include <fstream>
 #include <atomic>
 #include <memory>
+#include <filesystem>
 #include "log.h"
 #include "config.h"
 #include "porting.h"
@@ -51,6 +52,11 @@
 
 namespace fs
 {
+
+bool PathExists(const std::string &path)
+{
+	return std::filesystem::exists(std::filesystem::path(path, std::filesystem::path::format::native_format));
+}
 
 #ifdef _WIN32
 
@@ -108,11 +114,6 @@ bool CreateDir(const std::string &path)
 	if (r || GetLastError() == ERROR_ALREADY_EXISTS)
 		return true;
 	return false;
-}
-
-bool PathExists(const std::string &path)
-{
-	return (GetFileAttributes(path.c_str()) != INVALID_FILE_ATTRIBUTES);
 }
 
 bool IsPathAbsolute(const std::string &path)
@@ -323,11 +324,6 @@ bool CreateDir(const std::string &path)
 		return true;
 	return false;
 
-}
-
-bool PathExists(const std::string &path)
-{
-	return access(path.c_str(), F_OK) == 0;
 }
 
 bool IsPathAbsolute(const std::string &path)
