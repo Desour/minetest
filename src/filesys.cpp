@@ -653,67 +653,168 @@ bool MoveDir(const std::string &source, const std::string &target)
 	return retval;
 }
 
-bool PathStartsWith(const std::string &path, const std::string &prefix)
+bool PathStartsWith(std::string_view path, std::string_view prefix,
+		unsigned *num_matching_components, size_t *len_matching_components_path,
+		size_t *len_matching_components_prefix)
 {
+	if (num_matching_components)
+		*num_matching_components = 0;
+	if (len_matching_components_path)
+		*len_matching_components_path = 0;
+	if (len_matching_components_prefix)
+		*len_matching_components_prefix = 0;
 	if (prefix.empty())
-		return path.empty();
+		return path.empty(); // FIXME: why this way around? "" should be prefix of anything
 	size_t pathsize = path.size();
 	size_t pathpos = 0;
 	size_t prefixsize = prefix.size();
 	size_t prefixpos = 0;
-	for(;;){
+	for (;;) {
 		// Test if current characters at path and prefix are delimiter OR EOS
+		// e.g. "foo" is treated like "foo/"
 		bool delim1 = pathpos == pathsize
 			|| IsDirDelimiter(path[pathpos]);
 		bool delim2 = prefixpos == prefixsize
 			|| IsDirDelimiter(prefix[prefixpos]);
 
-		// Return false if it's delimiter/EOS in one path but not in the other
-		if(delim1 != delim2)
+		// If it's delimiter/EOS in one path but not in the other, current path
+		// components have different size, therefore must be different
+		if (delim1 != delim2)
 			return false;
 
-		if(delim1){
-			// Skip consequent delimiters in path, in prefix
-			while(pathpos < pathsize &&
+		if (delim1) {
+			// Skip consequent delimiters in path and prefix
+			while (pathpos < pathsize &&
 					IsDirDelimiter(path[pathpos]))
 				++pathpos;
-			while(prefixpos < prefixsize &&
+			while (prefixpos < prefixsize &&
 					IsDirDelimiter(prefix[prefixpos]))
 				++prefixpos;
-			// Return true if prefix has ended (at delimiter/EOS)
-			if(prefixpos == prefixsize)
+			// Current component matches
+			if (num_matching_components)
+				*num_matching_components += 1;
+			if (len_matching_components_path)
+				*len_matching_components_path = pathpos;
+			if (len_matching_components_prefix)
+				*len_matching_components_prefix = prefixpos;
+			// If prefix has ended, all of it matches (= it is prefix).
+			if (prefixpos == prefixsize)
 				return true;
-			// Return false if path has ended (at delimiter/EOS)
-			// while prefix did not.
-			if(pathpos == pathsize)
+			// If path has ended while prefix did not, it's longer.
+			if (pathpos == pathsize)
 				return false;
-		}
-		else{
-			// Skip pairwise-equal characters in path and prefix until
-			// delimiter/EOS in path or prefix.
-			// Return false if differing characters are met.
-			size_t len = 0;
-			do{
-				char pathchar = path[pathpos+len];
-				char prefixchar = prefix[prefixpos+len];
-				if(FILESYS_CASE_INSENSITIVE){
-					pathchar = my_tolower(pathchar);
-					prefixchar = my_tolower(prefixchar);
-				}
-				if(pathchar != prefixchar)
-					return false;
-				++len;
-			} while(pathpos+len < pathsize
-					&& !IsDirDelimiter(path[pathpos+len])
-					&& prefixpos+len < prefixsize
-					&& !IsDirDelimiter(
-						prefix[prefixpos+len]));
-			pathpos += len;
-			prefixpos += len;
+		} else {
+			assert(pathpos != pathsize);
+			assert(prefixpos != prefixsize);
+			// Both chars are not delimiter/EOS. So they must be equal.
+			// Otherwise the current component is different.
+			char pathchar = path[pathpos];
+			char prefixchar = prefix[prefixpos];
+			if constexpr (FILESYS_CASE_INSENSITIVE) {
+				pathchar = my_tolower(pathchar);
+				prefixchar = my_tolower(prefixchar);
+			}
+			if (pathchar != prefixchar)
+				return false;
+			pathpos += 1;
+			prefixpos += 1;
 		}
 	}
 }
 
+std::string MakePathRelativeTo(const std::string &child, const std::string &parent)
+{
+	std::string child_abs = fs::AbsolutePathPartial(child);
+	std::string parent_abs = fs::AbsolutePathPartial(parent);
+	if (child_abs.empty() || parent_abs.empty())
+		return "";
+
+	unsigned num_matching_components;
+	size_t len_matching_components_child;
+	size_t len_matching_components_parent;
+
+	bool parent_is_prefix = fs::PathStartsWith(child_abs, parent_abs, &num_matching_components,
+			&len_matching_components_child, &len_matching_components_parent);
+	auto remaining_parent = parent_abs.substr(len_matching_components_parent);
+	auto remaining_child = child_abs.substr(len_matching_components_child);
+
+	if (parent_is_prefix) {
+		return "." DIR_DELIM + remaining_child;
+	}
+
+	size_t num_dotdots = CountPathComponents(remaining_parent);
+	assert(num_dotdots >= 1);
+	std::string prefix;
+	prefix.reserve(3 * num_dotdots);
+	for (size_t i = 0; i < num_dotdots; ++i)
+		prefix += ".." DIR_DELIM;
+	return prefix + remaining_child;
+}
+
+size_t CountPathComponents(std::string_view path)
+{
+	// cound all "/a", where 'a' is any non-delim char and '/' is delimiter or
+	// the start of string
+	size_t count = 0;
+	bool was_delim = true;
+	for (auto c : path) {
+		bool is_delim = IsDirDelimiter(c);
+		if (was_delim && !is_delim)
+			++count;
+		was_delim = is_delim;
+	}
+	return count;
+}
+
+std::string_view PathRemovePrefixDelim(std::string_view str)
+{
+	while (!str.empty() && IsDirDelimiter(str.front()))
+		str = str.substr(1);
+	return str;
+}
+
+std::string_view PathRemovePrefixNonDelims(std::string_view str)
+{
+	while (!str.empty() && !IsDirDelimiter(str.front()))
+		str = str.substr(1);
+	return str;
+}
+
+std::string_view PathRemoveSuffixDelim(std::string_view str)
+{
+	while (!str.empty() && IsDirDelimiter(str.back()))
+		str = str.substr(0, str.size() - 1);
+	return str;
+}
+
+std::string_view PathRemoveSuffixNonDelims(std::string_view str)
+{
+	while (!str.empty() && !IsDirDelimiter(str.back()))
+		str = str.substr(0, str.size() - 1);
+	return str;
+}
+
+std::string_view PathRemovePrefixComponents(std::string_view str, size_t num_comps)
+{
+	while (!str.empty() && num_comps > 0) {
+		str = PathRemovePrefixDelim(str);
+		str = PathRemovePrefixNonDelims(str);
+		num_comps -= 1;
+	}
+	return str;
+}
+
+std::string_view PathRemoveSuffixComponents(std::string_view str, size_t num_comps)
+{
+	while (!str.empty() && num_comps > 0) {
+		str = PathRemoveSuffixDelim(str);
+		str = PathRemoveSuffixNonDelims(str);
+		num_comps -= 1;
+	}
+	return str;
+}
+
+// TODO: use PathRemoveSuffixComponents?
 std::string RemoveLastPathComponent(const std::string &path,
 		std::string *removed, int count)
 {

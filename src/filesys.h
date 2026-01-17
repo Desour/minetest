@@ -106,10 +106,28 @@ bool CopyDir(const std::string &source, const std::string &target);
 // Behavior with files/subdirs that start with a period is undefined
 bool MoveDir(const std::string &source, const std::string &target);
 
-// Check if one path is prefix of another
-// For example, "/tmp" is a prefix of "/tmp" and "/tmp/file" but not "/tmp2"
-// Ignores case differences and '/' vs. '\\' on Windows
-bool PathStartsWith(const std::string &path, const std::string &prefix);
+// Check if one path is prefix of another.
+// For example, "/tmp" is a prefix of "/tmp" and "/tmp/file" but not "/tmp2".
+// Handles duplicated delimiters, e.g. "foo///bar" is prefix of "foo/bar/baz".
+// On Windows ignores case differences and '/' vs. '\\'.
+// Returns number of matching components in num_correct_components, and the length
+// of these components in path/prefix in len_matching_components_path/_prefix.
+bool PathStartsWith(std::string_view path, std::string_view prefix,
+		unsigned *num_correct_components = nullptr,
+		size_t *len_matching_components_path = nullptr,
+		size_t *len_matching_components_prefix = nullptr);
+
+// Returns
+// Symlinks are resolved.
+// Retruns "" on error, "./" if child and parent are the same, "./something/<...>" if
+// child is inside parent, and "../../<...>/something" if child is outside.
+[[nodiscard]]
+std::string MakePathRelativeTo(const std::string &child, const std::string &parent);
+
+// Count components delimited by (any number of) delimiters.
+// E.g. 3 for "foo/bar/baz" or "foo////bar/baz" or "/foo/bar/baz/".
+[[nodiscard]]
+size_t CountPathComponents(std::string_view path);
 
 // Remove last path component and the dir delimiter before and/or after it.
 // If there's only one path component it will refuse to remove it (if absolute)
@@ -122,6 +140,7 @@ std::string RemoveLastPathComponent(const std::string &path,
 // Remove "." and ".." path components and for every ".." removed, remove
 // the last normal path component before it. Unlike AbsolutePath,
 // this does not resolve symlinks and check for existence of directories.
+[[nodiscard]]
 std::string RemoveRelativePathComponents(std::string path);
 
 // Returns the absolute path for the passed path, with "." and ".." path
