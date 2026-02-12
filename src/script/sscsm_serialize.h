@@ -64,6 +64,8 @@ inline void check_container_size<0>(size_t n)
  * * used only for local IPC: no endianness conversion needed, host size_t used
  *
  * This struct needs to be specialized before use.
+ * (The Enable template parameter can optionally be used to disable
+ * specializations.)
  *
  * A struct consists of a statically sized part and possibly multiple dynamically
  * sized parts.
@@ -104,7 +106,7 @@ inline void check_container_size<0>(size_t n)
  *
  * ```
  */
-template <typename T>
+template <typename T, typename Enable = void>
 struct Serializer
 {
 	/// Size of the statically sized part.
@@ -175,10 +177,10 @@ template <> struct Serializer<s64> : SerializerPrimitive<s64> {};
 template <> struct Serializer<f32> : SerializerPrimitive<f32> {};
 template <> struct Serializer<f64> : SerializerPrimitive<f64> {};
 
-// FIXME: find a way to reliably check whether size_t is a different type
-#if defined(__APPLE__)
-template <> struct Serializer<size_t> : SerializerPrimitive<size_t> {};
-#endif
+template <>
+struct Serializer<size_t,
+		typename std::enable_if_t<!std::is_same_v<size_t, u64> && !std::is_same_v<size_t, u32>>
+	> : SerializerPrimitive<size_t> {};
 
 // Helpers
 
