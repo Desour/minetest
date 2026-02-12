@@ -177,10 +177,13 @@ template <> struct Serializer<s64> : SerializerPrimitive<s64> {};
 template <> struct Serializer<f32> : SerializerPrimitive<f32> {};
 template <> struct Serializer<f64> : SerializerPrimitive<f64> {};
 
-template <>
-struct Serializer<size_t,
-		typename std::enable_if_t<!std::is_same_v<size_t, u64> && !std::is_same_v<size_t, u32>>
-	> : SerializerPrimitive<size_t> {};
+template <typename T>
+struct Serializer<T,
+		std::enable_if_t<
+			std::is_same_v<T, size_t> &&
+			!std::is_same_v<size_t, u64> && !std::is_same_v<size_t, u32>
+		>
+	> : SerializerPrimitive<T> {};
 
 // Helpers
 
