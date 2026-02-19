@@ -180,7 +180,7 @@ bool ScriptApiClient::on_placenode(const PointedThing &pointed, const ItemDefini
 
 	// Push data
 	push_pointed_thing(L, pointed, true);
-	push_item_definition(L, item);
+	push_item_definition_for_cpcsm_small(L, item);
 
 	// Call functions
 	try {

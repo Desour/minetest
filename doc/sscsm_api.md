@@ -60,8 +60,12 @@ TODO: should `core.override_item` normalize the representation of overwritten va
 
 ```lua
 {
+    name = <string>,
+    -- Item name
+    type = <string>,
+    -- "node", "craft", "tool", or "none"
     description = "",
-    short_description = "",
+    short_description = nil,
     groups = {},
     inventory_image = <Item image definition>,
     inventory_overlay = <Item image definition>,
@@ -103,7 +107,6 @@ TODO: should `core.override_item` normalize the representation of overwritten va
         }
     },
     node_placement_prediction = nil,
-    node_dig_prediction = "air", -- TODO: not only in nodedef?
     touch_interaction = <TouchInteractionMode> OR {
         pointed_nothing = <TouchInteractionMode>,
         pointed_node    = <TouchInteractionMode>,
@@ -185,6 +188,7 @@ fields can be overridden with `core.override_item`.
         place_failed = <SimpleSoundSpec>,
         fall = <SimpleSoundSpec>,
     },
+    node_dig_prediction = "air",
     drop = "",
 
     -- TODO: same as for itemdefs

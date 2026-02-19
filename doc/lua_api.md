@@ -10384,12 +10384,6 @@ Used by `core.register_node`, `core.register_craftitem`, and
     -- on ground when the player places the item. Server will always update
     -- with actual result shortly.
 
-    node_dig_prediction = "air",
-    -- if "", no prediction is made.
-    -- if "air", node is removed.
-    -- Otherwise should be name of node which the client immediately places
-    -- upon digging. Server will always update with actual result shortly.
-
     touch_interaction = <TouchInteractionMode> OR {
         pointed_nothing = <TouchInteractionMode>,
         pointed_node    = <TouchInteractionMode>,
@@ -10784,6 +10778,12 @@ Used by `core.register_node`.
         fall = <SimpleSoundSpec>,
         -- When node starts to fall or is detached
     },
+
+    node_dig_prediction = "air",
+    -- if "", no prediction is made.
+    -- if "air", node is removed.
+    -- Otherwise should be name of node which the client immediately places
+    -- upon digging. Server will always update with actual result shortly.
 
     drop = "",
     -- Name of dropped item when dug.

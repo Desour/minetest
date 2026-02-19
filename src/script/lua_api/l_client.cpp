@@ -239,7 +239,7 @@ int ModApiClient::l_get_item_def(lua_State *L)
 		return 0;
 	const ItemDefinition &def = idef->get(name);
 
-	push_item_definition_full(L, def);
+	push_item_definition_for_cpcsm_full(L, def);
 
 	return 1;
 }
@@ -264,7 +264,7 @@ int ModApiClient::l_get_node_def(lua_State *L)
 	if (cf.name != name) // Unknown node. | name = <whatever>, cf.name = ignore
 		return 0;
 
-	push_content_features(L, cf);
+	push_content_features_for_cpcsm(L, cf);
 
 	return 1;
 }
