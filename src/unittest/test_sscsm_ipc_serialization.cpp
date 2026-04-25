@@ -126,7 +126,7 @@ TEST_CASE("sscsm_ipc_serialization") {
 
 SECTION("Serializer") {
 
-    SECTION("primitives") {
+	SECTION("primitives") {
 		serialize_and_deserialize((u8)0);
 		serialize_and_deserialize((u8)14);
 		serialize_and_deserialize((u16)234);
@@ -137,12 +137,12 @@ SECTION("Serializer") {
 		serialize_and_deserialize(true);
 	}
 
-    SECTION("std::pair") {
+	SECTION("std::pair") {
 		serialize_and_deserialize(std::make_pair(1, 2));
 		serialize_and_deserialize(std::make_pair(3, (u8)4));
 	}
 
-    SECTION("std::string") {
+	SECTION("std::string") {
 		using serializer = Serializer<std::string>;
 
 		std::string s1 = "Hi, thank you for reviewing my PR!";
@@ -159,9 +159,9 @@ SECTION("Serializer") {
 		serialize_and_deserialize(s2);
 
 		serialize_and_deserialize(std::string(""));
-    }
+	}
 
-    SECTION("std::vector") {
+	SECTION("std::vector") {
 		std::vector<u8> v0 = {};
 		serialize_and_deserialize(v0);
 		std::vector<u8> v1 = {23, 1, 5, 2};
@@ -174,14 +174,14 @@ SECTION("Serializer") {
 		serialize_and_deserialize(v4);
 	}
 
-    SECTION("std::unordered_map") {
+	SECTION("std::unordered_map") {
 		std::unordered_map<u16, s16> m0 = {};
 		serialize_and_deserialize(m0);
 		std::unordered_map<u16, s16> m1 = {{3, 5}, {123, 15}};
 		serialize_and_deserialize(m1);
 	}
 
-    SECTION("simple struct") {
+	SECTION("simple struct") {
 		auto val1 = A{123, {B{{4}, 0}, B{{}, 5}}, B{{123, 2, 3}, 4}};
 		serialize_and_deserialize(val1);
 
@@ -195,12 +195,12 @@ SECTION("Serializer") {
 		CHECK(buf_cval1_sv == "\x01\x02\x03");
 	}
 
-    SECTION("enum") {
+	SECTION("enum") {
 		serialize_and_deserialize(E1_A);
 		serialize_and_deserialize(E1_B);
 		serialize_and_deserialize(E2_C);
 		serialize_and_deserialize(E3::A);
-    }
+	}
 
 	//TODO: tuple, tagged union, optional, variant
 }
