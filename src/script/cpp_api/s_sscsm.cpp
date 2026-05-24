@@ -93,6 +93,8 @@ void ScriptApiSSCSM::add_itemdefs()
 	lua_pushvalue(L, idx_registered_aliases);
 	lua_setfield(L, -2, "registed_aliases");
 	//TODO: publish name-id mapping
+
+	// SSCSM client builtin will complete the defs
 }
 
 void ScriptApiSSCSM::load_mods(const std::vector<std::pair<std::string, std::string>> &mods)
