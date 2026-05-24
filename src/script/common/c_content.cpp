@@ -286,20 +286,15 @@ void push_item_definition_for_sscsm(lua_State *L, const ItemDefinition &i)
 {
 	const char *type = enum_to_string(es_ItemType, i.type);
 
-	// TODO
-	// auto push_stringv = [](lua_State *L, std::string_view s) {
-	// 	lua_pushlstring(L, s.data(), s.size());
-	// };
-
 	lua_newtable(L);
-	lua_pushlstring(L, i.name.data(), i.name.size());
+	lua_pushstring(L, i.name.c_str());
 	lua_setfield(L, -2, "name");
 	lua_pushstring(L, type);
 	lua_setfield(L, -2, "type");
-	lua_pushlstring(L, i.description.data(), i.description.size());
+	lua_pushstring(L, i.description.c_str());
 	lua_setfield(L, -2, "description");
 	if (!i.short_description.empty()) {
-		lua_pushlstring(L, i.short_description.data(), i.short_description.size());
+		lua_pushstring(L, i.short_description.c_str());
 		lua_setfield(L, -2, "short_description");
 	}
 	push_groups(L, i.groups);
@@ -328,7 +323,7 @@ void push_item_definition_for_sscsm(lua_State *L, const ItemDefinition &i)
 		push_pointabilities(L, *i.pointabilities);
 		lua_setfield(L, -2, "pointabilities");
 	}
-	lua_pushnil(L); //TODO
+	lua_pushnil(L); // FIXME: send light_source to client in item def?
 	lua_setfield(L, -2, "light_source");
 	if (i.tool_capabilities) {
 		push_tool_capabilities(L, *i.tool_capabilities);
@@ -1253,7 +1248,7 @@ void push_content_features_for_sscsm(lua_State *L, const ContentFeatures &c)
 	std::string drawtype = enum_to_string(ScriptApiNode::es_DrawType, c.drawtype);
 	std::string liquid_type = enum_to_string(ScriptApiNode::es_LiquidType, c.liquid_type);
 
-	/* Missing "tiles" because I don't see a usecase (at least not yet). */
+	/* Missing "tiles" because TODO. */
 
 	lua_newtable(L);
 	lua_pushboolean(L, c.has_on_construct);
@@ -1323,7 +1318,7 @@ void push_content_features_for_sscsm(lua_State *L, const ContentFeatures &c)
 	lua_setfield(L, -2, "leveled_max");
 	lua_pushboolean(L, c.sunlight_propagates);
 	lua_setfield(L, -2, "sunlight_propagates");
-	lua_pushnumber(L, c.light_source);
+	lua_pushnumber(L, c.light_source); // FIXME: light_source should be in item def
 	lua_setfield(L, -2, "light_source");
 	lua_pushboolean(L, c.is_ground_content);
 	lua_setfield(L, -2, "is_ground_content");
@@ -1365,13 +1360,15 @@ void push_content_features_for_sscsm(lua_State *L, const ContentFeatures &c)
 	lua_setfield(L, -2, "selection_box");
 	push_nodebox(L, c.collision_box);
 	lua_setfield(L, -2, "collision_box");
-	lua_newtable(L);
-	push_simplesoundspec(L, c.sound_footstep);
-	lua_setfield(L, -2, "sound_footstep");
-	push_simplesoundspec(L, c.sound_dig);
-	lua_setfield(L, -2, "sound_dig");
-	push_simplesoundspec(L, c.sound_dug);
-	lua_setfield(L, -2, "sound_dug");
+	{
+		lua_newtable(L);
+		push_simplesoundspec(L, c.sound_footstep);
+		lua_setfield(L, -2, "sound_footstep");
+		push_simplesoundspec(L, c.sound_dig);
+		lua_setfield(L, -2, "sound_dig");
+		push_simplesoundspec(L, c.sound_dug);
+		lua_setfield(L, -2, "sound_dug");
+	}
 	lua_setfield(L, -2, "sounds");
 	lua_pushboolean(L, c.legacy_facedir_simple);
 	lua_setfield(L, -2, "legacy_facedir_simple");
