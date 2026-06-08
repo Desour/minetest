@@ -757,13 +757,13 @@ void read_content_features(lua_State *L, ContentFeatures &f, int index)
 	getfloatfield(L, index, "visual_scale", f.visual_scale);
 
 	if (f.visual_scale != 1.0f &&
-			(f.drawtype != NDT_PLANTLIKE ||
-			f.drawtype != NDT_SIGNLIKE ||
-			f.drawtype != NDT_TORCHLIKE ||
-			f.drawtype != NDT_FIRELIKE ||
-			f.drawtype != NDT_MESH ||
-			f.drawtype != NDT_NODEBOX ||
-			f.drawtype != NDT_ALLFACES)) {
+			f.drawtype != NDT_PLANTLIKE &&
+			f.drawtype != NDT_SIGNLIKE &&
+			f.drawtype != NDT_TORCHLIKE &&
+			f.drawtype != NDT_FIRELIKE &&
+			f.drawtype != NDT_MESH &&
+			f.drawtype != NDT_NODEBOX &&
+			f.drawtype != NDT_ALLFACES) {
 		warningstream << "Node " << f.name
 				<< " specifies visual_scale, but the selected drawtype does not support it."
 				<< std::endl;
