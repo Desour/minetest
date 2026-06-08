@@ -10510,12 +10510,15 @@ Used by `core.register_node`.
 
     visual_scale = 1.0,
     -- Supported for drawtypes "plantlike", "signlike", "torchlike",
-    -- "firelike", "mesh", "nodebox", "allfaces".
+    -- "firelike", "mesh", "nodebox", "allfaces", "allfaces_optional".
     -- For plantlike and firelike, the image will start at the bottom of the
     -- node. For torchlike, the image will start at the surface to which the
     -- node "attaches". For the other drawtypes the image will be centered
     -- on the node.
-    -- note: Do not set a visual_scale != 1.0 for drawtypes that don't support it.
+    -- "allfaces_optional" nodes will only be scaled if the client setting sets
+    -- it to allfaces. If it's normal or glasslike, it is unspecified if it will
+    -- be scaled or not.
+    -- Note: Do not set a visual_scale != 1.0 for drawtypes that don't support it.
 
     tiles = {tile definition 1, def2, def3, def4, def5, def6},
     -- Textures of node; +Y, -Y, +X, -X, +Z, -Z

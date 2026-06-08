@@ -763,7 +763,9 @@ void read_content_features(lua_State *L, ContentFeatures &f, int index)
 			f.drawtype != NDT_FIRELIKE &&
 			f.drawtype != NDT_MESH &&
 			f.drawtype != NDT_NODEBOX &&
-			f.drawtype != NDT_ALLFACES) {
+			f.drawtype != NDT_ALLFACES &&
+			f.drawtype != NDT_ALLFACES_OPTIONAL
+		) {
 		warningstream << "Node " << f.name
 				<< " specifies visual_scale, but the selected drawtype does not support it."
 				<< std::endl;
