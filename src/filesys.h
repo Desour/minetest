@@ -113,7 +113,7 @@ bool PathStartsWith(const std::string &path, const std::string &prefix);
 
 // If child is (as absolute path) inside parent (also as absolute path), returns
 // the part of child that is relative to parent.
-// Symlinks and "." and ".." components are removed.
+// Symlinks, "." and ".." components, as well as trailing "/" are removed.
 // If child and parent are (absolute) the same, the result is ".". (Otherwise it
 // never starts with '.'.)
 // Returns "" if child is not in parent, also returns "" on failure.
@@ -130,16 +130,17 @@ std::string RemoveLastPathComponent(const std::string &path,
 // Remove "." and ".." path components and for every ".." removed, remove
 // the last normal path component before it. Unlike AbsolutePath,
 // this does not resolve symlinks and check for existence of directories.
+// Trailing "/" is removed.
 std::string RemoveRelativePathComponents(std::string path);
 
 // Returns the absolute path for the passed path, with "." and ".." path
-// components and symlinks removed.  Returns "" on error.
+// components, symlinks, and trailing "/" (unless root) removed.  Returns "" on error.
 [[nodiscard]]
 std::string AbsolutePath(const std::string &path);
 
 // This is a combination of RemoveRelativePathComponents() and AbsolutePath()
 // It will resolve symlinks for the leading path components that exist and
-// still remove "." and ".." in the rest of the path.
+// still remove ".", "..", and trailing "/" (unless root) in the rest of the path.
 // Returns "" on error.
 [[nodiscard]]
 std::string AbsolutePathPartial(const std::string &path);

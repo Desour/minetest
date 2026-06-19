@@ -731,6 +731,8 @@ std::string MakePathRelativeTo(const std::string &child, const std::string &pare
 		return ".";
 	} else {
 		assert(child_abs.size() >= parent_abs.size() + 1);
+		if (parent_abs == DIR_DELIM) // only root has trailing "/"
+			parent_abs = "";
 		assert(child_abs[parent_abs.size()] == DIR_DELIM_CHAR);
 		return std::move(child_abs).substr(parent_abs.size() + 1);
 	}
@@ -843,6 +845,9 @@ std::string AbsolutePath(const std::string &path)
 		return "";
 	std::string abs_path_str(abs_path);
 	free(abs_path);
+	// remove trailing "/" (unless root)
+	if (abs_path_str.size() > 1 && IsDirDelimiter(abs_path_str.back()))
+		abs_path_str.pop_back();
 	return abs_path_str;
 }
 

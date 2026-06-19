@@ -334,6 +334,7 @@ void TestFileSys::testAbsolutePath()
 	UASSERTEQ(auto, fs::AbsolutePath(""), ""); // empty is a not valid path
 	const auto cwd = fs::AbsolutePath(".");
 	UASSERTCMP(auto, !=, cwd, "");
+	UASSERTEQ(auto, fs::AbsolutePath(p("/")), p("/"));
 	// excess . and / are removed => no trailing /
 	UASSERTCMP(auto, !=, fs::AbsolutePath(dir_path).size(), (size_t)0);
 	UASSERTCMP(auto, !=, fs::AbsolutePath(dir_path).back(), DIR_DELIM_CHAR);
@@ -354,7 +355,8 @@ void TestFileSys::testAbsolutePath()
 
 	/* AbsolutePathPartial */
 	// equivalent to AbsolutePath if it exists
-	UASSERTEQ(auto, fs::AbsolutePathPartial("."), cwd);
+	UASSERTEQ(auto, fs::AbsolutePathPartial("."), fs::AbsolutePath("."));
+	UASSERTEQ(auto, fs::AbsolutePathPartial(p("/")), fs::AbsolutePath(p("/")));
 	UASSERTEQ(auto, fs::AbsolutePathPartial(dir_path), fs::AbsolutePath(dir_path));
 	UASSERTEQ(auto, fs::AbsolutePathPartial(dir_path + p("/")), fs::AbsolutePath(dir_path + p("/")));
 	UASSERTEQ(auto, fs::AbsolutePathPartial(dir_path + p("//")), fs::AbsolutePath(dir_path + p("//")));
