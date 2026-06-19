@@ -334,13 +334,20 @@ void TestFileSys::testAbsolutePath()
 	UASSERTEQ(auto, fs::AbsolutePath(""), ""); // empty is a not valid path
 	const auto cwd = fs::AbsolutePath(".");
 	UASSERTCMP(auto, !=, cwd, "");
+	// excess . and / are removed => no trailing /
+	UASSERTCMP(auto, !=, fs::AbsolutePath(dir_path).size(), (size_t)0);
+	UASSERTCMP(auto, !=, fs::AbsolutePath(dir_path).back(), DIR_DELIM_CHAR);
+	UASSERTEQ(auto, fs::AbsolutePath(dir_path + p("/")), fs::AbsolutePath(dir_path));
+	UASSERTEQ(auto, fs::AbsolutePath(dir_path + p("//")), fs::AbsolutePath(dir_path));
+	UASSERTEQ(auto, fs::AbsolutePath(dir_path + p("/.")), fs::AbsolutePath(dir_path));
+	UASSERTEQ(auto, fs::AbsolutePath(dir_path + p("/./")), fs::AbsolutePath(dir_path));
 	{
 		const auto dir_path2 = getTestTempFile();
 		UASSERTEQ(auto, fs::AbsolutePath(dir_path2), ""); // doesn't exist
 		fs::CreateDir(dir_path2);
 		UASSERTCMP(auto, !=, fs::AbsolutePath(dir_path2), ""); // now it does
 		UASSERTEQ(auto, fs::AbsolutePath(dir_path2 + DIR_DELIM ".."), fs::AbsolutePath(dir_path));
-		// excess . and / are removed
+		// works with excess . and /
 		UASSERTEQ(auto, fs::AbsolutePath(dir_path2 + p("//..")), fs::AbsolutePath(dir_path));
 		UASSERTEQ(auto, fs::AbsolutePath(dir_path2 + p("/./.././//")), fs::AbsolutePath(dir_path));
 	}
@@ -349,6 +356,9 @@ void TestFileSys::testAbsolutePath()
 	// equivalent to AbsolutePath if it exists
 	UASSERTEQ(auto, fs::AbsolutePathPartial("."), cwd);
 	UASSERTEQ(auto, fs::AbsolutePathPartial(dir_path), fs::AbsolutePath(dir_path));
+	UASSERTEQ(auto, fs::AbsolutePathPartial(dir_path + p("/")), fs::AbsolutePath(dir_path + p("/")));
+	UASSERTEQ(auto, fs::AbsolutePathPartial(dir_path + p("//")), fs::AbsolutePath(dir_path + p("//")));
+	UASSERTEQ(auto, fs::AbsolutePathPartial(dir_path + p("/./")), fs::AbsolutePath(dir_path + p("/./")));
 	// usual usage of the function with a partially existing path
 	auto expect = cwd + DIR_DELIM + p("does/not/exist");
 	UASSERTEQ(auto, fs::AbsolutePathPartial("does/not/exist"), expect);
