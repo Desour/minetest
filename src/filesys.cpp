@@ -10,6 +10,7 @@
 #include <cstring>
 #include <cerrno>
 #include <fstream>
+#include <filesystem>
 #include <atomic>
 #include <memory>
 #include "log.h"
@@ -776,107 +777,40 @@ std::string RemoveLastPathComponent(const std::string &path,
 
 std::string RemoveRelativePathComponents(std::string path)
 {
-	size_t pos = path.size();
-	size_t dotdot_count = 0;
-	while (pos != 0) {
-		size_t component_with_delim_end = pos;
-		// skip a dir delimiter
-		while (pos != 0 && IsDirDelimiter(path[pos-1]))
-			pos--;
-		// strip a path component
-		size_t component_end = pos;
-		while (pos != 0 && !IsDirDelimiter(path[pos-1]))
-			pos--;
-		size_t component_start = pos;
-
-		std::string component = path.substr(component_start,
-				component_end - component_start);
-		bool remove_this_component = false;
-		if (component == ".") {
-			remove_this_component = true;
-		} else if (component == "..") {
-			remove_this_component = true;
-			dotdot_count += 1;
-		} else if (dotdot_count != 0) {
-			remove_this_component = true;
-			dotdot_count -= 1;
-		}
-
-		if (remove_this_component) {
-			while (pos != 0 && IsDirDelimiter(path[pos-1]))
-				pos--;
-			if (component_start == 0) {
-				// We need to remove the delimiter too
-				path = path.substr(component_with_delim_end, std::string::npos);
-			} else {
-				path = path.substr(0, pos) + DIR_DELIM +
-					path.substr(component_with_delim_end, std::string::npos);
-			}
-			if (pos > 0)
-				pos++;
-		}
-	}
-
-	if (dotdot_count > 0)
-		return "";
-
-	// remove trailing dir delimiters
-	pos = path.size();
-	while (pos != 0 && IsDirDelimiter(path[pos-1]))
-		pos--;
-	return path.substr(0, pos);
+	auto p = std::filesystem::path(path, std::filesystem::path::format::native_format);
+	return p.lexically_normal().native();
 }
 
 std::string AbsolutePath(const std::string &path)
 {
-#ifdef _WIN32
-	// handle behavior differences on windows
-	if (path.empty())
+	try {
+		auto p = std::filesystem::path(path, std::filesystem::path::format::native_format);
+		return std::filesystem::canonical(p).native();
+	} catch (const std::filesystem::filesystem_error &) {
+		// (would use std::error_code, but I can't figure out how to check if
+		// there is an error)
 		return "";
-	else if (!PathExists(path))
-		return "";
-	char *abs_path = _fullpath(NULL, path.c_str(), MAX_PATH);
-#else
-	char *abs_path = realpath(path.c_str(), NULL);
-#endif
-	if (!abs_path)
-		return "";
-	std::string abs_path_str(abs_path);
-	free(abs_path);
-	return abs_path_str;
+	}
 }
 
 std::string AbsolutePathPartial(const std::string &path)
 {
-	if (path.empty())
+	try {
+		auto p = std::filesystem::path(path, std::filesystem::path::format::native_format);
+		return std::filesystem::weakly_canonical(p).native();
+	} catch (const std::filesystem::filesystem_error &) {
+		// (would use std::error_code, but I can't figure out how to check if
+		// there is an error)
 		return "";
-	// Try to determine absolute path
-	std::string abs_path = fs::AbsolutePath(path);
-	if (!abs_path.empty())
-		return abs_path;
-	// Remove components until it works
-	std::string cur_path = path;
-	std::string removed;
-	while (abs_path.empty() && !cur_path.empty()) {
-		std::string component;
-		cur_path = RemoveLastPathComponent(cur_path, &component);
-		removed = component + (removed.empty() ? "" : DIR_DELIM + removed);
-		abs_path = AbsolutePath(cur_path);
 	}
-	// If we had a relative path that does not exist, it needs to be joined with cwd
-	if (cur_path.empty() && !IsPathAbsolute(path))
-		abs_path = AbsolutePath(".");
-	// or there's an error
-	if (abs_path.empty())
-		return "";
-	// Put them back together and resolve the remaining relative components
-	if (!removed.empty())
-		abs_path.append(DIR_DELIM).append(removed);
-	return RemoveRelativePathComponents(abs_path);
 }
 
 const char *GetFilenameFromPath(const char *path)
 {
+	// TODO: why no std::string interface?
+	// auto p = std::filesystem::path(path, std::filesystem::path::format::native_format);
+	// return p.filename().native();
+
 	const char *filename = strrchr(path, DIR_DELIM_CHAR);
 	// Consistent with IsDirDelimiter this function handles '/' too
 	if constexpr (DIR_DELIM_CHAR != '/') {
