@@ -797,7 +797,8 @@ std::string AbsolutePathPartial(const std::string &path)
 {
 	try {
 		auto p = std::filesystem::path(path, std::filesystem::path::format::native_format);
-		return std::filesystem::weakly_canonical(p).native();
+		return std::filesystem::weakly_canonical(std::filesystem::current_path() / p).native();
+		// return std::filesystem::weakly_canonical(std::filesystem::absolute(p)).native();
 	} catch (const std::filesystem::filesystem_error &) {
 		// (would use std::error_code, but I can't figure out how to check if
 		// there is an error)
