@@ -28,6 +28,9 @@
 #include "gui/drawItemStack.h"
 #include <ICameraSceneNode.h>
 #include <IMesh.h>
+#include "map.h"
+#include "mapsector.h"
+#include "mapblock.h"
 
 #define OBJECT_CROSSHAIR_LINE_SIZE 8
 #define CROSSHAIR_LINE_SIZE 10
@@ -946,6 +949,45 @@ void Hud::drawBlockBounds()
 
 	driver->setMaterial(m_block_bounds_material);
 
+#if 1
+	// draw boxes where each box's volume is the block's compressed size relative to max
+
+	auto &env = client->getEnv();
+	Map &map = env.getMap();
+
+	size_t max_compressed_size = 0;
+	for (auto &&[_sec_pxz, sec] : map.m_sectors) {
+		auto &blocks = ((const MapSector *)sec)->getBlocks();
+		for (auto &&[_b_py, b] : blocks) {
+			max_compressed_size = std::max(max_compressed_size, b->m_compressed_size);
+		}
+	}
+
+	thread_local size_t ratelimit = 0;
+	ratelimit += 1;
+	if (ratelimit >= 60) {
+		errorstream << "max_compressed_size: " << max_compressed_size << std::endl;
+		ratelimit = 0;
+	}
+
+	driver->setTransform(video::ETS_WORLD, core::IdentityMatrix);
+
+	for (auto &&[_sec_pxz, sec] : map.m_sectors) {
+		auto &blocks = ((const MapSector *)sec)->getBlocks();
+		for (auto &&[_b_py, b] : blocks) {
+			float sidelen = (float)b->m_compressed_size / max_compressed_size;
+			sidelen = std::pow(sidelen, 1.0f/3.0f);
+
+			auto orig_box_nodes = b->getBox();
+			v3f center_bs = intToFloat(orig_box_nodes.getCenter() - env.getCameraOffset(), BS);
+			v3f extent = intToFloat(orig_box_nodes.getExtent(), BS) * sidelen;
+			auto box = aabb3f(center_bs - extent / 2, center_bs + extent / 2);
+
+			driver->draw3DBox(box, video::SColor(255, 255, 0, 0));
+		}
+	}
+
+#else
 	u16 mesh_chunk_size = std::max<u16>(1, g_settings->getU16("client_mesh_chunk"));
 
 	v3s16 block_pos = getContainerPos(player->getStandingNodePos(), MAP_BLOCKSIZE);
@@ -991,6 +1033,7 @@ void Hud::drawBlockBounds()
 			choose_color(block_pos.Y, block_pos.Z)
 		);
 	}
+#endif
 }
 
 void Hud::updateSelectionMesh(const v3s16 &camera_offset)

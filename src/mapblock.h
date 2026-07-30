@@ -560,6 +560,9 @@ public:
 
 private:
 	NodeTimerList m_node_timers;
+
+public:
+	size_t m_compressed_size = 0;
 };
 
 typedef std::vector<MapBlock*> MapBlockVect;

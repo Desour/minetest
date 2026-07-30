@@ -501,6 +501,17 @@ void MapBlock::serializeNetworkSpecific(std::ostream &os)
 
 void MapBlock::deSerialize(std::istream &in_compressed, u8 version, bool disk)
 {
+	// set m_compressed_size to in_compressed's size
+	{
+		auto oldp = in_compressed.tellg();
+		assert(oldp != -1);
+		in_compressed.seekg(0, std::ios_base::end);
+		auto endp = in_compressed.tellg();
+		assert(endp != -1);
+		in_compressed.seekg(oldp);
+		m_compressed_size = endp - oldp;
+	}
+
 	if (!ser_ver_supported_read(version))
 		throw VersionMismatchException("ERROR: MapBlock format not supported");
 
