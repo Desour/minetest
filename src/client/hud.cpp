@@ -322,10 +322,8 @@ bool Hud::hasElementOfType(HudElementType type)
 	return false;
 }
 
-// Calculates screen position of waypoint. Returns true if waypoint is visible (in front of the player), else false.
-bool Hud::calculateScreenPos(const v3s16 &camera_offset, HudElement *e, v2s32 *pos)
+bool Hud::calculateScreenPos(const v3s16 &camera_offset, v3f w_pos, v2s32 *pos)
 {
-	v3f w_pos = e->world_pos * BS;
 	scene::ICameraSceneNode* camera =
 		client->getSceneManager()->getActiveCamera();
 	w_pos -= intToFloat(camera_offset, BS);
@@ -340,6 +338,13 @@ bool Hud::calculateScreenPos(const v3s16 &camera_offset, HudElement *e, v2s32 *p
 	pos->X = m_screensize.X * (0.5 * transformed_pos[0] * zDiv + 0.5);
 	pos->Y = m_screensize.Y * (0.5 - transformed_pos[1] * zDiv * 0.5);
 	return true;
+}
+
+// Calculates screen position of waypoint. Returns true if waypoint is visible (in front of the player), else false.
+bool Hud::calculateScreenPos(const v3s16 &camera_offset, HudElement *e, v2s32 *pos)
+{
+	v3f w_pos = e->world_pos * BS;
+	return calculateScreenPos(camera_offset, w_pos, pos);
 }
 
 void Hud::drawLuaElements(const v3s16 &camera_offset, bool only_unhidable)
@@ -951,9 +956,15 @@ void Hud::drawBlockBounds()
 
 #if 1
 	// draw boxes where each box's volume is the block's compressed size relative to max
+	// (currently not actual volume but sidelen)
 
 	auto &env = client->getEnv();
 	Map &map = env.getMap();
+
+	auto camera_offset = env.getCameraOffset();
+	const u32 text_height = g_fontengine->getTextHeight();
+	gui::IGUIFont *const font = g_fontengine->getFont();
+	v3s16 player_pos_nodes = floatToInt(env.getLocalPlayer()->getPosition(), BS);
 
 	size_t max_compressed_size = 0;
 	for (auto &&[_sec_pxz, sec] : map.m_sectors) {
@@ -976,14 +987,45 @@ void Hud::drawBlockBounds()
 		auto &blocks = ((const MapSector *)sec)->getBlocks();
 		for (auto &&[_b_py, b] : blocks) {
 			float sidelen = (float)b->m_compressed_size / max_compressed_size;
-			sidelen = std::pow(sidelen, 1.0f/3.0f);
+			// commented out to overexaggerate (volumes appear unintuitive to me)
+			// sidelen = std::pow(sidelen, 1.0f/3.0f);
 
-			auto orig_box_nodes = b->getBox();
-			v3f center_bs = intToFloat(orig_box_nodes.getCenter() - env.getCameraOffset(), BS);
-			v3f extent = intToFloat(orig_box_nodes.getExtent(), BS) * sidelen;
-			auto box = aabb3f(center_bs - extent / 2, center_bs + extent / 2);
+			auto dist_to_player = b->getPosRelative().getDistanceFrom(player_pos_nodes);
 
-			driver->draw3DBox(box, video::SColor(255, 255, 0, 0));
+			// box
+			if (true) do {
+				if (dist_to_player > 100)
+					continue;
+
+				driver->setMaterial(m_block_bounds_material);
+
+				auto orig_box_nodes = b->getBox();
+				v3f center_bs = intToFloat(orig_box_nodes.getCenter() - camera_offset, BS);
+				v3f extent = intToFloat(orig_box_nodes.getExtent(), BS) * sidelen;
+				auto box = aabb3f(center_bs - extent / 2, center_bs + extent / 2);
+
+				driver->draw3DBox(box, video::SColor(255, 255, 255, 255));
+			} while (false);
+
+			// text
+			if (true) do {
+				if (dist_to_player > 100)
+					continue;
+
+				v2s32 pos2d;
+				v3f wpos = intToFloat(b->getPosRelative() + v3s16(MAP_BLOCKSIZE / 2), BS);
+				if (!calculateScreenPos(camera_offset, wpos, &pos2d))
+					continue;
+
+				auto text_raw = itos(b->m_compressed_size);
+
+				video::SColor color_text(255, 255, 0, 0);
+				std::wstring text_wide = unescape_translate(utf8_to_wide(text_raw));
+
+				core::rect<s32> bounds_text(0, 0, font->getDimension(text_wide.c_str()).Width, 1 * text_height);
+				bounds_text += pos2d;
+				font->draw(text_wide.c_str(), bounds_text, color_text);
+			} while (false);
 		}
 	}
 
