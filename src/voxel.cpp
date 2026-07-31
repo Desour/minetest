@@ -123,16 +123,8 @@ static inline void checkArea(const VoxelArea &a)
 	}
 }
 
-void VoxelManipulator::addArea(const VoxelArea &area)
+void VoxelManipulator::addAreaRaw(const VoxelArea &area)
 {
-	// Cancel if requested area has zero volume
-	if (area.hasEmptyExtent())
-		return;
-
-	// Cancel if m_area already contains the requested area
-	if(m_area.contains(area))
-		return;
-
 	// Calculate new area
 	VoxelArea new_area = m_area;
 	new_area.addArea(area);

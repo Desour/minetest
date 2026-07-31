@@ -471,7 +471,18 @@ public:
 	void print(std::ostream &o, const NodeDefManager *nodemgr,
 			VoxelPrintMode mode=VOXELPRINT_MATERIAL) const;
 
-	void addArea(const VoxelArea &area);
+	void addArea(const VoxelArea &area)
+	{
+		// Cancel if requested area has zero volume
+		if (area.hasEmptyExtent())
+			return;
+
+		// Cancel if m_area already contains the requested area
+		if(m_area.contains(area))
+			return;
+
+		addAreaRaw(area);
+	}
 
 	void setFlags(const VoxelArea &area, u8 flag);
 	void clearFlags(const VoxelArea &area, u8 flag);
@@ -487,6 +498,11 @@ public:
 	void copyTo(MapNode *dst, const VoxelArea& dst_area,
 			v3s16 dst_pos, v3s16 from_pos, const v3s16 &size) const;
 
+private:
+	// not inlined part of addArea
+	void addAreaRaw(const VoxelArea &area);
+
+public:
 	/*
 		Member variables
 	*/
