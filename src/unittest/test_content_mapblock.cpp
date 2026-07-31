@@ -57,7 +57,7 @@ public:
 		data.m_generate_minimap = false;
 		data.m_smooth_lighting = smooth_lighting;
 		data.m_enable_water_reflections = false;
-		data.m_blockpos = {0, 0, 0};
+		data.m_chunkpos_blocks = {0, 0, 0};
 		for (s16 x = -1; x <= 1; x++)
 		for (s16 y = -1; y <= 1; y++)
 		for (s16 z = -1; z <= 1; z++)

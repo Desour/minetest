@@ -35,7 +35,7 @@ struct MeshMakeData
 	VoxelManipulator m_vmanip;
 
 	// base pos of meshgen area, in blocks
-	v3s16 m_blockpos = v3s16(-1337,-1337,-1337);
+	v3s16 m_chunkpos_blocks = v3s16(-1337,-1337,-1337);
 	// size of meshgen area, in nodes.
 	// vmanip will have at least an extra 1 node onion layer.
 	// area is expected to fit into mesh grid cell.

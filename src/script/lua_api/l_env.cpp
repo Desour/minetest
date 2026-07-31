@@ -1441,7 +1441,7 @@ int ModApiEnvVM::l_get_node_or_nil(lua_State *L)
 
 	v3s16 pos = read_v3s16(L, 1);
 	if (vm->exists(pos))
-		pushnode(L, vm->getNodeRefUnsafe(pos));
+		pushnode(L, vm->getNodeRefInData(pos));
 	else
 		lua_pushnil(L);
 	return 1;

@@ -345,6 +345,118 @@ private:
 	v3s32 m_cache_extent;
 };
 
+/*
+	Index inside a VoxelArea that can be moved in any direction.
+	Useful for doing relative vmanip lookups.
+*/
+struct VoxelIter {
+	s32 i;
+	s16 stride_y;
+	s16 stride_z;
+
+	VoxelIter() = default;
+
+	explicit VoxelIter(const VoxelArea &area) :
+		stride_y(area.getExtent().X), stride_z(area.getExtent().X * area.getExtent().Y)
+	{
+		assert(area.getExtent().X * area.getExtent().Y <= S16_MAX);
+	}
+
+	VoxelIter(const VoxelArea &area, v3s16 abs_pos) :
+		VoxelIter(area)
+	{
+		resetAbs(abs_pos, area);
+	}
+
+	// stuff for debuging
+
+
+	v3s16 relPos() const
+	{
+		assert(i >= 0);
+		s16 x = i % stride_y;
+		s16 y = (i % stride_z) / stride_y;
+		s16 z = i / stride_z;
+		return v3s16(x, y, z);
+	}
+
+	v3s16 validExtent() const
+	{
+		assert(stride_y > 0);
+		assert(stride_z > 0);
+		assert(stride_z % stride_y == 0);
+		return v3s16(stride_y, stride_z / stride_y, S16_MAX);
+	}
+
+	core::aabbox3d<s16> validExtentBox() const
+	{
+		return core::aabbox3d<s16>(v3s16(0), validExtent() - v3s16(1));
+	}
+
+	bool voxelAreaMatches(const VoxelArea &area) const
+	{
+		auto my_extent = validExtent();
+		auto area_extent = area.getExtent();
+		return my_extent.X == area_extent.X && my_extent.Y == area_extent.Y;
+	}
+
+	bool inVoxelArea(const VoxelArea &area) const
+	{
+		assert(voxelAreaMatches(area));
+		return area.contains(relPos() + area.MinEdge);
+	}
+
+	// useful stuff
+
+	void resetRel(v3s16 rel_pos)
+	{
+		assert(validExtentBox().isPointInside(rel_pos));
+		i = rel_pos.X + stride_y * rel_pos.Y + stride_z * rel_pos.Z;
+	}
+
+	void resetAbs(v3s16 abs_pos, const VoxelArea &area)
+	{
+		assert(voxelAreaMatches(area));
+		assert(area.contains(abs_pos));
+		resetRel(abs_pos - area.MinEdge);
+	}
+
+	VoxelIter &operator+=(v3s16 v)
+	{
+		assert(validExtentBox().isPointInside(relPos() + v));
+		i += v.X + v.Y * stride_y + v.Z * stride_z;
+		return *this;
+	}
+
+	VoxelIter &operator-=(v3s16 v)
+	{
+		return *this += -v;
+	}
+
+	VoxelIter operator+(v3s16 v) const
+	{
+		VoxelIter iter = *this;
+		iter += v;
+		return iter;
+	}
+
+	VoxelIter operator-(v3s16 v) const
+	{
+		return *this + (-v);
+	}
+
+	// prefix ++
+	VoxelIter &operator++()
+	{
+		return *this += v3s16(1, 0, 0);
+	}
+};
+
+inline VoxelIter operator+(v3s16 v, const VoxelIter &iter)
+{
+	return iter + v;
+}
+
 enum : u8 {
 	VOXELFLAG_NO_DATA  = 1 << 0, // no data about that node
 	VOXELFLAG_CHECKED1 = 1 << 1, // Algorithm-dependent
@@ -407,32 +519,92 @@ public:
 			return {CONTENT_IGNORE};
 		return m_data[index];
 	}
+
 	// Stuff explodes if non-emerged area is touched with this.
 	// Emerge first, and check VOXELFLAG_NO_DATA if appropriate.
-	MapNode & getNodeRefUnsafe(const v3s16 &p)
+
+	MapNode &getNodeRefInData(s32 index)
 	{
-		return m_data[m_area.index(p)];
+		assert(m_area.contains(index));
+		return m_data[index];
+	}
+	MapNode &getNodeRefInData(const v3s16 &p)
+	{
+		assert(m_area.contains(p));
+		return getNodeRefInData(m_area.index(p));
+	}
+	MapNode &getNodeRefInData(VoxelIter iter)
+	{
+		assert(iter.inVoxelArea(m_area));
+		return getNodeRefInData(iter.i);
 	}
 
-	const MapNode & getNodeRefUnsafeCheckFlags(const v3s16 &p) const
+	template <class T>
+	MapNode getNodeInData(T &&loc) const
 	{
-		s32 index = m_area.index(p);
+		return const_cast<VoxelManipulator &>(*this).getNodeRefInData(loc);
+	}
+
+	const MapNode &getNodeRefInArea(s32 index) const
+	{
+		assert(m_area.contains(index));
 
 		if (m_flags[index] & VOXELFLAG_NO_DATA)
 			return ContentIgnoreNode;
 
 		return m_data[index];
 	}
-
-	u8 & getFlagsRefUnsafe(const v3s16 &p)
+	const MapNode &getNodeRefInArea(const v3s16 &p) const
 	{
-		return m_flags[m_area.index(p)];
+		assert(m_area.contains(p));
+		return getNodeRefInArea(m_area.index(p));
+	}
+	const MapNode &getNodeRefInArea(VoxelIter iter) const
+	{
+		assert(iter.inVoxelArea(m_area));
+		return getNodeRefInArea(iter.i);
+	}
+
+	const MapNode getNodeInArea(s32 index) const
+	{
+		assert(m_area.contains(index));
+
+		if (m_flags[index] & VOXELFLAG_NO_DATA)
+			return CONTENT_IGNORE;
+
+		return m_data[index];
+	}
+	const MapNode getNodeInArea(const v3s16 &p) const
+	{
+		assert(m_area.contains(p));
+		return getNodeInArea(m_area.index(p));
+	}
+	const MapNode getNodeInArea(VoxelIter iter) const
+	{
+		assert(iter.inVoxelArea(m_area));
+		return getNodeInArea(iter.i);
+	}
+
+	u8 &getFlagsRefInArea(s32 index) const
+	{
+		assert(m_area.contains(index));
+		return m_flags[index];
+	}
+	u8 &getFlagsRefInArea(const v3s16 &p) const
+	{
+		assert(m_area.contains(p));
+		return getFlagsRefInArea(m_area.index(p));
+	}
+	u8 &getFlagsRefInArea(VoxelIter iter) const
+	{
+		assert(iter.inVoxelArea(m_area));
+		return getFlagsRefInArea(iter.i);
 	}
 
 	bool exists(const v3s16 &p)
 	{
 		return m_area.contains(p) &&
-			!(getFlagsRefUnsafe(p) & VOXELFLAG_NO_DATA);
+			!(getFlagsRefInArea(p) & VOXELFLAG_NO_DATA);
 	}
 
 	void setNode(const v3s16 &p, const MapNode &n)

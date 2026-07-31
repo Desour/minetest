@@ -6,6 +6,7 @@
 
 #include "nodedef.h"
 #include "tile.h"
+#include "voxel.h"
 
 struct MeshMakeData;
 struct MeshCollector;
@@ -55,11 +56,12 @@ private:
 
 	const NodeDefManager *const nodedef;
 
-	const v3s16 blockpos_nodes;
+	const v3s16 chunkpos_nodes; // pos of the meshgen chunk in nodes
 
 // current node
 	struct {
 		v3s16 p; // relative to blockpos_nodes
+		VoxelIter iter; // p as VoxelIter inside data->m_vmanip
 		v3f origin; // p in BS space
 		MapNode n;
 		const ContentFeatures *f;

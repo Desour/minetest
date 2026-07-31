@@ -39,9 +39,9 @@ MeshMakeData::MeshMakeData(const NodeDefManager *ndef,
 
 void MeshMakeData::fillBlockDataBegin(const v3s16 &blockpos)
 {
-	m_blockpos = blockpos;
+	m_chunkpos_blocks = blockpos;
 
-	v3s16 blockpos_nodes = m_blockpos*MAP_BLOCKSIZE;
+	v3s16 blockpos_nodes = m_chunkpos_blocks*MAP_BLOCKSIZE;
 
 	m_vmanip.clear();
 	// extra 1 block thick layer around the mesh
@@ -52,7 +52,7 @@ void MeshMakeData::fillBlockDataBegin(const v3s16 &blockpos)
 
 void MeshMakeData::fillSingleNode(MapNode data, MapNode padding)
 {
-	m_blockpos = {0, 0, 0};
+	m_chunkpos_blocks = {0, 0, 0};
 
 	m_vmanip.clear();
 	// area around 0,0,0 so that this positon has neighbors
@@ -71,7 +71,7 @@ void MeshMakeData::fillSingleNode(MapNode data, MapNode padding)
 void MeshMakeData::setCrack(int crack_level, v3s16 crack_pos)
 {
 	if (crack_level >= 0)
-		m_crack_pos_relative = crack_pos - m_blockpos*MAP_BLOCKSIZE;
+		m_crack_pos_relative = crack_pos - m_chunkpos_blocks*MAP_BLOCKSIZE;
 }
 
 /*
@@ -145,6 +145,7 @@ static u16 getSmoothLightCombined(const v3s16 &p,
 	const std::array<v3s16,8> &dirs, MeshMakeData *data)
 {
 	const NodeDefManager *ndef = data->m_nodedef;
+	VoxelIter iter = VoxelIter(data->m_vmanip.m_area, p);
 
 	u16 ambient_occlusion = 0;
 	u16 light_count = 0;
@@ -158,7 +159,7 @@ static u16 getSmoothLightCombined(const v3s16 &p,
 			ambient_occlusion++;
 			return false;
 		}
-		MapNode n = data->m_vmanip.getNodeNoExNoEmerge(p + dirs[i]);
+		MapNode n = data->m_vmanip.getNodeInArea(iter + dirs[i]);
 		if (n.getContent() == CONTENT_IGNORE)
 			return true;
 		const ContentFeatures &f = ndef->get(n);
@@ -641,7 +642,7 @@ MapBlockMesh::MapBlockMesh(Client *client, MeshMakeData *data):
 		m = make_irr<scene::SMesh>();
 
 	auto mesh_grid = data->m_mesh_grid;
-	v3s16 bp = data->m_blockpos;
+	v3s16 bp = data->m_chunkpos_blocks;
 	// Only generate minimap mapblocks at grid aligned coordinates.
 	// FIXME: ^ doesn't really make sense. and in practice, bp is always aligned
 	if (mesh_grid.isMeshPos(bp) && data->m_generate_minimap) {
@@ -663,7 +664,7 @@ MapBlockMesh::MapBlockMesh(Client *client, MeshMakeData *data):
 	}
 
 	// algin vertices to mesh grid, not meshgen area
-	v3f offset = intToFloat((data->m_blockpos - mesh_grid.getMeshPos(data->m_blockpos)) * MAP_BLOCKSIZE, BS);
+	v3f offset = intToFloat((data->m_chunkpos_blocks - mesh_grid.getMeshPos(data->m_chunkpos_blocks)) * MAP_BLOCKSIZE, BS);
 
 	MeshCollector collector(m_bounding_sphere_center, offset);
 
@@ -935,7 +936,7 @@ video::SColor encode_light(u16 light, u8 emissive_light)
 
 u8 get_solid_sides(MeshMakeData *data)
 {
-	v3s16 blockpos_nodes = data->m_blockpos * MAP_BLOCKSIZE;
+	v3s16 blockpos_nodes = data->m_chunkpos_blocks * MAP_BLOCKSIZE;
 	const NodeDefManager *ndef = data->m_nodedef;
 
 	const u16 side = data->m_side_length;
@@ -954,7 +955,7 @@ u8 get_solid_sides(MeshMakeData *data)
 		};
 
 		for (u8 k = 0; k < 6; k++) {
-			const MapNode &top = data->m_vmanip.getNodeRefUnsafe(blockpos_nodes + positions[k]);
+			const MapNode top = data->m_vmanip.getNodeInData(blockpos_nodes + positions[k]);
 			if (ndef->get(top).visuals->solidness != 2)
 				result &= ~(1 << k);
 		}

@@ -65,7 +65,7 @@ MapblockMeshGenerator::MapblockMeshGenerator(MeshMakeData *input, MeshCollector 
 	data(input),
 	collector(output),
 	nodedef(data->m_nodedef),
-	blockpos_nodes(data->m_blockpos * MAP_BLOCKSIZE)
+	chunkpos_nodes(data->m_chunkpos_blocks * MAP_BLOCKSIZE)
 {
 }
 
@@ -285,7 +285,7 @@ void MapblockMeshGenerator::getSmoothLightFrame()
 	for (int k = 0; k < 8; ++k)
 		cur_node.lframe.sunlight[k] = false;
 	for (int k = 0; k < 8; ++k) {
-		LightPair light(getSmoothLightTransparent(blockpos_nodes + cur_node.p, light_dirs[k], data));
+		LightPair light(getSmoothLightTransparent(chunkpos_nodes + cur_node.p, light_dirs[k], data));
 		cur_node.lframe.lightsDay[k] = light.lightDay;
 		cur_node.lframe.lightsNight[k] = light.lightNight;
 		// If there is direct sunlight and no ambient occlusion at some corner,
@@ -442,8 +442,8 @@ void MapblockMeshGenerator::drawSolidNode()
 	u16 lights[6];
 	content_t n1 = cur_node.n.getContent();
 	for (int face = 0; face < 6; face++) {
-		v3s16 p2 = blockpos_nodes + cur_node.p + tile_dirs[face];
-		MapNode neighbor = data->m_vmanip.getNodeNoEx(p2);
+		VoxelIter iter2 = cur_node.iter + tile_dirs[face];
+		MapNode neighbor = data->m_vmanip.getNodeInArea(iter2);
 		content_t n2 = neighbor.getContent();
 		bool backface_culling = cur_node.f->drawtype == NDT_NORMAL;
 		if (n2 == n1)
@@ -465,7 +465,7 @@ void MapblockMeshGenerator::drawSolidNode()
 				v3s16(1,0,0), v3s16(-1,0,0), v3s16(0,0,1), v3s16(0,0,-1)
 			};
 			for (const v3s16 &d : h_dirs) {
-				const ContentFeatures &f_side = nodedef->get(data->m_vmanip.getNodeNoEx(p2 + d));
+				const ContentFeatures &f_side = nodedef->get(data->m_vmanip.getNodeInArea(iter2 + d));
 
 				bool side_is_translucent = !(f_side.visuals->solidness || f_side.visuals->visual_solidness);
 				bool side_is_same_flowing_liquid =
@@ -514,7 +514,7 @@ void MapblockMeshGenerator::drawSolidNode()
 			for (int k = 0; k < 4; k++) {
 				v3s16 corner = light_dirs[light_indices[face][k]];
 				lights[face][k] = LightPair(getSmoothLightSolid(
-						blockpos_nodes + cur_node.p, tile_dirs[face], corner, data));
+						chunkpos_nodes + cur_node.p, tile_dirs[face], corner, data));
 			}
 		}
 
@@ -586,8 +586,8 @@ void MapblockMeshGenerator::prepareLiquidNodeDrawing()
 	getSpecialTile(0, &cur_liquid.tile_top);
 	getSpecialTile(1, &cur_liquid.tile);
 
-	MapNode ntop    = data->m_vmanip.getNodeNoEx(blockpos_nodes + cur_node.p + v3s16(0,  1, 0));
-	MapNode nbottom = data->m_vmanip.getNodeNoEx(blockpos_nodes + cur_node.p + v3s16(0, -1, 0));
+	MapNode ntop    = data->m_vmanip.getNodeInArea(cur_node.iter + v3s16(0,  1, 0));
+	MapNode nbottom = data->m_vmanip.getNodeInArea(cur_node.iter + v3s16(0, -1, 0));
 	cur_liquid.c_flowing = cur_node.f->liquid_alternative_flowing_id;
 	cur_liquid.c_source = cur_node.f->liquid_alternative_source_id;
 	cur_liquid.top_is_same_liquid = (ntop.getContent() == cur_liquid.c_flowing)
@@ -626,8 +626,8 @@ void MapblockMeshGenerator::getLiquidNeighborhood()
 	for (int w = -1; w <= 1; w++)
 	for (int u = -1; u <= 1; u++) {
 		LiquidData::NeighborData &neighbor = cur_liquid.neighbors[w + 1][u + 1];
-		v3s16 p2 = cur_node.p + v3s16(u, 0, w);
-		MapNode n2 = data->m_vmanip.getNodeNoEx(blockpos_nodes + p2);
+		VoxelIter iter2 = cur_node.iter + v3s16(u, 0, w);
+		MapNode n2 = data->m_vmanip.getNodeInArea(iter2);
 		neighbor.content = n2.getContent();
 		neighbor.level = -0.5f;
 		neighbor.is_same_liquid = false;
@@ -652,8 +652,8 @@ void MapblockMeshGenerator::getLiquidNeighborhood()
 		// Check node above neighbor.
 		// NOTE: This doesn't get executed if neighbor
 		//       doesn't exist
-		p2.Y++;
-		n2 = data->m_vmanip.getNodeNoEx(blockpos_nodes + p2);
+		iter2 += v3s16(0, 1, 0);
+		n2 = data->m_vmanip.getNodeInArea(iter2);
 		if (n2.getContent() == cur_liquid.c_source || n2.getContent() == cur_liquid.c_flowing)
 			neighbor.top_is_same_liquid = true;
 	}
@@ -822,8 +822,8 @@ void MapblockMeshGenerator::drawLiquidTop()
 	f32 dx = (cur_liquid.corner_levels[0][0] + cur_liquid.corner_levels[1][0]) -
 	         (cur_liquid.corner_levels[0][1] + cur_liquid.corner_levels[1][1]);
 	v2f tcoord_center(0.5, 0.5);
-	v2f tcoord_translate(blockpos_nodes.Z + cur_node.p.Z,
-			blockpos_nodes.X + cur_node.p.X);
+	v2f tcoord_translate(chunkpos_nodes.Z + cur_node.p.Z,
+			chunkpos_nodes.X + cur_node.p.X);
 	v2f dir = v2f(dx, dz).normalize();
 	if (dir == v2f{0.0f, 0.0f}) // if corners are symmetrical
 		dir = v2f{1.0f, 0.0f};
@@ -894,8 +894,8 @@ void MapblockMeshGenerator::drawGlasslikeNode()
 	for (int face = 0; face < 6; face++) {
 		// Check this neighbor
 		v3s16 dir = g_6dirs[face];
-		v3s16 neighbor_pos = blockpos_nodes + cur_node.p + dir;
-		MapNode neighbor = data->m_vmanip.getNodeNoExNoEmerge(neighbor_pos);
+		VoxelIter neighbor_iter = cur_node.iter + dir;
+		MapNode neighbor = data->m_vmanip.getNodeInArea(neighbor_iter);
 		// Don't make face if neighbor is of same type
 		if (neighbor.getContent() == cur_node.n.getContent())
 			continue;
@@ -988,8 +988,8 @@ void MapblockMeshGenerator::drawGlasslikeFramedNode()
 		for (int i = 0; i < FRAMED_NEIGHBOR_COUNT; i++) {
 			if (!check_nb[i])
 				continue;
-			v3s16 n2p = blockpos_nodes + cur_node.p + g_26dirs[i];
-			MapNode n2 = data->m_vmanip.getNodeNoEx(n2p);
+			VoxelIter n2iter = cur_node.iter + g_26dirs[i];
+			MapNode n2 = data->m_vmanip.getNodeInArea(n2iter);
 			content_t n2c = n2.getContent();
 			if (n2c == current)
 				nb[i] = 1;
@@ -1327,18 +1327,27 @@ void MapblockMeshGenerator::drawPlantlikeRootedNode()
 {
 	drawSolidNode();
 
+	// move 1 up and draw plantlike there
 	TileSpec tile;
 	useTile(&tile, 0, 0, 0, true);
 	cur_node.origin += v3f(0, BS, 0);
 	cur_node.p.Y++;
+	// the node up there can access outside the guaranteed 3x3x3 area
+	// => enlargen vmanip
+	data->m_vmanip.addArea(VoxelArea(cur_node.p - v3s16(1), cur_node.p + v3s16(1)));
+	// iter is invalidated by this
+	cur_node.iter = VoxelIter(data->m_vmanip.m_area, chunkpos_nodes + cur_node.p);
+
 	if (data->m_smooth_lighting) {
 		getSmoothLightFrame();
 	} else {
-		MapNode ntop = data->m_vmanip.getNodeNoEx(blockpos_nodes + cur_node.p);
+		MapNode ntop = data->m_vmanip.getNodeInArea(cur_node.iter);
 		auto light = LightPair(getInteriorLight(ntop, 0, nodedef));
 		cur_node.lcolor = encode_light(light, cur_node.f->light_source);
 	}
 	drawPlantlike(tile, true);
+
+	cur_node.iter -= v3s16(0, 1, 0);
 	cur_node.p.Y--;
 }
 
@@ -1372,8 +1381,8 @@ void MapblockMeshGenerator::drawFirelikeNode()
 	bool neighbor[6] = {0, 0, 0, 0, 0, 0};
 	content_t current = cur_node.n.getContent();
 	for (int i = 0; i < 6; i++) {
-		v3s16 n2p = blockpos_nodes + cur_node.p + g_6dirs[i];
-		MapNode n2 = data->m_vmanip.getNodeNoEx(n2p);
+		VoxelIter n2iter = cur_node.iter + g_6dirs[i];
+		MapNode n2 = data->m_vmanip.getNodeInArea(n2iter);
 		content_t n2c = n2.getContent();
 		if (n2c != CONTENT_IGNORE && n2c != CONTENT_AIR && n2c != current) {
 			neighbor[i] = true;
@@ -1436,9 +1445,8 @@ void MapblockMeshGenerator::drawFencelikeNode()
 	drawAutoLightedCuboid(post, tile_rot, postuv);
 
 	// Now a section of fence, +X, if there's a post there
-	v3s16 p2 = cur_node.p;
-	p2.X++;
-	MapNode n2 = data->m_vmanip.getNodeNoEx(blockpos_nodes + p2);
+	VoxelIter iter2 = cur_node.iter + v3s16(1, 0, 0);
+	MapNode n2 = data->m_vmanip.getNodeInArea(iter2);
 	const ContentFeatures *f2 = &nodedef->get(n2);
 	if (f2->drawtype == NDT_FENCELIKE) {
 		static const aabb3f bar_x1(BS / 2 - bar_len,  BS / 4 - bar_rad, -bar_rad,
@@ -1458,9 +1466,8 @@ void MapblockMeshGenerator::drawFencelikeNode()
 	}
 
 	// Now a section of fence, +Z, if there's a post there
-	p2 = cur_node.p;
-	p2.Z++;
-	n2 = data->m_vmanip.getNodeNoEx(blockpos_nodes + p2);
+	iter2 = cur_node.iter + v3s16(0, 0, 1);
+	n2 = data->m_vmanip.getNodeInArea(iter2);
 	f2 = &nodedef->get(n2);
 	if (f2->drawtype == NDT_FENCELIKE) {
 		static const aabb3f bar_z1(-bar_rad,  BS / 4 - bar_rad, BS / 2 - bar_len,
@@ -1482,7 +1489,7 @@ void MapblockMeshGenerator::drawFencelikeNode()
 
 bool MapblockMeshGenerator::isSameRail(v3s16 dir)
 {
-	MapNode node2 = data->m_vmanip.getNodeNoEx(blockpos_nodes + cur_node.p + dir);
+	MapNode node2 = data->m_vmanip.getNodeInArea(cur_node.iter + dir);
 	if (node2.getContent() == cur_node.n.getContent())
 		return true;
 	const ContentFeatures &def2 = nodedef->get(node2);
@@ -1633,8 +1640,8 @@ void MapblockMeshGenerator::drawNodeboxNode()
 	u8 sametype_neighbors = 0;
 	for (int dir = 0; dir != 6; dir++) {
 		u8 flag = 1 << dir;
-		v3s16 p2 = blockpos_nodes + cur_node.p + nodebox_tile_dirs[dir];
-		MapNode n2 = data->m_vmanip.getNodeNoEx(p2);
+		VoxelIter iter2 = cur_node.iter + nodebox_tile_dirs[dir];
+		MapNode n2 = data->m_vmanip.getNodeInArea(iter2);
 
 		// mark neighbors that are the same node type
 		// and have the same rotation or higher level stored as param2
@@ -1648,8 +1655,8 @@ void MapblockMeshGenerator::drawNodeboxNode()
 			solid_neighbors |= flag;
 
 		if (cur_node.f->node_box.type == NODEBOX_CONNECTED) {
-			p2 = blockpos_nodes + cur_node.p + nodebox_connection_dirs[dir];
-			n2 = data->m_vmanip.getNodeNoEx(p2);
+			iter2 = cur_node.iter + nodebox_connection_dirs[dir];
+			n2 = data->m_vmanip.getNodeInArea(iter2);
 			if (nodedef->nodeboxConnects(cur_node.n, n2, flag))
 				neighbors_set |= flag;
 		}
@@ -1860,11 +1867,19 @@ void MapblockMeshGenerator::generate()
 {
 	ZoneScoped;
 
+	assert(data->m_vmanip.m_area.contains(VoxelArea(chunkpos_nodes - v3s16(1),
+			chunkpos_nodes + v3s16(data->m_side_length + 1))));
+
+	cur_node.iter = VoxelIter(data->m_vmanip.m_area);
+
 	for (cur_node.p.Z = 0; cur_node.p.Z < data->m_side_length; cur_node.p.Z++)
-	for (cur_node.p.Y = 0; cur_node.p.Y < data->m_side_length; cur_node.p.Y++)
-	for (cur_node.p.X = 0; cur_node.p.X < data->m_side_length; cur_node.p.X++) {
-		cur_node.n = data->m_vmanip.getNodeNoEx(blockpos_nodes + cur_node.p);
-		cur_node.f = &nodedef->get(cur_node.n);
-		drawNode();
+	for (cur_node.p.Y = 0; cur_node.p.Y < data->m_side_length; cur_node.p.Y++) {
+		cur_node.p.X = 0;
+		cur_node.iter.resetAbs(chunkpos_nodes + cur_node.p, data->m_vmanip.m_area);
+		for (; cur_node.p.X < data->m_side_length; cur_node.p.X++, ++cur_node.iter) {
+			cur_node.n = data->m_vmanip.getNodeInArea(cur_node.iter);
+			cur_node.f = &nodedef->get(cur_node.n);
+			drawNode();
+		}
 	}
 }
